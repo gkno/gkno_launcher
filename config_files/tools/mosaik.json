@@ -1,0 +1,292 @@
+{
+  "tools" : {
+    "MosaikBuildRef" : {
+      "description" : "Build the Mosaik reference",
+      "path" : "MOSAIK/bin",
+      "executable" : "MosaikBuild",
+      "help" : "--help|-h",
+      "options" : {
+        "-fr" : {
+          "description" : "the FASTA reference sequence file",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "true",
+          "dependent" : "true",
+          "type" : "string",
+          "alternative" : "-a",
+          "extension" : "fasta|fa"
+        },
+        "-oa" : {
+          "description" : "the output Mosaik reference file",
+          "input" : "false",
+          "output" : "true",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "dat"
+        }
+      }
+    },
+  
+    "MosaikBuildFastq" : {
+      "description" : "Build the Mosaik read archive",
+      "path" : "MOSAIK/bin",
+      "executable" : "MosaikBuild",
+      "help" : "--help|-h",
+      "options" : {
+        "-q" : {
+          "description" : "the FASTQ file",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "fastq|fq|fastq.gz|fq.gz"
+        },
+        "-q2" : {
+          "description" : "the FASTQ 2nd mate",
+          "input" : "true",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "fastq|fq|fastq.gz|fq.gz"
+        },
+        "-id" : {
+          "description" : "read group ID. e.g. SRR009060",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string"
+        },
+        "-mfl" : {
+          "description" : "median fragment length. e.g. 150",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "integer"
+        },
+        "-sam" : {
+          "description" : "sample name. e.g. NA12878",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string"
+        },
+        "-st" : {
+          "description" : "sets the sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string"
+        },
+        "-out" : {
+          "description" : "the output read file",
+          "input" : "false",
+          "output" : "true",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "mkb"
+        }
+      }
+    },
+  
+    "MosaikJump" : {
+      "name" : "MosaikJump",
+      "description" : "Generate the jump database for a Mosaik reference",
+      "path" : "MOSAIK/bin",
+      "executable" : "MosaikJump",
+      "help" : "--help|-h",
+      "options" : {
+        "-ia" : {
+          "description" : "input reference file",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "dat"
+        },
+        "-out" : {
+          "description" : "output filename stub",
+          "input" : "false",
+          "output" : "true",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "stub" : "true",
+          "outputs" : [
+            "_keys.jmp",
+            "_meta.jmp",
+            "_positions.jmp"
+          ]
+        },
+        "-hs" : {
+          "description" : "hash size [4 - 32]",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "integer",
+          "default" : "15"
+        },
+        "-kd" : {
+          "description" : "keeps the key database on disk",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag"
+        },
+        "-mem" : {
+          "description" : "the amount memory used when sorting <Gb>",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "integer"
+        },
+        "-iupac" : {
+          "description" : "considers IUPAC codes",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag"
+        }
+      }
+    },
+
+    "MosaikAligner" : {
+      "description" : "Pairwise alignment of a read archive",
+      "path" : "MOSAIK/bin",
+      "executable" : "MosaikAligner",
+      "options" : {
+        "-in" : {
+          "description" : "the input read file",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "mkb"
+        },
+        "-ia" : {
+          "description" : "the input reference file (Mosaik native dat file)",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "dat",
+          "default" : "test_genome.dat"
+        },
+        "-j" : {
+          "description" : "the Mosaik jump database",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "stub" : "true",
+          "outputs" : [
+            "_keys.jmp",
+            "_meta.jmp",
+            "_positions.jmp"
+          ],
+          "default" : "test_genome"
+        },
+        "-out" : {
+          "description" : "the output alignment file",
+          "input" : "false",
+          "output" : "true",
+          "required" : "false",
+          "dependent" : "false",
+          "resource" : "false",
+          "type" : "string",
+          "stub" : "true",
+          "outputs" : [
+            ".bam",
+            ".multiple.bam"
+          ]
+        },
+        "-annse" : {
+          "description" : "neural network file for single end read mapping qualities",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "true",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "ann",
+          "default" : "se.100.005.ann"
+        },
+        "-annpe" : {
+          "description" : "neural network file for paired end read mapping qualities",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "true",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "ann",
+          "default" : "pe.100.01.ann"
+        },
+        "-a" : {
+          "description" : "alignment algorithm: [fast, single, multi, all]. def: all",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "extension" : "null"
+        },
+        "-m" : {
+          "description" : "alignment mode: [unique, all]. def: all",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "null"
+        },
+        "-hs" : {
+          "description" : "hash size [4 - 32].",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "integer",
+          "extension" : "null",
+          "default" : "15"
+        }
+      }
+    }
+  }
+}

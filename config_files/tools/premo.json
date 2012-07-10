@@ -1,0 +1,142 @@
+{
+  "tools" : {
+    "premo" : {
+      "description" : "Determine MosaikAligner parameters based on read and fragment length",
+      "path" : "premo/bin",
+      "executable" : "premo",
+      "help" : "--help|-h",
+      "options" : {
+        "-fq1" : {
+          "description" : "the input fastq file (first mate)",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "fq|fastq|fq.gz|fastq.gz"
+        },
+        "-fq2" : {
+          "description" : "the input fastq file (second mate)",
+          "input" : "true",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "fq|fastq|fq.gz|fastq.gz"
+        },
+        "-ref" : {
+          "description" : "Mosaik reference archive",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "dat",
+          "default" : "test_genome.dat"
+        },
+        "-jmp" : {
+          "description" : "stub for Mosaik jump table files",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "stub" : "true",
+          "outputs" : [
+            "_keys.jmp",
+            "_meta.jmp",
+            "_positions.jmp"
+          ],
+          "default" : "test_genome"
+        },
+        "-mosaik" : {
+          "description" : "path to Mosaik bin",
+          "input" : "false",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "default" : "$(TOOL_BIN)/MOSAIK/bin"
+        },
+        "-out" : {
+          "description" : "output json file",
+          "input" : "false",
+          "output" : "true",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "json",
+          "default" : "mosaikParameters.json"
+        },
+        "-annse" : {
+          "description" : "neural network file (single end)",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "true",
+          "required" : "true",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "ann",
+          "default" : "se.100.005.ann"
+        },
+        "-annpe" : {
+          "description" : "neural network file (paired end)",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "true",
+          "required" : "true",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "ann",
+          "default" : "pe.100.01.ann"
+        },
+        "-tmp" : {
+          "description" : "scratch directory for generated files",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "type" : "string",
+          "default" : "$(PWD)/tmp"
+        },
+        "-st" : {
+          "description" : "sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "type" : "string",
+          "default" : "illumina"
+        },
+        "-n" : {
+          "description" : "# of pairs to align per batch",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "type" : "integer",
+          "default" : "1000"
+        },
+        "-hs" : {
+          "description" : "Mosaik hash size",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "type" : "integer",
+          "default" : "15"
+        }
+      }
+    }
+  }
+}

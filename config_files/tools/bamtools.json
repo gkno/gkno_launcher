@@ -1,0 +1,105 @@
+{
+  "tools" : {
+    "bamtools-index" : {
+      "description" : "Index a BAM file",
+      "path" : "bamtools/bin",
+      "executable" : "bamtools",
+      "modifier" : "index",
+      "help" : "--help|-h",
+      "additional files" : {
+        "from input arguments" : [
+          {
+            "type" : "output",
+            "command" : "-in",
+            "remove extension" : "false",
+            "add extension" : "true",
+            "output extension" : "bai",
+            "stub" : "false"
+          }
+        ]
+      },
+      "options" : {
+        "-in" : {
+          "description" : "the input BAM file [stdin]",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "bam"
+        },
+        "-bti" : {
+          "description" : "create non-standard (depth based) index file.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "extension" : "null"
+        }
+      }
+    },
+
+    "bamtools-sort" : {
+      "description" : "Sort a BAM file",
+      "path" : "bamtools/bin",
+      "executable" : "bamtools",
+      "modifier" : "sort",
+      "help" : "--help|-h",
+      "options" : {
+        "-in" : {
+          "description" : "the input BAM file [stdin]",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "bam"
+        },
+        "-out" : {
+          "description" : "the output BAM file.",
+          "input" : "false",
+          "output" : "true",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "sorted.bam"
+        },
+        "-byname" : {
+          "description" : "sort by alignment name",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "extension" : "null"
+        },
+        "-n" : {
+          "description" : "max number of alignments per temp file",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "int",
+          "extension" : "null"
+        },
+        "-mem" : {
+          "description" : "max memory to use",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "int",
+          "extension" : "null"
+        }
+      }
+    }
+  }
+}

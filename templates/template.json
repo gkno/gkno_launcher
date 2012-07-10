@@ -1,0 +1,16 @@
+{
+  "workflow" : [
+    "task1",
+    "task2",
+    "task3"
+  ],
+  "tools" : {
+    "task1" : "tool1",
+    "task2" : "tool2",
+    "task3" : "tool3"
+  },
+  "linkage" : {
+  },
+  "arguments" : {
+  }
+}

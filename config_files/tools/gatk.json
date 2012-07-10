@@ -1,0 +1,195 @@
+{
+  "tools" : {
+    "gatk-count-covariates" : {
+      "description" : "Count covariates",
+      "path" : "gatk/dist",
+      "executable" : "GenomeAnalysisTK.jar",
+      "precommand" : "java -Xmx2g -jar",
+      "help" : "--help|-h",
+      "additional files" : {
+        "from input arguments" : [
+          {
+            "type" : "dependency",
+            "command" : "--input_file",
+            "remove extension" : "false",
+            "add extension" : "true",
+            "output extension" : "bai",
+            "stub" : "false"
+          }
+        ]
+      },
+      "options" : {
+        "--reference_sequence" : {
+          "description" : "the reference fasta file",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "true",
+          "dependent" : "true",
+          "type" : "string",
+          "alternative" : "-R",
+          "extension" : "fasta|fa"
+        },
+        "--input_file" : {
+          "description" : "input SAM or BAM file(s)",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "true",
+          "type" : "string",
+          "alternative" : "-I",
+          "extension" : "sam|bam"
+        },
+        "--recal_file" : {
+          "description" : "output covariates table recalibration file",
+          "input" : "false",
+          "output" : "true",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "type" : "string",
+          "alternative" : "-recalFile",
+          "extension" : "csv"
+        },
+        "-knownSites" : {
+          "description" : "vcf file containing known variant sites",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "true",
+          "required" : "true",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "vcf",
+          "default" : "test_genome.dbSNP.snps.sites.vcf"
+        },
+        "--logging_level" : {
+          "description" : "minimum level of logging",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "alternative" : "-l",
+          "extension" : "vcf",
+          "default" : "INFO"
+        },
+        "--analysis_type" : {
+          "description" : "type of analysis to run",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "null",
+          "alternative" : "-T",
+          "default" : "CountCovariates"
+        },
+        "--num_threads" : {
+          "description" : "number of threads",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "integer",
+          "alternative" : "-nt",
+          "extension" : "null",
+          "default" : "8"
+        },
+        "--covariate" : {
+          "description" : "covariates to be used",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "alternative" : "-cov",
+          "default" : [
+            "ReadGroupCovariate",
+            "QualityScoreCovariate",
+            "CycleCovariate",
+            "DinucCovariate"
+          ]
+        }
+      }
+    },
+    "gatk-recalibrate-bq" : {
+      "description" : "Recalibrate base qualities",
+      "path" : "gatk/dist",
+      "executable" : "GenomeAnalysisTK.jar",
+      "precommand" : "java -Xmx2g -jar",
+      "help" : "--help|-h",
+      "options" : {
+        "--reference_sequence" : {
+          "description" : "the reference fasta file",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "true",
+          "dependent" : "true",
+          "type" : "string",
+          "alternative" : "-R",
+          "extension" : "fasta|fa"
+        },
+        "--input_file" : {
+          "description" : "input SAM or BAM file(s)",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "true",
+          "type" : "string",
+          "alternative" : "-I",
+          "extension" : "sam|bam"
+        },
+        "--recal_file" : {
+          "description" : "input covariates table recalibration file",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "true",
+          "type" : "string",
+          "alternative" : "-recalFile",
+          "extension" : "csv"
+        },
+        "--analysis_type" : {
+          "description" : "type of analysis to run",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "alternative" : "-T",
+          "default" : "TableRecalibration"
+        },
+        "--out" : {
+          "description" : "the output recalibrated BAM file",
+          "input" : "false",
+          "output" : "true",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "recal.bam",
+          "alternative" : "-o"
+        },
+        "--doNotWriteOriginalQuals" : {
+          "description" : "Do not write out the original qualities as an extra tag in the BAM file",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "alternative" : "-noOQs"
+        }
+      }
+    }
+  }
+}
