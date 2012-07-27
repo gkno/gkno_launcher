@@ -33,13 +33,13 @@ class files:
 
   # From the list of json files, popluate a hash table with the names
   # and descriptions of the tools.
-  def getToolDescriptions(self, tl, sourcePath):
+  def getToolDescriptions(self, tl, pl, sourcePath, verbose):
     er = errors()
 
-    print("Reading in tool configuration files...", file = sys.stdout)
+    if verbose: print("Reading in tool configuration files...", file = sys.stdout)
     for toolFile in self.jsonToolFiles:
-      print("\t", toolFile, '...', sep = '', end = '', file = sys.stdout)
-      sys.stdout.flush()
+      if verbose: print("\t", toolFile, '...', sep = '', end = '', file = sys.stdout)
+      if verbose: sys.stdout.flush()
       jsonData = open(sourcePath + '/' + toolFile)
       try: toolData = json.load(jsonData)
       except:
@@ -48,46 +48,39 @@ class files:
 
       # If the json file has a problem, terminate the script with an error.
       if er.error:
-        print(file = sys.stdout)
+        if verbose: print(file = sys.stdout)
         er.jsonOpenError("\t\t", exc_value)
         er.terminate()
       else:
         for tool in toolData['tools']:
           tl.toolInfo[tool] = toolData['tools'][tool]
-        print("done.", file = sys.stdout)
+        if verbose: print("done.", file = sys.stdout)
 
-    print(file = sys.stdout)
+    if verbose: print(file = sys.stdout)
 
   # If a pipeline is being run, search for the corresponding config file.
-  def getPipelineConfigurationFile(self, path):
-    er = errors()
-
-    # If the pipeline name was not given, throw an error.
-    try: pipelineName = sys.argv[2]
-
-    # If no pipeline name was given, throw an error.
-    except:
-      er.pipelineUsage(self.jsonPipelineFiles)
-      exit(1)
-
-    if (pipelineName == '--help') or (pipelineName == '-h'):
-      er.pipelineUsage(self.jsonPipelineFiles)
-      exit(0)
-    self.jsonPipelineFile = path + "/" + sys.argv[2] + '.json'
-    if pipelineName + '.json' not in self.jsonPipelineFiles.keys():
-      er.missingPipelineJsonFile(self.jsonPipelineFile)
-      er.pipelineUsage(self.jsonPipelineFiles)
-      exit(1)
+  def getPipelineConfigurationFile(self, gknoHelp, pl, path):
+    if (gknoHelp.specificPipelineHelp) or (not gknoHelp.printHelp):
+      self.jsonPipelineFile = path + "/" + pl.pipelineName + '.json'
+      if pl.pipelineName + '.json' not in self.jsonPipelineFiles.keys():
+        gknoHelp.specificPipelineHelp = False
+        gknoHelp.unknownPipeline      = True
+        gknoHelp.pipelineHelp         = True
+        gknoHelp.printHelp            = True
 
 # Open the pipeline configuration file and put the information into memory.
-  def getPipelineDescription(self, pl):
+  def getPipelineDescription(self, pl, verbose):
     er = errors()
 
-    print("-------------------------------------", file = sys.stdout)
-    print("Executing pipeline: ", sys.argv[2], sep = "", file = sys.stdout)
-    print("-------------------------------------\n", file = sys.stdout)
-    print("Reading in pipeline configuration file...", end = '', file = sys.stdout)
-    sys.stdout.flush()
+    if verbose:
+      length = len(pl.pipelineName + 'Executing pipeline: ') + 4
+      text = '=' * length
+      print(text, file = sys.stderr)
+      print('  Executing pipeline: ', pl.pipelineName, sep = '', file = sys.stdout)
+      print(text, file = sys.stderr)
+      print(file = sys.stderr)
+      print('Reading in pipeline configuration file...', end = '', file = sys.stdout)
+      sys.stdout.flush()
     jsonData = open(self.jsonPipelineFile)
     try: pl.information = json.load(jsonData)
     except:
@@ -99,9 +92,9 @@ class files:
     if er.error:
       er.jsonOpenError("\t", exc_value)
       er.terminate()
-    else: print("done\n", file = sys.stdout)
+    if verbose: print("done\n", file = sys.stdout)
 
-    return 'pipe/' + sys.argv[2]
+    return 'pipe/' + pl.pipelineName
 
   # The set of tools and the associated parameters are set
   # in the config file, so build up the scripts to run the
@@ -122,8 +115,8 @@ class files:
     # Loop over each tool in the work flow and generate the command lines
     # for each.  Work in reverse order building up the dependencies.
     for counter in reversed(range(0, len(pl.information['workflow']))):
-      toolName = pl.information['workflow'][counter]
-      tool     = pl.information['tools'][toolName]
+      task = pl.information['workflow'][counter]
+      tool     = pl.information['tools'][task]
 
     # Having established all the dependencies and the output files for each
     # tool, write out the commands for the Makefile.
@@ -131,36 +124,36 @@ class files:
     print(".PHONY: all", file = self.makeFilehandle)
     print("all:", end = "", file = self.makeFilehandle)
     for counter in reversed(range(0, len(pl.information['workflow']))):
-      toolName = pl.information['workflow'][counter]
-      tool     = pl.information['tools'][toolName]
-      if toolName in tl.outputs: print(tl.outputs[toolName], end = ' ', file = self.makeFilehandle)
+      task = pl.information['workflow'][counter]
+      tool     = pl.information['tools'][task]
+      if task in tl.outputs: print(tl.outputs[task], end = ' ', file = self.makeFilehandle)
 
       # If the tool doesn't generate an output, set the target of the recipe in the
       # Makefile as a phony target.  Define the name of the phony target as the tool
       # name appended with phony.
       else:
-        phonyTarget = toolName.replace(' ', '_') + '_phony'
-        tl.outputs[toolName] = ''
-        tl.outputs[toolName] = phonyTarget
+        phonyTarget = task.replace(' ', '_') + '_phony'
+        tl.outputs[task] = ''
+        tl.outputs[task] = phonyTarget
         print(" ", phonyTarget, sep = "", end = "", file = self.makeFilehandle)
 
     print(file = self.makeFilehandle)
     print(file = self.makeFilehandle)
     for counter in reversed(range(0, len(pl.information['workflow']))):
-      toolName     = pl.information['workflow'][counter]
-      tool         = pl.information['tools'][toolName]
-      pathVariable = self.writeInitialInformation(tl, toolName, tool)
-      self.generateCommand(tl, pl, pathVariable, toolName, tool)
+      task     = pl.information['workflow'][counter]
+      tool         = pl.information['tools'][task]
+      pathVariable = self.writeInitialInformation(tl, task, tool)
+      self.generateCommand(tl, pl, pathVariable, task, tool)
 
     # Close the Makefile.
     self.makeFilehandle.close()
     print(file = sys.stdout)
 
   # Write initial information to the Makefile.
-  def writeInitialInformation(self, tl, toolName, tool):
+  def writeInitialInformation(self, tl, task, tool):
     er = errors()
-    print("\t", toolName, " (", tool, ")...", sep = "", file = sys.stdout)
-    print("### Information for ", toolName, " (", tool, ")", sep = "", file = self.makeFilehandle)
+    print("\t", task, " (", tool, ")...", sep = "", file = sys.stdout)
+    print("### Information for ", task, " (", tool, ")", sep = "", file = self.makeFilehandle)
     try: path = tl.toolInfo[tool]['path']
     except: er.error = True
     if er.error:
@@ -177,14 +170,14 @@ class files:
     return pathVariable
 
   # Generate commands for the makefile
-  def generateCommand(self, tl, pl, pathVariable, toolName, tool):
+  def generateCommand(self, tl, pl, pathVariable, task, tool):
     er = errors()
 
     # Check if the target is a phony target.  If so, define the phony target.
-    if tl.outputs[toolName].endswith('_phony'): print(".PHONY: ", tl.outputs[toolName], sep = '', file = self.makeFilehandle)
+    if tl.outputs[task].endswith('_phony'): print(".PHONY: ", tl.outputs[task], sep = '', file = self.makeFilehandle)
 
     # Print out the output file and the list of dependencies.
-    else: print(tl.outputs[toolName], ": ", tl.dependencies[toolName], sep = '', file = self.makeFilehandle)
+    else: print(tl.outputs[task], ": ", tl.dependencies[task], sep = '', file = self.makeFilehandle)
   
     # Print out the command line.
     print("\t", end = '', file = self.makeFilehandle)
@@ -203,33 +196,33 @@ class files:
     if 'ordered' in tl.toolInfo[tool]:
       optionList = {}
       if tl.toolInfo[tool]['ordered'] == 'true':
-        for option in tl.toolOptions[toolName]:
-          try: order = tl.toolInfo[tool]['options'][option]['order']
+        for option in tl.toolArguments[task]:
+          try: order = tl.toolInfo[tool]['arguments'][option]['order']
           except: er.error = True
           if er.error:
-            er.missingOrderID(toolName, tool, option)
+            er.missingOrderID(task, tool, option)
             er.terminate()
 
           if order in optionList:
-            er.optionIDExists(toolName, tool, option)
+            er.optionIDExists(task, tool, option)
             er.terminate()
 
           # Only include the option, if it is required.
-          if tl.toolOptions[toolName][option] == 'set': optionList[order] = option
-          elif (tl.toolOptions[toolName][option] != 'unset') and (tl.toolOptions[toolName][option] != ''):
-            optionList[order] = option + ' ' + tl.toolOptions[toolName][option]
+          if tl.toolArguments[task][option] == 'set': optionList[order] = option
+          elif (tl.toolArguments[task][option] != 'unset') and (tl.toolArguments[task][option] != ''):
+            optionList[order] = option + ' ' + tl.toolArguments[task][option]
 
       orderList = sorted(optionList.iteritems())
       start     = int(orderList[0][0])
       end       = int(orderList[-1][0])
       while start <= end:
-        if str(start) not in optionList: er.orderWarning(toolName, tool, start)
+        if str(start) not in optionList: er.orderWarning(task, tool, start)
         else: print(" \\\n\t", optionList[str(start)], sep = "", end = "", file = self.makeFilehandle)
         start += 1
     else:
 
       # Include all of the set options.
-      for option in tl.toolOptions[toolName]:
+      for option in tl.toolArguments[task]:
 
         # Check if the option is a flag.
         isFlag = False
@@ -238,34 +231,34 @@ class files:
           # If a json file is being used to generate parameters, the configuration file
           # needs to contain a 'json block' argument.  This tells the script the name of
           # the block in the json file from which to extract parameters.
-          if 'json block' not in pl.information['linkage'][toolName]['json parameters']:
+          if 'json block' not in pl.information['linkage'][task]['json parameters']:
             er.optionAssociationError('json block', 'json parameters', 'pipeline')
             er.terminate()
           else:
-            jsonBlock = pl.information['linkage'][toolName]['json parameters']['json block']
+            jsonBlock = pl.information['linkage'][task]['json parameters']['json block']
             print(" \\\n\t`python $(GKNO_PATH)/getParameters.py ", end = "", file = self.makeFilehandle)
-            print(tl.toolOptions[toolName][option], " ", jsonBlock, "`", sep = "", end = "", file = self.makeFilehandle)
+            print(tl.toolArguments[task][option], " ", jsonBlock, "`", sep = "", end = "", file = self.makeFilehandle)
         else:
-          if tl.toolInfo[tool]['options'][option]['type'] == 'flag': isFlag = True
+          if tl.toolInfo[tool]['arguments'][option]['type'] == 'flag': isFlag = True
 
           # If the command is a flag, check if the value is 'set' or 'unset'.  If 'set',
           # write out the command.
           if isFlag:
-            if tl.toolOptions[toolName][option] == 'set': print(" \\\n\t", option, sep = "", end = "", file = self.makeFilehandle)
+            if tl.toolArguments[task][option] == 'set': print(" \\\n\t", option, sep = "", end = "", file = self.makeFilehandle)
           else:
 
             # Some command lines allow multiple options to be set and the command line can
             # therefore be repeated multiple times.  If the defined value is a list, this
             # is the case and the command should be written out once for each value in the
             # list.
-            isList = isinstance(tl.toolOptions[toolName][option], list)
+            isList = isinstance(tl.toolArguments[task][option], list)
             if isList:
-              for value in tl.toolOptions[toolName][option]:
+              for value in tl.toolArguments[task][option]:
                 print(" \\\n\t", option, " ", value, sep = "", end = "", file = self.makeFilehandle)
 
             # If the option is given a value, print it out.
-            elif tl.toolOptions[toolName][option] != '':
-              print(" \\\n\t", option, " ", tl.toolOptions[toolName][option], sep = "", end = "", file = self.makeFilehandle)
+            elif tl.toolArguments[task][option] != '':
+              print(" \\\n\t", option, " ", tl.toolArguments[task][option], sep = "", end = "", file = self.makeFilehandle)
 
     print(file = self.makeFilehandle)
     print(file = self.makeFilehandle)

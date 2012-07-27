@@ -1,0 +1,35 @@
+{
+  "description" : "Generate Mosaik reference and jump database.",
+  "workflow" : [
+    "build-reference",
+    "build-jump-database"
+  ],
+  "tools" : {
+    "build-reference" : "mosaik-build-reference",
+    "build-jump-database" : "mosaik-jump"
+  },
+  "linkage" : {
+    "build-jump-database" : {
+      "-ia" : {
+        "tool" : "build-reference",
+        "command" : "-oa"
+      }
+    }
+  },
+  "arguments" : {
+    "--fasta" : {
+      "tool" : "build-reference",
+      "command" : "-fr",
+      "alternative" : "-f",
+      "type" : "string",
+      "default" : "test_genome.fa"
+    },
+    "--hash-size" : {
+      "description" : "hash-size",
+      "tool" : "build-jump-database",
+      "command" : "-hs",
+      "type" : "integer",
+      "alternative" : "-hs"
+    }
+  }
+}

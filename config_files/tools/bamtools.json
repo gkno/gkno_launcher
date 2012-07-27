@@ -18,9 +18,9 @@
           }
         ]
       },
-      "options" : {
+      "arguments" : {
         "-in" : {
-          "description" : "the input BAM file [stdin]",
+          "description" : "the input BAM file. Required input.",
           "input" : "true",
           "output" : "false",
           "required" : "true",
@@ -30,7 +30,7 @@
           "extension" : "bam"
         },
         "-bti" : {
-          "description" : "create non-standard (depth based) index file.",
+          "description" : "create non-standard (depth based) index file (*.bti). Default behaviour is to create standard BAM index (*.bai)",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
@@ -48,9 +48,9 @@
       "executable" : "bamtools",
       "modifier" : "sort",
       "help" : "--help|-h",
-      "options" : {
+      "arguments" : {
         "-in" : {
-          "description" : "the input BAM file [stdin]",
+          "description" : "the input BAM file. Required input.",
           "input" : "true",
           "output" : "false",
           "required" : "true",
@@ -60,7 +60,7 @@
           "extension" : "bam"
         },
         "-out" : {
-          "description" : "the output BAM file.",
+          "description" : "the output BAM file. Required input.",
           "input" : "false",
           "output" : "true",
           "resource" : "false",
@@ -70,7 +70,7 @@
           "extension" : "sorted.bam"
         },
         "-byname" : {
-          "description" : "sort by alignment name",
+          "description" : "sort by alignment name.  Default is to sort by position.",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
@@ -80,23 +80,23 @@
           "extension" : "null"
         },
         "-n" : {
-          "description" : "max number of alignments per temp file",
+          "description" : "max number of alignments per temp file. Default: 500,000",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "type" : "int",
+          "type" : "integer",
           "extension" : "null"
         },
         "-mem" : {
-          "description" : "max memory to use",
+          "description" : "max memory to use. Default: 1,024",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "type" : "int",
+          "type" : "integer",
           "extension" : "null"
         }
       }

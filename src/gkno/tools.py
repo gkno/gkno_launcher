@@ -11,10 +11,56 @@ class tools:
 
   # Initialise the tools class.
   def __init__(self):
-    self.toolInfo     = {}
-    self.toolOptions  = {}
     self.dependencies = {}
     self.outputs      = {}
+    self.tool         = ''
+    self.toolInfo     = {}
+    self.toolArguments  = {}
+
+  # If gkno is being run in the single tool mode, check that the specified tool
+  # exists.
+  def checkTool(self, gknoHelp):
+    if self.tool not in self.toolInfo:
+      gknoHelp.toolHelp    = True
+      gknoHelp.printHelp   = True
+      gknoHelp.unknownTool = True
+
+  # For all of the tools, parse through the configuration files and ensure that all
+  # necessary fields are present.  Later subroutines will assume they are, so
+  # terminate here if the configuration file is incomplete.
+  def checkForRequiredFields(self):
+    er         = errors()
+    firstError = True
+
+    for task in self.toolInfo:
+      for argument in self.toolInfo[task]['arguments']:
+
+        # Check that the 'input' field is present...
+        value = self.toolInfo[task]['arguments'][argument]['input'] if 'input' in self.toolInfo[task]['arguments'][argument] else ''
+        if (value != 'true') and (value != 'false'):  er.missingFieldForTool('', task, argument, 'input', value)
+
+        # output...
+        value = self.toolInfo[task]['arguments'][argument]['output'] if 'output' in self.toolInfo[task]['arguments'][argument] else ''
+        if (value != 'true') and (value != 'false'): er.missingFieldForTool('', task, argument, 'output', value)
+
+        # required...
+        value = self.toolInfo[task]['arguments'][argument]['required'] if 'required' in self.toolInfo[task]['arguments'][argument] else ''
+        if (value != 'true') and (value != 'false'): er.missingFieldForTool('', task, argument, 'required', value)
+
+        # dependent...
+        value = self.toolInfo[task]['arguments'][argument]['dependent'] if 'dependent' in self.toolInfo[task]['arguments'][argument] else ''
+        if (value != 'true') and (value != 'false'): er.missingFieldForTool('', task, argument, 'dependent', value)
+
+        # type...
+        value = self.toolInfo[task]['arguments'][argument]['type'] if 'type' in self.toolInfo[task]['arguments'][argument] else ''
+        if (value != 'string') and (value != 'flag') and (value != 'integer') and (value != 'float'): 
+          er.missingFieldForTool('', task, argument, 'type', value)
+
+        # If the resource field is missing, assume that it isn't a resource file.
+        value = self.toolInfo[task]['arguments'][argument]['resource'] if 'resource' in self.toolInfo[task]['arguments'][argument] else ''
+        if value == '': self.toolInfo[task]['arguments'][argument]['resource'] == 'false'
+
+    if er.error: er.terminate()
 
   # Loop over each tool in the pipeline and set up a hash of hashes.
   # For each tool, the set of allowed options along with default values
@@ -23,120 +69,185 @@ class tools:
     er = errors()
 
     print("Setting up tool defaults...", file = sys.stdout)
-    for toolName in pl.information['workflow']:
+    for task in pl.information['workflow']:
 
       # Check if this tool name has already been used.  It is required that 
       # the names describing the order of the tools in the pipeline are unique.
       # This ensures that all tools can be anambiguously linked with any of the
       # others.
-      if toolName in self.toolOptions:
-        er.repeatedTool(toolName)
+      if task in self.toolArguments:
+        er.repeatedTool(task)
         er.terminate()
+
+      # Parse new tools.
       else:
-        tool = pl.information['tools'][toolName]
-        print("\t", tool, " (", toolName, ")...", sep = '', end = '', file = sys.stdout)
-        self.toolOptions[toolName] = {}
-        for option in self.toolInfo[tool]['options']:
+        tool = pl.information['tools'][task]
+        print("\t", tool, " (", task, ")...", sep = '', end = '', file = sys.stdout)
+        self.toolArguments[task] = {}
+        for argument in self.toolInfo[tool]['arguments']:
 
           # If a default value for the argument is assigned, set this value in the data structure.
-          default = ''
-          if 'default' in self.toolInfo[tool]['options'][option]: default = self.toolInfo[tool]['options'][option]['default']
+          default = self.toolInfo[tool]['arguments'][argument]['default'] if 'default' in self.toolInfo[tool]['arguments'][argument] else ''
 
           # Determined the required data type.
-          if 'type' not in self.toolInfo[tool]['options'][option]:
-            er.toolOptionsError('type', tool, option)
+          if 'type' not in self.toolInfo[tool]['arguments'][argument]:
+            er.toolArgumentsError('type', tool, argument)
             er.terminate()
-          else:
-            dataType = self.toolInfo[tool]['options'][option]['type']
-            if dataType == 'flag':
-              if default == "": default = 'unset'
-              if (default != 'set') and (default != 'unset'):
-                er.unknownFlagDefault(toolName, option, default)
-                er.terminate()
-            else:
-              if default != "": default = cl.checkDataType(self, pl, toolName, option, default, dataType)
 
           # Check if a value for this particular option is required.
-          if 'required' not in self.toolInfo[tool]['options'][option]:
-            er.toolOptionsError('required', tool, option)
+          if 'required' not in self.toolInfo[tool]['arguments'][argument]:
+            er.toolArgumentsError('required', tool, argument)
             er.terminate()
-          self.toolOptions[toolName][option] = default
+          self.toolArguments[task][argument] = default
         print("done.", file = sys.stdout)
     print(file = sys.stdout)
 
-  # Check extensions, paths and output/dependent file strings.
+  # For each tool, find the output files.  If these haven't already been given a
+  # value, then a value needs to be assigned.  First check if there is a 'construct
+  # filenames' block in the json file with instructions on how to build the filename
+  # (this applies to pipelines only).  If there are no explicit instructions, check
+  # if any of the input files have 'use for filenames' set to true.  If so, use this
+  # filename to build the output (changing the extension as required).
+  def constructFilenames(self, pl, task, tool):
+    er = errors()
+
+    print("\t\tConstructing filenames...", end = '', file = sys.stdout)
+    sys.stdout.flush()
+
+    # First identify the input and output files and how their names should be constructed.
+    filenameConstructor = ''
+    inputFiles          = []
+    outputFiles         = {}
+    for argument in self.toolInfo[tool]['arguments']:
+      isInput  = True if self.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
+      isOutput = True if self.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
+
+      # If this is an input file, check to see if it is to be used for building filenames.
+      if isInput:
+        inputFiles.append(argument)
+        if 'use for filenames' in self.toolInfo[tool]['arguments'][argument]:
+          if self.toolInfo[tool]['arguments'][argument]['use for filenames'] == 'true':
+
+            # If there was an input file previous designated as the file to use for
+            # constructing output filenames for this tool, gkno cannot determine which
+            # file to use and so terminates.
+            if filenameConstructor != '':
+              er.multipleFilenameConstructors("\n\t\t", task, tool, argument, filenameConstructor)
+              er.terminate()
+            else:
+              filenameConstructor = argument
+
+      # If the argument is an output, check to see if it has already been defined.  If
+      # not, store this as a filename to be constructed.
+      if isOutput:
+        if self.toolArguments[task][argument] == '':
+
+          # For pipelines, check if the 'construct filenames' block exists and describes
+          # how to build this filename.
+          if pl.isPipeline and ('construct filenames' in pl.information):
+            for constructTask in pl.information['construct filenames']:
+              if constructTask == task:
+                for constructArgument in pl.information['construct filenames'][constructTask]:
+                  if constructArgument == argument: outputFiles[argument] = 'construct'
+                  break
+
+          if argument not in outputFiles: outputFiles[argument] = 'from input'
+
+    # Now all of the output files have been identified and the method of filename generation
+    # determined, build the filenames.
+    for outputFile in outputFiles:
+
+      # If to be constructed using information from the json file (pipelines), construct.
+      if outputFiles[outputFile] == 'construct':
+        pl.constructFileNameFromJson(self, task, tool, outputFile)
+
+      elif outputFiles[outputFile] == 'from input':
+        if filenameConstructor != '':
+          self.constructFilenameFromInput(task, tool, outputFile, filenameConstructor)
+
+        # If the output filename is to be generated using an input file from this task and there
+        # are no input files designated as to be used for generating the filename, check what
+        # input files there are.  If there is only one input for this task, use this file to
+        # generate the filenames.  If there are no or multiple input files, terminate.
+        else:
+          if len(inputFiles) == 1:
+            self.constructFilenameFromInput(task, tool, outputFile, inputFiles[0])
+          else:
+            er.unknownFilenameConstructor(True, "\t\t", task, tool, outputFile)
+            er.terminate()
+    print('done.', file = sys.stdout)
+    sys.stdout.flush()
+
+  # If the output filename is to be constructed from an input filename, take the
+  # requested input filename, remove the extension and replace with the required
+  # extension for this output file.
+  def constructFilenameFromInput(self, task, tool, outputFile, argument):
+    er        = errors()
+    inputFile = self.toolArguments[task][argument].split('/')[-1]
+
+    # Check if the input file that is to be used for constructing the output filename is
+    # blank.  If soi, terminate gkno as the output filename cannot be determined.
+    if inputFile == '':
+      er.noInputFilenameForFilenameConstruction("\n\t\t", task, tool, outputFile)
+      er.terminate()
+    else:
+      inputExtension = ''
+      for extension in self.toolInfo[tool]['arguments'][argument]['extension'].split('|'):
+        if inputFile.endswith(extension):
+          inputExtension = extension
+          break
+
+      # Strip off the extension.
+      if inputExtension != '': inputFile = inputFile[0:(len(inputFile) - len(extension) - 1)]
+
+      # Add the output extension unless the output is a stub.
+      isStub = False
+      if 'stub' in self.toolInfo[tool]['arguments'][outputFile]:
+        if self.toolInfo[tool]['arguments'][outputFile]['stub'] == 'true': isStub = True
+      if not isStub: self.toolArguments[task][outputFile] = inputFile + '.' + self.toolInfo[tool]['arguments'][outputFile]['extension'].split('|')[0]
+      else: self.toolArguments[task][outputFile] = inputFile
+
+  # Determine which files are required for each tool to run.  For each tool, these files
+  # are stored in a list and are used to define the dependencies in the Makefile.
   def determineDependencies(self, cl, pl):
     er = errors()
 
-    print("Checking file extensions and paths...", file = sys.stdout)
-    for toolName in pl.information['workflow']:
-      tool = pl.information['tools'][toolName]
-      print("\t", toolName, '...', sep = '', end = '', file = sys.stdout)
+    print('Determine tool dependencies...', file = sys.stdout)
+    for task in pl.information['workflow']:
+      tool = pl.information['tools'][task]
+      print("\t", task, '...', sep = '', end = '', file = sys.stdout)
       sys.stdout.flush()
 
-      for option in self.toolOptions[toolName]:
-        if option == 'json parameters':
-          isInput = True
-          cl.setPath(pl, self, toolName, tool, option, isInput, isOutput, isResource)
-          value = self.toolOptions[toolName][option]
-          self.dependencies[toolName] += value + ' '
+      self.dependencies[task] = ''
+      self.outputs[task]      = ''
+
+      for argument in self.toolArguments[task]:
+        if argument == 'json parameters':
+          value = self.toolArguments[task][argument]
+          self.dependencies[task] += value + ' '
         else:
-          isInput     = False
-          isOutput    = False
-          isDependent = False
-          isResource  = False
 
           # Check if the file is an input or an output file, or is listed as a dependent
           # file.  If it is an output, the file should be added to the string containing
           # all outputs from this tool.  If it is an input or dependent file, this will
           # be added to the string containing all files required for this tool to run.
-          try: operation = self.toolInfo[tool]['options'][option]['input']
-          except: er.error = True
-          if er.error:
-            print(file = sys.stdout)
-            er.toolOptionsError('input', tool, option)
-            er.terminate()
-          if operation == 'true': isInput = True
+          isInput     = True if self.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
+          isOutput    = True if self.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
+          isResource  = True if self.toolInfo[tool]['arguments'][argument]['dependent'] == 'true' else False
+          isDependent = True if self.toolInfo[tool]['arguments'][argument]['resource'] == 'true' else False
   
-          try: operation = self.toolInfo[tool]['options'][option]['output']
-          except: er.error = True
-          if er.error:
-            print(file = sys.stdout)
-            er.toolOptionsError('output', tool, option)
-            er.terminate()
-          if operation == 'true': isOutput = True
-  
-          try: operation = self.toolInfo[tool]['options'][option]['dependent']
-          except: er.error = True
-          if er.error:
-            print(file = sys.stdout)
-            er.toolOptionsError('dependent', tool, option)
-            er.terminate()
-          if operation == 'true': isDependent = True
-  
-          try: operation = self.toolInfo[tool]['options'][option]['resource']
-          except: er.error = True
-          if er.error:
-            print(file = sys.stdout)
-            er.toolOptionsError('resource', tool, option)
-            er.terminate()
-          if operation == 'true': isResource = True
-
           if isInput or isDependent or isOutput or isResource:
   
             # If the input/output file is defined, check that the extension is as expected.
-            if self.toolOptions[toolName][option] != '':
-              cl.checkExtension(self, toolName, tool, option)
-              cl.setPath(pl, self, toolName, tool, option, isInput, isOutput, isResource)
-              value = self.toolOptions[toolName][option]
+            if self.toolArguments[task][argument] != '': value = self.toolArguments[task][argument]
   
             # If this file needs to be added to one of the string, check to see if it is a stub
             # or not.  If so, all of the files associated with the stub need to be added to the
             # string.
             string = ''
             isStub = False
-            if 'stub' in self.toolInfo[tool]['options'][option]:
-              if self.toolInfo[tool]['options'][option]['stub'] == 'true': isStub = True
+            if 'stub' in self.toolInfo[tool]['arguments'][argument]:
+              if self.toolInfo[tool]['arguments'][argument]['stub'] == 'true': isStub = True
   
             # If this is a stub, create the string containing all of the files.
             if isStub:
@@ -144,19 +255,20 @@ class tools:
               # If the file that the tool requires for successful execution is a stub,
               # make sure that all of the required files are listed in the list of
               # dependencies.
-              if 'outputs' not in self.toolInfo[tool]['options'][option]:
+              if 'outputs' not in self.toolInfo[tool]['arguments'][argument]:
                 print(file = sys.stdout)
                 sys.stdout.flush()
-                er.stubNoOutputs(tool, option)
+                er.stubNoOutputs(tool, argument)
                 er.terminate()
               else:
-                for name in self.toolInfo[tool]['options'][option]['outputs']: string += value + name + ' '
+                for name in self.toolInfo[tool]['arguments'][argument]['outputs']: string += value + name + ' '
   
             # If the filename is not a stub, just include the value.
             else: string += value + ' '
   
-            if isOutput: self.outputs[toolName] += string
-            else: self.dependencies[toolName] += string
+            if isOutput: self.outputs[task] += string
+            else: self.dependencies[task] += string
+
       print("done.", file = sys.stdout)
     print(file = sys.stdout)
 
@@ -174,10 +286,10 @@ class tools:
     print('Determining additional dependencies and output files...', file = sys.stdout)
 
     # Loop over each tool in turn and check for additional output files.
-    for toolName in pl.information['workflow']:
-      if toolName not in self.outputs: self.outputs[toolName] = ''
-      tool = pl.information['tools'][toolName]
-      print("\t", toolName, " (", tool, ")...", sep = '', end = '', file = sys.stdout)
+    for task in pl.information['workflow']:
+      if task not in self.outputs: self.outputs[task] = ''
+      tool = pl.information['tools'][task]
+      print("\t", task, " (", tool, ")...", sep = '', end = '', file = sys.stdout)
       if 'additional files' in self.toolInfo[tool]:
 
         # There are different formats for building up output files.  Each of these can
@@ -198,7 +310,7 @@ class tools:
             if er.error:
               print(file = sys.stdout)
               sys.stdout.flush()
-              er.optionAssociationError('type', 'additional files\' -> \'from input arguments', toolName)
+              er.optionAssociationError('type', 'additional files\' -> \'from input arguments', task)
               er.terminate()
 
             try: command = argument['command']
@@ -206,15 +318,15 @@ class tools:
             if er.error:
               print(file = sys.stdout)
               sys.stdout.flush()
-              er.optionAssociationError('command', 'additional files\' -> \'from input arguments', toolName)
+              er.optionAssociationError('command', 'additional files\' -> \'from input arguments', task)
               er.terminate()
 
-            try: filename = self.toolOptions[toolName][command]
+            try: filename = self.toolArguments[task][command]
             except: er.error = True
             if er.error:
               print(file = sys.stdout)
               sys.stdout.flush()
-              er.missingCommand(toolName, tool, command)
+              er.missingCommand(task, tool, command)
               er.terminate()
               
             # In constructing the output file name, the extension associated with the associated
@@ -230,21 +342,21 @@ class tools:
                 if er.error:
                   print(file = sys.stdout)
                   sys.stdout.flush()
-                  er.optionAssociationError('output extension', 'additional files\' -> \'from input arguments', toolName)
+                  er.optionAssociationError('output extension', 'additional files\' -> \'from input arguments', task)
                   er.terminate()
                 filename += '.' + extension
 
             # If the file is a dependency, add to the dependency string, otherwise add to the
             # output string.
-            if fileType == 'dependency': self.dependencies[toolName] += filename + ' '
-            elif fileType == 'output': self.outputs[toolName] += filename + ' '
+            if fileType == 'dependency': self.dependencies[task] += filename + ' '
+            elif fileType == 'output': self.outputs[task] += filename + ' '
             else:
-              er.unknownDependencyOrOutput(toolName, fileType)
+              er.unknownDependencyOrOutput(task, fileType)
               er.terminate()
            
       # Strip lagging spaces from the self.outputs string.
-      self.dependencies[toolName] = self.dependencies[toolName].rstrip()
-      self.outputs[toolName]      = self.outputs[toolName].rstrip()
+      self.dependencies[task] = self.dependencies[task].rstrip()
+      self.outputs[task]      = self.outputs[task].rstrip()
 
       print("done.", file = sys.stdout)
     print(file = sys.stdout)

@@ -5,7 +5,7 @@
       "path" : "premo/bin",
       "executable" : "premo",
       "help" : "--help|-h",
-      "options" : {
+      "arguments" : {
         "-fq1" : {
           "description" : "the input fastq file (first mate)",
           "input" : "true",

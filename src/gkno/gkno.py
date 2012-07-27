@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from __future__ import print_function
 import os.path
 import subprocess
@@ -9,6 +11,9 @@ from commandLine import *
 import files
 from files import *
 
+import helpClass
+from helpClass import *
+
 import tools
 from tools import *
 
@@ -16,8 +21,8 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.01"
-__date__ = "June 2012"
+__version__ = "0.02"
+__date__ = "July 2012"
 
 def main():
 
@@ -25,18 +30,31 @@ def main():
   # and proceed as required.
   cl = commandLine()
 
-  # Print gkno title and version to the screen.
-  cl.printInformation(__version__, __date__)
-
-  # Define the source path of all the gkno machinery.
-  sourcePath = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno/gkno.py')]
-
   # Define a tools object.  This stores all information specific to individual
   # tools.
   tl = tools()
 
+  # Define a pipeline object.  Even if a single tool is all that is required,
+  # some of the routines in the pipelines.py are still used.  A single tool
+  # is essentially treated as a pipeline with a single element.
+  pl = pipeline()
+
+  # Define the source path of all the gkno machinery.
+  sourcePath = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno/gkno.py')]
+
   # Generate a class for handling files.
   io = files()
+
+  # Define a help class.  This provides usage information for the user.
+  gknoHelp = helpClass()
+
+  # Check if help has been requested.  If so, print out usage information for
+  # the tool or pipeline as requested.
+  cl.getMode(io, gknoHelp, tl, pl)
+
+  # Check if help has been requested on the command line.  Search for the '--help'
+  # or '-h' arguments on the command line.
+  cl.checkForHelp(gknoHelp, pl)
 
   # Each of the tools available to gkno should have a config file to
   # describe its operation, purpose etc.  These are contained in
@@ -44,56 +62,83 @@ def main():
   # table with all available tools.
   io.getJsonFiles(sourcePath + '/config_files/')
 
-  # Read the tool json files into data structures in the tools class.
-  io.getToolDescriptions(tl, sourcePath + '/config_files/tools')
-
-  # Define a pipeline object.  Even if a single tool is all that is required,
-  # some of the routines in the pipelines.py are still used.  A single tool
-  # is essentially treated as a pipeline with a single element.
-  pl = pipeline()
-  mode = cl.getMode(tl)
+  # Print gkno title and version to the screen.
+  if not gknoHelp.printHelp: gknoHelp.printHeader(__version__, __date__)
 
   # If a pipeline is being run, check that configuration files
   # exist for the selected pipeline.  This should be in directory
-  # config_files and have the name <$ARGV[1]>.json.
-  if mode == 'pipe':
-    io.getPipelineConfigurationFile(sourcePath + "/config_files/pipes")
+  # config_files and have the name <$ARGV[1]>.json.  If the file
+  # exists, parse the json file.
+  if pl.isPipeline:
+    io.getPipelineConfigurationFile(gknoHelp, pl, sourcePath + "/config_files/pipes")
 
-    # Get the json information for the selected pipeline.
-    io.phoneHomeID = io.getPipelineDescription(pl)
+    # If a spcific pipeline has been specified and the pipeline exists, read in
+    # the json file.
+    if (not gknoHelp.printHelp) or (gknoHelp.printHelp and gknoHelp.specificPipelineHelp and not gknoHelp.unknownPipeline):
+      io.phoneHomeID = io.getPipelineDescription(pl, not gknoHelp.printHelp)
 
-    # Print information about the pipeline to screen.
-    pl.printPipelineInformation(tl)
+  # If gkno is being run in tool mode, the pl object still exists and is used.
+  # Set the pl.information structure up to reflect a pipeline containing a
+  # single tool.
+  else: io.phoneHomeID = pl.setupIndividualTool(tl.tool, not gknoHelp.printHelp)
 
-  # If an individual tool is being run, modify the command line to be as expected
-  # by the command line routines.
-  else:
-    tool = mode
+  # Read the tool json files into data structures in the tools class.
+  #verbose = False if gknoHelp.printHelp else True
+  io.getToolDescriptions(tl, pl, sourcePath + '/config_files/tools', not gknoHelp.printHelp)
+  tl.checkForRequiredFields()
 
-    # Set the pipeline information to a single tool.
-    io.phoneHomeID = pl.setupIndividualTool(tool)
+  # If a single tool is being run, check that it is a valid tool.
+  if not pl.isPipeline: tl.checkTool(gknoHelp)
+  pl.addPipelineSpecificOptions(tl)
 
-    # Reset the command line to be compatible with that expected by the pipeline
-    # routines.
-    cl.resetCommandLine(tool)
+  # If help was requested or there were problems (e.g. the tool name or pipeline
+  # name did not exist), print out the required usage information.
+  if gknoHelp.printHelp: gknoHelp.printUsage(io, tl, pl, __version__, __date__, sourcePath)
 
-  # For each of the tools, parse the allowed command line options
-  # and populate options with their default values.
+  # Print information about the pipeline to screen.
+  if pl.isPipeline: pl.printPipelineInformation(tl)
+
+  # For each of the tools in the pipeline, or the single tool if in tool mode,
+  # parse the configuration file and put all of the allowed command line
+  # arguments into a data structure along with defaults, exptected data types
+  # etc.  Then parse the command line.
   tl.setupToolOptions(cl, pl)
   pl.setupPipelineOptions(tl)
 
-  # Parse command line options and override any variables with these
-  # values.
-  cl.parseCommandLine(tl, pl, io)
+  # Parse the command line.  Anything set by the user will overide configuration
+  # file defaults or linkages.
+  if pl.isPipeline: cl.parsePipelineCommandLine(gknoHelp, io, tl, pl)
+  else: cl.parseToolCommandLine(gknoHelp, io, tl, pl, sys.argv, tl.tool, tl.tool, True)
 
-  # Check all of the options for each tool and determine if the values are
-  # linked to any other tool.  If so, set the values as necessary.  Also,
-  # check that all required input files are set anc check the input and
-  # output file extensions and paths.
-  if mode == 'pipe': pl.toolLinkage(cl, tl)
+  # Loop over each of the tools in turn and set all of the parameters.  Each
+  # task in turn may depend on parameters/outputs of previous tasks and so
+  # handling in each task in the order it appears in the pipeline is necessary.
+  print('Setting up all parameters for task...', file = sys.stdout)
+  for task in pl.information['workflow']:
+    tool = pl.information['tools'][task]
+    print("\t", task, ' (', tool, ')...', sep = '', file = sys.stdout)
+    sys.stdout.flush()
 
-  # Check that all required files and parameters have been set.
-  cl.checkParameters(tl, pl)
+    # Check all of the options for each tool and determine if the values are
+    # linked to any other tool.  If so, set the values as necessary.  Also,
+    # check that all required input files are set anc check the input and
+    # output file extensions and paths.
+    if pl.isPipeline: pl.toolLinkage(cl, tl, task, tool)
+
+    # Check all input and output files.  If there are instructions on how to construct
+    # filenames, construct them.
+    tl.constructFilenames(pl, task, tool)
+
+    # For all files, check that a path has been given.  If a path is set, leave the file
+    # as is.  If no path has been set, check if the file is an input, output or resource
+    # file and use the --input-path, --output-path and --resource-path values
+    # respectively.
+    cl.setPaths(tl, pl, task, tool)
+
+    # Check that all required files and parameters have been set.
+    cl.checkParameters(tl, pl, task, tool)
+    print(file = sys.stdout)
+    sys.stdout.flush()
 
   # Parse through all of the selected options and for those options referring
   # to input/output files, check that the extensions are correct, that the
@@ -119,8 +164,7 @@ def main():
   io.phoneHome(sourcePath)
 
   # Execute the generated script unless the execute flag has been unset.
-  if pl.options['--execute'] == True:
-    print(file = sys.stdout)
+  if (tl.toolArguments['pipeline']['--execute'] == True) or (tl.toolArguments['pipeline']['--execute'] == 'True'):
     print("Executing make...\n", file = sys.stdout)
     success = subprocess.call(["make"])
     if success == 0: print("\ngkno completed tasks successfully.", file = sys.stdout)

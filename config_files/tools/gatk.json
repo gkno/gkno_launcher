@@ -18,7 +18,7 @@
           }
         ]
       },
-      "options" : {
+      "arguments" : {
         "--reference_sequence" : {
           "description" : "the reference fasta file",
           "input" : "true",
@@ -33,6 +33,7 @@
         "--input_file" : {
           "description" : "input SAM or BAM file(s)",
           "input" : "true",
+          "use for filenames" : "true",
           "output" : "false",
           "resource" : "false",
           "required" : "true",
@@ -123,7 +124,7 @@
       "executable" : "GenomeAnalysisTK.jar",
       "precommand" : "java -Xmx2g -jar",
       "help" : "--help|-h",
-      "options" : {
+      "arguments" : {
         "--reference_sequence" : {
           "description" : "the reference fasta file",
           "input" : "true",
@@ -138,6 +139,7 @@
         "--input_file" : {
           "description" : "input SAM or BAM file(s)",
           "input" : "true",
+          "use for filenames" : "true",
           "output" : "false",
           "resource" : "false",
           "required" : "true",

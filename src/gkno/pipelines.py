@@ -5,60 +5,19 @@ from __future__ import print_function
 import errors
 from errors import *
 
+import json
 import os
 import sys
 
 class pipeline:
   def __init__(self):
-    self.options = {}
+    self.isPipeline  = False
+    self.information = {}
 
-  # Print to screen information about the selected pipeline.
-  def printPipelineInformation(self, tl):
-    er = errors()
-
-    print("Workflow:", sep = "", file = sys.stderr)
-    for toolName in self.information['workflow']:
-      if toolName not in self.information['tools']:
-        er.unknownToolName(toolName)
-        er.terminate()
-      else:
-        tool = self.information['tools'][toolName]
-        if tool not in tl.toolInfo:
-          er.unknownTool(toolName, tool)
-          er.terminate()
-        else:
-          print("\t", toolName, " (", tool, "):\t", tl.toolInfo[tool]['description'], sep = "", file = sys.stdout)
-    print(file = sys.stdout)
-
-  # Modify pipeline information to handle an individual tool.
-  def setupIndividualTool(self, tool):
-    self.information                = {}
-    self.information['tools']       = {}
-    self.information['tools'][tool] = tool
-    self.information['workflow']    = []
-    self.information['workflow'].append(tool)
-    print("-------------------------------------", file = sys.stdout)
-    print("Executing tool: ", tool, sep = '', file = sys.stdout)
-    print("-------------------------------------", file = sys.stdout)
-    print(file = sys.stdout)
-
-    return 'tools/' + tool
-
-  # Set up a dictionary containing the pipeline specific options.
-  def setupPipelineOptions(self, tl):
-    er = errors()
-    print("Setting up pipeline defaults...", file = sys.stdout)
-
+  # After the json file has been parsed into the self.information structure, add some
+  # pipeline specific values.
+  def addPipelineSpecificOptions(self, tl):
     if 'arguments' not in self.information: self.information['arguments'] = {}
-
-    # Set up the default pipeline options.
-    if '--name' not in self.information:
-      self.information['arguments']['--name']                = {}
-      self.information['arguments']['--name']['description'] = 'name to use for constructing undefined filenames'
-      self.information['arguments']['--name']['tool']        = 'pipeline'
-      self.information['arguments']['--name']['alternative'] = '-n'
-      self.information['arguments']['--name']['type']        = 'string'
-      self.information['arguments']['--name']['default']     = 'gkno_temp'
 
     if '--input-path' not in self.information:
       self.information['arguments']['--input-path']                = {}
@@ -88,229 +47,276 @@ class pipeline:
       self.information['arguments']['--execute']                = {}
       self.information['arguments']['--execute']['description'] = 'Boolean to determine if the Makefile should be executed.  Default: True'
       self.information['arguments']['--execute']['tool']        = 'pipeline'
-      self.information['arguments']['--execute']['alternative'] = '-e'
+      self.information['arguments']['--execute']['alternative'] = '-ex'
       self.information['arguments']['--execute']['type']        = 'bool'
       self.information['arguments']['--execute']['default']     = True
 
-    for option in self.information['arguments']:
+    if '--verbose' not in self.information:
+      self.information['arguments']['--verbose']                = {}
+      self.information['arguments']['--verbose']['description'] = 'Boolean to determine if verbose information should be output.  Default: False'
+      self.information['arguments']['--verbose']['tool']        = 'pipeline'
+      self.information['arguments']['--verbose']['alternative'] = '-vb'
+      self.information['arguments']['--verbose']['type']        = 'bool'
+      self.information['arguments']['--verbose']['default']     = False
+
+  # Print to screen information about the selected pipeline.
+  def printPipelineInformation(self, tl):
+    er = errors()
+
+    # Determine the length of the longest tool name.
+    length  = 0
+    for task in self.information['workflow']:
+      if task not in self.information['tools']:
+        er.unknownToolName(task)
+        er.terminate()
+      tool = self.information['tools'][task]
+      if tool not in tl.toolInfo:
+        er.unknownTool(task, tool)
+        er.terminate()
+
+      text   = task + ' (' + tool + '):'
+      length = len(text) if len(text) > length else length
+    length += 5
+
+    print('Workflow:', sep = '', file = sys.stderr)
+    for task in self.information['workflow']:
+      tool        = self.information['tools'][task]
+      text        = task + ' (' + tool + '):'
+      description = tl.toolInfo[tool]['description'] if 'description' in tl.toolInfo[tool] else 'No description'
+      print("\t%-*s%-*s" % (length, text, 1, description), file = sys.stderr)
+    print(file = sys.stdout)
+
+  # Modify pipeline information to handle an individual tool.
+  def setupIndividualTool(self, tool, verbose):
+    self.information['tools']       = {}
+    self.information['tools'][tool] = tool
+    self.information['workflow']    = []
+    self.information['workflow'].append(tool)
+    text = '=' * (len(tool) + 20)
+    if verbose:
+      print(text, file = sys.stdout)
+      print('Executing tool: ', tool, sep = '', file = sys.stdout)
+      print(text, file = sys.stdout)
+      print(file = sys.stdout)
+
+    return 'tools/' + tool
+
+  # Set up the pipeline specific options.
+  def setupPipelineOptions(self, tl):
+    er      = errors()
+    command = ''
+    tool    = ''
+    print('Setting up pipeline defaults...', end = '', file = sys.stdout)
+    sys.stdout.flush()
+
+    for argument in self.information['arguments']:
 
       # The pipeline configuration file contains arguments for pipeline specific
       # options, as well as some for setting the options within individual tools
       # within the pipeline.  If the option is pipeline specific, the 'tool' value
       # will be 'pipeline', otherwise it will point to the individual tool.  For
       # tool commands, overwrite the current value stored.
-      if 'tool' not in self.information['arguments'][option]:
-        er.optionAssociationError('tool', option, 'pipeline')
+      if 'tool' not in self.information['arguments'][argument]:
+        er.optionAssociationError("\n\t\t", 'tool', argument, 'pipeline')
         er.terminate()
-      else: toolName = self.information['arguments'][option]['tool']
-      default = ""
-      if 'default' in self.information['arguments'][option]: default = self.information['arguments'][option]['default']
+      else: task = self.information['arguments'][argument]['tool']
+      default = ''
+      if 'default' in self.information['arguments'][argument]: default = self.information['arguments'][argument]['default']
 
       # Set the defaults.
-      if toolName == 'pipeline': self.options[option] = default
+      # The arguments defined in the pipeline configuration file point to an argument
+      # in one of the tools in the pipeline.  There are some pipeline specific options
+      # that are given the tool name 'pipeline'.  For all tools that are not listed as
+      # 'pipeline', check that the tool exists and that the argument that it points to
+      # is valid.
+      if (task != 'pipeline') and (task not in self.information['workflow']):
+        er.associatedToolNotInPipeline("\n\t", task, argument)
+        er.terminate()
+
+      if task != 'pipeline':
+        tool = self.information['tools'][task] if task != 'pipeline' else ''
+
+        if 'command' not in self.information['arguments'][argument]:
+          er.optionAssociationError('command', argument, 'pipeline')
+          er.terminate()
+        else: command = self.information['arguments'][argument]['command']
+
+        # Check that the argument is valid.
+        if command not in tl.toolArguments[task]:
+          er.incorrectArgumentInPipelineConfigurationFile("\n\t", task, argument, command)
+          er.terminate()
+
+        if default != '': tl.toolArguments[task][command] = default
       else:
+        default = self.information['arguments'][argument]['default']
+        if 'pipeline' not in tl.toolArguments: tl.toolArguments['pipeline'] = {}
+        tl.toolArguments['pipeline'][argument] = default
 
-        # Check that the tool and option in the configuration are valid.
-        if toolName not in self.information['workflow']:
-          er.invalidToolName('arguments', toolName)
-          er.terminate()
-        tool = self.information['tools'][toolName]
-
-        if 'command' not in self.information['arguments'][option]:
-          er.optionAssociationError('command', option, 'pipeline')
-          er.terminate()
-        else: command = self.information['arguments'][option]['command']
-        if default != "": tl.toolOptions[toolName][command] = default
+    print('done.', file = sys.stdout)
     print(file = sys.stdout)
+
+  # Construct filenames using the instructions in the pipeline configuration file.
+  def constructFileNameFromJson(self, tl, task, tool, argument):
+    constructBlock = self.information['construct filenames'][task][argument]
+    basename       = constructBlock['base name'] if 'base name' in constructBlock else ''
+    linkedToolName = constructBlock['tool'] if 'tool' in constructBlock else ''
+    linkedArgument = constructBlock['argument'] if 'argument' in constructBlock else ''
+    removeExt      = constructBlock['remove extension'] if 'remove extension' in constructBlock else ''
+    additionalText = constructBlock['additional text from variables'] if 'additional text from variables' in constructBlock else ''
+
+    # If the basename is 'from argument', the 'tool', 'argument' and 'remove extension'
+    # variables must be set.  Take the value from the specified tool/argument, remove
+    # the extension if requested, then add the additional text if there is any to be
+    # added.  Remove the path if one exists.
+    if basename == 'from argument': basename = tl.toolArguments[linkedToolName][linkedArgument].split('/')[-1]
+    if removeExt == 'true':
+      linkedTool = self.information['tools'][linkedToolName]
+      extension = ''
+      if 'extension' in tl.toolInfo[linkedTool]['arguments'][linkedArgument]:
+        extension = tl.toolInfo[linkedTool]['arguments'][linkedArgument]['extension']
+
+      # If there is a '|' symbol in the extension, break up all the allowable extensions
+      # and check if the name ends with any of them and if so, remove the extension.
+      extensions = extension.split('|')
+      for extension in extensions:
+        if basename.endswith(extension):
+          basename = basename[0:(len(basename) - len(extension) - 1)]
+          break
+
+    # If there is additional text to add to the name, the additionalText variable will have
+    # a value.  If this is the case, a list of tool/argument pairs needs to be provided.  These
+    # values will be added to the name separated by the separator variable.
+    name = ''
+    if not additionalText != '': name = basename
+    else:
+
+      # Determine the order of the variables to add.
+      order = additionalText['order']
+
+      # Determine the separator to be used when joining the values together.  If no separator
+      # is provided, use '_'.
+      separator = additionalText['separator'] if 'separator' in additionalText else '_'
+      for text in order:
+        if text == 'base name': name += basename
+
+        # If the text isn't 'base name', then it refers to a variable used in the pipeline.
+        # There must exist an entry in the json file that associates the text with a tool
+        # and an argument.
+        else:
+          if text not in additionalText:
+            er.noDescriptionOfVariable("\n\t", task, argument, text)
+            er.terminate()
+          addToolName = additionalText[text]['tool'] if 'tool' in additionalText[text] else ''
+          addArgument = additionalText[text]['argument'] if 'argument' in additionalText[text] else ''
+          if (addToolName == '') or (addArgument == ''):
+            er.missingVariableForFilenameConstruction("\n\t", task, argument, text)
+            er.terminate()
+
+          # Now get the variable if it exists.
+          toolError     = False
+          argumentError = False
+          if addToolName not in tl.toolArguments: toolError = True
+          elif addArgument not in tl.toolArguments[addToolName]: argumentError = True
+
+          if toolError or argumentError:
+            er.nonExistentToolOrArgumentInConstruction("\n\t", task, argument, text, addToolName, addArgument, toolError)
+            er.terminate()
+          variable = tl.toolArguments[addToolName][addArgument]
+          name += separator + str(variable)
+
+    # Determine if the output file is a stub.  If not, add the extension to the output file.
+    stub = tl.toolInfo[tool]['arguments'][argument]['stub'] if 'stub' in tl.toolInfo[tool]['arguments'][argument] else ''
+    isStub = True if stub == 'true' else False
+    if not isStub:
+      if 'extension' not in tl.toolInfo[tool]['arguments'][argument]: extension = ''
+      else: extension = tl.toolInfo[tool]['arguments'][argument]['extension']
+      name += '.' + str(extension)
+
+    # Having built the filename, set the value in the tl.toolArguments data structure.
+    tl.toolArguments[task][argument] = name
 
   # Use the 'linkage' section of the pipeline configuration file to set all
   # parameters that depend on other tools.
-  def toolLinkage(self, cl, tl):
-    er = errors()
-    print("Determining linkage between tools in the pipeline...", file = sys.stdout)
+  def toolLinkage(self, cl, tl, task, tool):
+    er            = errors()
+    linkArguments = {}
+    print("\t\tChecking linkage to other tools in the pipeline...", end = '', file = sys.stdout)
 
-    hasLinkageInformation = False
-    if 'linkage' in self.information: hasLinkageInformation = True
+    # Work through each argument in turn and identify all of the input and output files.
+    # For non-input/output files, just check for links to other tools.
+    hasLinkageInformation = True if 'linkage' in self.information else False
+    if hasLinkageInformation: 
+      taskLinkage = True if task in self.information['linkage'] else False
 
-    # Generate a list of all of the options that have linkage information.
-    linkedOptions = {}
-    if hasLinkageInformation:
-      for toolName in self.information['linkage']:
-        if toolName not in self.information['workflow']:
-          er.invalidToolName('linkage', toolName)
-          if er.error: er.terminate()
+      if taskLinkage:
 
-        tool = self.information['tools'][toolName] 
-        if toolName not in linkedOptions: linkedOptions[toolName] = {}
-        for option in self.information['linkage'][toolName]: linkedOptions[toolName][option] = True
+        # Populate the dictionary linkArguments with all of the arguments that
+        # require linking.
+        for argument in self.information['linkage'][task]:
+          linkArguments[argument] = argument
 
-    # Work through each tool in turn and identify all of the input and output files.
-    # If required input files are unset and are not linked to another tool, terminate
-    # the script as the individual tools cannot run without knowledge of the input
-    # files. For unset output files, use the pl.name property to determine names.
-    for toolName in self.information['workflow']:
-      tool = self.information['tools'][toolName]
-      print("\t", toolName, " (", tool, ")...", sep = '', end = '', file = sys.stdout)
-      sys.stdout.flush()
-
-      # Loop over each of the options.  If it is an input, check that it is defined or
-      # that it can be defined by being linked to a previous tool.  Set outputs and
-      # check input/output paths.  For non-input/output files, just check for links to
-      # other tools.
-      if toolName in tl.toolOptions:
-        toolLinkage = False
-        if hasLinkageInformation: 
-          if toolName in self.information['linkage']: toolLinkage = True
-
-        for option in tl.toolOptions[toolName]:
+        # Link together parameters.
+        for argument in tl.toolArguments[task]:
 
           # Check that the option in the configuration file is valid.
-          if option not in tl.toolInfo[tool]['options']:
+          if argument not in tl.toolInfo[tool]['arguments']:
             print(file = sys.stdout)
-            er.invalidOption('linkage', option, toolName)
+            er.invalidOption('linkage', argument, task)
             er.terminate()
 
-          isInput    = False
-          isOutput   = False
-          isResource = False
-          if tl.toolInfo[tool]['options'][option]['input'] == 'true': isInput = True
-          if tl.toolInfo[tool]['options'][option]['output'] == 'true': isOutput = True
-
-          # Check if this option is linked to any other commands.
-          optionLinkage = False
-          if toolLinkage:
-            if option in self.information['linkage'][toolName]: optionLinkage = True
-
-          # Perform necessary tasks for input and output files.
-          if isInput or isOutput:
-            try:
-              if tl.toolInfo[tool]['options'][option]['resource'] == 'true': isResource = True
-            except: er.optionAssociationError('resource', option, tool)
-            if er.error:
-              print(file = sys.stdout)
-              er.terminate()
-
-            # First, check for linkage to another tool.
-            self.checkLinkage(tl, optionLinkage, toolName, tool, option)
-
-          # Deal with input files.
-          if isInput:
-
-            # If the input file is required and undefined, terminate the script.
-            required = 'true'
-            try: required = tl.toolInfo[tool]['options'][option]['required']
-            except: er.optionAssociationError('required', option, tool)
-            if er.error:
-              print(file = sys.stdout)
-              er.terminate()
-
-            if (required == 'true') and (tl.toolOptions[toolName][option] == ''):
-
-              # Before writing the error to screen, check if this input has a pipeline command.
-              # For example, a tool may require option -A as an input, but the pipeline has a
-              # command --input which links to -A in the tool.  The error message is of more use
-              # to the user if the stated missing command is --input as the -A option would need
-              # to be set in context of the tool.
-              hasPipelineOption = False
-              linkedOption      = ""
-              altOption         = ""
-              for pipelineOption in self.information['arguments']:
-                if 'tool' in self.information['arguments'][pipelineOption]: linkedTool = self.information['arguments'][pipelineOption]['tool']
-                if 'command' in self.information['arguments'][pipelineOption]: linkedOption = self.information['arguments'][pipelineOption]['command']
-                if linkedOption == option:
-                  hasPipelineOption = True
-                  if 'alternative' in self.information['arguments'][pipelineOption]:
-                    altOption = self.information['arguments'][pipelineOption]['alternative']
-                  break
-              print(file = sys.stdout)
-              er.inputFileError(tool, option)
-              if hasPipelineOption: er.pipelineOption(linkedTool, pipelineOption, altOption)
-              er.terminate()
-
-          # and output files.
-          elif isOutput:
-
-            # If the output is not defined (and linkage has already been checked), set the
-            # output file name based on the pl.name value and the output extension.
-            if tl.toolOptions[toolName][option] == '':
-
-              # Determine if the output is a stub.  If so, no extension is required.
-              isStub = False
-              if 'stub' in tl.toolInfo[tool]['options'][option]:
-                if tl.toolInfo[tool]['options'][option]['stub'] == 'true': isStub = True
-
-              if isStub: extension = ''
-              else:
-                try:
-                  extension = tl.toolInfo[tool]['options'][option]['extension']
-                except:
-                  er.optionAssociationError('extension', option, tool)
-                if er.error:
-                  print(file = sys.stdout)
-                  er.terminate()
-                extension = '.' + extension
-
-              # Check that the --name option has a value.
-              if self.options['--name'] == '': er.blankName()
-              tl.toolOptions[toolName][option] = self.options['--name'] + extension
-
-          # Perform tasks for non-input and output files.
-          else: self.checkLinkage(tl, optionLinkage, toolName, tool, option)
-
-          # Remove this linked option from the list.
-          if toolName in linkedOptions:
-            if option in linkedOptions[toolName]: linkedOptions[toolName][option] = False
+          # Check if this argument is linked to any other commands.
+          argumentLinkage = True if argument in self.information['linkage'][task] else False
+          if argumentLinkage:
+            self.checkLinkage(tl, task, tool, argument)
+            del linkArguments[argument]
 
       print("done.", file = sys.stdout)
+      sys.stdout.flush()
 
     # Check the list of linked options and ensure that they have all been parsed.  Any
     # options that have not been handled are either special cases, or an error in the
     # configuration file.
-    for toolName in linkedOptions:
-      for option in linkedOptions[toolName]:
-        if linkedOptions[toolName][option]:
-          if option == 'json parameters':
-            self.checkLinkage(tl, True, toolName, tool, option)
-          else:
-            er.invalidOption('linkage', option, toolName)
-            er.terminate()
-    print(file = sys.stdout)
+    for argument in linkArguments:
+      if argument == 'json parameters':
+        self.checkLinkage(tl, task, tool, argument)
+      else:
+        er.invalidOption(True, "\t\t\t", 'linkage', argument, task)
+        er.terminate()
 
   # Check to see if a tool option is linked to another tool and modify the stored
   # value accordingly.
-  def checkLinkage(self, tl, optionLinkage, toolName, tool, option):
+  def checkLinkage(self, tl, task, tool, argument):
     er = errors()
 
-    if optionLinkage:
-      targetToolName = ''
-      try: targetToolName = self.information['linkage'][toolName][option]['tool']
-      except: er.optionAssociationError('tool', option, tool)
-      if er.error:
-        print(file = sys.stdout)
-        er.terminate()
+    targetToolName = ''
+    try: targetToolName = self.information['linkage'][task][argument]['tool']
+    except: er.optionAssociationError('tool', argument, tool)
+    if er.error:
+      print(file = sys.stdout)
+      er.terminate()
 
-      targetOption   = ''
-      try: targetOption   = self.information['linkage'][toolName][option]['command']
-      except: er.optionAssociationError('command', option, tool)
-      if er.error:
-        print(file = sys.stdout)
-        er.terminate()
+    targetArgument = ''
+    try: targetArgument = self.information['linkage'][task][argument]['command']
+    except: er.optionAssociationError('command', argument, tool)
+    if er.error:
+      print(file = sys.stdout)
+      er.terminate()
 
-      # Check that the targetToolName and the targetOption are valid.
-      if targetToolName not in tl.toolOptions:
-        print(file = sys.stdout)
-        er.invalidToolName('linkage', targetToolName)
-        er.terminate()
+    # Check that the targetToolName and the targetOption are valid.
+    if targetToolName not in tl.toolArguments:
+      print(file = sys.stdout)
+      er.invalidToolName('linkage', targetToolName)
+      er.terminate()
 
-      if targetOption not in tl.toolOptions[targetToolName]:
-        print(file = sys.stdout)
-        er.invalidOption('linkage', targetOption, targetToolName)
-        er.terminate()
+    if targetArgument not in tl.toolArguments[targetToolName]:
+      print(file = sys.stdout)
+      er.invalidOption('linkage', targetArgument, targetToolName)
+      er.terminate()
 
-      # If the linkage block contains 'extension', the linked value requires this
-      # extension adding to the end of the value.
-      extension = ''
-      if 'extension' in self.information['linkage'][toolName][option]:
-        tl.toolOptions[toolName][option] = tl.toolOptions[targetToolName][targetOption] + self.information['linkage'][toolName][option]['extension']
-      else:
-        tl.toolOptions[toolName][option] = tl.toolOptions[targetToolName][targetOption]
+    # If the linkage block contains 'extension', the linked value requires this
+    # extension adding to the end of the value.
+    extension = ''
+    if 'extension' in self.information['linkage'][task][argument]:
+      tl.toolArguments[task][argument] = tl.toolArguments[targetToolName][targetArgument] + self.information['linkage'][task][argument]['extension']
+    else:
+      tl.toolArguments[task][argument] = tl.toolArguments[targetToolName][targetArgument]
