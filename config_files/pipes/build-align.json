@@ -216,6 +216,12 @@
       "type" : "integer",
       "alternative" : "-mfl"
     },
+    "--out" : {
+      "tool" : "build-read-archive",
+      "command" : "-out",
+      "alternative" : "-o",
+      "type" : "string"
+    },
     "--reference-fasta" : {
       "tool" : "count-covariates",
       "command" : "--reference_sequence",

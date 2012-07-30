@@ -1,0 +1,46 @@
+{
+  "tools" : {
+    "freebayes" : {
+      "description" : "Bayesian variant and haplotype calling",
+      "path" : "freebayes/bin",
+      "executable" : "freebayes",
+      "help" : "--help|-h",
+      "arguments" : {
+        "--bam" : {
+          "description" : "Add FILE to the set of BAM files to be analyzed.",
+          "input" : "true",
+          "use for filenames" : "true",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "true",
+          "alternative" : "-b",
+          "extension" : "bam",
+          "type" : "string"
+        },
+        "--vcf" : {
+          "description" : "Output VCF-format results to FILE.",
+          "input" : "false",
+          "output" : "true",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "alternative" : "-v",
+          "extension" : "vcf",
+          "type" : "string"
+        },
+        "--fasta-reference" : {
+          "description" : "Use FILE as the reference sequence for analysis.",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "true",
+          "required" : "true",
+          "dependent" : "true",
+          "alternative" : "-f",
+          "extension" : "fa|fasta",
+          "type" : "string"
+        }
+      }
+    }
+  }
+}

@@ -9,6 +9,7 @@
         "-fr" : {
           "description" : "the FASTA reference sequence file",
           "input" : "true",
+          "use for filenames" : "true",
           "output" : "false",
           "required" : "true",
           "resource" : "true",

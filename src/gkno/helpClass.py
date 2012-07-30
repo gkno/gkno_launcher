@@ -95,7 +95,8 @@ class helpClass:
       if len(tool) > length: length = len(tool)
     length += 5
 
-    for tool in tl.toolInfo.keys():
+    sortedKeys = sorted(tl.toolInfo.keys())
+    for tool in sortedKeys:
 
       # Get the tool description.
       description = tl.toolInfo[tool]['description']
@@ -112,7 +113,9 @@ class helpClass:
     print("Usage: gkno pipe <pipeline name> [options]", file = sys.stderr)
     print(file = sys.stderr)
     print("\t<pipeline name>:", file = sys.stderr)
-    for pipeline in io.jsonPipelineFiles.keys():
+
+    sortedKeys = sorted(io.jsonPipelineFiles.keys())
+    for pipeline in sortedKeys:
       pipeline = pipeline[0:(len(pipeline) - 5)]
       print("\t\t", pipeline, sep = '', file = sys.stderr)
     sys.stderr.flush()
@@ -125,20 +128,58 @@ class helpClass:
     print(file = sys.stderr)
     print('Usage: gkno ', tool, ' [options]', sep = '', file = sys.stderr)
     print(file = sys.stderr)
-    print("\toptions:", file = sys.stderr)
+
+    # Split the tool inputs into a required and an optional set.
+    defaultArguments  = []
+    optionalArguments = []
+    requiredArguments = []
+    for argument in tl.toolInfo[tool]['arguments']:
+      required = True if 'required' in tl.toolInfo[tool]['arguments'][argument] else False
+      default  = True if 'default' in tl.toolInfo[tool]['arguments'][argument] else False
+      if required: required = True if tl.toolInfo[tool]['arguments'][argument]['required'] == 'true' else False
+      if required:
+        if default: defaultArguments.append(argument)
+        else: requiredArguments.append(argument)
+      else: optionalArguments.append(argument)
+
+    sDefaultArguments  = sorted(defaultArguments)
+    sRequiredArguments = sorted(requiredArguments)
+    sOptionalArguments = sorted(optionalArguments)
 
     # For the purposes of formatting the screen output, find the longest tool
     # name and use this to define the format length.
     length = 0
-    for option in tl.toolInfo[tool]['arguments']:
-      length = len(option) if (len(option) > length) else length
+    sortedKeys = sorted(tl.toolInfo[tool]['arguments'])
+    for argument in sortedKeys:
+      length = len(argument) if (len(argument) > length) else length
     length += 5
 
-    for option in tl.toolInfo[tool]['arguments']:
-      printOption = option + ':'
-      description = tl.toolInfo[tool]['arguments'][option]['description']
-      print("\t\t%-*s%-*s" % (length, printOption, 1, description), file = sys.stderr)
-    sys.stderr.flush()
+    if len(sRequiredArguments) != 0:
+      print("\trequired arguments:", file = sys.stderr)
+      for argument in sRequiredArguments:
+        printArgument = argument + ':'
+        description   = tl.toolInfo[tool]['arguments'][argument]['description']
+        print("\t\t%-*s%-*s" % (length, printArgument, 1, description), file = sys.stderr)
+      print(file = sys.stderr)
+      sys.stderr.flush()
+
+    if len(sDefaultArguments) != 0:
+      print("\trequired arguments with set defaults:", file = sys.stderr)
+      for argument in sDefaultArguments:
+        printArgument = argument + ':'
+        description   = tl.toolInfo[tool]['arguments'][argument]['description']
+        print("\t\t%-*s%-*s" % (length, printArgument, 1, description), file = sys.stderr)
+      print(file = sys.stderr)
+      sys.stderr.flush()
+
+    if len(sOptionalArguments) != 0:
+      print("\toptional arguments:", file = sys.stderr)
+      for argument in sOptionalArguments:
+        printArgument = argument + ':'
+        description   = tl.toolInfo[tool]['arguments'][argument]['description']
+        print("\t\t%-*s%-*s" % (length, printArgument, 1, description), file = sys.stderr)
+      print(file = sys.stderr)
+      sys.stderr.flush()
 
   # Print usage information for pipelines:
   def pipelineUsage(self, io, pl, path):
@@ -152,10 +193,11 @@ class helpClass:
 
     # Determine the length of the longest pipeline name.
     length = 0
-    for pipeline in io.jsonPipelineFiles.keys():
+    sortedKeys = sorted(io.jsonPipelineFiles.keys())
+    for pipeline in sortedKeys:
       length = len(pipeline) if (len(pipeline) > length) else length
 
-    for pipeline in io.jsonPipelineFiles.keys():
+    for pipeline in sortedKeys:
 
       # For each available pipeline, open the json and get the pipeline description.
       io.jsonPipelineFile = path + '/config_files/pipes/' + pipeline
@@ -170,11 +212,18 @@ class helpClass:
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
   def specificPipelineUsage(self, pl):
-    print('=======================', file = sys.stderr)
-    print('  gkno pipeline usage', file = sys.stderr)
-    print('=======================', file = sys.stderr)
+    length = len(pl.pipelineName) + 26
+    print('=' * length)
+    print('  gkno pipeline usage - ', pl.pipelineName, sep = '', file = sys.stderr)
+    print('=' * length)
     print(file = sys.stderr)
     print('Usage: gkno pipe ', pl.pipelineName, ' [options]', sep = '', file = sys.stderr)
+    print(file = sys.stderr)
+
+    # Print out the decription of the pipeline.
+    description = pl.information['description'] if 'description' in pl.information else 'No description'
+    print('Description:', file = sys.stderr)
+    print("\t", description, sep = '', file = sys.stderr)
     print(file = sys.stderr)
 
     # List the options available at the pipeline level.
@@ -194,7 +243,8 @@ class helpClass:
       arguments[text] = description
     length += 4
 
-    for argument in arguments.keys():
+    sortedKeys = sorted(arguments.keys())
+    for argument in sortedKeys:
       print("\t\t%-*s%-*s" % (length, argument, 1, arguments[argument]), file = sys.stderr)
     print(file = sys.stderr)
 
@@ -206,8 +256,9 @@ class helpClass:
       length = len(task) if (len(task) > length) else length
     length += 5
 
-    for task in pl.information['workflow']:
-      tool      = pl.information['tools'][task]
+    sortedTasks = sorted(pl.information['workflow'])
+    for task in sortedTasks:
+      tool  = pl.information['tools'][task]
       task += ':'
       print("\t\t--%-*s%-*s parameters" % (length, task, 1, tool), file = sys.stderr)
     sys.stderr.flush()

@@ -1,6 +1,8 @@
 {
-  "description" : "Align fastq files using Mosaik (additional processing steps included).",
+  "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
   "workflow" : [
+    "build-reference",
+    "build-jump-database",
     "generate-mosaik-parameters",
     "build-read-archive",
     "align",
@@ -8,9 +10,12 @@
     "sort-multiple-bam",
     "index-primary-bam",
     "count-covariates",
-    "recalibrate-bq"
+    "recalibrate-bq",
+    "variant-call"
   ],
   "tools" : {
+    "build-reference" : "mosaik-build-reference",
+    "build-jump-database" : "mosaik-jump",
     "generate-mosaik-parameters" : "premo",
     "build-read-archive" : "mosaik-build-fastq",
     "align" : "mosaik-aligner",
@@ -18,9 +23,58 @@
     "sort-multiple-bam" : "bamtools-sort",
     "index-primary-bam" : "bamtools-index",
     "count-covariates" : "gatk-count-covariates",
-    "recalibrate-bq" : "gatk-recalibrate-bq"
+    "recalibrate-bq" : "gatk-recalibrate-bq",
+    "variant-call" : "freebayes"
+  },
+  "construct filenames" : {
+    "build-reference" : {
+      "-oa" : {
+        "base name" : "from argument",
+        "tool" : "build-reference",
+        "argument" : "-fr",
+        "remove extension" : "true"
+      }
+    },
+    "build-jump-database" : {
+      "-out" : {
+        "base name" : "from argument",
+        "tool" : "build-reference",
+        "argument" : "-fr",
+        "remove extension" : "true",
+        "additional text from variables" : {
+          "order" : [
+            "base name",
+            "hash-size"
+          ],
+          "hash-size" : {
+            "tool" : "build-jump-database",
+            "argument" : "-hs"
+          }
+        }
+      }
+    }
   },
   "linkage" : {
+    "build-jump-database" : {
+      "-ia" : {
+        "tool" : "build-reference",
+        "command" : "-oa"
+      }
+    },
+    "generate-mosaik-parameters" : {
+      "-hs" : {
+        "tool" : "build-jump-database",
+        "command" : "-hs"
+      },
+      "-ref" : {
+        "tool" : "build-reference",
+        "command" : "-oa"
+      },
+      "-jmp" : {
+        "tool" : "build-jump-database",
+        "command" : "-out"
+      }
+    },
     "build-read-archive" : {
       "-q" : {
         "tool" : "generate-mosaik-parameters",
@@ -92,8 +146,8 @@
     },
     "recalibrate-bq" : {
       "--reference_sequence" : {
-        "tool" : "count-covariates",
-        "command" : "--reference_sequence"
+        "tool" : "build-reference",
+        "command" : "-fr"
       },
       "--input_file" : {
         "tool" : "count-covariates",
@@ -103,9 +157,33 @@
         "tool" : "count-covariates",
         "command" : "--recal_file"
       }
+    },
+    "variant-call" : {
+      "--bam" : {
+        "tool" : "recalibrate-bq",
+        "command" : "--out"
+      },
+      "--fasta-reference" : {
+        "tool" : "build-reference",
+        "command" : "-fr"
+      }
     }
   },
   "arguments" : {
+    "-fasta" : {
+      "tool" : "build-reference",
+      "command" : "-fr",
+      "alternative" : "-f",
+      "type" : "string",
+      "default" : "test_genome.fa"
+    },
+    "--hash-size" : {
+      "description" : "hash-size",
+      "tool" : "build-jump-database",
+      "command" : "-hs",
+      "type" : "integer",
+      "alternative" : "-hs"
+    },
     "--fastq" : {
       "tool" : "generate-mosaik-parameters",
       "command" : "-fq1",
@@ -137,12 +215,6 @@
       "command" : "-n",
       "alternative" : "-b",
       "type" : "integer"
-    },
-    "--hash-size" : {
-      "tool" : "generate-mosaik-parameters",
-      "command" : "-hs",
-      "type" : "integer",
-      "alternative" : "-hs"
     },
     "--sequencing-technology" : {
       "tool" : "generate-mosaik-parameters",

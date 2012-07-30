@@ -188,7 +188,7 @@ class tools:
     # Check if the input file that is to be used for constructing the output filename is
     # blank.  If soi, terminate gkno as the output filename cannot be determined.
     if inputFile == '':
-      er.noInputFilenameForFilenameConstruction("\n\t\t", task, tool, outputFile)
+      er.noInputFilenameForFilenameConstruction(True, "\t\t\t", task, tool, outputFile, argument)
       er.terminate()
     else:
       inputExtension = ''

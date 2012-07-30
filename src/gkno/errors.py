@@ -79,10 +79,11 @@ class errors:
     self.error = True
 
   # The input file used for constructing an output file is blank.
-  def noInputFilenameForFilenameConstruction(self, pad, task, tool, outputFile):
+  def noInputFilenameForFilenameConstruction(self, newLine, pad, task, tool, outputFile, argument):
+    if newLine: print(file = sys.stderr)
     print(pad, 'ERROR: Constructing output filename \'', outputFile, '\' in task \'', task, sep = '', end = '', file = sys.stderr)
     print(' (\'', tool, '\')\' failed.', sep = '', file = sys.stderr)
-    print(pad, 'ERROR: Input filename used in the construction is blank.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Input filename (argument \'', argument, '\') used in the construction is blank.', sep = '', file = sys.stderr)
     self.error = True
 
   # The pipeline configuration file may contain a block describing how to construct the
@@ -115,9 +116,21 @@ class errors:
     self.error = True
 
   # A required value is not given.
-  def missingRequiredValue(self, newLine, pad, task, tool, argument):
+  def missingRequiredValue(self, newLine, pad, task, tool, argument, pl):
     if newLine: print(file = sys.stderr)
     print(pad, 'ERROR: Argument \'', argument, '\' for tool \'', task, ' (', tool, ')\' is required and not set.', sep = '', file = sys.stderr)
+    if pl.isPipeline:
+      for pipelineArgument in pl.information['arguments']:
+        pipelineTask     = pl.information['arguments'][pipelineArgument]['tool']
+        if pipelineTask == 'pipeline': continue
+        linkedArgument  = pl.information['arguments'][pipelineArgument]['command']
+        if (pipelineTask == task) and (linkedArgument == argument):
+          if 'alternative' in pl.information['arguments'][pipelineArgument]:
+            pipelineAlt = pl.information['arguments'][pipelineArgument]['alternative']
+            print(pad, 'ERROR: This can be set on the command line using the pipeline argument \'', sep = '', end = '', file = sys.stderr)
+            print(pipelineArgument, ' (', pipelineAlt, ')\'.', sep = '', file = sys.stderr)
+          else:
+            print(pad, 'ERROR: This can be set on the command line using the pipeline argument \'', pipelineArgument, '\'.', sep = '', file = sys.stderr)
     self.error = True
 
   # If a command line argument is given a value with the wrong data type, throw an error.
@@ -267,13 +280,6 @@ class errors:
   def inputFileError(self, tool, option):
     print("\t\tERROR: Required input '", option, "' to the tool '", tool, "' is not specified.", sep = "", file = sys.stderr)
     self.error = True
-
-  # If a required input file is not defined and the pipeline has a command line argument
-  # for that input file, print out the pipeline argument that needs to be set before
-  # terminating.
-  def pipelineOption(self, tool, option, altOption):
-    if altOption == '': print("\t\tERROR: This can be set on the command line using '", option, "'.", sep = "", file = sys.stderr)
-    else: print("\t\tERROR: This can be set on the command line using '", option, " (", altOption, ")'.", sep = "", file = sys.stderr)
 
   def unsetRequiredVariable(self, task, tool, option):
     print("\t\tERROR: Required variable '", option, "' in tool '", task, " (", tool, ")' is unset.", sep = "", file = sys.stderr)

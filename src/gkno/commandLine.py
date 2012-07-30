@@ -317,7 +317,7 @@ class commandLine:
         er.terminate()
 
   # Loop over the tools and check that all required information has been set.
-  def checkParameters(self, tl, pl, task, tool):
+  def checkParameters(self, tl, pl, gknoHelp, task, tool):
     er = errors()
 
     print("\t\tChecking all required information is set and valid...", end = '', file = sys.stdout)
@@ -332,7 +332,9 @@ class commandLine:
 
       # If the value is required and no value has been provided, fail.
       if isRequired and not isArgumentSet:
-        er.missingRequiredValue(True, "\t\t\t", task, tool, argument)
+        er.missingRequiredValue(True, "\t\t\t", task, tool, argument, pl)
+        print(file = sys.stderr)
+        gknoHelp.toolUsage(tl, tool)
         er.terminate()
 
       # If the value is set, check that the data type is correct.

@@ -21,7 +21,7 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.02"
+__version__ = "0.03"
 __date__ = "July 2012"
 
 def main():
@@ -136,7 +136,7 @@ def main():
     cl.setPaths(tl, pl, task, tool)
 
     # Check that all required files and parameters have been set.
-    cl.checkParameters(tl, pl, task, tool)
+    cl.checkParameters(tl, pl, gknoHelp, task, tool)
     print(file = sys.stdout)
     sys.stdout.flush()
 
