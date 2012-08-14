@@ -20,7 +20,7 @@
           "description" : "the input fastq file (second mate)",
           "input" : "true",
           "output" : "false",
-          "required" : "false",
+          "required" : "true",
           "resource" : "false",
           "dependent" : "true",
           "type" : "string",

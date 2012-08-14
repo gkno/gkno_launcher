@@ -100,6 +100,56 @@
           "extension" : "null"
         }
       }
+    },
+
+    "bamtools-filter" : {
+      "description" : "Filter a BAM file on many parameters or combinations of parameters.",
+      "path" : "bamtools/bin",
+      "executable" : "bamtools",
+      "modifier" : "filter",
+      "help" : "--help|-h",
+      "arguments" : {
+        "-in" : {
+          "description" : "the input BAM file.",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "use for filenames" : "true",
+          "type" : "string",
+          "extension" : "bam"
+        },
+        "-out" : {
+          "description" : "the output BAM file.",
+          "input" : "false",
+          "output" : "true",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "filtered.bam",
+          "if output to stream" : "do not include"
+        },
+        "-region" : {
+          "description" : "only read data from this genomic region.",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string"
+        },
+        "-script" : {
+          "description" : "the filter script file (see bamtools documentation for more information).",
+          "input" : "true",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string"
+        }
+      }
     }
   }
 }

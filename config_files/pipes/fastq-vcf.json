@@ -10,7 +10,9 @@
     "sort-multiple-bam",
     "index-primary-bam",
     "count-covariates",
-    "recalibrate-bq"
+    "recalibrate-bq",
+    "filter-bam",
+    "variant-call"
   ],
   "tools" : {
     "build-reference" : "mosaik-build-reference",
@@ -22,8 +24,13 @@
     "sort-multiple-bam" : "bamtools-sort",
     "index-primary-bam" : "bamtools-index",
     "count-covariates" : "gatk-count-covariates",
-    "recalibrate-bq" : "gatk-recalibrate-bq"
+    "recalibrate-bq" : "gatk-recalibrate-bq",
+    "filter-bam" : "bamtools-filter",
+    "variant-call" : "freebayes"
   },
+  "tools outputting to stream" : [
+    "filter-bam"
+  ],
   "construct filenames" : {
     "build-reference" : {
       "-oa" : {
@@ -144,8 +151,8 @@
     },
     "recalibrate-bq" : {
       "--reference_sequence" : {
-        "tool" : "count-covariates",
-        "command" : "--reference_sequence"
+        "tool" : "build-reference",
+        "command" : "-fr"
       },
       "--input_file" : {
         "tool" : "count-covariates",
@@ -155,10 +162,26 @@
         "tool" : "count-covariates",
         "command" : "--recal_file"
       }
+    },
+    "filter-bam" : {
+      "-in" : {
+        "tool" : "recalibrate-bq",
+        "command" : "--out"
+      }
+    },
+    "variant-call" : {
+      "--bam" : {
+        "tool" : "filter-bam",
+        "command" : "-out"
+      },
+      "--fasta-reference" : {
+        "tool" : "build-reference",
+        "command" : "-fr"
+      }
     }
   },
   "arguments" : {
-    "-fasta" : {
+    "--fasta" : {
       "tool" : "build-reference",
       "command" : "-fr",
       "alternative" : "-f",
@@ -176,15 +199,13 @@
       "tool" : "generate-mosaik-parameters",
       "command" : "-fq1",
       "alternative" : "-q",
-      "type" : "string",
-      "user entry required" : "true"
+      "type" : "string"
     },
     "--fastq2" : {
       "tool" : "generate-mosaik-parameters",
       "command" : "-fq2",
       "alternative" : "-q2",
-      "type" : "string",
-      "user entry required" : "true"
+      "type" : "string"
     },
     "--mosaik-reference" : {
       "tool" : "generate-mosaik-parameters",
@@ -208,6 +229,7 @@
     },
     "--sequencing-technology" : {
       "tool" : "generate-mosaik-parameters",
+      "description" : "sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
       "command" : "-st",
       "alternative" : "-st",
       "type" : "string"

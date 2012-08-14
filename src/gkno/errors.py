@@ -55,10 +55,11 @@ class errors:
     print('  Please check the pipeline configuration file.', sep = '', file = sys.stderr)
     self.error = True
 
-  def invalidOption(self, newLine, pad, text, option, tool):
+  # A supplied argument is invalid.
+  def invalidArgument(self, newLine, pad, text, argument, tool):
     if newLine: print(file = sys.stderr)
-    print(pad, 'ERROR: Invalid option (', option, ') in the \'', text, '\' section of the pipeline ', sep = '', end = '', file = sys.stderr)
-    print('configuration file for tool \'', tool, '\'.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Invalid argument (', argument, ') in the \'', text, '\' section ', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: of the pipeline configuration file for tool \'', tool, '\'.', sep = '', file = sys.stderr)
     self.error = True
 
   # The tool configuration file has multiple input files designated for use as output
@@ -116,7 +117,7 @@ class errors:
     self.error = True
 
   # A required value is not given.
-  def missingRequiredValue(self, newLine, pad, task, tool, argument, pl):
+  def missingRequiredValue(self, newLine, pad, task, tool, argument, tl, pl):
     if newLine: print(file = sys.stderr)
     print(pad, 'ERROR: Argument \'', argument, '\' for tool \'', task, ' (', tool, ')\' is required and not set.', sep = '', file = sys.stderr)
     if pl.isPipeline:
@@ -125,12 +126,16 @@ class errors:
         if pipelineTask == 'pipeline': continue
         linkedArgument  = pl.information['arguments'][pipelineArgument]['command']
         if (pipelineTask == task) and (linkedArgument == argument):
+          description = tl.toolInfo[tool]['arguments'][argument]['description']
           if 'alternative' in pl.information['arguments'][pipelineArgument]:
             pipelineAlt = pl.information['arguments'][pipelineArgument]['alternative']
             print(pad, 'ERROR: This can be set on the command line using the pipeline argument \'', sep = '', end = '', file = sys.stderr)
             print(pipelineArgument, ' (', pipelineAlt, ')\'.', sep = '', file = sys.stderr)
+            print(pad, 'ERROR: \'', pipelineArgument, ' (', pipelineAlt, ')\' description: ', description, sep = '', file = sys.stderr)
           else:
-            print(pad, 'ERROR: This can be set on the command line using the pipeline argument \'', pipelineArgument, '\'.', sep = '', file = sys.stderr)
+            print(pad, 'ERROR: This can be set on the command line using the pipeline argument \'', sep = '', file = sys.stderr)
+            print(pad, pipelineArgument, '\'.', sep = '', file = sys.stderr)
+            print(pad, 'ERROR: \'', pipelineArgument, '\' description: ', description, sep = '', file = sys.stderr)
     self.error = True
 
   # If a command line argument is given a value with the wrong data type, throw an error.
@@ -145,6 +150,93 @@ class errors:
     if newLine: print(file = sys.stderr)
     print(pad, 'ERROR: Unknown data type \'', dataType, '\' for option \'', argument, '\' in the \'', tool, sep = '', end = '', file = sys.stderr)
     print('\' configuration file.', file = sys.stderr)
+    self.error = True
+
+  # If the pipeline configuration contains a tool or task that is invalid.
+  def invalidToolTaskName(self, newLine, pad, jsonSection, isTask, tool):
+    if newLine: print(file = sys.stderr)
+    if isTask: toolOrTask = 'task'
+    else: toolOrTask = 'tool'
+    print(pad, 'ERROR: Invalid ', toolOrTask, ' \'', tool, '\' in the \'', jsonSection, '\' section of ', sep = '', end = '', file = sys.stderr)
+    print('the pipeline configuration file.', sep = '', file = sys.stderr)
+    self.error = True
+
+  # If an invalid stub extension is referenced.
+  def invalidStubExtension(self, newLine, pad, task, argument, extension):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Request to delete file with an invalid stub extension (\'', extension, '\').', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Error in \'delete files\' section, task \'', task, '\' with argument \'', argument, '\'.', sep = '', file = sys.stderr)
+    self.error = True
+
+  # If a command line argument is provided and it isn't a flag, but no value is assigned,
+  # this an error.
+  def missingCommandLineArgumentValue(self, newLine, pad, tool, command, argument):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Command line argument \'', argument, '\' for task \'', tool, '\' is not a flag, ', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: but, no value is given.  Please check command line.', sep = '', file = sys.stderr)
+    self.error = True
+
+  # If multiple output arguments are listed as able to output to the stream, gkno
+  # cannot pipe the output to another task and so will terminate.
+  def multipleOutputsToStream(self, newLine, pad, task, tool):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Task \'', task, ' (', tool, ')\' outputs to the stream so pipes can be used to link tools.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Only one output is allowed to output to the stream for each tool (multiple specified).', sep = '', file = sys.stderr)
+    self.error = True
+
+  # If the last task in the pipeline is outputting to the stream, terminate.
+  def lastTaskOutputsToPipe(self, newLine, pad, task):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Final task in the pipeline (\'', task, '\') cannot output to the stream.', sep = '', file = sys.stderr)
+    self.error = True
+
+  # If multiple input arguments are listed as able to accept a stream as input, gkno
+  # cannot determine how to define the pipes.
+  def multipleOutputsToStream(self, newLine, pad, task, tool):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Task \'', task, ' (', tool, ')\' accepts an input stream so pipes can be used to link tools.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Only one input is allowed to accept a stream for each tool (multiple specified).', sep = '', file = sys.stderr)
+    self.error = True
+
+  # If a task outputs a stream, one of the output command line arguments needs to provide
+  # some information on how to handle the stream.  If none is provided, throw an error.
+  def noOutputStreamInstructions(self, newLine, pad, task, tool):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Task \'', task, ' (', tool, ')\' outputs a stream so pipes can be used to link tools.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: None of the output arguments have instructions on how to handle a stream.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Consult documentation on how to pipe together tools.', sep = '', file = sys.stderr)
+    self.error = True
+
+  # If the input file argument is to be replaced with a different argument if accepting the
+  # input from a stream, the entry 'replace argument with', must appear in the configuration
+  # file.  Throw an error if it does not.
+  def noReplacementFoundWhenStreaming(self, newLine, pad, task, tool, argument):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Task \'', task ,' (', tool, ')\' accepts a stream as input.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: The configuration file indicates that argument \'', argument, '\' is to be replaced.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: The entry \'replace argument with\' must be present for this argument.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Either it isn\'t present or the \'argument\' or \'value\' fields were missing.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Consult documentation on how to pipe together tools.', sep = '', file = sys.stderr)
+    self.error = True
+
+  # If a task accepts its input from a stream, one of the input command line
+  # arguments needs to provide some information on how to handle the stream.  If
+  # none is provided, throw an error.
+  def noInputStreamInstructions(self, newLine, pad, task, tool):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Task \'', task, ' (', tool, ')\' accepts an input stream so pipes can be used to link tools.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: None of the input arguments have instructions on how to handle a stream.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Consult documentation on how to pipe together tools.', sep = '', file = sys.stderr)
+    self.error = True
+
+  # If a replacement argument is being used to handle a streaming input, the argument
+  # must not already be present in the tl.toolInfo structure.
+  def replacementArgumentAlreadyPresent(self, newLine, pad, task, tool, replacementArgument):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Task \'', task, ' (', tool, ')\' accepts an input stream so pipes can be used to link tools.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: The input argument is being replaced by the argument \'', argument, '\' but', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: this argument is already a valid argument for the tool.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Consult documentation on how to pipe together tools.', sep = '', file = sys.stderr)
     self.error = True
 
   # Terminate the script after errors have been found.
@@ -183,7 +275,8 @@ class errors:
   # If the pipeline configuration contains an option that is not in the tool
   # configuration file, there is an error in the linkage section of the pipeline
   # configuration file.
-  def invalidToolName(self, pad, text, tool):
+  def invalidToolName(self, newLine, pad, text, tool):
+    if newLine: print(file = sys.stderr)
     print(pad, 'ERROR: Invalid tool name \'', tool, '\' in the \'', text, '\' section of the pipeline ', sep = '', end = '', file = sys.stderr)
     print('configuration file.', sep = '', file = sys.stderr)
     self.error = True
@@ -302,15 +395,6 @@ class errors:
     print(inputToolName, " (", inputTool, ")' which is a stub.", sep = "", file = sys.stderr)
     print("\t\tERROR: Ensure the linkage section of the pipeline configuration file contains 'extension'", sep = "", file = sys.stderr)
     print("\t\tERROR: defining which of the files to use.", file = sys.stderr)
-    self.error = True
-
-  # If the input is from a previous tools output and this output is a stub, fail
-  # if the requested extension is not one of the extensions specified in the
-  # tools configuration file.
-  def invalidStubExtension(self, task, tool, option, inputToolName, inputTool, extension):
-    print("\t\tERROR: Input to tool '", task, " (", tool, ")' is defined by the output from '", sep = "", end = "", file = sys.stderr)
-    print(inputToolName, " (", inputTool, ")' which is a stub.", sep = "", file = sys.stderr)
-    print("\t\tERROR: The requested extension '", extension, "' is not valid.", sep = "", file = sys.stderr)
     self.error = True
 
   # If an incorrect command line for a tool is provided, the command line to get

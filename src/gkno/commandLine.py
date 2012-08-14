@@ -9,8 +9,16 @@ from errors import *
 class commandLine:
 
   # Constructor.
-  def __init__(self):
-    pass
+  def __init__(self, tl):
+
+    # Check to see if the verbose argument is set.
+    if 'pipeline' not in tl.toolArguments: tl.toolArguments['pipeline'] = {}
+    tl.toolArguments['pipeline']['--verbose'] = True
+    for counter, argument in enumerate(sys.argv):
+      if (argument == '--verbose') or (argument == '-vb'):
+        if counter + 1 < len(sys.argv):
+          if sys.argv[counter + 1] == 'True': tl.toolArguments['pipeline']['--verbose'] = True
+          else: tl.toolArguments['pipeline']['--verbose'] = False
 
   # Check the first entry on the command line is valid.
   def getMode(self, io, gknoHelp, tl, pl):
@@ -85,8 +93,9 @@ class commandLine:
   def parseToolCommandLine(self, gknoHelp, io, tl, pl, commandLine, task, tool, verbose):
     er           = errors()
     modifiedTool = ''
-    if verbose: print('Parsing the command line...', end = '', file = sys.stdout)
-    sys.stdout.flush()
+    if tl.toolArguments['pipeline']['--verbose']:
+      print('Parsing the command line...', end = '', file = sys.stdout)
+      sys.stdout.flush()
     while(len(commandLine) != 0):
       argument           = commandLine.pop(0)
       isPipelineArgument = False
@@ -148,19 +157,20 @@ class commandLine:
       # to set.
       else: tl.toolArguments[modifiedTool][argument] = 'set'
 
-    if verbose: print('done.', file = sys.stdout)
-    if verbose: print(file = sys.stdout)
-    sys.stdout.flush()
+    if tl.toolArguments['pipeline']['--verbose']:
+      print('done.', file = sys.stdout)
+      print(file = sys.stdout)
+      sys.stdout.flush()
 
   # Parse the command line in pipeline mode.  Here arguments are either pipeline
   # arguments or the name of a constituent tool.  If the argument is the name of
   # a tool, the following argument needs to be a list of arguments in quotation
   # marks for that tool.
   def parsePipelineCommandLine(self, gknoHelp, io, tl, pl):
-    er   = errors()
-
-    print('Parsing the command line...', file = sys.stdout)
-    sys.stdout.flush()
+    er = errors()
+    if tl.toolArguments['pipeline']['--verbose']:
+      print('Parsing the command line...', file = sys.stdout)
+      sys.stdout.flush()
     while(len(sys.argv) != 0):
       argument = sys.argv.pop(0)
       isPipelineArgument = False
@@ -195,8 +205,9 @@ class commandLine:
       # commands specifically for that tool.  If there is no following argument, throw an
       # exception
       if isToolName:
-        print("\tProcessing command line arguments for tool '", task, '\'...', sep = '', end = '', file = sys.stdout)
-        sys.stdout.flush()
+        if tl.toolArguments['pipeline']['--verbose']:
+          print("\tProcessing command line arguments for tool '", task, '\'...', sep = '', end = '', file = sys.stdout)
+          sys.stdout.flush()
         try: nextArgument = sys.argv[0]
         except: 
           er.commandLineToolError("\n\t\t", pl.pipelineName, task)
@@ -209,21 +220,27 @@ class commandLine:
         tool            = pl.information['tools'][task]
         self.parseToolCommandLine(gknoHelp, io, tl, pl, toolCommandLine, task, tool, False)
         sys.argv.pop(0)
-        print('done.', file = sys.stdout)
-        sys.stdout.flush()
+        if tl.toolArguments['pipeline']['--verbose']:
+          print('done.', file = sys.stdout)
+          sys.stdout.flush()
 
       # If the argument is a pipeline argument, check that the argument points to a tool
       # in the pipeline and that the tool argument it points to is valid, then modify the
       # tl.toolArguments structure.
       elif isPipelineArgument:
-        tool    = pl.information['arguments'][argument]['tool'] if 'tool' in pl.information['arguments'][argument] else ''
-        command = pl.information['arguments'][argument]['command'] if 'command' in pl.information['arguments'][argument] else ''
+        tool     = pl.information['arguments'][argument]['tool'] if 'tool' in pl.information['arguments'][argument] else ''
+        command  = pl.information['arguments'][argument]['command'] if 'command' in pl.information['arguments'][argument] else ''
+        dataType = pl.information['arguments'][argument]['type'] if 'type' in pl.information['arguments'][argument] else ''
         isLastArgument = False
         try: nextArgument = sys.argv[0]
         except:
           nextArgument   = ''
           isLastArgument = True
         if not nextArgument.startswith('-') and not isLastArgument:
+ 
+          # If the supplied argument is a Boolean, ensure that it is treated as a Boolean.
+          if nextArgument == 'True': nextArgument = True
+          if nextArgument == 'False': nextArgument = False
           if tool == 'pipeline': tl.toolArguments[tool][argument] = nextArgument
           else: tl.toolArguments[tool][command] = nextArgument
           sys.argv.pop(0)
@@ -231,17 +248,25 @@ class commandLine:
         # If the next argument begins with a '-', then this option must be a flag (this
         # will be checked later).  As the flag has been set, set the value in tl.toolArguments
         # to set.
-        else: tl.toolArguments[tool][argument] = 'set'
+        elif nextArgument.startswith('-') and (dataType == 'flag'): tl.toolArguments[tool][argument] = 'set'
 
-    print(file = sys.stdout)
-    sys.stdout.flush()
+        # If this is the last argument and the argument is not a flag then there is an
+        # error.  A value must be set.
+        elif (dataType != 'flag') and (isLastArgument or (nextArgument.startswith('-'))):
+          er.missingCommandLineArgumentValue(False, "\t\t", tool, command, argument)
+          er.terminate()
+
+    if tl.toolArguments['pipeline']['--verbose']:
+      print(file = sys.stdout)
+      sys.stdout.flush()
 
   # Check to see if the input file has a path or not.  If not, determine if the
   # file is a resource file or not and set the path to the resources path if
   # it is a resource file, otherwise set it to the input path.
   def setPaths(self, tl, pl, task, tool):
-    print("\t\tChecking file paths...", end = '', file = sys.stdout)
-    sys.stdout.flush()
+    if tl.toolArguments['pipeline']['--verbose']:
+      print("\t\tChecking file paths...", end = '', file = sys.stdout)
+      sys.stdout.flush()
 
     # Loop over all the tool arguments and check if the argument is for an input or output
     # file.
@@ -251,7 +276,6 @@ class commandLine:
       # argument is checked and if the argument is not set and is required, gkno 
       # will catch the omission.
       if (tl.toolArguments[task][argument] == '') or (argument == 'json parameters'): continue
-      if tl.toolArguments[task][argument] == 'json parameters': print("WOOOOP")
 
       # Check if an input, output or resource file.
       isInput    = True if tl.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
@@ -272,8 +296,9 @@ class commandLine:
         # Check that the file has the correct extension.
         self.checkExtension(tl, task, tool, argument, isOutput)
 
-    print('done.', file = sys.stdout)
-    sys.stdout.flush()
+    if tl.toolArguments['pipeline']['--verbose']:
+      print('done.', file = sys.stdout)
+      sys.stdout.flush()
 
   # Check the filename extension.  If the filename is not a stub and the
   # name soesn't end with the expected extension, throw an error.
@@ -320,8 +345,9 @@ class commandLine:
   def checkParameters(self, tl, pl, gknoHelp, task, tool):
     er = errors()
 
-    print("\t\tChecking all required information is set and valid...", end = '', file = sys.stdout)
-    sys.stdout.flush()
+    if tl.toolArguments['pipeline']['--verbose']:
+      print("\t\tChecking all required information is set and valid...", end = '', file = sys.stdout)
+      sys.stdout.flush()
     for argument in tl.toolArguments[task]:
       if argument == 'json parameters': continue
       isRequired = True if tl.toolInfo[tool]['arguments'][argument]['required'] == 'true' else False
@@ -332,17 +358,16 @@ class commandLine:
 
       # If the value is required and no value has been provided, fail.
       if isRequired and not isArgumentSet:
-        er.missingRequiredValue(True, "\t\t\t", task, tool, argument, pl)
-        print(file = sys.stderr)
-        gknoHelp.toolUsage(tl, tool)
+        er.missingRequiredValue(True, "\t\t\t", task, tool, argument, tl, pl)
         er.terminate()
 
       # If the value is set, check that the data type is correct.
       elif isArgumentSet:
         default = self.checkDataType(tl, pl, task, tool, argument)
 
-    print('done.', file = sys.stdout)
-    sys.stdout.flush()
+    if tl.toolArguments['pipeline']['--verbose']:
+      print('done.', file = sys.stdout)
+      sys.stdout.flush()
 
   # Check that the argument has the correct data type.
   def checkDataType(self, tl, pl, task, tool, argument):

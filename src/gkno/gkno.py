@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import os.path
+import getpass
 import subprocess
 import sys
 
@@ -21,18 +22,19 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.03"
-__date__ = "July 2012"
+__version__ = "0.04"
+__date__ = "August 2012"
 
 def main():
-
-  # Define a command line options, get the first command line argument
-  # and proceed as required.
-  cl = commandLine()
+  user = getpass.getuser()
 
   # Define a tools object.  This stores all information specific to individual
   # tools.
   tl = tools()
+
+  # Define a command line options, get the first command line argument
+  # and proceed as required.
+  cl = commandLine(tl)
 
   # Define a pipeline object.  Even if a single tool is all that is required,
   # some of the routines in the pipelines.py are still used.  A single tool
@@ -75,7 +77,7 @@ def main():
     # If a spcific pipeline has been specified and the pipeline exists, read in
     # the json file.
     if (not gknoHelp.printHelp) or (gknoHelp.printHelp and gknoHelp.specificPipelineHelp and not gknoHelp.unknownPipeline):
-      io.phoneHomeID = io.getPipelineDescription(pl, not gknoHelp.printHelp)
+      io.phoneHomeID = io.getPipelineDescription(tl ,pl, True)
 
   # If gkno is being run in tool mode, the pl object still exists and is used.
   # Set the pl.information structure up to reflect a pipeline containing a
@@ -113,11 +115,14 @@ def main():
   # Loop over each of the tools in turn and set all of the parameters.  Each
   # task in turn may depend on parameters/outputs of previous tasks and so
   # handling in each task in the order it appears in the pipeline is necessary.
-  print('Setting up all parameters for task...', file = sys.stdout)
+  if tl.toolArguments['pipeline']['--verbose']:
+    print('Setting up all parameters for task...', file = sys.stdout)
+    sys.stdout.flush()
   for task in pl.information['workflow']:
     tool = pl.information['tools'][task]
-    print("\t", task, ' (', tool, ')...', sep = '', file = sys.stdout)
-    sys.stdout.flush()
+    if tl.toolArguments['pipeline']['--verbose']:
+      print("\t", task, ' (', tool, ')...', sep = '', file = sys.stdout)
+      sys.stdout.flush()
 
     # Check all of the options for each tool and determine if the values are
     # linked to any other tool.  If so, set the values as necessary.  Also,
@@ -137,8 +142,9 @@ def main():
 
     # Check that all required files and parameters have been set.
     cl.checkParameters(tl, pl, gknoHelp, task, tool)
-    print(file = sys.stdout)
-    sys.stdout.flush()
+    if tl.toolArguments['pipeline']['--verbose']:
+      print(file = sys.stdout)
+      sys.stdout.flush()
 
   # Parse through all of the selected options and for those options referring
   # to input/output files, check that the extensions are correct, that the
@@ -156,8 +162,36 @@ def main():
   # don't already exist.
   tl.determineAdditionalFiles(pl)
 
+  # In the course of executing the pipeline, some of the intermediate files
+  # generated along the way should be deleted.  The pipeline configuration
+  # file segment 'delete files' identifies which files should be deleted and
+  # when in the pipeline they can be removed.
+  pl.determineFilesToDelete(tl)
+
+  # The list of files to be produced by the script is all of the files created
+  # by each individual task in the pipeline.  However, if some of the files
+  # are deleted along the way, the final list of files should not include these
+  # deleted files.
+  pl.determineFinalOutputs(tl)
+
+  # The pipeline allows for tools to be outputted to the stream rather than to
+  # an output file.  This allows tools to be joined together by pipes rather
+  # than forcing the generation of all intermediate files.  The tasks that
+  # output to the stream are listed in the pipeline configuration file, so check
+  # if there are any and if so, check that the tools allow outputting to the
+  # stream.
+  pl.determinePiping(tl)
+
+  # The basic order of the Makefile is to start with the final tool and write
+  # out the rules to build the final output file.  If the prerequisites for this
+  # task do not exist, then make will search for the rule to make the files.  The
+  # Makefile proceeds in this manner all the way to the first task.  If any of the
+  # tasks are piped together, then these need to be output in order, not reverse
+  # order.
+  if pl.isPiped: pl.determineToolWriteOrder()
+
   # Generate scripts to run the selected pipeline.
-  io.generateMakefile(tl, pl, sourcePath);
+  io.generateMakefile(tl, pl, sourcePath)
 
   # Having established the mode of operation and checked that the command lines are
   # valid etc., ping the website to log use of gkno.

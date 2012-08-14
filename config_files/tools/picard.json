@@ -1,0 +1,33 @@
+{
+  "tools" : {
+    "picard-mark-duplicates" : {
+      "description" : "Mark duplicate reads ****NOT YET OPERATIONAL****.",
+      "path" : "picard-tools-1.61",
+      "executable" : "MarkDuplicates.jar",
+      "precommand" : "java -Xmx8g -jar",
+      "help" : "--help|-h",
+      "arguments" : {
+        "INPUT" : {
+          "description" : "the input BAM file. Required input.",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "bam"
+        },
+        "-bti" : {
+          "description" : "create non-standard (depth based) index file (*.bti). Default behaviour is to create standard BAM index (*.bai)",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "extension" : "null"
+        }
+      }
+    }
+  }
+}

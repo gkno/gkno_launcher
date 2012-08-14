@@ -16,6 +16,11 @@
           "dependent" : "true",
           "alternative" : "-b",
           "extension" : "bam",
+          "if input is stream" : "replace",
+          "replace argument with" : {
+            "argument" : "--stdin",
+            "value" : ""
+          },
           "type" : "string"
         },
         "--vcf" : {
@@ -39,6 +44,66 @@
           "alternative" : "-f",
           "extension" : "fa|fasta",
           "type" : "string"
+        },
+        "--no-snps" : {
+          "description" : "Ignore SNP alleles.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "alternative" : "-I",
+          "type" : "flag"
+        },
+        "--no-indels" : {
+          "description" : "Ignore insertion and deletion alleles.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "alternative" : "-i",
+          "type" : "flag"
+        },
+        "--no-mnps" : {
+          "description" : "Ignore multi-nuceotide polymorphisms, MNPs.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "alternative" : "-X",
+          "type" : "flag"
+        },
+        "--no-complex" : {
+          "description" : "Ignore complex events (composites of other classes).",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "alternative" : "-u",
+          "type" : "flag"
+        },
+        "--use-best-n-alleles" : {
+          "description" : "Evaluate only the best N SNP alleles, ranked by sum of|supporting quality scores.  (Set to 0 to use all; default: all)",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "alternative" : "-n",
+          "type" : "flag"
+        },
+        "--max-complex-gap" : {
+          "description" : "Allow complex alleles with contiguous embedded matches of up|to this length.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "alternative" : "-E",
+          "type" : "flag"
         }
       }
     }
