@@ -26,7 +26,6 @@ __version__ = "0.04"
 __date__ = "August 2012"
 
 def main():
-  user = getpass.getuser()
 
   # Define a tools object.  This stores all information specific to individual
   # tools.
