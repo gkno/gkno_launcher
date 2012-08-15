@@ -558,6 +558,10 @@ class pipeline:
       # If the task outputs to a file (i.e. it is not listed as outputting to a stream,
       # the block of piped tasks is complete, so add the task to the list of task
       # blocks and reset the block.
-      if task not in self.information['tools outputting to stream']:
+      if self.isPiped: 
+        if task not in self.information['tools outputting to stream']:
+          self.taskBlocks.append(taskBlock)
+          taskBlock = []
+      else:
         self.taskBlocks.append(taskBlock)
         taskBlock = []
