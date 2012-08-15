@@ -27,11 +27,11 @@ class files:
 
     # Find configuration files for individual tools.
     for files in os.listdir(path + "tools"):
-      if files.endswith('.json'): self.jsonToolFiles[files] = 1
+      if files.endswith('.json'): self.jsonToolFiles[files] = True
 
     # Find configuration files for pipelines.
     for files in os.listdir(path + "pipes"):
-      if files.endswith('.json'): self.jsonPipelineFiles[files] = 1
+      if files.endswith('.json'): self.jsonPipelineFiles[files] = True
 
   # From the list of json files, popluate a hash table with the names
   # and descriptions of the tools.

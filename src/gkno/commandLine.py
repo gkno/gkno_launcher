@@ -93,7 +93,8 @@ class commandLine:
   def parseToolCommandLine(self, gknoHelp, io, tl, pl, commandLine, task, tool, verbose):
     er           = errors()
     modifiedTool = ''
-    if tl.toolArguments['pipeline']['--verbose']:
+    verbose = True if verbose and (tl.toolArguments['pipeline']['--verbose']) else False
+    if verbose:
       print('Parsing the command line...', end = '', file = sys.stdout)
       sys.stdout.flush()
     while(len(commandLine) != 0):
@@ -157,7 +158,7 @@ class commandLine:
       # to set.
       else: tl.toolArguments[modifiedTool][argument] = 'set'
 
-    if tl.toolArguments['pipeline']['--verbose']:
+    if verbose:
       print('done.', file = sys.stdout)
       print(file = sys.stdout)
       sys.stdout.flush()
@@ -167,9 +168,12 @@ class commandLine:
   # a tool, the following argument needs to be a list of arguments in quotation
   # marks for that tool.
   def parsePipelineCommandLine(self, gknoHelp, io, tl, pl):
+    toolsWrittenToScreen = False
+    writingOnNewLine     = False
     er = errors()
+
     if tl.toolArguments['pipeline']['--verbose']:
-      print('Parsing the command line...', file = sys.stdout)
+      print('Parsing the command line...', end = '', file = sys.stdout)
       sys.stdout.flush()
     while(len(sys.argv) != 0):
       argument = sys.argv.pop(0)
@@ -206,8 +210,12 @@ class commandLine:
       # exception
       if isToolName:
         if tl.toolArguments['pipeline']['--verbose']:
+          if not writingOnNewLine:
+            print(file = sys.stdout)
+            writingOnNewLine = True
           print("\tProcessing command line arguments for tool '", task, '\'...', sep = '', end = '', file = sys.stdout)
           sys.stdout.flush()
+          toolsWrittenToScreen = True
         try: nextArgument = sys.argv[0]
         except: 
           er.commandLineToolError("\n\t\t", pl.pipelineName, task)
@@ -223,6 +231,7 @@ class commandLine:
         if tl.toolArguments['pipeline']['--verbose']:
           print('done.', file = sys.stdout)
           sys.stdout.flush()
+          toolsWrittenToScreen = True
 
       # If the argument is a pipeline argument, check that the argument points to a tool
       # in the pipeline and that the tool argument it points to is valid, then modify the
@@ -257,6 +266,7 @@ class commandLine:
           er.terminate()
 
     if tl.toolArguments['pipeline']['--verbose']:
+      if not toolsWrittenToScreen: print('done.', file = sys.stdout)
       print(file = sys.stdout)
       sys.stdout.flush()
 
@@ -292,6 +302,18 @@ class commandLine:
           elif isInput:  filePath = tl.toolArguments['pipeline']['--input-path']    + '/' + tl.toolArguments[task][argument]
           elif isOutput: filePath = tl.toolArguments['pipeline']['--output-path']   + '/' + tl.toolArguments[task][argument]
           tl.toolArguments[task][argument] = filePath
+
+        # If the file path is given, ensure that the full path is given. For example,
+        # if './file' is specified, modify the './' to the full path of the current
+        # directory.  If the path specified is a parameter and as such begins with '$(',
+        # do not modify the path.
+        else:
+          if not tl.toolArguments[task][argument].startswith('$('):
+            givenPath = tl.toolArguments[task][argument].split('/')
+            filename  = givenPath.pop()
+            givenPath = '/'.join(givenPath)
+            fullPath  = os.path.abspath(givenPath)
+            tl.toolArguments[task][argument] = fullPath + '/' + filename
 
         # Check that the file has the correct extension.
         self.checkExtension(tl, task, tool, argument, isOutput)
@@ -342,7 +364,7 @@ class commandLine:
         er.terminate()
 
   # Loop over the tools and check that all required information has been set.
-  def checkParameters(self, tl, pl, gknoHelp, task, tool):
+  def checkParameters(self, tl, pl, gknoHelp, task, tool, checkRequired):
     er = errors()
 
     if tl.toolArguments['pipeline']['--verbose']:
@@ -357,7 +379,7 @@ class commandLine:
       isArgumentSet = True if tl.toolArguments[task][argument] != '' else False
 
       # If the value is required and no value has been provided, fail.
-      if isRequired and not isArgumentSet:
+      if isRequired and checkRequired and not isArgumentSet:
         er.missingRequiredValue(True, "\t\t\t", task, tool, argument, tl, pl)
         er.terminate()
 

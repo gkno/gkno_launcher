@@ -9,6 +9,9 @@ import sys
 import commandLine
 from commandLine import *
 
+import exportJson
+from exportJson import *
+
 import files
 from files import *
 
@@ -22,7 +25,7 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.04"
+__version__ = "0.05"
 __date__ = "August 2012"
 
 def main():
@@ -111,6 +114,42 @@ def main():
   if pl.isPipeline: cl.parsePipelineCommandLine(gknoHelp, io, tl, pl)
   else: cl.parseToolCommandLine(gknoHelp, io, tl, pl, sys.argv, tl.tool, tl.tool, True)
 
+  # If the --export-config has been set, then the user is attempting to create a
+  # new configuration file based on the selected pipeline.  This can only be
+  # selected for a pipeline.
+  if tl.toolArguments['pipeline']['--export-config'] != '' and pl.isPipeline:
+
+    print('Setting up parameters for modified configuration file...', file = sys.stdout)
+    sys.stdout.flush()
+    # Define the json export object, initialise and then check that the given
+    # filename is unique.
+    ej = exportJson()
+    ej.checkExportName(tl, io)
+ 
+    # Set the paths for all of the inputted files and check that all set parameters
+    # are valid.
+    for task in pl.information['workflow']:
+      tool = pl.information['tools'][task]
+      if tl.toolArguments['pipeline']['--verbose']:
+        print("\t", task, ' (', tool, ')...', sep = '', file = sys.stdout)
+        sys.stdout.flush()
+      cl.setPaths(tl, pl, task, tool)
+      cl.checkParameters(tl, pl, gknoHelp, task, tool, False)
+    print(file = sys.stdout)
+    sys.stdout.flush()
+    ej.modifyPipelineInformation(tl, pl)
+    ej.writeNewConfigurationFile(pl, sourcePath)
+    print(file = sys.stdout)
+    print('=' * 84, file = sys.stdout)
+    print('gkno configuration file generation complete.', file = sys.stdout)
+    print('It is recommended that the new configuration is tested to ensure expected behaviour.', file = sys.stdout)
+    print('=' * 84, file = sys.stdout)
+    sys.stdout.flush()
+
+    # After the configuration file has been exported, terminate the script.  No
+    # Makefile is generated and nothing is executed.
+    exit(0)
+
   # Loop over each of the tools in turn and set all of the parameters.  Each
   # task in turn may depend on parameters/outputs of previous tasks and so
   # handling in each task in the order it appears in the pipeline is necessary.
@@ -140,7 +179,7 @@ def main():
     cl.setPaths(tl, pl, task, tool)
 
     # Check that all required files and parameters have been set.
-    cl.checkParameters(tl, pl, gknoHelp, task, tool)
+    cl.checkParameters(tl, pl, gknoHelp, task, tool, True)
     if tl.toolArguments['pipeline']['--verbose']:
       print(file = sys.stdout)
       sys.stdout.flush()

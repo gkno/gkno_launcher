@@ -239,6 +239,15 @@ class errors:
     print(pad, 'ERROR: Consult documentation on how to pipe together tools.', sep = '', file = sys.stderr)
     self.error = True
 
+  # If a configuration file is being exported and the filename to be exported already exists,
+  # throw an error and give a list of all of the currently existing pipelines.
+  def outputJsonExists(self, newLine, pad, io, name):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Exporting new configuration file \'', name, '\', but this already exists.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Following is a list of existing configuration files.  Select a name not contained here.', sep = '', file = sys.stderr)
+    for json in io.jsonPipelineFiles: print(pad, "\t", json, sep = '', file = sys.stderr)
+    self.error = True
+
   # Terminate the script after errors have been found.
   def terminate(self):
     print(file = sys.stderr)

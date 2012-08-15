@@ -64,6 +64,14 @@ class pipeline:
       self.information['arguments']['--verbose']['type']        = 'bool'
       self.information['arguments']['--verbose']['default']     = True
 
+    if '--export-config' not in self.information:
+      self.information['arguments']['--export-config']                = {}
+      self.information['arguments']['--export-config']['description'] = 'Export information to a new configuration file of this name.'
+      self.information['arguments']['--export-config']['tool']        = 'pipeline'
+      self.information['arguments']['--export-config']['alternative'] = '-ec'
+      self.information['arguments']['--export-config']['type']        = 'string'
+      self.information['arguments']['--export-config']['default']     = ''
+
   # Print to screen information about the selected pipeline.
   def printPipelineInformation(self, tl):
     er = errors()
