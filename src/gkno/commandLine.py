@@ -21,7 +21,7 @@ class commandLine:
           else: tl.toolArguments['pipeline']['--verbose'] = False
 
   # Check the first entry on the command line is valid.
-  def getMode(self, io, gknoHelp, tl, pl):
+  def getMode(self, io, gknoHelp, tl, pl, admin):
 
     # If a mode of operation has not been defined, show the gkno
     # launcher usage information.
@@ -40,7 +40,19 @@ class commandLine:
           gknoHelp.pipelineHelp = True
           gknoHelp.printHelp    = True
 
-      # If this isn't a pipeline, the argument should be the name of a tool.
+      # If any admin operation was requested, set requested mode
+      elif argument in admin.allModes
+        admin.isRequested = True
+        admin.mode = argument
+
+        # If a resource operation was request, fetch the associated resource's name
+        if argument in admin.resourceModes:
+          try: admin.resourceName = sys.argv[2]
+          except:
+            gknoHelp.adminHelp = True
+            gknoHelp.printHelp = True
+
+      # If this isn't a pipeline or admin command, the argument should be the name of a tool.
       else:
         tl.tool = argument
 
@@ -77,6 +89,7 @@ class commandLine:
             gknoHelp.specificPipelineHelp = True
             gknoHelp.printHelp            = True
 
+        # TODO: handle admin help
 
     # Remove the path, 'pipe' and pipeline name from the command line if gkno is
     # being run in pipeline mode, or the path and tool name if in tool mode, leaving
