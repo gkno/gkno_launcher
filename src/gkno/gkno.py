@@ -61,7 +61,7 @@ def main():
 
   # Check if help has been requested.  If so, print out usage information for
   # the tool or pipeline as requested.
-  cl.getMode(io, gknoHelp, tl, pl)
+  cl.getMode(io, gknoHelp, tl, pl, admin)
 
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
@@ -74,7 +74,7 @@ def main():
   if admin.isRequested:
 
     # Run requested admin operation.
-    status = admin.run(sourcePath, gknoHelp)
+    status = admin.run(sourcePath)  # FIXME: pass gknoHelp?
 
     # After the operation is complete, terminate the script with the operation's return
     # value. No need to bother with tools or pipes.

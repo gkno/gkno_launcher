@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+from __future__ import print_function
+import sys
+
+
 import conf
 
 # Use file: gkno/conf/user_settings.json
@@ -8,14 +12,16 @@ import conf
 class adminUtils:
 
     def __init__(self):
-        self.resourceModes = [ 'add-resource', 'remove-resource' ]
-        self.allModes      = [ 'build', 'update', self.resourceModes ]
+        self.resourceModes = [ "add-resource", "remove-resource" ]
+        self.allModes      = self.resourceModes + [ "build", "update" ]
         self.isRequested   = False
-        self.mode          = ''
-        self.resourceName  = ''
-        self.sourcePath    = ''
+        self.mode          = ""
+        self.resourceName  = ""
+        self.sourcePath    = ""
 
     def build(self):
+
+        print("Building...", file = sys.stdout)
 
         # create 'conf/user_settings.json' if does not exist
 
@@ -34,6 +40,8 @@ class adminUtils:
 
     def update(self):
         
+        print("Updating...", file = sys.stdout)
+
         # 'git pull origin master'
 
         # for each tool in conf.tools
@@ -46,6 +54,8 @@ class adminUtils:
         return 0;
 
     def addResource(self, resourceName):
+
+        print("Adding resource...", file = sys.stdout)
 
         # if resourceName already in userSettingsFile
         #    print 'gkno already exists' message # FIXME: what if it's not *actually* there
@@ -65,6 +75,8 @@ class adminUtils:
 
     def removeResource(self):
         
+        print("Removing resource...", file = sys.stdout)
+
         # for each resource in conf.resources:
         #    if self.resourceName == resource.name:
         #      git remote rm stuff
@@ -78,10 +90,13 @@ class adminUtils:
         return 1
 
     def printInvalidMode(self):
+        print("Invalid mode", file = sys.stdout)
         # FIXME: implement me!
         pass
 
     def run(self, sourcePath):
+
+        print("Running...", file = sys.stdout)
 
         # Sanity check
         if not self.isRequested: 

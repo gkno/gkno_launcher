@@ -41,7 +41,7 @@ class commandLine:
           gknoHelp.printHelp    = True
 
       # If any admin operation was requested, set requested mode
-      elif argument in admin.allModes
+      elif argument in admin.allModes:
         admin.isRequested = True
         admin.mode = argument
 
