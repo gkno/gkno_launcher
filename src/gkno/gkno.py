@@ -28,7 +28,7 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.05"
+__version__ = "0.06"
 __date__ = "August 2012"
 
 def main():
@@ -243,7 +243,7 @@ def main():
   # Makefile proceeds in this manner all the way to the first task.  If any of the
   # tasks are piped together, then these need to be output in order, not reverse
   # order.
-  if pl.isPiped: pl.determineToolWriteOrder()
+  pl.determineToolWriteOrder()
 
   # Generate scripts to run the selected pipeline.
   io.generateMakefile(tl, pl, sourcePath)

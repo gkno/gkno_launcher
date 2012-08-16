@@ -299,7 +299,9 @@ class files:
     # Check if the target is a phony target.  If so, define the phony target.
     #if (len(tl.outputs[task]) == 1) and (tl.outputs[task][0].endswith('_phony')):
     #  print(".PHONY: ", tl.outputs[task], sep = '', file = self.makeFilehandle)
-    if len(outputBlock) == 0: exit('NO OUTPUTS: NOT HANDLED PHONY')
+    if len(outputBlock) == 0:
+      print('NO OUTPUTS: NOT HANDLED PHONY')
+      exit(1)
     else:
       for counter, output in enumerate(outputBlock):
         endOfLine = ' ' if ( (counter + 1) < len(outputBlock)) else ': '
