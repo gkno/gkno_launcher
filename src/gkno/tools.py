@@ -11,11 +11,12 @@ class tools:
 
   # Initialise the tools class.
   def __init__(self):
-    self.dependencies = {}
-    self.outputs      = {}
-    self.tool         = ''
-    self.toolInfo     = {}
-    self.toolArguments  = {}
+    self.dependencies          = {}
+    self.originalToolArguments = {}
+    self.outputs               = {}
+    self.tool                  = ''
+    self.toolInfo              = {}
+    self.toolArguments         = {}
 
   # If gkno is being run in the single tool mode, check that the specified tool
   # exists.
@@ -109,6 +110,37 @@ class tools:
     if self.toolArguments['pipeline']['--verbose']:
       print(file = sys.stdout)
       sys.stdout.flush()
+
+  # Set up tl.originalToolArguments structure.
+  def setupOriginalToolArguments(self):
+    for task in self.toolArguments:
+      if task not in self.originalToolArguments: self.originalToolArguments[task] = {}
+      for argument in self.toolArguments[task]:
+        if argument not in self.originalToolArguments[task]: self.originalToolArguments[task][argument] = {}
+        self.originalToolArguments[task][argument] = self.toolArguments[task][argument]
+
+  # Reset the tl.toolArguments structure.
+  def resetDataStructures(self, pl):
+    self.toolArguments = {}
+    for task in self.originalToolArguments:
+      if task not in self.toolArguments: self.toolArguments[task] = {}
+      for argument in self.originalToolArguments[task]:
+        if argument not in self.toolArguments[task]: self.toolArguments[task][argument] = {}
+        self.toolArguments[task][argument] = self.originalToolArguments[task][argument]
+
+    # Also reset the toolInfo structure.  If tools were streamed together, some
+    # additional options have been added to toolInfo, but the added options were
+    # tracked in the pl.addedToToolInfo structure.
+    for task in pl.addedToToolInfo:
+      for argument in pl.addedToToolInfo[task]: del(self.toolInfo[task]['arguments'][argument])
+
+    # Reset other data structures.
+    self.dependencies  = {}
+    self.outputs       = {}
+    pl.deleteFiles     = {}
+    pl.finalOutputs    = {}
+    pl.streamedOutputs = {}
+    pl.taskBlocks      = []
 
   # For each tool, find the output files.  If these haven't already been given a
   # value, then a value needs to be assigned.  First check if there is a 'construct

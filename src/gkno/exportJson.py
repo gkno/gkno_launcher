@@ -58,3 +58,26 @@ class exportJson:
     # Move the configuration file.
     destinationPath = sourcePath + '/config_files/pipes/'
     shutil.move(self.outputName, destinationPath)
+
+    print(file = sys.stdout)
+    print('=' * 84, file = sys.stdout)
+    print('gkno configuration file generation complete.', file = sys.stdout)
+    print('It is recommended that the new configuration is tested to ensure expected behaviour.', file = sys.stdout)
+    print('=' * 84, file = sys.stdout)
+    sys.stdout.flush()
+
+  # Get the data for the new configuration file.
+  def getData(self, tl, pl, gknoHelp):
+
+    # Set the paths for all of the inputted files and check that all set parameters
+    # are valid.
+    for task in pl.information['workflow']:
+      tool = pl.information['tools'][task]
+      if tl.toolArguments['pipeline']['--verbose']:
+        print("\t", task, ' (', tool, ')...', sep = '', file = sys.stdout)
+        sys.stdout.flush()
+      cl.setPaths(tl, pl, task, tool)
+      cl.checkParameters(tl, pl, gknoHelp, task, tool, False)
+      if tl.toolArguments['pipeline']['--verbose']:
+        print(file = sys.stdout)
+        sys.stdout.flush()

@@ -86,6 +86,73 @@ class commandLine:
     for i in range(1, countMax):
       if len(sys.argv) != 0: sys.argv.pop(0)
 
+  # Check if the pipeline is going to be run multiple times.
+  def checkForMultipleRuns(self, io, pl):
+    er = errors()
+
+    for count, argument in enumerate(sys.argv):
+      if (argument == '--multiple-runs') or (argument == '-mr'):
+
+        # Get the name of the file containing a list of all of the inputs, check that
+        # the file exists and is a valid json.
+        try: multipleName = sys.argv[count + 1]
+        except: er.missingFileForMultipleRuns(False, '')
+        if er.error: er.terminate()
+        pl.hasMultipleRuns = True
+
+        # Remove the multiple-runs arguments from the command line.
+        sys.argv.pop(0)
+        sys.argv.pop(0)
+        break
+
+    if pl.hasMultipleRuns:
+
+      # Open the json file.
+      inputData = io.getMultipleJson(multipleName)
+  
+      # Populate a data structure with the information from the json file.
+      # First the format of the data list is defined.
+      if 'format of data list' not in inputData:
+        er.missingJsonFormatForMultipleRuns(True, '', 'format of data list')
+        er.terminate()
+  
+      if 'data list' not in inputData:
+        er.missingJsonFormatForMultipleRuns(True, '', 'data list')
+        er.terminate()
+  
+      for argument in inputData['format of data list']: pl.multipleRunsListFormat.append(argument)
+      pl.multipleRunsInputArguments = inputData['data list']
+  
+      # Check the number of input arguments in the list is consistent with the
+      # format.  For example, if there are n entries in the format list, then
+      # there must be a multiple of m x n, entries in the inputArguments list,
+      # where m is the number of runs to be performed.
+      pl.multipleRunsNumberOfArguments = len(pl.multipleRunsListFormat)
+      numberOfInputArguments           = len(pl.multipleRunsInputArguments)
+  
+      if numberOfInputArguments % pl.multipleRunsNumberOfArguments != 0:
+        er.incorrectNumberOfEntriesInMultipleJson(True, '')
+        er.terminate()
+  
+      pl.numberOfMultipleRuns          = numberOfInputArguments / pl.multipleRunsNumberOfArguments
+    
+    # When iterating over the arguments in the multiple runs data structure,
+    # the command line will have to be built each time.  All of the arguments
+    # on the command line that are not in the multiple runs file need to be
+    # included on each command line, so store this information.
+    self.baseCommandLine = []
+    for argument in sys.argv: self.baseCommandLine.append(argument)
+
+  # Build the command line using the information in the multiple runs data structure.
+  def buildCommandLineMultipleRuns(self, pl):
+    sys.argv = []
+    for argument in self.baseCommandLine: sys.argv.append(argument)
+    for count in range(0, pl.multipleRunsNumberOfArguments):
+      argument = pl.multipleRunsListFormat[count]
+      value    = pl.multipleRunsInputArguments.pop(0)
+      sys.argv.append(argument)
+      sys.argv.append(value)
+
   # Parse the command line in tool mode.  Here all of the arguments are associated
   # with the specified tool or the pipeline.  Check to see that there are no
   # conflicts between the tool and pipeline arguments and update the tl.toolArguments

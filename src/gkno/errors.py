@@ -8,6 +8,12 @@ class errors:
   def __init__(self):
     self.error = False;
 
+  # If a json configuration file is malformed, terminate the script with an error.
+  def jsonOpenError(self, newLine, pad, error):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: json file is malformed: \'', error, '\'.', sep = '', file = sys.stderr)
+    self.error = True
+
   # If an unknown command line argument is given.
   def unknownToolArgument(self, pad, tool, argument):
     print(pad, 'ERROR: Argument \'', argument, '\' for tool \'', tool, '\' is not recognised.', sep = '', end = '', file = sys.stderr)
@@ -248,6 +254,35 @@ class errors:
     for json in io.jsonPipelineFiles: print(pad, "\t", json, sep = '', file = sys.stderr)
     self.error = True
 
+  # If attempting to perform multiple runs and no file is supplied, throw an error.
+  def missingFileForMultipleRuns(self, newLine, pad):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: File containing information for multiple runs \'--multiple-runs (-mr)\' is not supplied.', sep = '', file = sys.stderr)
+    self.error = True
+
+  # Missing pipeline json configuration file.
+  def missingFile(self, newLine, pad, filename):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Unable to find file: ', filename, sep = '', file = sys.stderr)
+    self.error = True
+
+  # If multiple runs are being performed, the input json must contain a block
+  # explaining th data that is contained within the file.  Throw an error if this
+  # block is missing.
+  def missingJsonFormatForMultipleRuns(self, newLine, pad):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: The multiple-runs input file must contain a block describing the contained data.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: The title of this block should be \'format of data list\'.', sep = '', file = sys.stderr)
+    self.error = True
+
+  # If the json file listing the input parameters has the wrong number of entries
+  # throw an error.
+  def incorrectNumberOfEntriesInMultipleJson(self, newLine, pad):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: The multiple-runs input file has the wrong number of entries.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Please check the entries in the data list.', sep = '', file = sys.stderr)
+    self.error = True
+  
   # Terminate the script after errors have been found.
   def terminate(self):
     print(file = sys.stderr)
@@ -271,10 +306,6 @@ class errors:
   # Missing pipeline json configuration file.
   def missingPipelineJsonFile(self, jsonFile):
     print("ERROR: Unable to find pipeline configuration file: ", jsonFile, sep = "", file = sys.stderr)
-
-  # If a json configuration file is malformed, terminate the script with an error.
-  def jsonOpenError(self, text, error):
-    print(text, "ERROR: json file is malformed: '", error, "'.", sep = '', file = sys.stderr)
 
   def unknownTool(self, task, tool):
     print("\tERROR: Tool name '", task, "' is associated with tool '", tool, "' but this tool", sep = "", end = "", file = sys.stderr)

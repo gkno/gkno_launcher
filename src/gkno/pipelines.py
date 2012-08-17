@@ -11,13 +11,19 @@ import sys
 
 class pipeline:
   def __init__(self):
-    self.isPipeline      = False
-    self.information     = {}
-    self.isPiped         = False
-    self.deleteFiles     = {}
-    self.finalOutputs    = {}
-    self.streamedOutputs = {}
-    self.taskBlocks      = []
+    self.addedToToolInfo               = {}
+    self.deleteFiles                   = {}
+    self.information                   = {}
+    self.isPiped                       = False
+    self.isPipeline                    = False
+    self.finalOutputs                  = {}
+    self.hasMultipleRuns               = False
+    self.multipleRunsInputArguments    = []
+    self.multipleRunsListFormat        = []
+    self.multipleRunsNumberOfArguments = 0
+    self.numberOfMultipleRuns          = 0
+    self.streamedOutputs               = {}
+    self.taskBlocks                    = []
 
   # After the json file has been parsed into the self.information structure, add some
   # pipeline specific values.
@@ -71,6 +77,14 @@ class pipeline:
       self.information['arguments']['--export-config']['alternative'] = '-ec'
       self.information['arguments']['--export-config']['type']        = 'string'
       self.information['arguments']['--export-config']['default']     = ''
+
+    if '--multiple-runs' not in self.information:
+      self.information['arguments']['--multiple-runs']                = {}
+      self.information['arguments']['--multiple-runs']['description'] = 'Run the pipeline multiple times using the inputs defined in this file.'
+      self.information['arguments']['--multiple-runs']['tool']        = 'pipeline'
+      self.information['arguments']['--multiple-runs']['alternative'] = '-mr'
+      self.information['arguments']['--multiple-runs']['type']        = 'string'
+      self.information['arguments']['--multiple-runs']['default']     = ''
 
   # Print to screen information about the selected pipeline.
   def printPipelineInformation(self, tl):
@@ -285,8 +299,8 @@ class pipeline:
         for argument in tl.toolArguments[task]:
 
           # Check that the option in the configuration file is valid.
-          if argument not in tl.toolInfo[tool]['arguments']:
-            print(file = sys.stdout)
+          #if argument not in tl.toolInfo[tool]['arguments']:
+          if (argument not in tl.toolInfo[tool]['arguments']) and (argument != 'json parameters'):
             er.invalidArgument(False, "\t\t\t", 'linkage', argument, task)
             er.terminate()
 
@@ -450,8 +464,9 @@ class pipeline:
     addArguments = {}
 
     if 'tools outputting to stream' in self.information:
-      print('Checking integrity of piped tools...', end = '', file = sys.stdout)
-      sys.stdout.flush()
+      if tl.toolArguments['pipeline']['--verbose']:
+        print('Checking integrity of piped tools...', end = '', file = sys.stdout)
+        sys.stdout.flush()
       self.isPiped = True
       for taskCounter, task in enumerate(self.information['workflow']):
         if task in self.information['tools outputting to stream']:
@@ -540,12 +555,17 @@ class pipeline:
 
       # Having determined all arguments that are modified, add the necessary arguments to the
       # tl.toolInfo structure (these weren't added before as the dictionary cannot be modified
-      # while it was being used).
+      # while it was being used).  Keep track of added arguments as they need to be removed
+      # once the makefile has been created, to reset the toolInfo structure back to its original
+      # form before rerunning the pipeline if multiple runs are being performed.
       for task in addArguments:
         tl.toolInfo[nextTool]['arguments'][replacementArgument] = 'replacement'
+        if nextTool not in self.addedToToolInfo: self.addedToToolInfo[nextTool] = []
+        self.addedToToolInfo[nextTool].append(replacementArgument)
 
-      print('done.', file = sys.stdout)
-      print(file = sys.stdout)
+      if tl.toolArguments['pipeline']['--verbose']:
+        print('done.', file = sys.stdout)
+        print(file = sys.stdout)
 
   # Determine the order in which to write out the tasks.
   def determineToolWriteOrder(self):

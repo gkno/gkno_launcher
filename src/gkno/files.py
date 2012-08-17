@@ -21,6 +21,26 @@ class files:
     self.outputsList       = []
     self.phoneHomeID       = ''
 
+  def getMultipleJson(self, filename):
+    er = errors()
+
+    # Check that the file exists.
+    try: jsonData = open(filename)
+    except: er.missingFile(True, '', filename)
+    if er.error: er.terminate()
+
+    try: inputData = json.load(jsonData)
+    except:
+      er.error = True
+      exc_type, exc_value, exc_traceback = sys.exc_info()
+
+    # If the json file has a problem, terminate the script with an error.
+    if er.error:
+      er.jsonOpenError(True, '', exc_value)
+      er.terminate()
+
+    return inputData
+
   # Search a directory for json files and return a reference
   # to a list.
   def getJsonFiles(self, path):
@@ -55,10 +75,7 @@ class files:
 
       # If the json file has a problem, terminate the script with an error.
       if er.error:
-        if verbose:
-          print(file = sys.stdout)
-          sys.stdout.flush()
-        er.jsonOpenError("\t\t", exc_value)
+        er.jsonOpenError(True, "\t\t", exc_value)
         er.terminate()
       else:
         for tool in toolData['tools']:
@@ -105,7 +122,7 @@ class files:
 
     # If the json file has a problem, terminate the script with an error.
     if er.error:
-      er.jsonOpenError("\t", exc_value)
+      er.jsonOpenError(True, "\t", exc_value)
       er.terminate()
     if verbose:
       print("done\n", file = sys.stdout)
@@ -116,12 +133,12 @@ class files:
   # The set of tools and the associated parameters are set
   # in the config file, so build up the scripts to run the
   # pipeline.
-  def generateMakefile(self, tl, pl, sourcePath):
+  def generateMakefile(self, tl, pl, sourcePath, filename):
     er = errors()
 
     # Open a script file.
-    self.makeFilehandle = open('Makefile', 'w')
-    self.filename       = os.path.abspath('Makefile')
+    self.makeFilehandle = open(filename, 'w')
+    self.filename       = os.path.abspath(filename)
   
     if tl.toolArguments['pipeline']['--verbose']:
       print("Generating Makefile...", file = sys.stdout)
