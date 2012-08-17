@@ -11,12 +11,14 @@ class helpClass:
     self.pipelineHelp         = False
     self.specificPipelineHelp = False
     self.toolHelp             = False
+    self.adminHelp            = False
     self.unknownPipeline      = False
     self.unknownTool          = False
+    self.unknownAdminMode     = False
 
   # If usage information needs to be printed out, determine the exact level
   # of usage information to provide, write to screen and then terminate.
-  def printUsage(self, io, tl, pl, version, date, path):
+  def printUsage(self, io, tl, pl, admin, version, date, path):
 
     # General gkno usage.
     if self.generalHelp:
@@ -42,6 +44,10 @@ class helpClass:
     elif self.specificPipelineHelp:
       self.printHeader(version, date)
       self.specificPipelineUsage(pl)
+
+    elif self.adminHelp:
+      self.printHeader(version, date)
+      self.adminUsage(admin)
 
     # Terminate.
     exit(0)
@@ -283,6 +289,10 @@ class helpClass:
       print("\t\t--%-*s%-*s parameters" % (length, task, 1, tool), file = sys.stdout)
     sys.stdout.flush()
 
+  # If help for admin operation was requested
+  def adminUsage(self, admin):
+    pass # FIXME
+
   # If help for a specific tool was requested, but that tool does not exist,
   # print an error after the usage information.
   def unknownToolMessage(self, tool):
@@ -304,3 +314,6 @@ class helpClass:
     print(file = sys.stdout)
     print('ERROR: Requested pipeline \'', pipeline, '\' does not exist.  Check available pipelines in usage above.', sep = '', file = sys.stdout)
     sys.stdout.flush()
+
+  def unknownAdminMessage(self, admin):
+    pass # FIXME

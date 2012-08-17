@@ -6,6 +6,9 @@ import getpass
 import subprocess
 import sys
 
+import adminUtils
+from adminUtils import *
+
 import commandLine
 from commandLine import *
 
@@ -43,6 +46,10 @@ def main():
   # is essentially treated as a pipeline with a single element.
   pl = pipeline()
 
+  # Define an admin utilities object. This handles all of the build/update steps
+  # along with 'resource' management.
+  admin = adminUtils()
+
   # Define the source path of all the gkno machinery.
   sourcePath = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno/gkno.py')]
 
@@ -54,26 +61,38 @@ def main():
 
   # Check if help has been requested.  If so, print out usage information for
   # the tool or pipeline as requested.
-  cl.getMode(io, gknoHelp, tl, pl)
+  cl.getMode(io, gknoHelp, tl, pl, admin)
 
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
   cl.checkForHelp(gknoHelp, pl)
 
+<<<<<<< HEAD
   # If the pipeline is going to be run multiple times for a different set of input
   # files, the '--multiple-runs (-mr)' argument can be set.  If this is set, the
   # whole pipeline needs to be looped over with each iteration built from the new
   # input files.  Check to see if this value is set.
   cl.checkForMultipleRuns(io, pl)
+=======
+  # Print gkno title and version to the screen.
+  if not gknoHelp.printHelp: gknoHelp.printHeader(__version__, __date__)
+
+  # Check if an admin mode has been requested
+  if admin.isRequested:
+
+    # Run requested admin operation.
+    status = admin.run(sourcePath)  # FIXME: pass gknoHelp?
+
+    # After the operation is complete, terminate the script with the operation's return
+    # value. No need to bother with tools or pipes.
+    exit(status)
+>>>>>>> origin/master
 
   # Each of the tools available to gkno should have a config file to
   # describe its operation, purpose etc.  These are contained in
   # config_files/tools.  Find all of the config file and create a hash
   # table with all available tools.
   io.getJsonFiles(sourcePath + '/config_files/')
-
-  # Print gkno title and version to the screen.
-  if not gknoHelp.printHelp: gknoHelp.printHeader(__version__, __date__)
 
   # If a pipeline is being run, check that configuration files
   # exist for the selected pipeline.  This should be in directory
@@ -103,7 +122,7 @@ def main():
 
   # If help was requested or there were problems (e.g. the tool name or pipeline
   # name did not exist), print out the required usage information.
-  if gknoHelp.printHelp: gknoHelp.printUsage(io, tl, pl, __version__, __date__, sourcePath)
+  if gknoHelp.printHelp: gknoHelp.printUsage(io, tl, pl, admin, __version__, __date__, sourcePath)
 
   # Print information about the pipeline to screen.
   if pl.isPipeline: pl.printPipelineInformation(tl)
