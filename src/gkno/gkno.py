@@ -67,13 +67,12 @@ def main():
   # or '-h' arguments on the command line.
   cl.checkForHelp(gknoHelp, pl)
 
-<<<<<<< HEAD
   # If the pipeline is going to be run multiple times for a different set of input
   # files, the '--multiple-runs (-mr)' argument can be set.  If this is set, the
   # whole pipeline needs to be looped over with each iteration built from the new
   # input files.  Check to see if this value is set.
   cl.checkForMultipleRuns(io, pl)
-=======
+
   # Print gkno title and version to the screen.
   if not gknoHelp.printHelp: gknoHelp.printHeader(__version__, __date__)
 
@@ -86,7 +85,6 @@ def main():
     # After the operation is complete, terminate the script with the operation's return
     # value. No need to bother with tools or pipes.
     exit(status)
->>>>>>> origin/master
 
   # Each of the tools available to gkno should have a config file to
   # describe its operation, purpose etc.  These are contained in
