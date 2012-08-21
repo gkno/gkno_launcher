@@ -15,7 +15,7 @@
           "resource" : "true",
           "dependent" : "true",
           "type" : "string",
-          "alternative" : "-a",
+          "short form argument" : "-a",
           "extension" : "fasta|fa"
         },
         "-oa" : {

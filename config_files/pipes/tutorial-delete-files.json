@@ -17,119 +17,118 @@
   "linkage" : {
     "build-read-archive" : {
       "-q" : {
-        "tool" : "generate-mosaik-parameters",
-        "command" : "-fq1"
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-fq1"
       },
       "-q2" : {
-        "tool" : "generate-mosaik-parameters",
-        "command" : "-fq2"
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-fq2"
       },
       "json parameters" : {
-        "tool" : "generate-mosaik-parameters",
-        "command" : "-out",
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-out",
         "json block" : "MosaikBuild"
       }
     },
     "align" : {
       "-in" : {
-        "tool" : "build-read-archive",
-        "command" : "-out"
+        "link to this task" : "build-read-archive",
+        "link to this argument" : "-out"
       },
       "-ia" : {
-        "tool" : "generate-mosaik-parameters",
-        "command" : "-ref"
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-ref"
       },
       "-hs" : {
-        "tool" : "generate-mosaik-parameters",
-        "command" : "-hs"
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-hs"
       },
       "-j" : {
-        "tool" : "generate-mosaik-parameters",
-        "command" : "-jmp"
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-jmp"
       },
       "json parameters" : {
-        "tool" : "generate-mosaik-parameters",
-        "command" : "-out",
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-out",
         "json block" : "MosaikAligner"
       }
     },
     "sort-primary-bam" : {
       "-in" : {
-        "tool" : "align",
-        "command" : "-out",
+        "link to this task" : "align",
+        "link to this argument" : "-out",
         "extension" : ".bam"
       }
     },
     "sort-multiple-bam" : {
       "-in" : {
-        "tool" : "align",
-        "command" : "-out",
+        "link to this task" : "align",
+        "link to this argument" : "-out",
         "extension" : ".multiple.bam"
       },
       "-out" : {
-        "tool" : "align",
-        "command" : "-out",
+        "link to this task" : "align",
+        "link to this argument" : "-out",
         "extension" : ".multiple.sorted.bam"
       }
     }
   },
   "arguments" : {
     "--fastq" : {
-      "tool" : "generate-mosaik-parameters",
-      "command" : "-fq1",
-      "alternative" : "-q",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-fq1",
+      "short form argument" : "-q",
       "type" : "string",
       "user entry required" : "true",
       "default" : "$(RESOURCES)/simulated_reads_1.fq"
     },
     "--fastq2" : {
-      "tool" : "generate-mosaik-parameters",
-      "command" : "-fq2",
-      "alternative" : "-q2",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-fq2",
+      "short form argument" : "-q2",
       "type" : "string",
       "user entry required" : "true",
       "default" : "$(RESOURCES)/simulated_reads_2.fq"
     },
     "--mosaik-reference" : {
-      "tool" : "generate-mosaik-parameters",
-      "command" : "-ref",
-      "alternative" : "-r",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-ref",
+      "short form argument" : "-r",
       "type" : "string",
       "default" : "$(RESOURCES)/test_genome.dat"
     },
     "--mosaik-jump-database" : {
-      "tool" : "generate-mosaik-parameters",
-      "command" : "-jmp",
-      "alternative" : "-j",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-jmp",
+      "short form argument" : "-j",
       "type" : "string",
       "default" : "$(RESOURCES)/test_genome_15"
     },
     "--batch-size" : {
-      "tool" : "generate-mosaik-parameters",
-      "command" : "-n",
-      "alternative" : "-b",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-n",
+      "short form argument" : "-b",
       "type" : "integer"
     },
     "--sequencing-technology" : {
-      "tool" : "generate-mosaik-parameters",
-      "command" : "-st",
-      "alternative" : "-st",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-st",
+      "short form argument" : "-st",
       "type" : "string"
     },
     "--median-fragment-length" : {
-      "tool" : "build-read-archive",
-      "command" : "-mfl",
+      "link to this task" : "build-read-archive",
+      "link to this argument" : "-mfl",
       "type" : "integer",
-      "alternative" : "-mfl"
+      "short form argument" : "-mfl"
     },
     "--out" : {
-      "tool" : "build-read-archive",
-      "command" : "-out",
-      "alternative" : "-o",
+      "link to this task" : "build-read-archive",
+      "link to this argument" : "-out",
+      "short form argument" : "-o",
       "type" : "string"
     }
   },
-
 
   "delete files" : {
     "build-read-archive" : {

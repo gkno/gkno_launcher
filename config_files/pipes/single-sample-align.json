@@ -109,72 +109,72 @@
     "--fastq" : {
       "tool" : "generate-mosaik-parameters",
       "command" : "-fq1",
-      "alternative" : "-q",
+      "short form argument" : "-q",
       "type" : "string",
       "user entry required" : "true"
     },
     "--fastq2" : {
       "tool" : "generate-mosaik-parameters",
       "command" : "-fq2",
-      "alternative" : "-q2",
+      "short form argument" : "-q2",
       "type" : "string",
       "user entry required" : "true"
     },
     "--mosaik-reference" : {
       "tool" : "generate-mosaik-parameters",
       "command" : "-ref",
-      "alternative" : "-r",
+      "short form argument" : "-r",
       "type" : "string",
       "default" : "test_genome.dat"
     },
     "--mosaik-jump-database" : {
       "tool" : "generate-mosaik-parameters",
       "command" : "-jmp",
-      "alternative" : "-j",
+      "short form argument" : "-j",
       "type" : "string",
       "default" : "test_genome"
     },
     "--batch-size" : {
       "tool" : "generate-mosaik-parameters",
       "command" : "-n",
-      "alternative" : "-b",
+      "short form argument" : "-b",
       "type" : "integer"
     },
     "--hash-size" : {
       "tool" : "generate-mosaik-parameters",
       "command" : "-hs",
       "type" : "integer",
-      "alternative" : "-hs"
+      "short form argument" : "-hs"
     },
     "--sequencing-technology" : {
       "tool" : "generate-mosaik-parameters",
       "command" : "-st",
-      "alternative" : "-st",
+      "short form argument" : "-st",
       "type" : "string"
     },
     "--median-fragment-length" : {
       "tool" : "build-read-archive",
       "command" : "-mfl",
       "type" : "integer",
-      "alternative" : "-mfl"
+      "short form argument" : "-mfl"
     },
     "--out" : {
       "tool" : "build-read-archive",
       "command" : "-out",
-      "alternative" : "-o",
+      "short form argument" : "-o",
       "type" : "string"
     },
     "--reference-fasta" : {
       "tool" : "count-covariates",
       "command" : "--reference_sequence",
-      "alternative" : "-rf",
+      "short form argument" : "-rf",
       "type" : "string",
       "default" : "test_genome.fa"
     },
     "--knownSites" : {
       "tool" : "count-covariates",
       "command" : "-knownSites",
-      "alternative" : "-k",
+      "short form argument" : "-k",
       "type" : "flag"
     }
   },

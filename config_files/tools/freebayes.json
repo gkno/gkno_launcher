@@ -14,7 +14,7 @@
           "resource" : "false",
           "required" : "true",
           "dependent" : "true",
-          "alternative" : "-b",
+          "short form argument" : "-b",
           "extension" : "bam",
           "if input is stream" : "replace",
           "replace argument with" : {
@@ -30,7 +30,7 @@
           "resource" : "false",
           "required" : "true",
           "dependent" : "false",
-          "alternative" : "-v",
+          "short form argument" : "-v",
           "extension" : "vcf",
           "type" : "string"
         },
@@ -41,7 +41,7 @@
           "resource" : "true",
           "required" : "true",
           "dependent" : "true",
-          "alternative" : "-f",
+          "short form argument" : "-f",
           "extension" : "fa|fasta",
           "type" : "string"
         },
@@ -52,7 +52,7 @@
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "alternative" : "-I",
+          "short form argument" : "-I",
           "type" : "flag"
         },
         "--no-indels" : {
@@ -62,7 +62,7 @@
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "alternative" : "-i",
+          "short form argument" : "-i",
           "type" : "flag"
         },
         "--no-mnps" : {
@@ -72,7 +72,7 @@
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "alternative" : "-X",
+          "short form argument" : "-X",
           "type" : "flag"
         },
         "--no-complex" : {
@@ -82,7 +82,7 @@
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "alternative" : "-u",
+          "short form argument" : "-u",
           "type" : "flag"
         },
         "--use-best-n-alleles" : {
@@ -92,7 +92,7 @@
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "alternative" : "-n",
+          "short form argument" : "-n",
           "type" : "flag"
         },
         "--max-complex-gap" : {
@@ -102,7 +102,7 @@
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "alternative" : "-E",
+          "short form argument" : "-E",
           "type" : "flag"
         }
       }

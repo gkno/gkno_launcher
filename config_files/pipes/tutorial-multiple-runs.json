@@ -1,38 +1,19 @@
 {
-  "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
+  "description" : "Tutorial file for 'Running a pipeline for multiple inputs'.",
   "workflow" : [
     "build-reference",
     "build-jump-database",
     "generate-mosaik-parameters",
     "build-read-archive",
-    "align",
-    "sort-primary-bam",
-    "sort-multiple-bam",
-    "index-primary-bam",
-    "count-covariates",
-    "recalibrate-bq",
-    "mark-duplicates",
-    "filter-bam",
-    "variant-call"
+    "align"
   ],
   "tools" : {
     "build-reference" : "mosaik-build-reference",
     "build-jump-database" : "mosaik-jump",
     "generate-mosaik-parameters" : "premo",
     "build-read-archive" : "mosaik-build-fastq",
-    "align" : "mosaik-aligner",
-    "sort-primary-bam" : "bamtools-sort",
-    "sort-multiple-bam" : "bamtools-sort",
-    "index-primary-bam" : "bamtools-index",
-    "count-covariates" : "gatk-count-covariates",
-    "recalibrate-bq" : "gatk-recalibrate-bq",
-    "mark-duplicates" : "picard-mark-duplicates",
-    "filter-bam" : "bamtools-filter",
-    "variant-call" : "freebayes"
+    "align" : "mosaik-aligner"
   },
-  "tools outputting to stream" : [
-    "filter-bam"
-  ],
   "construct filenames" : {
     "build-reference" : {
       "-oa" : {
@@ -119,73 +100,6 @@
         "link to this argument" : "-out",
         "json block" : "MosaikAligner"
       }
-    },
-    "sort-primary-bam" : {
-      "-in" : {
-        "link to this task" : "align",
-        "link to this argument" : "-out",
-        "extension" : ".bam"
-      }
-    },
-    "sort-multiple-bam" : {
-      "-in" : {
-        "link to this task" : "align",
-        "link to this argument" : "-out",
-        "extension" : ".multiple.bam"
-      },
-      "-out" : {
-        "link to this task" : "align",
-        "link to this argument" : "-out",
-        "extension" : ".multiple.sorted.bam"
-      }
-    },
-    "index-primary-bam" : {
-      "-in" : {
-        "link to this task" : "sort-primary-bam",
-        "link to this argument" : "-out"
-      }
-    },
-    "count-covariates" : {
-      "--input_file" : {
-        "link to this task" : "sort-primary-bam",
-        "link to this argument" : "-out"
-      }
-    },
-    "recalibrate-bq" : {
-      "--reference_sequence" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-fr"
-      },
-      "--input_file" : {
-        "link to this task" : "count-covariates",
-        "link to this argument" : "--input_file"
-      },
-      "--recal_file" : {
-        "link to this task" : "count-covariates",
-        "link to this argument" : "--recal_file"
-      }
-    },
-    "mark-duplicates" : {
-      "INPUT" : {
-        "link to this task" : "recalibrate-bq",
-        "link to this argument" : "--out"
-      }
-    },
-    "filter-bam" : {
-      "-in" : {
-        "link to this task" : "mark-duplicates",
-        "link to this argument" : "OUTPUT"
-      }
-    },
-    "variant-call" : {
-      "--bam" : {
-        "link to this task" : "filter-bam",
-        "link to this argument" : "-out"
-      },
-      "--fasta-reference" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-fr"
-      }
     }
   },
   "arguments" : {
@@ -201,7 +115,8 @@
       "link to this task" : "build-jump-database",
       "link to this argument" : "-hs",
       "type" : "integer",
-      "short form argument" : "-hs"
+      "short form argument" : "-hs",
+      "default" : "10"
     },
     "--fastq" : {
       "link to this task" : "generate-mosaik-parameters",
@@ -236,8 +151,8 @@
       "type" : "integer"
     },
     "--sequencing-technology" : {
-      "description" : "sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
       "link to this task" : "generate-mosaik-parameters",
+      "description" : "sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
       "link to this argument" : "-st",
       "short form argument" : "-st",
       "type" : "string"
@@ -253,45 +168,12 @@
       "link to this argument" : "-out",
       "short form argument" : "-o",
       "type" : "string"
-    },
-    "--reference-fasta" : {
-      "link to this task" : "count-covariates",
-      "link to this argument" : "--reference_sequence",
-      "short form argument" : "-rf",
-      "type" : "string",
-      "default" : "test_genome.fa"
-    },
-    "--knownSites" : {
-      "link to this task" : "count-covariates",
-      "link to this argument" : "-knownSites",
-      "short form argument" : "-k",
-      "type" : "flag"
     }
   },
   "delete files" : {
     "build-read-archive" : {
       "-out" : {
         "delete after task" : "align"
-      }
-    },
-    "align" : {
-      "-out" : {
-        ".bam" : {
-          "delete after task" : "sort-primary-bam"
-        },
-        ".multiple.bam" : {
-          "delete after task" : "sort-multiple-bam"
-        }
-      }
-    },
-    "sort-primary-bam" : {
-      "-out" : {
-        "delete after task" : "recalibrate-bq"
-      }
-    },
-    "recalibrate-bq" : {
-      "--out" : {
-        "delete after task" : "mark-duplicates"
       }
     }
   }

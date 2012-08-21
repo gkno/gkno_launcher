@@ -332,7 +332,8 @@ class files:
 
   # Generate commands for the makefile
   def generateCommand(self, tl, pl, path, task, tool, lineStart):
-    er = errors()
+    er        = errors()
+    delimiter = tl.argumentDelimiters[tool]
   
     # Print out the command line.
     print(lineStart, end = '', file = self.makeFilehandle)
@@ -391,14 +392,14 @@ class files:
             er.terminate()
           else:
             jsonBlock = pl.information['linkage'][task]['json parameters']['json block']
-            print(" \\\n\t`python $(GKNO_PATH)/getParameters.py ", end = "", file = self.makeFilehandle)
-            print(tl.toolArguments[task][argument], " ", jsonBlock, "`", sep = "", end = "", file = self.makeFilehandle)
+            print(" \\\n\t`python $(GKNO_PATH)/getParameters.py ", end = '', file = self.makeFilehandle)
+            print(tl.toolArguments[task][argument], ' ', jsonBlock, '`', sep = '', end = '', file = self.makeFilehandle)
 
         # If the argument is a replacement to handle a stream, do not interrogate the
         # tl.toolInfo structure as it doesn't contain the required values (the other
         # entries contain information on flags, data types etc).
         elif tl.toolInfo[tool]['arguments'][argument] == 'replacement':
-          print(" \\\n\t", argument, " ", tl.toolArguments[task][argument], sep = "", end = "", file = self.makeFilehandle)
+          print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
 
         else:
           if tl.toolInfo[tool]['arguments'][argument]['type'] == 'flag': isFlag = True
@@ -406,7 +407,7 @@ class files:
           # If the command is a flag, check if the value is 'set' or 'unset'.  If 'set',
           # write out the command.
           if isFlag:
-            if tl.toolArguments[task][argument] == 'set': print(" \\\n\t", argument, sep = "", end = "", file = self.makeFilehandle)
+            if tl.toolArguments[task][argument] == 'set': print(" \\\n\t", argument, sep = '', end = '', file = self.makeFilehandle)
           else:
 
             # Some command lines allow multiple options to be set and the command line can
@@ -416,11 +417,11 @@ class files:
             isList = isinstance(tl.toolArguments[task][argument], list)
             if isList:
               for value in tl.toolArguments[task][argument]:
-                print(" \\\n\t", argument, ' ', value, sep = '', end = '', file = self.makeFilehandle)
+                print(" \\\n\t", argument, delimiter, value, sep = '', end = '', file = self.makeFilehandle)
 
             # If the option is given a value, print it out.
             elif tl.toolArguments[task][argument] != '':
-              print(" \\\n\t", argument, ' ', tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
+              print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
 
   # If any intermediate files are marked as to be deleted after this step, add the command
   # to the rule.

@@ -114,12 +114,12 @@ class errors:
 
   # As above, but all of the information is present, but the variable to which the json
   # file points to does not exist.
-  def nonExistentToolOrArgumentInConstruction(self, pad, tool, argument, text, addTool, addArgument, toolError):
-    print(pad, 'ERROR: Unable to construct filename for \'', tool, '\' argument \'', argument, '\'.', sep = '', end = '', file = sys.stderr)
-    print(pad, 'ERROR: Variable \'', text, '\' comes from \'', addTool, '\' argument \'', addArgument, '\'.', sep = '', end = '', file = sys.stderr)
-    if toolError: print(pad, 'ERROR: This tool (\'', addTool, '\') does not exist.', sep = '', end = '', file = sys.stderr)
-    else: print(pad, 'ERROR: This argument (\'', addArgument, '\') does not exist.', sep = '', end = '', file = sys.stderr)
-    print(file = sys.stderr)
+  def nonExistentTaskOrArgumentInConstruction(self, newLine, pad, task, argument, text, addTask, addArgument, taskError):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Unable to construct filename for \'', task, '\' argument \'', argument, '\'.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: Variable \'', text, '\' comes from \'', addTask, '\' argument \'', addArgument, '\'.', sep = '', file = sys.stderr)
+    if taskError: print(pad, 'ERROR: This tool (\'', addTask, '\') does not exist.', sep = '', file = sys.stderr)
+    else: print(pad, 'ERROR: This argument (\'', addArgument, '\') does not exist.', sep = '', file = sys.stderr)
     self.error = True
 
   # A required value is not given.
@@ -128,13 +128,13 @@ class errors:
     print(pad, 'ERROR: Argument \'', argument, '\' for tool \'', task, ' (', tool, ')\' is required and not set.', sep = '', file = sys.stderr)
     if pl.isPipeline:
       for pipelineArgument in pl.information['arguments']:
-        pipelineTask     = pl.information['arguments'][pipelineArgument]['tool']
-        if pipelineTask == 'pipeline': continue
-        linkedArgument  = pl.information['arguments'][pipelineArgument]['command']
+        pipelineTask      = pl.information['arguments'][pipelineArgument]['link to this task']
+        if pipelineTask  == 'pipeline': continue
+        linkedArgument    = pl.information['arguments'][pipelineArgument]['link to this argument']
         if (pipelineTask == task) and (linkedArgument == argument):
-          description = tl.toolInfo[tool]['arguments'][argument]['description']
-          if 'alternative' in pl.information['arguments'][pipelineArgument]:
-            pipelineAlt = pl.information['arguments'][pipelineArgument]['alternative']
+          description     = tl.toolInfo[tool]['arguments'][argument]['description']
+          if 'short form argument' in pl.information['arguments'][pipelineArgument]:
+            pipelineAlt = pl.information['arguments'][pipelineArgument]['short form argument']
             print(pad, 'ERROR: This can be set on the command line using the pipeline argument \'', sep = '', end = '', file = sys.stderr)
             print(pipelineArgument, ' (', pipelineAlt, ')\'.', sep = '', file = sys.stderr)
             print(pad, 'ERROR: \'', pipelineArgument, ' (', pipelineAlt, ')\' description: ', description, sep = '', file = sys.stderr)
@@ -444,16 +444,6 @@ class errors:
     print("ERROR: The argument for help for tool '", tool, "' is not present in the configuration file.", sep = "", file = sys.stderr)
     self.error = True
 
-  # If an additional task is requested for one of the tools and the task is unknown
-  # terminate.
-  def unknownTask(self, task, tasks):
-    print("\t\tERROR: Unknown additional task requested in pipeline configuration file: '", task, sep = "", end = "", file = sys.stderr)
-    print("'.  Allowed tasks are:", sep = "", file = sys.stderr)
-    for allowedTask in tasks:
-      print("\t\t\t", allowedTask, ": ", tasks[allowedTask], sep = "", file = sys.stderr)
-
-    self.terminate()
-
   # If the number of files for the rename task is incorrect, fail.
   def fileCountError(self, task, filename):
     print("\t\tERROR: The rename task requires a single input and output file for tool '", task, "'", sep = "", file = sys.stderr)
@@ -505,8 +495,8 @@ class errors:
     print("\nPipeline specific options:", file = sys.stderr)
     for option in pl.information['arguments']:
       print("\t", option, sep = "", end = "", file = sys.stderr)
-      if 'alternative' in pl.information['arguments'][option]:
-        print(" (", pl.information['arguments'][option]['alternative'], ")", sep = "", end = "", file = sys.stderr)
+      if 'short form argument' in pl.information['arguments'][option]:
+        print(" (", pl.information['arguments'][option]['short form argument'], ")", sep = "", end = "", file = sys.stderr)
       if 'description' in pl.information['arguments'][option]:
         print(":\t", pl.information['arguments'][option]['description'], sep = '', end = '', file = sys.stderr)
       print(file = sys.stderr)

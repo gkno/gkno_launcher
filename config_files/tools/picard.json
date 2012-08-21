@@ -1,31 +1,57 @@
 {
   "tools" : {
     "picard-mark-duplicates" : {
-      "description" : "Mark duplicate reads ****NOT YET OPERATIONAL****.",
+      "description" : "Mark duplicate reads.",
+      "hide tool" : "true",
       "path" : "picard-tools-1.61",
       "executable" : "MarkDuplicates.jar",
       "precommand" : "java -Xmx8g -jar",
+      "argument delimiter" : "=",
       "help" : "--help|-h",
       "arguments" : {
         "INPUT" : {
-          "description" : "the input BAM file. Required input.",
+          "description" : "the input BAM file. Required.",
           "input" : "true",
+          "use for filenames" : "true",
           "output" : "false",
           "required" : "true",
           "resource" : "false",
           "dependent" : "true",
+          "short form argument" : "I",
           "type" : "string",
           "extension" : "bam"
         },
-        "-bti" : {
-          "description" : "create non-standard (depth based) index file (*.bti). Default behaviour is to create standard BAM index (*.bai)",
+        "OUTPUT" : {
+          "description" : "the output BAM file. Required.",
+          "input" : "false",
+          "output" : "true",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "short form argument" : "O",
+          "type" : "string",
+          "extension" : "dup.bam"
+        },
+        "METRICS_FILE" : {
+          "description" : "File to write duplication metrics to. Required.",
+          "input" : "false",
+          "output" : "true",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "short form argument" : "M",
+          "type" : "string",
+          "extension" : "metrics"
+        },
+        "TMP_DIR" : {
+          "description" : "Temporary directory for storing temporary data.",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "type" : "flag",
-          "extension" : "null"
+          "type" : "string",
+          "default" : "$(PWD)"
         }
       }
     }

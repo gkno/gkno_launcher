@@ -8,6 +8,26 @@
     "build-reference" : "mosaik-build-reference",
     "build-jump-database" : "mosaik-jump"
   },
+  "construct filenames" : {
+    "build-jump-database" : {
+      "-out" : {
+        "filename root" : "from argument",
+        "get root from task" : "build-reference",
+        "get root from argument" : "-fr",
+        "remove input extension" : "true",
+        "additional text from parameters" : {
+          "order" : [
+            "filename root",
+            "hash-size"
+          ],
+          "hash-size" : {
+            "get parameter from task" : "build-jump-database",
+            "get parameter from argument" : "-hs"
+          }
+        }
+      }
+    }
+  },
   "linkage" : {
     "build-jump-database" : {
       "-ia" : {
@@ -29,7 +49,8 @@
       "link to this task" : "build-jump-database",
       "link to this argument" : "-hs",
       "type" : "integer",
-      "short form argument" : "-hs"
+      "short form argument" : "-hs",
+      "default" : "10"
     }
   }
 }

@@ -43,7 +43,7 @@ class helpClass:
     # Specific pipeline help.
     elif self.specificPipelineHelp:
       self.printHeader(version, date)
-      self.specificPipelineUsage(pl)
+      self.specificPipelineUsage(tl, pl)
 
     elif self.adminHelp:
       self.printHeader(version, date)
@@ -107,7 +107,7 @@ class helpClass:
       # Get the tool description.
       description = tl.toolInfo[tool]['description']
       printTool = tool + ":"
-      print("\t\t%-*s%-*s" % (length, printTool, 1, description), file = sys.stdout)
+      if not tl.hiddenTools[tool]: print("\t\t%-*s%-*s" % (length, printTool, 1, description), file = sys.stdout)
     print(file = sys.stdout)
 
   # Print usage information on the pipeline mode of operation.
@@ -224,7 +224,7 @@ class helpClass:
 
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
-  def specificPipelineUsage(self, pl):
+  def specificPipelineUsage(self, tl, pl):
     length = len(pl.pipelineName) + 26
     print('=' * length)
     print('  gkno pipeline usage - ', pl.pipelineName, sep = '', file = sys.stdout)
@@ -249,7 +249,7 @@ class helpClass:
     for argument in pl.information['arguments']:
       text        = argument
       description = 'No description'
-      if 'alternative' in pl.information['arguments'][argument]: text += ' (' + pl.information['arguments'][argument]['alternative'] + ')'
+      if 'short form argument' in pl.information['arguments'][argument]: text += ' (' + pl.information['arguments'][argument]['short form argument'] + ')'
       if 'description' in pl.information['arguments'][argument]: description = pl.information['arguments'][argument]['description']
       text += ':'
       length = len(text) if (len(text) > length) else length
@@ -285,8 +285,9 @@ class helpClass:
     sortedTasks = sorted(pl.information['workflow'])
     for task in sortedTasks:
       tool  = pl.information['tools'][task]
-      task += ':'
-      print("\t\t--%-*s%-*s parameters" % (length, task, 1, tool), file = sys.stdout)
+      if not tl.hiddenTools[tool]:
+        task += ':'
+        print("\t\t--%-*s%-*s parameters" % (length, task, 1, tool), file = sys.stdout)
     sys.stdout.flush()
 
   # If help for admin operation was requested

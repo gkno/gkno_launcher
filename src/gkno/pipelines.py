@@ -31,60 +31,60 @@ class pipeline:
     if 'arguments' not in self.information: self.information['arguments'] = {}
 
     if '--input-path' not in self.information:
-      self.information['arguments']['--input-path']                = {}
-      self.information['arguments']['--input-path']['description'] = 'Path for input files if not defined.  Default: current directory'
-      self.information['arguments']['--input-path']['tool']        = 'pipeline'
-      self.information['arguments']['--input-path']['alternative'] = '-ip'
-      self.information['arguments']['--input-path']['type']        = 'string'
-      self.information['arguments']['--input-path']['default']     = '$(PWD)'
+      self.information['arguments']['--input-path']                        = {}
+      self.information['arguments']['--input-path']['description']         = 'Path for input files if not defined.  Default: current directory'
+      self.information['arguments']['--input-path']['link to this task']   = 'pipeline'
+      self.information['arguments']['--input-path']['short form argument'] = '-ip'
+      self.information['arguments']['--input-path']['type']                = 'string'
+      self.information['arguments']['--input-path']['default']             = '$(PWD)'
 
     if '--output-path' not in self.information:
-      self.information['arguments']['--output-path']                = {}
-      self.information['arguments']['--output-path']['description'] = 'Path for output files if not defined.  Default: current directory'
-      self.information['arguments']['--output-path']['tool']        = 'pipeline'
-      self.information['arguments']['--output-path']['alternative'] = '-op'
-      self.information['arguments']['--output-path']['type']        = 'string'
-      self.information['arguments']['--output-path']['default']     = '$(PWD)'
+      self.information['arguments']['--output-path']                        = {}
+      self.information['arguments']['--output-path']['description']         = 'Path for output files if not defined.  Default: current directory'
+      self.information['arguments']['--output-path']['link to this task']   = 'pipeline'
+      self.information['arguments']['--output-path']['short form argument'] = '-op'
+      self.information['arguments']['--output-path']['type']                = 'string'
+      self.information['arguments']['--output-path']['default']             = '$(PWD)'
 
     if '--resource-path' not in self.information:
-      self.information['arguments']['--resource-path']                = {}
-      self.information['arguments']['--resource-path']['description'] = 'Path for resource files if not defined.  Default: gkno/resources'
-      self.information['arguments']['--resource-path']['tool']        = 'pipeline'
-      self.information['arguments']['--resource-path']['alternative'] = '-rp'
-      self.information['arguments']['--resource-path']['type']        = 'string'
-      self.information['arguments']['--resource-path']['default']     = '$(RESOURCES)'
+      self.information['arguments']['--resource-path']                        = {}
+      self.information['arguments']['--resource-path']['description']         = 'Path for resource files if not defined.  Default: gkno/resources'
+      self.information['arguments']['--resource-path']['link to this task']   = 'pipeline'
+      self.information['arguments']['--resource-path']['short form argument'] = '-rp'
+      self.information['arguments']['--resource-path']['type']                = 'string'
+      self.information['arguments']['--resource-path']['default']             =          '$(RESOURCES)'
 
     if '--execute' not in self.information:
-      self.information['arguments']['--execute']                = {}
-      self.information['arguments']['--execute']['description'] = 'Boolean to determine if the Makefile should be executed.  Default: True'
-      self.information['arguments']['--execute']['tool']        = 'pipeline'
-      self.information['arguments']['--execute']['alternative'] = '-ex'
-      self.information['arguments']['--execute']['type']        = 'bool'
-      self.information['arguments']['--execute']['default']     = True
+      self.information['arguments']['--execute']                        = {}
+      self.information['arguments']['--execute']['description']         = 'Boolean to determine if the Makefile should be executed.  Default: True'
+      self.information['arguments']['--execute']['link to this task']   = 'pipeline'
+      self.information['arguments']['--execute']['short form argument'] = '-ex'
+      self.information['arguments']['--execute']['type']                = 'bool'
+      self.information['arguments']['--execute']['default']             = True
 
     if '--verbose' not in self.information:
-      self.information['arguments']['--verbose']                = {}
-      self.information['arguments']['--verbose']['description'] = 'Boolean to determine if verbose information should be output.  Default: True'
-      self.information['arguments']['--verbose']['tool']        = 'pipeline'
-      self.information['arguments']['--verbose']['alternative'] = '-vb'
-      self.information['arguments']['--verbose']['type']        = 'bool'
-      self.information['arguments']['--verbose']['default']     = True
+      self.information['arguments']['--verbose']                        = {}
+      self.information['arguments']['--verbose']['description']         = 'Boolean to determine if verbose information should be output.  Default: True'
+      self.information['arguments']['--verbose']['link to this task']   = 'pipeline'
+      self.information['arguments']['--verbose']['short form argument'] = '-vb'
+      self.information['arguments']['--verbose']['type']                = 'bool'
+      self.information['arguments']['--verbose']['default']             = True
 
     if '--export-config' not in self.information:
-      self.information['arguments']['--export-config']                = {}
-      self.information['arguments']['--export-config']['description'] = 'Export information to a new configuration file of this name.'
-      self.information['arguments']['--export-config']['tool']        = 'pipeline'
-      self.information['arguments']['--export-config']['alternative'] = '-ec'
-      self.information['arguments']['--export-config']['type']        = 'string'
-      self.information['arguments']['--export-config']['default']     = ''
+      self.information['arguments']['--export-config']                        = {}
+      self.information['arguments']['--export-config']['description']         = 'Export information to a new configuration file of this name.'
+      self.information['arguments']['--export-config']['link to this task']   = 'pipeline'
+      self.information['arguments']['--export-config']['short form argument'] = '-ec'
+      self.information['arguments']['--export-config']['type']                = 'string'
+      self.information['arguments']['--export-config']['default']             = ''
 
     if '--multiple-runs' not in self.information:
-      self.information['arguments']['--multiple-runs']                = {}
-      self.information['arguments']['--multiple-runs']['description'] = 'Run the pipeline multiple times using the inputs defined in this file.'
-      self.information['arguments']['--multiple-runs']['tool']        = 'pipeline'
-      self.information['arguments']['--multiple-runs']['alternative'] = '-mr'
-      self.information['arguments']['--multiple-runs']['type']        = 'string'
-      self.information['arguments']['--multiple-runs']['default']     = ''
+      self.information['arguments']['--multiple-runs']                        = {}
+      self.information['arguments']['--multiple-runs']['description']         = 'Run the pipeline multiple times using the inputs defined in this file.'
+      self.information['arguments']['--multiple-runs']['link to this task']   = 'pipeline'
+      self.information['arguments']['--multiple-runs']['short form argument'] = '-mr'
+      self.information['arguments']['--multiple-runs']['type']                = 'string'
+      self.information['arguments']['--multiple-runs']['default']             = ''
 
   # Print to screen information about the selected pipeline.
   def printPipelineInformation(self, tl):
@@ -133,9 +133,9 @@ class pipeline:
 
   # Set up the pipeline specific options.
   def setupPipelineOptions(self, tl):
-    er      = errors()
-    command = ''
-    tool    = ''
+    er             = errors()
+    linkToTask     = ''
+    linkToArgument = ''
     if tl.toolArguments['pipeline']['--verbose']:
       print('Setting up pipeline defaults...', end = '', file = sys.stdout)
       sys.stdout.flush()
@@ -147,10 +147,10 @@ class pipeline:
       # within the pipeline.  If the option is pipeline specific, the 'tool' value
       # will be 'pipeline', otherwise it will point to the individual tool.  For
       # tool commands, overwrite the current value stored.
-      if 'tool' not in self.information['arguments'][argument]:
-        er.optionAssociationError("\n\t\t", 'tool', argument, 'pipeline')
+      if 'link to this task' not in self.information['arguments'][argument]:
+        er.optionAssociationError("\n\t\t", 'link to this task', argument, 'pipeline')
         er.terminate()
-      else: task = self.information['arguments'][argument]['tool']
+      else: task = self.information['arguments'][argument]['link to this task']
       default = ''
       if 'default' in self.information['arguments'][argument]: default = self.information['arguments'][argument]['default']
 
@@ -167,17 +167,17 @@ class pipeline:
       if task != 'pipeline':
         tool = self.information['tools'][task] if task != 'pipeline' else ''
 
-        if 'command' not in self.information['arguments'][argument]:
-          er.optionAssociationError('command', argument, 'pipeline')
+        if 'link to this argument' not in self.information['arguments'][argument]:
+          er.optionAssociationError('link to this argument', argument, 'pipeline')
           er.terminate()
-        else: command = self.information['arguments'][argument]['command']
+        else: linkToArgument = self.information['arguments'][argument]['link to this argument']
 
         # Check that the argument is valid.
-        if command not in tl.toolArguments[task]:
-          er.incorrectArgumentInPipelineConfigurationFile("\n\t", task, argument, command)
+        if linkToArgument not in tl.toolArguments[task]:
+          er.incorrectArgumentInPipelineConfigurationFile("\n\t", task, argument, linkToArgument)
           er.terminate()
 
-        if default != '': tl.toolArguments[task][command] = default
+        if default != '': tl.toolArguments[task][linkToArgument] = default
       else:
         default = self.information['arguments'][argument]['default']
 
@@ -195,12 +195,14 @@ class pipeline:
 
   # Construct filenames using the instructions in the pipeline configuration file.
   def constructFileNameFromJson(self, tl, task, tool, argument):
+    er = errors()
+
     constructBlock = self.information['construct filenames'][task][argument]
-    basename       = constructBlock['base name'] if 'base name' in constructBlock else ''
-    linkedToolName = constructBlock['tool'] if 'tool' in constructBlock else ''
-    linkedArgument = constructBlock['argument'] if 'argument' in constructBlock else ''
-    removeExt      = constructBlock['remove extension'] if 'remove extension' in constructBlock else ''
-    additionalText = constructBlock['additional text from variables'] if 'additional text from variables' in constructBlock else ''
+    basename       = constructBlock['filename root'] if 'filename root' in constructBlock else ''
+    linkedToolName = constructBlock['get root from task'] if 'get root from task' in constructBlock else ''
+    linkedArgument = constructBlock['get root from argument'] if 'get root from argument' in constructBlock else ''
+    removeExt      = constructBlock['remove input extension'] if 'remove input extension' in constructBlock else ''
+    additionalText = constructBlock['additional text from parameters'] if 'additional text from parameters' in constructBlock else ''
 
     # If the basename is 'from argument', the 'tool', 'argument' and 'remove extension'
     # variables must be set.  Take the value from the specified tool/argument, remove
@@ -235,31 +237,52 @@ class pipeline:
       # is provided, use '_'.
       separator = additionalText['separator'] if 'separator' in additionalText else '_'
       for text in order:
-        if text == 'base name': name += basename
+        if text == 'filename root': name += basename
 
-        # If the text isn't 'base name', then it refers to a variable used in the pipeline.
+        # If the text isn't 'filename root', then it refers to a variable used in the pipeline.
         # There must exist an entry in the json file that associates the text with a tool
         # and an argument.
         else:
           if text not in additionalText:
-            er.noDescriptionOfVariable("\n\t", task, argument, text)
+            er.noDescriptionOfVariable("\n\t\t\t", task, argument, text)
             er.terminate()
-          addToolName = additionalText[text]['tool'] if 'tool' in additionalText[text] else ''
-          addArgument = additionalText[text]['argument'] if 'argument' in additionalText[text] else ''
-          if (addToolName == '') or (addArgument == ''):
+          addTaskName        = additionalText[text]['get parameter from task'] if 'get parameter from task' in additionalText[text] else ''
+          addArgument        = additionalText[text]['get parameter from argument'] if 'get parameter from argument' in additionalText[text] else ''
+          addRemoveExtension = additionalText[text]['remove extension'] if 'remove extension' in additionalText[text] else ''
+          if (addTaskName == '') or (addArgument == ''):
             er.missingVariableForFilenameConstruction("\n\t", task, argument, text)
             er.terminate()
 
-          # Now get the variable if it exists.
+          # Now get the variable if it exist
           toolError     = False
           argumentError = False
-          if addToolName not in tl.toolArguments: toolError = True
-          elif addArgument not in tl.toolArguments[addToolName]: argumentError = True
+          if addTaskName not in tl.toolArguments: toolError = True
+          elif addArgument not in tl.toolArguments[addTaskName]: argumentError = True
 
           if toolError or argumentError:
-            er.nonExistentToolOrArgumentInConstruction("\n\t", task, argument, text, addToolName, addArgument, toolError)
+            er.nonExistentTaskOrArgumentInConstruction(True, "\t\t\t", task, argument, text, addTaskName, addArgument, toolError)
             er.terminate()
-          variable = tl.toolArguments[addToolName][addArgument]
+          variable = tl.toolArguments[addTaskName][addArgument]
+
+          # If the parameter being used in the output filename is itself a filename,
+          # it should contain a path.  If this is the case, remove the path from the
+          # name before using in the construction.
+          variable = variable.split('/')[-1]
+
+          # If the extension is to be removed, check that the input argument defines a file
+          # with an extension and if so, remove the extension if requested.
+          if addRemoveExtension == 'true':
+            extension = tl.toolInfo[linkedTool]['arguments'][linkedArgument]['extension'] if 'extension' in \
+            tl.toolInfo[linkedTool]['arguments'][linkedArgument] else ''
+
+            # If there is a '|' symbol in the extension, break up all the allowable extensions
+            # and check if the name ends with any of them and if so, remove the extension.
+            if extension != '': 
+              extensions = extension.split('|')
+              for extension in extensions:
+                if variable.endswith(extension):
+                  variable = variable[0:(len(variable) - len(extension) - 1)]
+                  break
           name += separator + str(variable)
 
     # Determine if the output file is a stub.  If not, add the extension to the output file.
@@ -330,15 +353,15 @@ class pipeline:
     er = errors()
 
     targetToolName = ''
-    try: targetToolName = self.information['linkage'][task][argument]['tool']
-    except: er.optionAssociationError('tool', argument, tool)
+    try: targetToolName = self.information['linkage'][task][argument]['link to this task']
+    except: er.optionAssociationError('link to this task', argument, tool)
     if er.error:
       print(file = sys.stdout)
       er.terminate()
 
     targetArgument = ''
-    try: targetArgument = self.information['linkage'][task][argument]['command']
-    except: er.optionAssociationError('command', argument, tool)
+    try: targetArgument = self.information['linkage'][task][argument]['link to this argument']
+    except: er.optionAssociationError('link to this argument', argument, tool)
     if er.error:
       print(file = sys.stdout)
       er.terminate()

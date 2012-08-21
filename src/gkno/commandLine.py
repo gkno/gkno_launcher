@@ -187,8 +187,8 @@ class commandLine:
         isPipelineArgument = True
       else:
         for pipelineArgument in pl.information['arguments']:
-          if 'alternative' in pl.information['arguments'][pipelineArgument]:
-            shortFormArgument = pl.information['arguments'][pipelineArgument]['alternative']
+          if 'short form argument' in pl.information['arguments'][pipelineArgument]:
+            shortFormArgument = pl.information['arguments'][pipelineArgument]['short form argument']
             if argument == shortFormArgument:
               isPipelineArgument = True
               argument           = pipelineArgument
@@ -198,8 +198,8 @@ class commandLine:
         isToolArgument = True
       else:
         for toolArgument in tl.toolArguments[task]:
-          if 'alternative' in tl.toolInfo[tool]['arguments'][toolArgument]:
-            shortFormArgument = tl.toolInfo[tool]['arguments'][toolArgument]['alternative']
+          if 'short form argument' in tl.toolInfo[tool]['arguments'][toolArgument]:
+            shortFormArgument = tl.toolInfo[tool]['arguments'][toolArgument]['short form argument']
           if argument == shortFormArgument:
             isToolArgument = True
             argument       = toolArgument
@@ -265,8 +265,8 @@ class commandLine:
         isPipelineArgument = True
       else:
         for pipelineArgument in pl.information['arguments']:
-          if 'alternative' in pl.information['arguments'][pipelineArgument]:
-            shortFormArgument = pl.information['arguments'][pipelineArgument]['alternative']
+          if 'short form argument' in pl.information['arguments'][pipelineArgument]:
+            shortFormArgument = pl.information['arguments'][pipelineArgument]['short form argument']
             if argument == shortFormArgument:
               isPipelineArgument = True
               argument           = pipelineArgument
@@ -281,7 +281,7 @@ class commandLine:
       # argument caused the problem.
       if not isToolName and not isPipelineArgument:
         print(file = sys.stdout)
-        gknoHelp.specificPipelineUsage(pl)
+        gknoHelp.specificPipelineUsage(tl, pl)
         er.unknownPipelineArgument("\n", argument)
         exit(1)
 
@@ -317,9 +317,9 @@ class commandLine:
       # in the pipeline and that the tool argument it points to is valid, then modify the
       # tl.toolArguments structure.
       elif isPipelineArgument:
-        tool     = pl.information['arguments'][argument]['tool'] if 'tool' in pl.information['arguments'][argument] else ''
-        command  = pl.information['arguments'][argument]['command'] if 'command' in pl.information['arguments'][argument] else ''
-        dataType = pl.information['arguments'][argument]['type'] if 'type' in pl.information['arguments'][argument] else ''
+        linkToTask     = pl.information['arguments'][argument]['link to this task'] if 'link to this task' in pl.information['arguments'][argument] else ''
+        linkToArgument = pl.information['arguments'][argument]['link to this argument'] if 'link to this argument' in pl.information['arguments'][argument] else ''
+        dataType       = pl.information['arguments'][argument]['type'] if 'type' in pl.information['arguments'][argument] else ''
         isLastArgument = False
         try: nextArgument = sys.argv[0]
         except:
@@ -330,19 +330,19 @@ class commandLine:
           # If the supplied argument is a Boolean, ensure that it is treated as a Boolean.
           if nextArgument == 'True': nextArgument = True
           if nextArgument == 'False': nextArgument = False
-          if tool == 'pipeline': tl.toolArguments[tool][argument] = nextArgument
-          else: tl.toolArguments[tool][command] = nextArgument
+          if linkToTask   == 'pipeline': tl.toolArguments[linkToTask][argument] = nextArgument
+          else: tl.toolArguments[linkToTask][linkToArgument] = nextArgument
           sys.argv.pop(0)
 
         # If the next argument begins with a '-', then this option must be a flag (this
         # will be checked later).  As the flag has been set, set the value in tl.toolArguments
         # to set.
-        elif nextArgument.startswith('-') and (dataType == 'flag'): tl.toolArguments[tool][argument] = 'set'
+        elif nextArgument.startswith('-') and (dataType == 'flag'): tl.toolArguments[linkToTask][argument] = 'set'
 
         # If this is the last argument and the argument is not a flag then there is an
         # error.  A value must be set.
         elif (dataType != 'flag') and (isLastArgument or (nextArgument.startswith('-'))):
-          er.missingCommandLineArgumentValue(False, "\t\t", tool, command, argument)
+          er.missingCommandLineArgumentValue(False, "\t\t", linkToTask, linkToArgument, argument)
           er.terminate()
 
     if tl.toolArguments['pipeline']['--verbose']:

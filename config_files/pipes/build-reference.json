@@ -40,7 +40,7 @@
     "--fasta" : {
       "tool" : "build-reference",
       "command" : "-fr",
-      "alternative" : "-f",
+      "short form argument" : "-f",
       "type" : "string",
       "default" : "test_genome.fa"
     },
@@ -49,7 +49,7 @@
       "tool" : "build-jump-database",
       "command" : "-hs",
       "type" : "integer",
-      "alternative" : "-hs"
+      "short form argument" : "-hs"
     }
   }
 }

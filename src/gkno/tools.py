@@ -11,7 +11,9 @@ class tools:
 
   # Initialise the tools class.
   def __init__(self):
+    self.argumentDelimiters    = {}
     self.dependencies          = {}
+    self.hiddenTools           = {}
     self.originalToolArguments = {}
     self.outputs               = {}
     self.tool                  = ''
@@ -34,6 +36,20 @@ class tools:
     firstError = True
 
     for task in self.toolInfo:
+
+      # Check if the tool is hidden.  If so, it shouldn't appear as an
+      # available tool, or be accessible on the pipeline command line as
+      # modifiable.  It can, however, be built into pipelines.
+      value = self.toolInfo[task]['hide tool'] if 'hide tool' in self.toolInfo[task] else ''
+      self.hiddenTools[task] = True if value == 'true' else False
+
+      # The assumption is that command line arguments are of the form --argument value.
+      # There are certain tools that don't adhere to this (for example, Picard uses the
+      # form argument=value).  The 'argument delimiter' option with define the delimiter
+      # which defaults to ' ', if not specified.
+      value = self.toolInfo[task]['argument delimiter'] if 'argument delimiter' in self.toolInfo[task] else ''
+      self.argumentDelimiters[task] = ' ' if value == '' else value
+
       for argument in self.toolInfo[task]['arguments']:
 
         # Check that the 'input' field is present...
@@ -60,8 +76,6 @@ class tools:
         # If the resource field is missing, assume that it isn't a resource file.
         value = self.toolInfo[task]['arguments'][argument]['resource'] if 'resource' in self.toolInfo[task]['arguments'][argument] else ''
         if value == '': self.toolInfo[task]['arguments'][argument]['resource'] == 'false'
-
-    if er.error: er.terminate()
 
   # Loop over each tool in the pipeline and set up a hash of hashes.
   # For each tool, the set of allowed options along with default values
