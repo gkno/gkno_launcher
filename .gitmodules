@@ -7,3 +7,6 @@
 [submodule "tools/gatk"]
 	path = tools/gatk
 	url = git://github.com/gkno/gatk.git
+[submodule "tools/MOSAIK"]
+	path = tools/MOSAIK
+	url = git://github.com/gkno/MOSAIK.git
