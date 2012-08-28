@@ -1,3 +1,6 @@
 [submodule "tools/bamtools"]
 	path = tools/bamtools
 	url = git://github.com/gkno/bamtools.git
+[submodule "tools/freebayes"]
+	path = tools/freebayes
+	url = git://github.com/gkno/freebayes.git
