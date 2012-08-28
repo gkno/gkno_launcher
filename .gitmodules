@@ -25,3 +25,6 @@
 [submodule "resources/homo_sapiens"]
 	path = resources/homo_sapiens
 	url = git://github.com/gkno/resources-homo_sapiens.git
+[submodule "resources/tutorial"]
+	path = resources/tutorial
+	url = git://github.com/gkno/resources-tutorial.git
