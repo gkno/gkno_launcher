@@ -1,0 +1,3 @@
+[submodule "tools/bamtools"]
+	path = tools/bamtools
+	url = git://github.com/gkno/bamtools.git
