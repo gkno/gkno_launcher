@@ -16,3 +16,6 @@
 [submodule "tools/picard"]
 	path = tools/picard
 	url = git://github.com/gkno/picard.git
+[submodule "tools/premo"]
+	path = tools/premo
+	url = git://github.com/gkno/premo.git
