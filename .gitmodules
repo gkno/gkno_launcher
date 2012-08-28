@@ -4,3 +4,6 @@
 [submodule "tools/freebayes"]
 	path = tools/freebayes
 	url = git://github.com/gkno/freebayes.git
+[submodule "tools/gatk"]
+	path = tools/gatk
+	url = git://github.com/gkno/gatk.git
