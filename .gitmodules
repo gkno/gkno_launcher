@@ -19,3 +19,6 @@
 [submodule "tools/premo"]
 	path = tools/premo
 	url = git://github.com/gkno/premo.git
+[submodule "tools/samtools"]
+	path = tools/samtools
+	url = git://github.com/gkno/samtools.git
