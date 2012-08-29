@@ -14,7 +14,6 @@ class helpClass:
     self.adminHelp            = False
     self.unknownPipeline      = False
     self.unknownTool          = False
-    self.unknownAdminMode     = False
 
   # If usage information needs to be printed out, determine the exact level
   # of usage information to provide, write to screen and then terminate.
@@ -23,7 +22,7 @@ class helpClass:
     # General gkno usage.
     if self.generalHelp:
       self.printHeader(version, date)
-      self.usage(io, tl)
+      self.usage(io, tl, admin)
 
     # gkno tool mode usage.
     elif self.toolHelp:
@@ -45,9 +44,10 @@ class helpClass:
       self.printHeader(version, date)
       self.specificPipelineUsage(tl, pl)
 
+    # Admin mode help.
     elif self.adminHelp:
       self.printHeader(version, date)
-      self.adminUsage(admin)
+      self.adminModeUsage(admin)
 
     # Terminate.
     exit(0)
@@ -72,17 +72,47 @@ class helpClass:
     print(file = sys.stdout)
 
   # Print usage information.
-  def usage(self, io, tl):
-    print("\tThe gkno package can be run in two different modes: TOOL mode or PIPE mode.", file = sys.stdout)
-    print("\tThe TOOL mode runs a single tool and the PIPE mode runs a predetermined pipeline of tools.", file = sys.stdout)
-    print("\tSee below for usage instructions for each mode.", file = sys.stdout)
+  def usage(self, io, tl, admin):
+    print("The gkno package can be run in three different modes:", file=sys.stdout)
+    print("\tADMIN mode:     lets you manage gkno itself", file = sys.stdout)
+    print("\tTOOL mode:      runs a single tool", file=sys.stdout)
+    print("\tPIPE mode:      runs a predetermined pipeline of tools", file=sys.stdout)
     print(file = sys.stdout)
+    print("See below for usage instructions for each mode.", file = sys.stdout)
+    print(file = sys.stdout)
+
+    # Print out admin help.
+    self.printAdminModeUsage(admin)
 
     # Print out a list of available tools.
     self.printToolModeUsage(tl)
 
     # Print out pipeline help.
     self.printPipelineModeUsage(io)
+
+  # Print usage information on the admin mode of operation.
+  def printAdminModeUsage(self, admin):
+    print('==============', file = sys.stdout)
+    print('  admin mode'  , file = sys.stdout)
+    print('==============', file = sys.stdout)
+    print(file = sys.stdout)
+    print("Usage: gkno <admin operation> [options]", file = sys.stdout)
+    print(file = sys.stdout)
+    print("\t<admin operation>:", file = sys.stdout)
+
+    # For the purposes of formatting the screen output, find the longest admin
+    # operation name and use this to define the format length.
+    length = 0
+    for mode in admin.allModes:
+      if len(mode) > length : length = len(mode)
+    length += 5
+
+    for mode in admin.allModes:
+      # Get the tool description.
+      description = admin.modeDescriptions[mode]
+      printTool = mode + ":"
+      print("\t\t%-*s%-*s" % (length, printTool, 1, description), file = sys.stdout)
+    print(file = sys.stdout)
 
   # Print usage information on the tool mode of operation.
   def printToolModeUsage(self, tl):
@@ -290,9 +320,125 @@ class helpClass:
         print("\t\t--%-*s%-*s parameters" % (length, task, 1, tool), file = sys.stdout)
     sys.stdout.flush()
 
-  # If help for admin operation was requested
-  def adminUsage(self, admin):
-    pass # FIXME
+  # If an admin mode's help was requested.
+  def adminModeUsage(self, admin):
+    if   admin.mode == "build"           : self.buildUsage(admin)
+    elif admin.mode == "update"          : self.updateUsage(admin)
+    elif admin.mode == "add-resource"    : self.addResourceUsage(admin)
+    elif admin.mode == "remove-resource" : self.removeResourceUsage(admin)
+    elif admin.mode == "update-resource" : self.updateResourceUsage(admin)
+  
+  # If build help was requested
+  def buildUsage(self, admin):
+    print('====================', file = sys.stdout)
+    print('  gkno build usage'  , file = sys.stdout)
+    print('====================', file = sys.stdout)
+    print(file = sys.stdout)
+    print('Usage: gkno build', file = sys.stdout)
+    print(file = sys.stdout)
+    print('Description:', file=sys.stdout)
+    print('\t', admin.modeDescriptions["build"], file=sys.stdout)
+
+  # If update help was requested
+  def updateUsage(self, admin):
+    print('=====================', file = sys.stdout)
+    print('  gkno update usage'  , file = sys.stdout)
+    print('=====================', file = sys.stdout)
+    print(file = sys.stdout)
+    print('Usage: gkno update', file = sys.stdout)
+    print(file = sys.stdout)
+    print('Description:', file=sys.stdout)
+    print('\t', admin.modeDescriptions["update"], file=sys.stdout)
+
+  # If addResource help was requested
+  def addResourceUsage(self, admin):
+    print('===========================', file = sys.stdout)
+    print('  gkno add-resource usage'  , file = sys.stdout)
+    print('===========================', file = sys.stdout)
+    print(file = sys.stdout)
+    print('Usage: gkno add-resource [organism] [options]', file = sys.stdout)
+    print(file = sys.stdout)
+    print('Description: ', admin.modeDescriptions["add-resource"], file=sys.stdout)
+    print(file=sys.stdout)
+    print('Arguments & Options:', file=sys.stdout)
+    print('    [organism]        Name of organism to add. By default, this will fetch the ', file=sys.stdout)
+    print('                      newest release hosted by the gkno project. By not specifying ', file=sys.stdout)
+    print('                      a release (see below), gkno will track this organism for ', file=sys.stdout)
+    print('                      new genome releases. When the gkno project hosts a new ', file=sys.stdout)
+    print('                      release, the next you type "gkno update" it will be listed ', file=sys.stdout) 
+    print('                      as available for adding. See "gkno update --help" for more info.', file=sys.stdout)
+    print('                      If you omit this argument, then a list of available organisms ', file=sys.stdout)
+    print('                      will be shown. Most organisms have recognized aliases that ', file=sys.stdout)
+    print('                      may be used. See organism list for examples', file=sys.stdout) 
+    print('    --release [name]  Fetch resources for a specific genome release. This argument ', file=sys.stdout)
+    print('                      must follow a named organism. If you use the --release option ', file=sys.stdout)
+    print('                      but do not specify a release name, then a list of all releases ', file=sys.stdout)
+    print('                      available will be shown', file = sys.stdout)
+    print(file=sys.stdout)
+    print('Examples: ', file=sys.stdout)
+    print('    gkno add-resource                                List all organisms hosted by the gkno project', file=sys.stdout)
+    print('    gkno add-resource homo_sapiens                   Fetch resources for current human genome release', file=sys.stdout)
+    print('    gkno add-resource human                          Same as above, but using an alias', file=sys.stdout)
+    print('    gkno add-resource human --release                List all hosted human genome releases', file=sys.stdout)
+    print('    gkno add-resource human --release build_36.2     Fetch resources for human build_36.2', file=sys.stdout)
+    print(file=sys.stdout)
+    print('For more information, see the admin mode tutorial at http://www.gkno.me', file=sys.stdout)
+
+  # If removeResource help was requested
+  def removeResourceUsage(self, admin):
+    print('==============================', file = sys.stdout)
+    print('  gkno remove-resource usage'  , file = sys.stdout)
+    print('==============================', file = sys.stdout)
+    print(file = sys.stdout)
+    print('Usage: gkno remove-resource [organism] [options]', file = sys.stdout)
+    print(file = sys.stdout)
+    print('Description: ', admin.modeDescriptions["remove-resource"], file=sys.stdout)
+    print(file=sys.stdout)
+    print('Arguments & Options:', file=sys.stdout)
+    print('    [organism]        Name of organism to remove. This will delete all resource ', file=sys.stdout)
+    print('                      files for all releases of this genome. By not specifying ', file=sys.stdout)
+    print('                      a release (see below), gkno will also stop tracking this ', file=sys.stdout)
+    print('                      organism for new genome releases. If you omit this ', file=sys.stdout)
+    print('                      argument, then a list of all organisms you have resources ', file=sys.stdout)
+    print('                      for will be shown. Most organisms have recognized aliases ', file=sys.stdout)
+    print('                      that may be used. See organism list for examples', file=sys.stdout) 
+    print('    --release [name]  Only remove the resources for a specific genome release. ', file=sys.stdout)
+    print('                      This argument must follow a named organism. If you use the ', file=sys.stdout)
+    print('                      --release option but do not specify a release name, then a ', file=sys.stdout)
+    print('                      list of all of your releases will be shown', file = sys.stdout)
+    print(file=sys.stdout)
+    print('Examples: ', file=sys.stdout)
+    print('    gkno remove-resource                                List all organisms you have added', file=sys.stdout)
+    print('    gkno remove-resource homo_sapiens                   Remove all resource files for human genome', file=sys.stdout)
+    print('    gkno remove-resource human                          Same as above, but using an alias', file=sys.stdout)
+    print('    gkno remove-resource human --release                List all human genome releases you have added', file=sys.stdout)
+    print('    gkno remove-resource human --release build_36.2     Remove only data files for human build_36.2', file=sys.stdout)
+    print(file=sys.stdout)
+    print('For more information, see the admin mode tutorial at http://www.gkno.me', file=sys.stdout)
+
+  # If updateResource help was requested
+  def updateResourceUsage(self, admin):
+    print('==============================', file = sys.stdout)
+    print('  gkno update-resource usage'  , file = sys.stdout)
+    print('==============================', file = sys.stdout)
+    print(file = sys.stdout)
+    print('Usage: gkno update-resource <organism>', file = sys.stdout)
+    print(file = sys.stdout)
+    print('Description: ', admin.modeDescriptions["update-resource"], file=sys.stdout)
+    print(file=sys.stdout)
+    print('Arguments & Options:', file=sys.stdout)
+    print('    <organism>        Name of organism to update (required). This will fetch the ', file=sys.stdout)
+    print('                      newest release hosted by the gkno project. Note - updating ', file=sys.stdout)
+    print('                      in this manner will change the directory pointed to by the ', file=sys.stdout)
+    print('                      "current" symlink (shortcut). To add the new release\'s ', file=sys.stdout)
+    print('                      data without touching the "current" directory, instead use ', file=sys.stdout)
+    print('                      "gkno add-resource <organism>" with a named release.', file=sys.stdout)
+    print(file=sys.stdout)
+    print('Examples: ', file=sys.stdout)
+    print('    gkno update-resource homo_sapiens     Fetch resources for current human genome release', file=sys.stdout)
+    print('    gkno update-resource human            Same as above, but using an alias', file=sys.stdout)
+    print(file=sys.stdout)
+    print('For more information, see the admin mode tutorial at http://www.gkno.me', file=sys.stdout)
 
   # If help for a specific tool was requested, but that tool does not exist,
   # print an error after the usage information.
@@ -316,5 +462,3 @@ class helpClass:
     print('ERROR: Requested pipeline \'', pipeline, '\' does not exist.  Check available pipelines in usage above.', sep = '', file = sys.stdout)
     sys.stdout.flush()
 
-  def unknownAdminMessage(self, admin):
-    pass # FIXME

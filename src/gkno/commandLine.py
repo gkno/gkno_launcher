@@ -9,7 +9,7 @@ from errors import *
 class commandLine:
 
   # Constructor.
-  def __init__(self, tl):
+  def __init__(self, tl, admin):
 
     # Check to see if the verbose argument is set.
     if 'pipeline' not in tl.toolArguments: tl.toolArguments['pipeline'] = {}
@@ -17,7 +17,9 @@ class commandLine:
     for counter, argument in enumerate(sys.argv):
       if (argument == '--verbose') or (argument == '-vb'):
         if counter + 1 < len(sys.argv):
-          if sys.argv[counter + 1] == 'True': tl.toolArguments['pipeline']['--verbose'] = True
+          if sys.argv[counter + 1] == 'True': 
+            tl.toolArguments['pipeline']['--verbose'] = True
+            admin.isVerbose = True
           else: tl.toolArguments['pipeline']['--verbose'] = False
 
   # Check the first entry on the command line is valid.
@@ -40,17 +42,11 @@ class commandLine:
           gknoHelp.pipelineHelp = True
           gknoHelp.printHelp    = True
 
-      # If any admin operation was requested, set requested mode
+      # If any admin operation was requested, set requested mode.
+      # (We'll parse for add'l args later.)
       elif argument in admin.allModes:
         admin.isRequested = True
         admin.mode = argument
-
-        # If a resource operation was request, fetch the associated resource's name
-        if argument in admin.resourceModes:
-          try: admin.resourceName = sys.argv[2]
-          except:
-            gknoHelp.adminHelp = True
-            gknoHelp.printHelp = True
 
       # If this isn't a pipeline or admin command, the argument should be the name of a tool.
       else:
@@ -62,7 +58,7 @@ class commandLine:
 
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
-  def checkForHelp(self, gknoHelp, pl):
+  def checkForHelp(self, gknoHelp, pl, admin):
     for count, argument in enumerate(sys.argv):
       if (argument == '--help') or (argument == '-h'):
 
@@ -71,25 +67,31 @@ class commandLine:
         if count != (len(sys.argv) - 1): gknoHelp.extraArgumentsWarning()
 
         # Determine where the help is requested.  The request could be for general
-        # usage help, help with a tool, or help with a pipeline.
-        #
-        # Begin with general or tool help.
-        if not pl.isPipeline:
-          if count == 1:
-            gknoHelp.generalHelp  = True
-            gknoHelp.printHelp    = True
-          elif count == 2:
-            gknoHelp.toolHelp   = True
-            gknoHelp.printHelp  = True
-        else:
-          if count == 2:
+        # usage help, help with a tool, help with a pipeline, or help with an admin op.
+        
+        # gkno --help
+        if count == 1:
+          gknoHelp.generalHelp  = True
+          gknoHelp.printHelp    = True
+
+        # gkno pipe --help
+        # gkno <admin> --help
+        # gkno <tool> --help
+        elif count == 2:
+          if pl.isPipeline:
             gknoHelp.pipelineHelp = True
             gknoHelp.printHelp    = True
-          elif count == 3:
-            gknoHelp.specificPipelineHelp = True
-            gknoHelp.printHelp            = True
-
-        # TODO: handle admin help
+          elif admin.isRequested:
+            gknoHelp.adminHelp = True
+            gknoHelp.printHelp = True
+          else:
+            gknoHelp.toolHelp   = True
+            gknoHelp.printHelp  = True
+      
+        # gkno pipe <pipe> --help
+        elif count == 3:
+          gknoHelp.specificPipelineHelp = True
+          gknoHelp.printHelp            = True
 
     # Remove the path, 'pipe' and pipeline name from the command line if gkno is
     # being run in pipeline mode, or the path and tool name if in tool mode, leaving
@@ -458,7 +460,7 @@ class commandLine:
       # this is allowed.
       isArgumentSet = True if tl.toolArguments[task][argument] != '' else False
 
-      # If the value is required and no value has been provided, terminate.
+     # If the value is required and no value has been provided, terminate.
       if isRequired and checkRequired and not isArgumentSet:
 
         # Check if the argument is an input file and if so, if the input is coming from

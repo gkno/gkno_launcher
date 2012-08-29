@@ -11,16 +11,14 @@ class tools:
 
   # Initialise the tools class.
   def __init__(self):
-    self.argumentDelimiters         = {}
-    self.dependencies               = {}
-    self.hiddenTools                = {}
-    self.originalToolArguments      = {}
-    self.outputs                    = {}
-    self.tool                       = ''
-    self.toolInfo                   = {}
-    self.toolArguments              = {}
-    self.toolsDemandingInputStream  = {}
-    self.toolsDemandingOutputStream = {}
+    self.argumentDelimiters    = {}
+    self.dependencies          = {}
+    self.hiddenTools           = {}
+    self.originalToolArguments = {}
+    self.outputs               = {}
+    self.tool                  = ''
+    self.toolInfo              = {}
+    self.toolArguments         = {}
 
   # If gkno is being run in the single tool mode, check that the specified tool
   # exists.
@@ -51,15 +49,6 @@ class tools:
       # which defaults to ' ', if not specified.
       value = self.toolInfo[task]['argument delimiter'] if 'argument delimiter' in self.toolInfo[task] else ''
       self.argumentDelimiters[task] = ' ' if value == '' else value
-
-      # Some tools do not have an input argument but run using the stream as input.
-      # These tools can be identified using the 'input is stream' value.  If this is the
-      # case, the task prior to this task in the workflow must be listed as outputting
-      # to the stream.
-      value = self.toolInfo[task]['input is stream'] if 'input is stream' in self.toolInfo[task] else ''
-      self.toolsDemandingInputStream[task] = True if value == 'true' else False
-      value = self.toolInfo[task]['output is stream'] if 'output is stream' in self.toolInfo[task] else ''
-      self.toolsDemandingOutputStream[task] = True if value == 'true' else False
 
       for argument in self.toolInfo[task]['arguments']:
 

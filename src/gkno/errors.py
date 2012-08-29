@@ -500,3 +500,29 @@ class errors:
       if 'description' in pl.information['arguments'][option]:
         print(":\t", pl.information['arguments'][option]['description'], sep = '', end = '', file = sys.stderr)
       print(file = sys.stderr)
+
+  #####################
+  # Admin mode errors
+  #####################
+  
+  def gknoAlreadyBuilt(self):
+    print("WARNING: 'gkno build' has already been run.", sep="", end="", file=sys.stderr)
+
+  def gknoNotBuilt(self):
+    print("ERROR: 'gkno build' must be run before performing this operation", sep="", end="", file=sys.stderr)
+    self.error = True
+
+  def resourceAlreadyAdded(self, resourceName):
+    print("WARNING: Requested resource '" + resourceName + "' has already been added to gkno", sep="", end="", file=sys.stderr)
+    
+  def attemptingRemoveUntrackedResource(self, resourceName):
+    print("WARNING: Resource '" + resourceName + "' was not removed because it has not been added", sep="", end="", file=sys.stderr)
+
+  def requestedUnknownResource(self, resourceName):
+    print("ERROR: Requested resource '" + resourceName + "' is not recognized", sep="", end="", file=sys.stderr)
+    self.error = True
+
+  def invalidResourceArgs(self, mode):
+    print("ERROR: Invalid arguments or order used. Type 'gkno",mode,"--help' for a usage example.", end="", file=sys.stderr)
+    self.error = True
+    

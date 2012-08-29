@@ -28,10 +28,17 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.09"
+__version__ = "0.10"
 __date__ = "August 2012"
 
 def main():
+
+  # Define the source path of all the gkno machinery.
+  sourcePath = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno/gkno.py')]
+
+  # Define an admin utilities object. This handles all of the build/update steps
+  # along with 'resource' management.
+  admin = adminUtils(sourcePath)
 
   # Define a tools object.  This stores all information specific to individual
   # tools.
@@ -39,19 +46,12 @@ def main():
 
   # Define a command line options, get the first command line argument
   # and proceed as required.
-  cl = commandLine(tl)
+  cl = commandLine(tl, admin)
 
   # Define a pipeline object.  Even if a single tool is all that is required,
   # some of the routines in the pipelines.py are still used.  A single tool
   # is essentially treated as a pipeline with a single element.
   pl = pipeline()
-
-  # Define an admin utilities object. This handles all of the build/update steps
-  # along with 'resource' management.
-  admin = adminUtils()
-
-  # Define the source path of all the gkno machinery.
-  sourcePath = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno/gkno.py')]
 
   # Generate a class for handling files.
   io = files()
@@ -65,7 +65,7 @@ def main():
 
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
-  cl.checkForHelp(gknoHelp, pl)
+  cl.checkForHelp(gknoHelp, pl, admin)
 
   # If the pipeline is going to be run multiple times for a different set of input
   # files, the '--multiple-runs (-mr)' argument can be set.  If this is set, the
@@ -76,52 +76,57 @@ def main():
   # Print gkno title and version to the screen.
   if not gknoHelp.printHelp: gknoHelp.printHeader(__version__, __date__)
 
-  # Check if an admin mode has been requested
-  if admin.isRequested:
+  # No admin mode requested. Prepare to setup our tool or pipeline run.
+  if not admin.isRequested:
 
-    # Run requested admin operation.
-    status = admin.run(sourcePath)  # FIXME: pass gknoHelp?
+    # Make sure we've actually been "built" before doing any real processing.
+    # Skip this requirement if we're only going to be printing a help message later.
+    if not gknoHelp.printHelp:
+      admin.requireBuilt()
 
-    # After the operation is complete, terminate the script with the operation's return
-    # value. No need to bother with tools or pipes.
-    exit(status)
+    # Each of the tools available to gkno should have a config file to
+    # describe its operation, purpose etc.  These are contained in
+    # config_files/tools.  Find all of the config file and create a hash
+    # table with all available tools.
+    io.getJsonFiles(sourcePath + '/config_files/')
 
-  # Each of the tools available to gkno should have a config file to
-  # describe its operation, purpose etc.  These are contained in
-  # config_files/tools.  Find all of the config file and create a hash
-  # table with all available tools.
-  io.getJsonFiles(sourcePath + '/config_files/')
+    # If a pipeline is being run, check that configuration files
+    # exist for the selected pipeline.  This should be in directory
+    # config_files and have the name <$ARGV[1]>.json.  If the file
+    # exists, parse the json file.
+    if pl.isPipeline:
+      io.getPipelineConfigurationFile(gknoHelp, pl, sourcePath + "/config_files/pipes")
 
-  # If a pipeline is being run, check that configuration files
-  # exist for the selected pipeline.  This should be in directory
-  # config_files and have the name <$ARGV[1]>.json.  If the file
-  # exists, parse the json file.
-  if pl.isPipeline:
-    io.getPipelineConfigurationFile(gknoHelp, pl, sourcePath + "/config_files/pipes")
+      # If a spcific pipeline has been specified and the pipeline exists, read in
+      # the json file.
+      if (not gknoHelp.printHelp) or (gknoHelp.printHelp and gknoHelp.specificPipelineHelp and not gknoHelp.unknownPipeline):
+        io.phoneHomeID = io.getPipelineDescription(tl ,pl, True)
 
-    # If a spcific pipeline has been specified and the pipeline exists, read in
-    # the json file.
-    if (not gknoHelp.printHelp) or (gknoHelp.printHelp and gknoHelp.specificPipelineHelp and not gknoHelp.unknownPipeline):
-      io.phoneHomeID = io.getPipelineDescription(tl ,pl, True)
+    # If gkno is being run in tool mode, the pl object still exists and is used.
+    # Set the pl.information structure up to reflect a pipeline containing a
+    # single tool.
+    else: io.phoneHomeID = pl.setupIndividualTool(tl.tool, not gknoHelp.printHelp)
 
-  # If gkno is being run in tool mode, the pl object still exists and is used.
-  # Set the pl.information structure up to reflect a pipeline containing a
-  # single tool.
-  else: io.phoneHomeID = pl.setupIndividualTool(tl.tool, not gknoHelp.printHelp)
+    # Read the tool json files into data structures in the tools class.
+    #verbose = False if gknoHelp.printHelp else True
+    io.getToolDescriptions(tl, pl, sourcePath + '/config_files/tools', not gknoHelp.printHelp)
+    tl.checkForRequiredFields()
 
-  # Read the tool json files into data structures in the tools class.
-  #verbose = False if gknoHelp.printHelp else True
-  io.getToolDescriptions(tl, pl, sourcePath + '/config_files/tools', not gknoHelp.printHelp)
-  tl.checkForRequiredFields()
-
-  # If a single tool is being run, check that it is a valid tool.
-  if not pl.isPipeline: tl.checkTool(gknoHelp)
-  pl.addPipelineSpecificOptions(tl)
+    # If a single tool is being run, check that it is a valid tool.
+    if not pl.isPipeline: 
+      tl.checkTool(gknoHelp)
+    pl.addPipelineSpecificOptions(tl)
 
   # If help was requested or there were problems (e.g. the tool name or pipeline
   # name did not exist), print out the required usage information.
   if gknoHelp.printHelp: gknoHelp.printUsage(io, tl, pl, admin, __version__, __date__, sourcePath)
 
+  # If admin mode requested, then run it & terminate script.
+  # No need to bother with running tools or pipes.
+  if admin.isRequested:
+    admin.run(sys.argv)
+    exit(0)
+  
   # Print information about the pipeline to screen.
   if pl.isPipeline: pl.printPipelineInformation(tl)
 
