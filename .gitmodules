@@ -1,0 +1,30 @@
+[submodule "tools/bamtools"]
+	path = tools/bamtools
+	url = git://github.com/gkno/bamtools.git
+[submodule "tools/freebayes"]
+	path = tools/freebayes
+	url = git://github.com/gkno/freebayes.git
+[submodule "tools/gatk"]
+	path = tools/gatk
+	url = git://github.com/gkno/gatk.git
+[submodule "tools/MOSAIK"]
+	path = tools/MOSAIK
+	url = git://github.com/gkno/MOSAIK.git
+[submodule "tools/ogap"]
+	path = tools/ogap
+	url = git://github.com/gkno/ogap.git
+[submodule "tools/picard"]
+	path = tools/picard
+	url = git://github.com/gkno/picard.git
+[submodule "tools/premo"]
+	path = tools/premo
+	url = git://github.com/gkno/premo.git
+[submodule "tools/samtools"]
+	path = tools/samtools
+	url = git://github.com/gkno/samtools.git
+[submodule "resources/homo_sapiens"]
+	path = resources/homo_sapiens
+	url = git://github.com/gkno/resources-homo_sapiens.git
+[submodule "resources/tutorial"]
+	path = resources/tutorial
+	url = git://github.com/gkno/resources-tutorial.git
