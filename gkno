@@ -1,0 +1,10 @@
+#!/bin/bash
+
+dir="`dirname \"$0\"`"
+dir="`( cd \"$dir\" && pwd )`"
+command_line="python $dir/src/gkno/gkno.py"
+for ARG in "$@"
+do
+  command_line="$command_line $ARG"
+done
+$command_line
