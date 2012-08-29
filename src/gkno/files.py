@@ -349,79 +349,68 @@ class files:
     # argument isn't given an option.  For example, renaming a file has a 
     # command line 'mv A B', where A and B are filenames that have to appear
     # in the correct order.
-    if 'ordered' in tl.toolInfo[tool]:
-      optionList = {}
-      if tl.toolInfo[tool]['ordered'] == 'true':
-        for option in tl.toolArguments[task]:
-          try: order = tl.toolInfo[tool]['arguments'][option]['order']
-          except: er.error = True
-          if er.error:
-            er.missingOrderID(task, tool, option)
-            er.terminate()
-
-          if order in optionList:
-            er.optionIDExists(task, tool, option)
-            er.terminate()
-
-          # Only include the option, if it is required.
-          if tl.toolArguments[task][option] == 'set': optionList[order] = option
-          elif (tl.toolArguments[task][option] != 'unset') and (tl.toolArguments[task][option] != ''):
-            optionList[order] = option + ' ' + tl.toolArguments[task][option]
-
-      orderList = sorted(optionList.iteritems())
-      start     = int(orderList[0][0])
-      end       = int(orderList[-1][0])
-      while start <= end:
-        if str(start) not in optionList: er.orderWarning(task, tool, start)
-        else: print(" \\\n\t", optionList[str(start)], sep = "", end = "", file = self.makeFilehandle)
-        start += 1
+    argumentOrder = []
+    if 'argument order' in tl.toolInfo[tool]:
+      for argument in tl.toolInfo[tool]['argument order']:
+        if argument in tl.toolArguments[task]: argumentOrder.append(argument)
     else:
+      for argument in tl.toolArguments[task]: argumentOrder.append(argument)
 
-      # Include all of the set options.
-      for argument in tl.toolArguments[task]:
+    # Include all of the set options.
+    for argument in argumentOrder:
 
-        # Check if the option is a flag.
-        isFlag = False
-        if argument == 'json parameters':
+      # Check if the option is a flag.
+      isFlag = False
+      if argument == 'json parameters':
 
-          # If a json file is being used to generate parameters, the configuration file
-          # needs to contain a 'json block' argument.  This tells the script the name of
-          # the block in the json file from which to extract parameters.
-          if 'json block' not in pl.information['linkage'][task]['json parameters']:
-            er.optionAssociationError('json block', 'json parameters', 'pipeline')
-            er.terminate()
-          else:
-            jsonBlock = pl.information['linkage'][task]['json parameters']['json block']
-            print(" \\\n\t`python $(GKNO_PATH)/getParameters.py ", end = '', file = self.makeFilehandle)
-            print(tl.toolArguments[task][argument], ' ', jsonBlock, '`', sep = '', end = '', file = self.makeFilehandle)
-
-        # If the argument is a replacement to handle a stream, do not interrogate the
-        # tl.toolInfo structure as it doesn't contain the required values (the other
-        # entries contain information on flags, data types etc).
-        elif tl.toolInfo[tool]['arguments'][argument] == 'replacement':
-          print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
-
+        # If a json file is being used to generate parameters, the configuration file
+        # needs to contain a 'json block' argument.  This tells the script the name of
+        # the block in the json file from which to extract parameters.
+        if 'json block' not in pl.information['linkage'][task]['json parameters']:
+          er.optionAssociationError('json block', 'json parameters', 'pipeline')
+          er.terminate()
         else:
-          if tl.toolInfo[tool]['arguments'][argument]['type'] == 'flag': isFlag = True
+          jsonBlock = pl.information['linkage'][task]['json parameters']['json block']
+          print(" \\\n\t`python $(GKNO_PATH)/getParameters.py ", end = '', file = self.makeFilehandle)
+          print(tl.toolArguments[task][argument], ' ', jsonBlock, '`', sep = '', end = '', file = self.makeFilehandle)
 
-          # If the command is a flag, check if the value is 'set' or 'unset'.  If 'set',
-          # write out the command.
-          if isFlag:
-            if tl.toolArguments[task][argument] == 'set': print(" \\\n\t", argument, sep = '', end = '', file = self.makeFilehandle)
-          else:
+      # If the argument is a replacement to handle a stream, do not interrogate the
+      # tl.toolInfo structure as it doesn't contain the required values (the other
+      # entries contain information on flags, data types etc).
+      elif tl.toolInfo[tool]['arguments'][argument] == 'replacement':
+        print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
 
-            # Some command lines allow multiple options to be set and the command line can
-            # therefore be repeated multiple times.  If the defined value is a list, this
-            # is the case and the command should be written out once for each value in the
-            # list.
-            isList = isinstance(tl.toolArguments[task][argument], list)
-            if isList:
-              for value in tl.toolArguments[task][argument]:
-                print(" \\\n\t", argument, delimiter, value, sep = '', end = '', file = self.makeFilehandle)
+      else:
 
-            # If the option is given a value, print it out.
-            elif tl.toolArguments[task][argument] != '':
-              print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
+        # Some tools do not require a --argument or -argument in front of each value,
+        # but just demand a particular order.  The configuration file contains an
+        # argument for these for bookkeeping purposes, but they should not be printed
+        # to the command line.
+        hideArgument = False
+        if 'hide argument name on command line' in tl.toolInfo[tool]['arguments'][argument]:
+          hideArgument = True if tl.toolInfo[tool]['arguments'][argument]['hide argument name on command line'] == 'true' else False
+
+        if tl.toolInfo[tool]['arguments'][argument]['type'] == 'flag': isFlag = True
+
+        # If the command is a flag, check if the value is 'set' or 'unset'.  If 'set',
+        # write out the command.
+        if isFlag:
+          if tl.toolArguments[task][argument] == 'set': print(" \\\n\t", argument, sep = '', end = '', file = self.makeFilehandle)
+        else:
+
+          # Some command lines allow multiple options to be set and the command line can
+          # therefore be repeated multiple times.  If the defined value is a list, this
+          # is the case and the command should be written out once for each value in the
+          # list.
+          isList = isinstance(tl.toolArguments[task][argument], list)
+          if isList:
+            for value in tl.toolArguments[task][argument]:
+              print(" \\\n\t", argument, delimiter, value, sep = '', end = '', file = self.makeFilehandle)
+
+          # If the option is given a value, print it out.
+          elif tl.toolArguments[task][argument] != '':
+            if hideArgument: print(" \\\n\t", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
+            else: print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
 
   # If any intermediate files are marked as to be deleted after this step, add the command
   # to the rule.

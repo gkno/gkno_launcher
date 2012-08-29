@@ -458,10 +458,22 @@ class commandLine:
       # this is allowed.
       isArgumentSet = True if tl.toolArguments[task][argument] != '' else False
 
-      # If the value is required and no value has been provided, fail.
+      # If the value is required and no value has been provided, terminate.
       if isRequired and checkRequired and not isArgumentSet:
-        er.missingRequiredValue(True, "\t\t\t", task, tool, argument, tl, pl)
-        er.terminate()
+
+        # Check if the argument is an input file and if so, if the input is coming from
+        # the stream.  If so, this does not need to be set.
+        isInput = True if tl.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
+        if isInput:
+          previousTask = ''
+          for currentTask in pl.information['workflow']:
+            if currentTask == task: break
+            else: previousTask = currentTask
+          inputIsStream = True if previousTask in pl.information['tools outputting to stream'] else False
+        
+        if not inputIsStream:
+          er.missingRequiredValue(True, "\t\t\t", task, tool, argument, tl, pl)
+          er.terminate()
 
       # If the value is set, check that the data type is correct.
       elif isArgumentSet:

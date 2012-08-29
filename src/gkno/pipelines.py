@@ -497,6 +497,11 @@ class pipeline:
           tool                       = self.information['tools'][task]
           canOutputToStream          = False
 
+          # If the tool only deals with the stream for inputs and outputs, skip the
+          # following search.  There is no input or output commands as the tool is
+          # expecting to be receiving and outputting to the stream.
+          if tl.toolsDemandingOutputStream[tool]: canOutputToStream = True
+
           # Check if the tool allows the output to be sent to a stream.
           for argument in tl.toolInfo[tool]['arguments']:
             isOutput = True if tl.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
@@ -527,6 +532,14 @@ class pipeline:
           nextTask        = self.information['workflow'][taskCounter + 1]
           nextTool        = self.information['tools'][nextTask]
           canAcceptStream = False
+
+          # If the current tool outputs to the stream, we need to check that the following
+          # tool is set up to handle the stream.  This information is contained in the
+          # information for one of the input files in the next tool.  If the next tool
+          # demands the stream, then there are no input or output command line arguments as
+          # the stream is assumed and so this check is unnecessary.
+          if tl.toolsDemandingInputStream[nextTool]: canAcceptStream = True
+
           for argument in tl.toolInfo[nextTool]['arguments']:
             isInput = True if tl.toolInfo[nextTool]['arguments'][argument]['input'] == 'true' else False
             if isInput:
@@ -566,6 +579,11 @@ class pipeline:
                     else:
                       if nextTool not in addArguments: addArguments[nextTool] = {}
                       addArguments[nextTool] = replacementArgument
+
+                # If the entry is neither 'do not include' or 'replace', just use this value
+                # as the value for the argument.
+                else:  
+                  tl.toolArguments[nextTask][argument] = tl.toolInfo[nextTool]['arguments'][argument]['if input is stream']
 
           # If no instructions are provided on how to handle a streaming input, terminate.
           if not canOutputToStream:

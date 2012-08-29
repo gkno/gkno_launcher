@@ -28,7 +28,7 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.08"
+__version__ = "0.09"
 __date__ = "August 2012"
 
 def main():
@@ -147,7 +147,7 @@ def main():
   # performed, the given command line is used unchanged.  Each iteration will be
   # executed (unless otherwise stated).
   while True:
-    io.makefileNames.append(pl.pipelineName + str(makefileID) + '.make')
+    io.makefileNames.append(pl.pipelineName + '_' + str(makefileID) + '.make')
     if pl.hasMultipleRuns:
       cl.buildCommandLineMultipleRuns(pl)
       tl.toolArguments['pipeline']['--verbose'] = False
@@ -259,7 +259,7 @@ def main():
     pl.determineToolWriteOrder()
   
     # Generate scripts to run the selected pipeline.
-    io.generateMakefile(tl, pl, sourcePath, pl.pipelineName + str(makefileID) + '.make')
+    io.generateMakefile(tl, pl, sourcePath, io.makefileNames[-1])
 
     # Terminate the loop when all the required Makefiles have been produced.
     if not pl.hasMultipleRuns or len(pl.multipleRunsInputArguments) == 0: break

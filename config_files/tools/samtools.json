@@ -1,0 +1,129 @@
+{
+  "tools" : {
+    "samtools-calmd" : {
+      "description" : "Modify base quality based on Hidden Markov model.",
+      "path" : "samtools",
+      "executable" : "samtools",
+      "modifier" : "calmd",
+      "hide tool" : "true",
+      "output is stream" : "true",
+      "help" : "--help|-h",
+      "arguments" : {
+        "-A" : {
+          "description" : "When used jointly with -r this option overwrites the original base quality.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "default" : "set"
+        },
+        "-e" : {
+          "description" : "Convert the read base to = if it is identical to the aligned reference base.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag"
+        },
+        "-u" : {
+          "description" : "Output uncompressed BAM.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "default" : "set"
+        },
+        "-b" : {
+          "description" : "Output compressed BAM.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag"
+        },
+        "-S" : {
+          "description" : "The input is SAM with header lines.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag"
+        },
+        "-C" : {
+          "description" : "Coefficient to cap mapping quality of poorly mapped reads. See the pileup command for details. [0]",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "integer"
+        },
+        "-r" : {
+          "description" : "Compute the BQ tag (without -A) or cap base quality by BAQ (with -A).",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "default" : "set"
+        },
+        "-E" : {
+          "description" : "Extended BAQ calculation. This option trades specificity for sensitivity, though the effect is minor.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "default" : "set"
+        },
+        "--in" : {
+          "description" : "Input BAM file.",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "type" : "string",
+          "if input is stream" : "replace",
+          "replace argument with" : {
+            "argument" : "--stdin",
+            "value" : ""
+          },
+          "if input is stream" : "-",
+          "hide argument name on command line" : "true"
+        },
+        "--reference-fasta" : {
+          "description" : "Reference fasta file.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "hide argument name on command line" : "true"
+        }
+      },
+      "argument order" : [
+        "-A",
+        "-e",
+        "-u",
+        "-b",
+        "-S",
+        "-C",
+        "-r",
+        "-E",
+        "--in",
+        "--reference-fasta"
+      ]
+    }
+  }
+}

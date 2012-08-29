@@ -15,6 +15,7 @@
     "filter-bam",
     "realign-gaps",
     "left-align-indels",
+    "BAQ-filter",
     "variant-call"
   ],
   "tools" : {
@@ -32,12 +33,14 @@
     "filter-bam" : "bamtools-filter",
     "realign-gaps" : "ogap",
     "left-align-indels" : "bamleftalign",
+    "BAQ-filter" : "samtools-calmd",
     "variant-call" : "freebayes"
   },
   "tools outputting to stream" : [
     "filter-bam",
     "realign-gaps",
-    "left-align-indels"
+    "left-align-indels",
+    "BAQ-filter"
   ],
   "construct filenames" : {
     "build-reference" : {
@@ -195,6 +198,12 @@
     },
     "left-align-indels" : {
       "--fasta-reference" : {
+        "link to this task" : "build-reference",
+        "link to this argument" : "-fr"
+      }
+    },
+    "BAQ-filter" : {
+      "--reference-fasta" : {
         "link to this task" : "build-reference",
         "link to this argument" : "-fr"
       }
