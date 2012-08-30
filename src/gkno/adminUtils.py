@@ -8,6 +8,7 @@ import os.path
 import shutil
 import subprocess
 import sys
+import tarfile
 import urllib
 
 import conf
@@ -284,7 +285,7 @@ class adminUtils:
 
     # Make a symlink-ed directory "current" that points to release's directory
     currentDir = self.sourcePath + "/resources/" + resourceName + "/current"
-    releaseDir = self.sourcePath + "/resources/" + resourceName + currentReleaseName
+    releaseDir = self.sourcePath + "/resources/" + resourceName + "/" + currentReleaseName
     os.symlink(releaseDir, currentDir)
     
     # Update settings
@@ -316,7 +317,7 @@ class adminUtils:
       return
 
     # Download release tarball
-    filename, headers = urllib.retrieve(tarballURL) 
+    filename, headers = urllib.urlretrieve(tarballURL) 
 
     # Extract files from tarball
     # N.B. - tarball should be set up so that all of its contents are 
