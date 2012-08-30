@@ -114,7 +114,7 @@
           "type" : "flag",
           "short form argument" : "-DIQ",
           "default" : "set"
-        },
+        }
       }
     },
 

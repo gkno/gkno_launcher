@@ -22,6 +22,7 @@ class pipeline:
     self.multipleRunsListFormat        = []
     self.multipleRunsNumberOfArguments = 0
     self.numberOfMultipleRuns          = 0
+    self.resourcePath                  = ''
     self.streamedOutputs               = {}
     self.taskBlocks                    = []
 
@@ -52,7 +53,9 @@ class pipeline:
       self.information['arguments']['--resource-path']['link to this task']   = 'pipeline'
       self.information['arguments']['--resource-path']['short form argument'] = '-rp'
       self.information['arguments']['--resource-path']['type']                = 'string'
-      self.information['arguments']['--resource-path']['default']             =          '$(RESOURCES)'
+      self.information['arguments']['--resource-path']['default']             = '$(RESOURCES)'
+
+    self.information['resource path'] = '' if 'resource path' not in self.information else  self.information['resource path']
 
     if '--execute' not in self.information:
       self.information['arguments']['--execute']                        = {}

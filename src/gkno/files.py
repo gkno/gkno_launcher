@@ -146,7 +146,8 @@ class files:
     print("### gkno Makefile\n", file = self.makeFilehandle)
     print("GKNO_PATH=", sourcePath, "/src/gkno", sep = "", file = self.makeFilehandle)
     print("TOOL_BIN=", sourcePath, "/tools", sep = "", file = self.makeFilehandle)
-    print("RESOURCES=", sourcePath, "/resources\n", sep = "", file = self.makeFilehandle)
+    resourcesPath = '/resources' if pl.information['resource path'] == '' else '/resources/' + pl.information['resource path']
+    print("RESOURCES=", sourcePath, resourcesPath, "\n", sep = "", file = self.makeFilehandle)
   
     # Loop over each tool in the work flow and generate the command lines
     # for each.  Work in reverse order building up the dependencies.

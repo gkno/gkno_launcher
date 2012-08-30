@@ -1,5 +1,6 @@
 {
   "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
+  "resource path" : "tutorial/current",
   "workflow" : [
     "build-reference",
     "build-jump-database",
@@ -170,9 +171,9 @@
         "link to this task" : "count-covariates",
         "link to this argument" : "--input_file"
       },
-      "--recal_file" : {
+      "--BQSR" : {
         "link to this task" : "count-covariates",
-        "link to this argument" : "--recal_file"
+        "link to this argument" : "--out"
       }
     },
     "mark-duplicates" : {
@@ -216,7 +217,7 @@
       "link to this argument" : "-fr",
       "short form argument" : "-f",
       "type" : "string",
-      "default" : "tutorial/current/test_genome.fa"
+      "default" : "test_genome.fa"
     },
     "--hash-size" : {
       "description" : "hash-size",
