@@ -53,14 +53,26 @@ class GknoTool(object):
     assert False
     return 1
 
-  # Convenience method running external commands
+  # --------------------------------------------
+  # OS/shell utility helper methods
+  # --------------------------------------------
+
+  # Run external command, suppressing output by default
   def runCommand(self, command, quiet=False):   # FIXME: <-- change quiet=True
     if quiet:
       return subprocess.call(command.split(), stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
     else:
       return subprocess.call(command.split(), stdout=sys.stdout, stderr=sys.stderr)
 
-  # Convenience methods for various build systems
+  # Creates directory if it doesn't already exist
+  def ensureMakeDir(self, directory, mode=0777):
+    if not os.path.exists(directory):
+        os.makedirs(directory, mode)
+
+  # --------------------------------------------
+  # Build-system helper methods
+  # --------------------------------------------
+
   def ant(self, optionString=""):
     return self.runCommand("ant " + optionString)
 
@@ -91,7 +103,7 @@ class BamTools(GknoTool):
   # $ make -j N 
   def build(self):
     buildDir = os.getcwd() + "/build/"
-    os.makedirs(buildDir)     
+    self.ensureMakeDir(buildDir)
     os.chdir(buildDir)   
     self.cmake("..")
     self.make()
@@ -217,7 +229,7 @@ class Premo(GknoTool):
   # $ make -j N
   def build(self):
     buildDir = os.getcwd() + "/build/"
-    os.makedirs(buildDir)
+    self.ensureMakeDir(buildDir)
     os.chdir(buildDir)  
     self.cmake("..")
     self.make()          
