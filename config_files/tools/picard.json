@@ -3,7 +3,7 @@
     "picard-mark-duplicates" : {
       "description" : "Mark duplicate reads.",
       "hide tool" : "true",
-      "path" : "picard-tools-1.61",
+      "path" : "picard/dist",
       "executable" : "MarkDuplicates.jar",
       "precommand" : "java -Xmx8g -jar",
       "argument delimiter" : "=",

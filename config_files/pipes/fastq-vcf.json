@@ -216,7 +216,7 @@
       "link to this argument" : "-fr",
       "short form argument" : "-f",
       "type" : "string",
-      "default" : "test_genome.fa"
+      "default" : "tutorial/current/test_genome.fa"
     },
     "--hash-size" : {
       "description" : "hash-size",

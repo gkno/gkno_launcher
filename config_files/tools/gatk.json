@@ -42,7 +42,7 @@
           "short form argument" : "-I",
           "extension" : "sam|bam"
         },
-        "--recal_file" : {
+        "--out" : {
           "description" : "output covariates table recalibration file",
           "input" : "false",
           "output" : "true",
@@ -86,19 +86,7 @@
           "type" : "string",
           "extension" : "null",
           "short form argument" : "-T",
-          "default" : "CountCovariates"
-        },
-        "--num_threads" : {
-          "description" : "number of threads",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
-          "type" : "integer",
-          "short form argument" : "-nt",
-          "extension" : "null",
-          "default" : "8"
+          "default" : "BaseRecalibrator"
         },
         "--covariate" : {
           "description" : "covariates to be used",
@@ -113,11 +101,23 @@
             "ReadGroupCovariate",
             "QualityScoreCovariate",
             "CycleCovariate",
-            "DinucCovariate"
+            "ContextCovariate"
           ]
-        }
+        },
+        "--disable_indel_quals" : {
+          "description" : "disable indel recalibration (not available in GATK-Lite)",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "short form argument" : "-DIQ",
+          "default" : "set"
+        },
       }
     },
+
     "gatk-recalibrate-bq" : {
       "description" : "Recalibrate base qualities",
       "path" : "gatk/dist",
@@ -148,7 +148,7 @@
           "short form argument" : "-I",
           "extension" : "sam|bam"
         },
-        "--recal_file" : {
+        "--BQSR" : {
           "description" : "input covariates table recalibration file",
           "input" : "true",
           "output" : "false",
@@ -156,7 +156,7 @@
           "required" : "true",
           "dependent" : "true",
           "type" : "string",
-          "short form argument" : "-recalFile",
+          "short form argument" : "-BQSR",
           "extension" : "csv"
         },
         "--analysis_type" : {
@@ -168,7 +168,7 @@
           "dependent" : "false",
           "type" : "string",
           "short form argument" : "-T",
-          "default" : "TableRecalibration"
+          "default" : "PrintReads"
         },
         "--out" : {
           "description" : "the output recalibrated BAM file",
