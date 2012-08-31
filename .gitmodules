@@ -10,9 +10,6 @@
 [submodule "tools/MOSAIK"]
 	path = tools/MOSAIK
 	url = git://github.com/gkno/MOSAIK.git
-[submodule "tools/ogap"]
-	path = tools/ogap
-	url = git://github.com/gkno/ogap.git
 [submodule "tools/picard"]
 	path = tools/picard
 	url = git://github.com/gkno/picard.git
