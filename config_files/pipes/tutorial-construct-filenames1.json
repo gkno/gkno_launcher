@@ -1,5 +1,6 @@
 {
   "description" : "Generate Mosaik reference and jump database.",
+  "resource path" : "tutorial/current",
   "workflow" : [
     "build-reference",
     "build-jump-database"

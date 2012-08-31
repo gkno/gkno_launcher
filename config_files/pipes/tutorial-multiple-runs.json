@@ -1,5 +1,6 @@
 {
   "description" : "Tutorial file for 'Running a pipeline for multiple inputs'.",
+  "resource path" : "tutorial/current",
   "workflow" : [
     "build-reference",
     "build-jump-database",
@@ -29,7 +30,7 @@
         "get root from task" : "build-reference",
         "get root from argument" : "-fr",
         "remove input extension" : "true",
-        "additional text from variables" : {
+        "additional text from parameters" : {
           "order" : [
             "filename root",
             "hash-size"
