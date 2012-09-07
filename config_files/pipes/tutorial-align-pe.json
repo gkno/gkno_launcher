@@ -1,9 +1,7 @@
 {
-  "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
+  "description" : "Align fastq files using Mosaik (additional processing steps included).",
   "resource path" : "tutorial/current",
   "workflow" : [
-    "build-reference",
-    "build-jump-database",
     "generate-mosaik-parameters",
     "build-read-archive",
     "align",
@@ -11,16 +9,9 @@
     "sort-multiple-bam",
     "index-primary-bam",
     "count-covariates",
-    "recalibrate-bq",
-    "mark-duplicates",
-    "filter-bam",
-    "realign-gaps",
-    "left-align-indels",
-    "variant-call"
+    "recalibrate-bq"
   ],
   "tools" : {
-    "build-reference" : "mosaik-build-reference",
-    "build-jump-database" : "mosaik-jump",
     "generate-mosaik-parameters" : "premo",
     "build-read-archive" : "mosaik-build-fastq",
     "align" : "mosaik-aligner",
@@ -28,67 +19,9 @@
     "sort-multiple-bam" : "bamtools-sort",
     "index-primary-bam" : "bamtools-index",
     "count-covariates" : "gatk-count-covariates",
-    "recalibrate-bq" : "gatk-recalibrate-bq",
-    "mark-duplicates" : "picard-mark-duplicates",
-    "filter-bam" : "bamtools-filter",
-    "realign-gaps" : "ogap",
-    "left-align-indels" : "bamleftalign",
-    "variant-call" : "freebayes"
-  },
-  "tools outputting to stream" : [
-    "filter-bam",
-    "realign-gaps",
-    "left-align-indels"
-  ],
-  "construct filenames" : {
-    "build-reference" : {
-      "-oa" : {
-        "filename root" : "from argument",
-        "get root from task" : "build-reference",
-        "get root from argument" : "-fr",
-        "remove input extension" : "true"
-      }
-    },
-    "build-jump-database" : {
-      "-out" : {
-        "filename root" : "from argument",
-        "get root from task" : "build-reference",
-        "get root from argument" : "-fr",
-        "remove input extension" : "true",
-        "additional text from parameters" : {
-          "order" : [
-            "filename root",
-            "hash-size"
-          ],
-          "hash-size" : {
-            "get parameter from task" : "build-jump-database",
-            "get parameter from argument" : "-hs"
-          }
-        }
-      }
-    }
+    "recalibrate-bq" : "gatk-recalibrate-bq"
   },
   "linkage" : {
-    "build-jump-database" : {
-      "-ia" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-oa"
-      }
-    },
-    "generate-mosaik-parameters" : {
-      "-hs" : {
-        "link to this task" : "build-jump-database",
-        "link to this argument" : "-hs"
-      },
-      "-ref" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-oa"
-      },
-      "-jmp" : {
-        "link to this task" : "build-jump-database",
-        "link to this argument" : "-out"
-      }
-    },
     "build-read-archive" : {
       "-q" : {
         "link to this task" : "generate-mosaik-parameters",
@@ -153,10 +86,6 @@
       }
     },
     "count-covariates" : {
-      "--reference_sequence" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-fr"
-      },
       "--input_file" : {
         "link to this task" : "sort-primary-bam",
         "link to this argument" : "-out"
@@ -164,8 +93,8 @@
     },
     "recalibrate-bq" : {
       "--reference_sequence" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-fr"
+        "link to this task" : "count-covariates",
+        "link to this argument" : "--reference_sequence"
       },
       "--input_file" : {
         "link to this task" : "count-covariates",
@@ -175,79 +104,36 @@
         "link to this task" : "count-covariates",
         "link to this argument" : "--out"
       }
-    },
-    "mark-duplicates" : {
-      "INPUT" : {
-        "link to this task" : "recalibrate-bq",
-        "link to this argument" : "--out"
-      }
-    },
-    "filter-bam" : {
-      "-in" : {
-        "link to this task" : "mark-duplicates",
-        "link to this argument" : "OUTPUT"
-      }
-    },
-    "realign-gaps" : {
-      "--fasta-reference" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-fr"
-      }
-    },
-    "left-align-indels" : {
-      "--fasta-reference" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-fr"
-      }
-    },
-    "variant-call" : {
-      "--bam" : {
-        "link to this task" : "filter-bam",
-        "link to this argument" : "-out"
-      },
-      "--fasta-reference" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-fr"
-      }
     }
   },
   "arguments" : {
-    "--fasta" : {
-      "link to this task" : "build-reference",
-      "link to this argument" : "-fr",
-      "short form argument" : "-f",
-      "type" : "string"
-    },
-    "--hash-size" : {
-      "description" : "hash-size",
-      "link to this task" : "build-jump-database",
-      "link to this argument" : "-hs",
-      "type" : "integer",
-      "short form argument" : "-hs"
-    },
     "--fastq" : {
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq1",
       "short form argument" : "-q",
-      "type" : "string"
+      "type" : "string",
+      "user entry required" : "true"
     },
     "--fastq2" : {
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq2",
       "short form argument" : "-q2",
-      "type" : "string"
+      "type" : "string",
+      "user entry required" : "true"
     },
     "--mosaik-reference" : {
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-ref",
       "short form argument" : "-r",
-      "type" : "string"
+      "type" : "string",
+      "default" : "$(PWD)/test_genome.dat"
     },
     "--mosaik-jump-database" : {
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-jmp",
       "short form argument" : "-j",
-      "type" : "string"
+      "type" : "string",
+      "default" : "test_genome_15"
     },
     "--batch-size" : {
       "link to this task" : "generate-mosaik-parameters",
@@ -255,8 +141,13 @@
       "short form argument" : "-b",
       "type" : "integer"
     },
+    "--hash-size" : {
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-hs",
+      "type" : "integer",
+      "short form argument" : "-hs"
+    },
     "--sequencing-technology" : {
-      "description" : "sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-st",
       "short form argument" : "-st",
@@ -274,11 +165,19 @@
       "short form argument" : "-o",
       "type" : "string"
     },
+    "--reference-fasta" : {
+      "link to this task" : "count-covariates",
+      "link to this argument" : "--reference_sequence",
+      "short form argument" : "-rf",
+      "type" : "string",
+      "default" : "$(RESOURCES)/test_genome.fa"
+    },
     "--knownSites" : {
       "link to this task" : "count-covariates",
       "link to this argument" : "-knownSites",
       "short form argument" : "-k",
-      "type" : "flag"
+      "type" : "flag",
+      "default" : "$(RESOURCES)/test_genome.dbSNP.snps.sites.vcf"
     }
   },
   "delete files" : {
@@ -300,11 +199,6 @@
     "sort-primary-bam" : {
       "-out" : {
         "delete after task" : "recalibrate-bq"
-      }
-    },
-    "recalibrate-bq" : {
-      "--out" : {
-        "delete after task" : "mark-duplicates"
       }
     }
   }

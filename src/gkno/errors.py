@@ -85,12 +85,26 @@ class errors:
     print(pad, 'ERROR: Either no or multiple input files exist and none are designated for use in filename creation.', sep = '', file = sys.stderr)
     self.error = True
 
+  # When parsing the pipeline configuration file, there are a list of commands that
+  # are either pipeline specific or associated with a contained tool.  If the 'tool'
+  # value is not present in the file, throw an error.
+  def optionAssociationError(self, newLine, pad, text, option, tool):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: Value \'', text, '\' is missing for option \'', option, '\' in the \'', tool, sep = '', end = '', file = sys.stderr)
+    print('\' configuration file.', file = sys.stderr)
+    self.error = True
+
   # The input file used for constructing an output file is blank.
-  def noInputFilenameForFilenameConstruction(self, newLine, pad, task, tool, outputFile, argument):
+  def noInputFilenameForFilenameConstruction(self, newLine, pad, task, tool, outputFile, argument, pipelineArgument, shortform, tl):
     if newLine: print(file = sys.stderr)
     print(pad, 'ERROR: Constructing output filename \'', outputFile, '\' in task \'', task, sep = '', end = '', file = sys.stderr)
     print(' (\'', tool, '\')\' failed.', sep = '', file = sys.stderr)
     print(pad, 'ERROR: Input filename (argument \'', argument, '\') used in the construction is blank.', sep = '', file = sys.stderr)
+    if pipelineArgument != '':
+      description = tl.toolInfo[tool]['arguments'][argument]['description']
+      print(pad, 'ERROR: This can be set on the command line using the pipeline argument \'', sep = '', end = '', file = sys.stderr)
+      print(pipelineArgument, ' (', shortform,')\'.', sep = '', file = sys.stderr)
+      print(pad, 'ERROR: \'', pipelineArgument, '\' description: ', description, sep = '', file = sys.stderr)
     self.error = True
 
   # The pipeline configuration file may contain a block describing how to construct the
@@ -139,8 +153,8 @@ class errors:
             print(pipelineArgument, ' (', pipelineAlt, ')\'.', sep = '', file = sys.stderr)
             print(pad, 'ERROR: \'', pipelineArgument, ' (', pipelineAlt, ')\' description: ', description, sep = '', file = sys.stderr)
           else:
-            print(pad, 'ERROR: This can be set on the command line using the pipeline argument \'', sep = '', file = sys.stderr)
-            print(pad, pipelineArgument, '\'.', sep = '', file = sys.stderr)
+            print(pad, 'ERROR: This can be set on the command line using the pipeline argument \'', sep = '', end = '', file = sys.stderr)
+            print(pipelineArgument, '\'.', sep = '', file = sys.stderr)
             print(pad, 'ERROR: \'', pipelineArgument, '\' description: ', description, sep = '', file = sys.stderr)
     self.error = True
 
@@ -353,14 +367,6 @@ class errors:
   def toolArgumentsError(self, text, tool, option):
     print("\t\tERROR: The '", text, "' value is not present in the tool configuration file for '", option, sep = "", end = "", file = sys.stderr)
     print("' in '", tool, "'", sep = "", file = sys.stderr)
-    self.error = True
-
-  # When parsing the pipeline configuration file, there are a list of commands that
-  # are either pipeline specific or associated with a contained tool.  If the 'tool'
-  # value is not present in the file, throw an error.
-  def optionAssociationError(self, pad, text, option, tool):
-    print(pad, 'ERROR: Value \'', text, '\' is missing for option \'', option, '\' in the \'', tool, sep = '', end = '', file = sys.stderr)
-    print('\' configuration file.', file = sys.stderr)
     self.error = True
 
   # If a configuration file contains a default value for a flag and it isn't 'set' or 'unset',

@@ -202,8 +202,7 @@
           "resource" : "false",
           "dependent" : "true",
           "type" : "string",
-          "extension" : "dat",
-          "default" : "test_genome.dat"
+          "extension" : "dat"
         },
         "-j" : {
           "description" : "the Mosaik jump database",
@@ -218,8 +217,7 @@
             "_keys.jmp",
             "_meta.jmp",
             "_positions.jmp"
-          ],
-          "default" : "test_genome"
+          ]
         },
         "-out" : {
           "description" : "the output alignment file",

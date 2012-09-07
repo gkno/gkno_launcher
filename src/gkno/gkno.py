@@ -28,7 +28,7 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.14"
+__version__ = "0.15"
 __date__ = "August 2012"
 
 def main():
@@ -152,11 +152,12 @@ def main():
   # performed, the given command line is used unchanged.  Each iteration will be
   # executed (unless otherwise stated).
   while True:
+    if not pl.isPipeline: pl.pipelineName = tl.tool
     io.makefileNames.append(pl.pipelineName + '_' + str(makefileID) + '.make')
     if pl.hasMultipleRuns:
       cl.buildCommandLineMultipleRuns(pl)
       tl.toolArguments['pipeline']['--verbose'] = False
-      if makefileID == 2:
+      if makefileID == 1:
         print('Verbose messages disabled as multiple Makefiles are being generated.', file = sys.stdout)
         print(file = sys.stdout)
         sys.stdout.flush()
@@ -205,7 +206,7 @@ def main():
   
       # Check all input and output files.  If there are instructions on how to construct
       # filenames, construct them.
-      tl.constructFilenames(pl, task, tool)
+      if pl.isPipeline: tl.constructFilenames(tl, pl, task, tool)
   
       # For all files, check that a path has been given.  If a path is set, leave the file
       # as is.  If no path has been set, check if the file is an input, output or resource

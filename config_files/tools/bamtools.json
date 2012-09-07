@@ -150,6 +150,47 @@
           "type" : "string"
         }
       }
+    },
+
+    "bamtools-merge" : {
+      "description" : "Filter a BAM file on many parameters or combinations of parameters.",
+      "path" : "bamtools/bin",
+      "executable" : "bamtools",
+      "modifier" : "merge",
+      "help" : "--help|-h",
+      "arguments" : {
+        "-in" : {
+          "description" : "the input BAM file.",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "use for filenames" : "true",
+          "type" : "string",
+          "extension" : "bam"
+        },
+        "-out" : {
+          "description" : "the output BAM file.",
+          "input" : "false",
+          "output" : "true",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "merged.bam",
+          "if output to stream" : "do not include"
+        },
+        "-region" : {
+          "description" : "only read data from this genomic region.",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string"
+        }
+      }
     }
   }
 }

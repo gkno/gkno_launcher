@@ -173,7 +173,7 @@ class tools:
   # (this applies to pipelines only).  If there are no explicit instructions, check
   # if any of the input files have 'use for filenames' set to true.  If so, use this
   # filename to build the output (changing the extension as required).
-  def constructFilenames(self, pl, task, tool):
+  def constructFilenames(self, tl, pl, task, tool):
     er = errors()
 
     if self.toolArguments['pipeline']['--verbose']:
@@ -229,7 +229,7 @@ class tools:
 
       elif outputFiles[outputFile] == 'from input':
         if filenameConstructor != '':
-          self.constructFilenameFromInput(task, tool, outputFile, filenameConstructor)
+          self.constructFilenameFromInput(tl, pl, task, tool, outputFile, filenameConstructor)
 
         # If the output filename is to be generated using an input file from this task and there
         # are no input files designated as to be used for generating the filename, check what
@@ -237,7 +237,7 @@ class tools:
         # generate the filenames.  If there are no or multiple input files, terminate.
         else:
           if len(inputFiles) == 1:
-            self.constructFilenameFromInput(task, tool, outputFile, inputFiles[0])
+            self.constructFilenameFromInput(tl, pl, task, tool, outputFile, inputFiles[0])
           else:
             er.unknownFilenameConstructor(True, "\t\t", task, tool, outputFile)
             er.terminate()
@@ -248,14 +248,27 @@ class tools:
   # If the output filename is to be constructed from an input filename, take the
   # requested input filename, remove the extension and replace with the required
   # extension for this output file.
-  def constructFilenameFromInput(self, task, tool, outputFile, argument):
+  def constructFilenameFromInput(self, tl, pl, task, tool, outputFile, argument):
     er        = errors()
     inputFile = self.toolArguments[task][argument].split('/')[-1]
 
     # Check if the input file that is to be used for constructing the output filename is
     # blank.  If soi, terminate gkno as the output filename cannot be determined.
     if inputFile == '':
-      er.noInputFilenameForFilenameConstruction(True, "\t\t\t", task, tool, outputFile, argument)
+
+      # Find the pipeline argument that goes with the task argument.
+      foundArgument = False
+      shortform     = ''
+      for pipelineArgument in pl.information['arguments']:
+        linkToTask     = pl.information['arguments'][pipelineArgument]['link to this task']
+        linkToArgument = pl.information['arguments'][pipelineArgument]['link to this argument']
+        if (linkToTask == task) and (linkToArgument == argument):
+          if 'short form argument' in pl.information['arguments'][pipelineArgument]:
+            shortform = pl.information['arguments'][pipelineArgument]['short form argument']
+          foundArgument = True
+          break
+      if not foundArgument: pipelineArgument = ''
+      er.noInputFilenameForFilenameConstruction(True, "\t\t\t", task, tool, outputFile, argument, pipelineArgument, shortform, tl)
       er.terminate()
     else:
       inputExtension = ''

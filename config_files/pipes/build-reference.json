@@ -11,18 +11,18 @@
   "construct filenames" : {
     "build-jump-database" : {
       "-out" : {
-        "base name" : "from argument",
-        "tool" : "build-reference",
-        "argument" : "-fr",
-        "remove extension" : "true",
-        "additional text from variables" : {
+        "filename root" : "from argument",
+        "get root from task" : "build-reference",
+        "get root from argument" : "-fr",
+        "remove input extension" : "true",
+        "additional text from parameters" : {
           "order" : [
-            "base name",
+            "filename root",
             "hash-size"
           ],
           "hash-size" : {
-            "tool" : "build-jump-database",
-            "argument" : "-hs"
+            "get parameter from task" : "build-jump-database",
+            "get parameter from argument" : "-hs"
           }
         }
       }
@@ -31,23 +31,22 @@
   "linkage" : {
     "build-jump-database" : {
       "-ia" : {
-        "tool" : "build-reference",
-        "command" : "-oa"
+        "link to this task" : "build-reference",
+        "link to this argument" : "-oa"
       }
     }
   },
   "arguments" : {
     "--fasta" : {
-      "tool" : "build-reference",
-      "command" : "-fr",
+      "link to this task" : "build-reference",
+      "link to this argument" : "-fr",
       "short form argument" : "-f",
-      "type" : "string",
-      "default" : "test_genome.fa"
+      "type" : "string"
     },
     "--hash-size" : {
       "description" : "hash-size",
-      "tool" : "build-jump-database",
-      "command" : "-hs",
+      "link to this task" : "build-jump-database",
+      "link to this argument" : "-hs",
       "type" : "integer",
       "short form argument" : "-hs"
     }

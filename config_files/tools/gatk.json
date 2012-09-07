@@ -61,8 +61,7 @@
           "required" : "true",
           "dependent" : "true",
           "type" : "string",
-          "extension" : "vcf",
-          "default" : "test_genome.dbSNP.snps.sites.vcf"
+          "extension" : "vcf"
         },
         "--logging_level" : {
           "description" : "minimum level of logging",

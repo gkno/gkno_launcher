@@ -34,8 +34,7 @@
           "resource" : "false",
           "dependent" : "true",
           "type" : "string",
-          "extension" : "dat",
-          "default" : "test_genome.dat"
+          "extension" : "dat"
         },
         "-jmp" : {
           "description" : "stub for Mosaik jump table files",
@@ -50,8 +49,7 @@
             "_keys.jmp",
             "_meta.jmp",
             "_positions.jmp"
-          ],
-          "default" : "test_genome"
+          ]
         },
         "-mosaik" : {
           "description" : "path to Mosaik bin",

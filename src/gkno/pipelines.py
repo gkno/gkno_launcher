@@ -22,6 +22,7 @@ class pipeline:
     self.multipleRunsListFormat        = []
     self.multipleRunsNumberOfArguments = 0
     self.numberOfMultipleRuns          = 0
+    self.pipelineName                  = ''
     self.resourcePath                  = ''
     self.streamedOutputs               = {}
     self.taskBlocks                    = []
@@ -151,7 +152,7 @@ class pipeline:
       # will be 'pipeline', otherwise it will point to the individual tool.  For
       # tool commands, overwrite the current value stored.
       if 'link to this task' not in self.information['arguments'][argument]:
-        er.optionAssociationError("\n\t\t", 'link to this task', argument, 'pipeline')
+        er.optionAssociationError(True, "\t\t", 'link to this task', argument, 'pipeline')
         er.terminate()
       else: task = self.information['arguments'][argument]['link to this task']
       default = ''
@@ -171,7 +172,7 @@ class pipeline:
         tool = self.information['tools'][task] if task != 'pipeline' else ''
 
         if 'link to this argument' not in self.information['arguments'][argument]:
-          er.optionAssociationError('link to this argument', argument, 'pipeline')
+          er.optionAssociationError(True, "\t\t", 'link to this argument', argument, 'pipeline')
           er.terminate()
         else: linkToArgument = self.information['arguments'][argument]['link to this argument']
 
@@ -347,7 +348,9 @@ class pipeline:
       if argument == 'json parameters':
         self.checkLinkage(tl, task, tool, argument)
       else:
-        er.invalidArgument(True, "\t\t\t", 'linkage', argument, task)
+        newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
+        pad     = "\t\t\t" if tl.toolArguments['pipeline']['--verbose'] else ''
+        er.invalidArgument(newLine, pad, 'linkage', argument, task)
         er.terminate()
 
   # Check to see if a tool option is linked to another tool and modify the stored
@@ -357,26 +360,20 @@ class pipeline:
 
     targetToolName = ''
     try: targetToolName = self.information['linkage'][task][argument]['link to this task']
-    except: er.optionAssociationError('link to this task', argument, tool)
-    if er.error:
-      print(file = sys.stdout)
-      er.terminate()
+    except: er.optionAssociationError(True, "\t\t", 'link to this task', argument, tool)
+    if er.error: er.terminate()
 
     targetArgument = ''
     try: targetArgument = self.information['linkage'][task][argument]['link to this argument']
-    except: er.optionAssociationError('link to this argument', argument, tool)
-    if er.error:
-      print(file = sys.stdout)
-      er.terminate()
+    except: er.optionAssociationError(True, "\t\t", 'link to this argument', argument, tool)
+    if er.error: er.terminate()
 
     # Check that the targetToolName and the targetOption are valid.
     if targetToolName not in tl.toolArguments:
-      print(file = sys.stdout)
       er.invalidToolName('linkage', targetToolName)
       er.terminate()
 
     if targetArgument not in tl.toolArguments[targetToolName]:
-      print(file = sys.stdout)
       er.invalidArgument('linkage', targetArgument, targetToolName)
       er.terminate()
 
@@ -395,7 +392,12 @@ class pipeline:
   def determineFilesToDelete(self, tl):
     er = errors()
 
-    if tl.toolArguments['pipeline']['--verbose']:
+    verbose = True if tl.toolArguments['pipeline']['--verbose'] else False
+    newLine = False
+    pad     = ''
+    if verbose:
+      newLine = True
+      pad     = "\t"
       print('Determining which intermediate files can be deleted...', end = '', file = sys.stdout)
       sys.stdout.flush()
 
@@ -405,7 +407,7 @@ class pipeline:
 
         # Check that the task is a valid task in the pipeline.
         if task not in self.information['tools']:
-          er.invalidToolTaskName(True, "\t", 'delete files', True, task)
+          er.invalidToolTaskName(newLine, pad, 'delete files', True, task)
           er.terminate()
 
         for argument in self.information['delete files'][task]:
@@ -413,7 +415,7 @@ class pipeline:
           # Check that the argument is a valid argument for the specified task.
           tool = self.information['tools'][task]
           if argument not in tl.toolInfo[tool]['arguments']:
-            er.invalidArgument(True, "\t", 'delete files', argument, task)
+            er.invalidArgument(newLine, pad, 'delete files', argument, task)
             er.terminate()
 
           # Check if the argument is a filename stub.  If so, the 'extension' argument
@@ -431,7 +433,7 @@ class pipeline:
 
               # Check that the extension is valid.
               if extension not in tl.toolInfo[tool]['arguments'][argument]['outputs']:
-                er.invalidStubExtension(True, "\t", task, argument, extension)
+                er.invalidStubExtension(newLine, pad, task, argument, extension)
                 er.terminate()
 
               if 'delete after task' in self.information['delete files'][task][argument][extension]:
@@ -439,7 +441,7 @@ class pipeline:
 
               # Check that the task after which the file is to be deleted is valid.
               if deleteAfterTask not in self.information['tools']:
-                er.invalidToolTaskName(True, "\t", 'delete files', True, deleteAfterTask)
+                er.invalidToolTaskName(newLine, pad, 'delete files', True, deleteAfterTask)
                 er.terminate()
 
               if deleteAfterTask not in self.deleteFiles: self.deleteFiles[deleteAfterTask] = {}
@@ -453,14 +455,14 @@ class pipeline:
 
             # Check that the task after which the file is to be deleted is valid.
             if deleteAfterTask not in self.information['tools']:
-              er.invalidToolTaskName(True, "\t", 'delete files', True, deleteAfterTask)
+              er.invalidToolTaskName(newLine, pad, 'delete files', True, deleteAfterTask)
               er.terminate()
 
             if deleteAfterTask not in self.deleteFiles: self.deleteFiles[deleteAfterTask] = {}
             if argument not in self.deleteFiles[deleteAfterTask]: self.deleteFiles[deleteAfterTask][argument] = []
             self.deleteFiles[deleteAfterTask][argument].append(tl.toolArguments[task][argument])
 
-    if tl.toolArguments['pipeline']['--verbose']:
+    if verbose:
       print('done.', file = sys.stdout)
       print(file = sys.stdout)
       sys.stdout.flush()

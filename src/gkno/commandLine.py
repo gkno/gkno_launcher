@@ -252,9 +252,10 @@ class commandLine:
   def parsePipelineCommandLine(self, gknoHelp, io, tl, pl):
     toolsWrittenToScreen = False
     writingOnNewLine     = False
-    er = errors()
+    er                   = errors()
+    verbose = True if tl.toolArguments['pipeline']['--verbose'] else False
 
-    if tl.toolArguments['pipeline']['--verbose']:
+    if verbose:
       print('Parsing the command line...', end = '', file = sys.stdout)
       sys.stdout.flush()
     while(len(sys.argv) != 0):
@@ -282,7 +283,7 @@ class commandLine:
       # the pipeline usage information along with the additional message explaining which
       # argument caused the problem.
       if not isToolName and not isPipelineArgument:
-        print(file = sys.stdout)
+        if verbose: print(file = sys.stdout)
         gknoHelp.specificPipelineUsage(tl, pl)
         er.unknownPipelineArgument("\n", argument)
         exit(1)
@@ -292,11 +293,12 @@ class commandLine:
       # exception
       if isToolName:
         if tl.toolArguments['pipeline']['--verbose']:
-          if not writingOnNewLine:
-            print(file = sys.stdout)
-            writingOnNewLine = True
-          print("\tProcessing command line arguments for tool '", task, '\'...', sep = '', end = '', file = sys.stdout)
-          sys.stdout.flush()
+          if verbose:
+            if not writingOnNewLine:
+              print(file = sys.stdout)
+              writingOnNewLine = True
+            print("\tProcessing command line arguments for tool '", task, '\'...', sep = '', end = '', file = sys.stdout)
+            sys.stdout.flush()
           toolsWrittenToScreen = True
         try: nextArgument = sys.argv[0]
         except: 
@@ -310,7 +312,7 @@ class commandLine:
         tool            = pl.information['tools'][task]
         self.parseToolCommandLine(gknoHelp, io, tl, pl, toolCommandLine, task, tool, False)
         sys.argv.pop(0)
-        if tl.toolArguments['pipeline']['--verbose']:
+        if verbose:
           print('done.', file = sys.stdout)
           sys.stdout.flush()
           toolsWrittenToScreen = True
@@ -347,7 +349,7 @@ class commandLine:
           er.missingCommandLineArgumentValue(False, "\t\t", linkToTask, linkToArgument, argument)
           er.terminate()
 
-    if tl.toolArguments['pipeline']['--verbose']:
+    if verbose:
       if not toolsWrittenToScreen: print('done.', file = sys.stdout)
       print(file = sys.stdout)
       sys.stdout.flush()
@@ -466,15 +468,19 @@ class commandLine:
         # Check if the argument is an input file and if so, if the input is coming from
         # the stream.  If so, this does not need to be set.
         isInput = True if tl.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
+        inputIsStream = False
         if isInput:
           previousTask = ''
           for currentTask in pl.information['workflow']:
             if currentTask == task: break
             else: previousTask = currentTask
-          inputIsStream = True if previousTask in pl.information['tools outputting to stream'] else False
+          if 'tools outputting to stream' in pl.information:
+            if previousTask in pl.information['tools outputting to stream']: inputIsStream = True
         
         if not inputIsStream:
-          er.missingRequiredValue(True, "\t\t\t", task, tool, argument, tl, pl)
+          newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
+          pad     = "\t\t\t" if tl.toolArguments['pipeline']['--verbose'] else ''
+          er.missingRequiredValue(newLine, pad, task, tool, argument, tl, pl)
           er.terminate()
 
       # If the value is set, check that the data type is correct.
