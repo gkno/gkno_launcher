@@ -16,10 +16,10 @@ class commandLine:
     tl.toolArguments['pipeline']['--verbose'] = True
     for counter, argument in enumerate(sys.argv):
       if (argument == '--verbose') or (argument == '-vb'):
+        admin.isVerbose = True
         if counter + 1 < len(sys.argv):
           if sys.argv[counter + 1] == 'True': 
             tl.toolArguments['pipeline']['--verbose'] = True
-            admin.isVerbose = True
           else: tl.toolArguments['pipeline']['--verbose'] = False
 
   # Check the first entry on the command line is valid.
