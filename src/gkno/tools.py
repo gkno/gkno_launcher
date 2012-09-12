@@ -21,6 +21,7 @@ class tools:
     self.toolArguments              = {}
     self.toolsDemandingInputStream  = {}
     self.toolsDemandingOutputStream = {}
+    self.toolsWithMultipleInputs    = {}
 
   # If gkno is being run in the single tool mode, check that the specified tool
   # exists.
@@ -60,6 +61,11 @@ class tools:
       self.toolsDemandingInputStream[task] = True if value == 'true' else False
       value = self.toolInfo[task]['output is stream'] if 'output is stream' in self.toolInfo[task] else ''
       self.toolsDemandingOutputStream[task] = True if value == 'true' else False
+
+      # Some tools allow multiple input files to be supplied.  If this is the case, the
+      # value 'allows multiple inputs' has to be set.
+      value = self.toolInfo[task]['allows multiple inputs'] if 'allows multiple inputs' in self.toolInfo[task] else ''
+      self.toolsWithMultipleInputs[task] = True if value == 'true' else False
 
       for argument in self.toolInfo[task]['arguments']:
 
@@ -234,7 +240,7 @@ class tools:
         # If the output filename is to be generated using an input file from this task and there
         # are no input files designated as to be used for generating the filename, check what
         # input files there are.  If there is only one input for this task, use this file to
-        # generate the filenames.  If there are no or multiple input files, terminate.
+        # generate the filenames.  If there are multiple or no input file arguments, terminate.
         else:
           if len(inputFiles) == 1:
             self.constructFilenameFromInput(tl, pl, task, tool, outputFile, inputFiles[0])
@@ -250,7 +256,14 @@ class tools:
   # extension for this output file.
   def constructFilenameFromInput(self, tl, pl, task, tool, outputFile, argument):
     er        = errors()
-    inputFile = self.toolArguments[task][argument].split('/')[-1]
+
+    # If the output filename is to be generated from an input file, but there are
+    # multiple files, use the first file in the list for generating the output
+    # filename.
+    if isinstance(self.toolArguments[task][argument], list): useFile = self.toolArguments[task][argument][0]
+    else: useFile = self.toolArguments[task][argument]
+
+    inputFile = useFile.split('/')[-1]
 
     # Check if the input file that is to be used for constructing the output filename is
     # blank.  If soi, terminate gkno as the output filename cannot be determined.
@@ -261,12 +274,13 @@ class tools:
       shortform     = ''
       for pipelineArgument in pl.information['arguments']:
         linkToTask     = pl.information['arguments'][pipelineArgument]['link to this task']
-        linkToArgument = pl.information['arguments'][pipelineArgument]['link to this argument']
-        if (linkToTask == task) and (linkToArgument == argument):
-          if 'short form argument' in pl.information['arguments'][pipelineArgument]:
-            shortform = pl.information['arguments'][pipelineArgument]['short form argument']
-          foundArgument = True
-          break
+        if linkToTask != 'pipeline':
+          linkToArgument = pl.information['arguments'][pipelineArgument]['link to this argument']
+          if (linkToTask == task) and (linkToArgument == argument):
+            if 'short form argument' in pl.information['arguments'][pipelineArgument]:
+              shortform = pl.information['arguments'][pipelineArgument]['short form argument']
+            foundArgument = True
+            break
       if not foundArgument: pipelineArgument = ''
       er.noInputFilenameForFilenameConstruction(True, "\t\t\t", task, tool, outputFile, argument, pipelineArgument, shortform, tl)
       er.terminate()
@@ -286,6 +300,59 @@ class tools:
         if self.toolInfo[tool]['arguments'][outputFile]['stub'] == 'true': isStub = True
       if not isStub: self.toolArguments[task][outputFile] = inputFile + '.' + self.toolInfo[tool]['arguments'][outputFile]['extension'].split('|')[0]
       else: self.toolArguments[task][outputFile] = inputFile
+
+  # Some of the tools included in gkno can have multiple input files set on the
+  # command line.  When many files are to be included, it can be more convenient
+  # to allow a file including a list of files to be included.  Check if any of the
+  # tools have input lists specified and if so, add these to the actual command line
+  # argument list that should be used.
+  def checkInputLists(self, pl, io):
+    er      = errors()
+    newLine = True if self.toolArguments['pipeline']['--verbose'] else False
+    pad     = "\t\t\t" if self.toolArguments['pipeline']['--verbose'] else ''
+    argumentsToRemove = []
+
+    for task in self.toolArguments:
+      if task != 'pipeline':
+        tool = pl.information['tools'][task]
+        for argument in self.toolArguments[task]:
+          isList = False
+          if argument != 'json parameters':
+            if 'list of input files' in self.toolInfo[tool]['arguments'][argument]:
+              if self.toolInfo[tool]['arguments'][argument]['list of input files'] == 'true': isList = True
+  
+          if isList:
+            if 'apply by repeating this argument' in self.toolInfo[tool]['arguments'][argument]:
+              repeatArgument = self.toolInfo[tool]['arguments'][argument]['apply by repeating this argument']
+              if repeatArgument not in self.toolInfo[tool]['arguments']:
+                er.invalidArgumentToRepeat(newLine, pad, task, tool, argument, repeatArgument)
+                er.terminate()
+            else:
+              er.noArgumentToRepeat(newLine, pad, task, tool, argument)
+              er.terminate()
+
+            # Check that the file exists, open and read the contents.  The file should
+            # be a simple json list.  Only do this is a file is given.
+            if self.toolArguments[task][argument] != '':
+              data = io.getJsonData(self.toolArguments[task][argument])
+              if 'filename list' not in data: er.error = True
+              else:
+                if not isinstance(data['filename list'], list): er.error = True
+              if er.error:
+                er.malformedFilenameList(newLine, pad, task, tool, argument)
+                er.terminate()
+
+              # All of the data has been read in and is valid, so can be added to the
+              # lists of values for the specified argument.
+              if self.toolArguments[task][repeatArgument] == '': self.toolArguments[task][repeatArgument] = []
+              for filename in data['filename list']: self.toolArguments[task][repeatArgument].append(filename)
+
+            # Having accounted for all the files in the list, this option can be removed
+            # from the tools data structure.
+            argumentsToRemove.append((task, argument))
+
+    for task, argument in argumentsToRemove:
+      del(self.toolArguments[task][argument])
 
   # Determine which files are required for each tool to run.  For each tool, these files
   # are stored in a list and are used to define the dependencies in the Makefile.

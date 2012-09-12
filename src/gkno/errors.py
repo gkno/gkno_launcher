@@ -85,6 +85,30 @@ class errors:
     print(pad, 'ERROR: Either no or multiple input files exist and none are designated for use in filename creation.', sep = '', file = sys.stderr)
     self.error = True
 
+  # If the input is a list of files, the json file must also contain information on which
+  # command line argument should be used for putting these files on the command line.
+  def noArgumentToRepeat(self, newLine, pad, task, tool, argument):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: A list of files was selected for task \'', task, '\' argument \'', argument, '\'.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: The json file for this tool (\'', tool, '\') and argument does not contain the value:', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: \'apply by repeating this argument\' with the argument to use on the command line.', sep = '', file = sys.stderr)
+    self.error = True
+
+  # If the argument associated with the filename list is invalid.
+  def invalidArgumentToRepeat(self, newLine, pad, task, tool, argument, linkedArgument):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: A list of files was selected for task \'', task, '\' argument \'', argument, '\'.', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: The command line argument (\'', linkedArgument, '\') to input these files', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: is not valid for tool (\'', tool, '\').  Please check the json file.', sep = '', file = sys.stderr)
+    self.error = True
+
+  # If the list of filenames is not a list or is missing the correct title.
+  def malformedFilenameList(self, newLine, pad, task, tool, argument):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: The json file containing the list of filenames is malformed', sep = '', file = sys.stderr)
+    print(pad, 'ERROR: This file should contain the heading \'filename list\' and be followed by a json list.', sep = '', file = sys.stderr)
+    self.error = True
+
   # When parsing the pipeline configuration file, there are a list of commands that
   # are either pipeline specific or associated with a contained tool.  If the 'tool'
   # value is not present in the file, throw an error.

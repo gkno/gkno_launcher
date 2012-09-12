@@ -21,7 +21,7 @@ class files:
     self.outputsList       = []
     self.phoneHomeID       = ''
 
-  def getMultipleJson(self, filename):
+  def getJsonData(self, filename):
     er = errors()
 
     # Check that the file exists.
@@ -205,14 +205,6 @@ class files:
       print(file = self.makeFilehandle)
       print(file = self.makeFilehandle)
 
-    #for counter in reversed(range(0, len(pl.information['workflow']))):
-    #  task           = pl.information['workflow'][counter]
-    #  tool           = pl.information['tools'][task]
-    #  pathVariable = self.writeInitialInformation(tl, task, tool)
-    #  self.generateCommand(tl, pl, pathVariable, task, tool)
-    #  self.deleteFiles(tl, pl, task)
-    #  print(file = self.makeFilehandle)
-
     # Close the Makefile.
     self.makeFilehandle.close()
     if tl.toolArguments['pipeline']['--verbose']:
@@ -328,8 +320,16 @@ class files:
   # Write the dependencies for the task block to the Makefile.
   def writeDependenciesToMakefile(self, dependencyBlock):
     for counter, output in enumerate(dependencyBlock):
+
+      # Some tools allow multiple inputs and so the 'output' variable may be a 
+      # list of files.  If so, write out each file individually.
+      isList = True if isinstance(output, list) else False
       endOfLine = ' ' if ( (counter + 1) < len(dependencyBlock)) else "\n"
-      print(output, end = endOfLine, file = self.makeFilehandle)
+      if isList:
+        for filename in output: print(filename, end = ' ', file = self.makeFilehandle)
+        print('', end = endOfLine, file = self.makeFilehandle)
+      else:
+        print(output, end = endOfLine, file = self.makeFilehandle)
 
   # Generate commands for the makefile
   def generateCommand(self, tl, pl, path, task, tool, lineStart):

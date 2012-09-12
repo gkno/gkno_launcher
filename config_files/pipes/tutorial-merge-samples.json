@@ -2,200 +2,57 @@
   "description" : "Merge together all bam files for a sample and mark duplicate reads.",
   "resource path" : "tutorial/current",
   "workflow" : [
-    "merge_bam",
-    "index_bam",
+    "merge-bam",
+    "index-bam",
     "mark-duplicates",
     "index-final-bam",
-    "generate-bam-statistics",
-    "calculate-md5"
+    "generate-bam-statistics"
   ],
   "tools" : {
     "merge-bam" : "bamtools-merge",
     "index-bam" : "bamtools-index",
     "mark-duplicates" : "picard-mark-duplicates",
     "index-final-bam" : "bamtools-index",
-    "generate-bam-statistics" : "bamtools stats",
-    "calculate-md5" : "md5"
+    "generate-bam-statistics" : "bamtools-stats"
   },
   "linkage" : {
-    "build-read-archive" : {
-      "-q" : {
-        "link to this task" : "generate-mosaik-parameters",
-        "link to this argument" : "-fq1"
-      },
-      "-q2" : {
-        "link to this task" : "generate-mosaik-parameters",
-        "link to this argument" : "-fq2"
-      },
-      "json parameters" : {
-        "link to this task" : "generate-mosaik-parameters",
-        "link to this argument" : "-out",
-        "json block" : "MosaikBuild"
-      }
-    },
-    "align" : {
+    "index-bam" : {
       "-in" : {
-        "link to this task" : "build-read-archive",
-        "link to this argument" : "-out"
-      },
-      "-ia" : {
-        "link to this task" : "generate-mosaik-parameters",
-        "link to this argument" : "-ref"
-      },
-      "-hs" : {
-        "link to this task" : "generate-mosaik-parameters",
-        "link to this argument" : "-hs"
-      },
-      "-j" : {
-        "link to this task" : "generate-mosaik-parameters",
-        "link to this argument" : "-jmp"
-      },
-      "json parameters" : {
-        "link to this task" : "generate-mosaik-parameters",
-        "link to this argument" : "-out",
-        "json block" : "MosaikAligner"
-      }
-    },
-    "sort-primary-bam" : {
-      "-in" : {
-        "link to this task" : "align",
-        "link to this argument" : "-out",
-        "extension" : ".bam"
-      }
-    },
-    "sort-multiple-bam" : {
-      "-in" : {
-        "link to this task" : "align",
-        "link to this argument" : "-out",
-        "extension" : ".multiple.bam"
-      },
-      "-out" : {
-        "link to this task" : "align",
-        "link to this argument" : "-out",
-        "extension" : ".multiple.sorted.bam"
-      }
-    },
-    "index-primary-bam" : {
-      "-in" : {
-        "link to this task" : "sort-primary-bam",
+        "link to this task" : "merge-bam",
         "link to this argument" : "-out"
       }
     },
-    "count-covariates" : {
-      "--input_file" : {
-        "link to this task" : "sort-primary-bam",
+    "mark-duplicates" : {
+      "INPUT" : {
+        "link to this task" : "merge-bam",
         "link to this argument" : "-out"
       }
     },
-    "recalibrate-bq" : {
-      "--reference_sequence" : {
-        "link to this task" : "count-covariates",
-        "link to this argument" : "--reference_sequence"
-      },
-      "--input_file" : {
-        "link to this task" : "count-covariates",
-        "link to this argument" : "--input_file"
-      },
-      "--BQSR" : {
-        "link to this task" : "count-covariates",
-        "link to this argument" : "--out"
+    "index-final-bam" : {
+      "-in" : {
+        "link to this task" : "mark-duplicates",
+        "link to this argument" : "OUTPUT"
+      }
+    },
+    "generate-bam-statistics" : {
+      "-in" : {
+        "link to this task" : "mark-duplicates",
+        "link to this argument" : "OUTPUT"
       }
     }
   },
   "arguments" : {
-    "--fastq" : {
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-fq1",
-      "short form argument" : "-q",
-      "type" : "string",
-      "user entry required" : "true"
-    },
-    "--fastq2" : {
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-fq2",
-      "short form argument" : "-q2",
-      "type" : "string",
-      "user entry required" : "true"
-    },
-    "--mosaik-reference" : {
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-ref",
-      "short form argument" : "-r",
-      "type" : "string",
-      "default" : "$(PWD)/test_genome.dat"
-    },
-    "--mosaik-jump-database" : {
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-jmp",
-      "short form argument" : "-j",
-      "type" : "string",
-      "default" : "test_genome_15"
-    },
-    "--batch-size" : {
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-n",
+    "--bam" : {
+      "link to this task" : "merge-bam",
+      "link to this argument" : "-in",
       "short form argument" : "-b",
-      "type" : "integer"
-    },
-    "--hash-size" : {
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-hs",
-      "type" : "integer",
-      "short form argument" : "-hs"
-    },
-    "--sequencing-technology" : {
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-st",
-      "short form argument" : "-st",
       "type" : "string"
     },
-    "--median-fragment-length" : {
-      "link to this task" : "build-read-archive",
-      "link to this argument" : "-mfl",
-      "type" : "integer",
-      "short form argument" : "-mfl"
-    },
-    "--out" : {
-      "link to this task" : "build-read-archive",
-      "link to this argument" : "-out",
-      "short form argument" : "-o",
+    "--bam-list" : {
+      "link to this task" : "merge-bam",
+      "link to this argument" : "-in-list",
+      "short form argument" : "-bl",
       "type" : "string"
-    },
-    "--reference-fasta" : {
-      "link to this task" : "count-covariates",
-      "link to this argument" : "--reference_sequence",
-      "short form argument" : "-rf",
-      "type" : "string",
-      "default" : "$(RESOURCES)/test_genome.fa"
-    },
-    "--knownSites" : {
-      "link to this task" : "count-covariates",
-      "link to this argument" : "-knownSites",
-      "short form argument" : "-k",
-      "type" : "flag",
-      "default" : "$(RESOURCES)/test_genome.dbSNP.snps.sites.vcf"
-    }
-  },
-  "delete files" : {
-    "build-read-archive" : {
-      "-out" : {
-        "delete after task" : "align"
-      }
-    },
-    "align" : {
-      "-out" : {
-        ".bam" : {
-          "delete after task" : "sort-primary-bam"
-        },
-        ".multiple.bam" : {
-          "delete after task" : "sort-multiple-bam"
-        }
-      }
-    },
-    "sort-primary-bam" : {
-      "-out" : {
-        "delete after task" : "recalibrate-bq"
-      }
     }
   }
 }

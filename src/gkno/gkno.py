@@ -28,7 +28,7 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.15"
+__version__ = "0.16"
 __date__ = "August 2012"
 
 def main():
@@ -108,7 +108,6 @@ def main():
     else: io.phoneHomeID = pl.setupIndividualTool(tl.tool, not gknoHelp.printHelp)
 
     # Read the tool json files into data structures in the tools class.
-    #verbose = False if gknoHelp.printHelp else True
     io.getToolDescriptions(tl, pl, sourcePath + '/config_files/tools', not gknoHelp.printHelp)
     tl.checkForRequiredFields()
 
@@ -167,7 +166,7 @@ def main():
     if pl.isPipeline: cl.parsePipelineCommandLine(gknoHelp, io, tl, pl)
     else: cl.parseToolCommandLine(gknoHelp, io, tl, pl, sys.argv, tl.tool, tl.tool, True)
 
-    # If the --export-config has been set, then the user is attempting to create a
+    # I the --export-config has been set, then the user is attempting to create a
     # new configuration file based on the selected pipeline.  This can only be
     # selected for a pipeline and multiple runs are NOT being performed.
     if tl.toolArguments['pipeline']['--export-config'] != '' and pl.isPipeline and not pl.hasMultipleRuns:
@@ -198,6 +197,13 @@ def main():
         print("\t", task, ' (', tool, ')...', sep = '', file = sys.stdout)
         sys.stdout.flush()
   
+      # Some of the tools included in gkno can have multiple input files set on the
+      # command line.  When many files are to be included, it can be more convenient
+      # to allow a file including a list of files to be included.  Check if any of the
+      # tools have input lists specified and if so, add these to the actual command line
+      # argument list that should be used.
+      tl.checkInputLists(pl, io)
+
       # Check all of the options for each tool and determine if the values are
       # linked to any other tool.  If so, set the values as necessary.  Also,
       # check that all required input files are set anc check the input and
@@ -219,7 +225,7 @@ def main():
       if tl.toolArguments['pipeline']['--verbose']:
         print(file = sys.stdout)
         sys.stdout.flush()
-  
+
     # Parse through all of the selected options and for those options referring
     # to input/output files, check that the extensions are correct, that the
     # paths are included and that the strings containing the output files and

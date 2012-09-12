@@ -123,7 +123,7 @@ class commandLine:
     if pl.hasMultipleRuns:
 
       # Open the json file.
-      inputData = io.getMultipleJson(multipleName)
+      inputData = io.getJsonData(multipleName)
   
       # Populate a data structure with the information from the json file.
       # First the format of the data list is defined.
@@ -232,7 +232,22 @@ class commandLine:
         isLastArgument = False
       except: nextArgument = ''
       if not nextArgument.startswith('-') and not isLastArgument:
-        tl.toolArguments[modifiedTool][argument] = nextArgument
+
+        # Some tools allow the same argument to be set multiple times.  For example, bamtools
+        # allows the inclusion of any number of input bam files by repeated use of the -in
+        # argument.  If this is the case, add the new value to a list, otherwise just set a
+        # single value.
+        hasMultiple = False
+        if argument in tl.toolInfo[tool]['arguments']:
+          if 'allow multiple definitions' in tl.toolInfo[tool]['arguments'][argument]:
+            if tl.toolInfo[tool]['arguments'][argument]['allow multiple definitions'] == 'true': hasMultiple = True
+
+        if hasMultiple:
+          if tl.toolArguments[modifiedTool][argument] == '':
+            tl.toolArguments[modifiedTool][argument] = []
+          tl.toolArguments[modifiedTool][argument].append(nextArgument)
+        else:
+          tl.toolArguments[modifiedTool][argument] = nextArgument
         commandLine.pop(0)
 
       # If the next argument begins with a '-', then this option must be a flag (this
@@ -335,7 +350,23 @@ class commandLine:
           if nextArgument == 'True': nextArgument = True
           if nextArgument == 'False': nextArgument = False
           if linkToTask   == 'pipeline': tl.toolArguments[linkToTask][argument] = nextArgument
-          else: tl.toolArguments[linkToTask][linkToArgument] = nextArgument
+          else:
+
+            # Some tools allow multiple definitions of the same argument, for example
+            # bamtools can allow for multiple input bam files.  Check if this is such
+            # an argument and handle appropriately.
+            allowMultipleEntries = False
+            linkToTool = pl.information['tools'][linkToTask]
+            if 'allow multiple definitions' in tl.toolInfo[linkToTool]['arguments'][linkToArgument]:
+              if tl.toolInfo[linkToTool]['arguments'][linkToArgument]['allow multiple definitions'] == 'true': allowMultipleEntries = True
+
+            if allowMultipleEntries:
+              if tl.toolArguments[linkToTask][linkToArgument] == '':
+                tl.toolArguments[linkToTask][linkToArgument] = []
+              tl.toolArguments[linkToTask][linkToArgument].append(nextArgument)
+            else:
+              tl.toolArguments[linkToTask][linkToArgument] = nextArgument
+
           sys.argv.pop(0)
 
         # If the next argument begins with a '-', then this option must be a flag (this
@@ -378,37 +409,54 @@ class commandLine:
 
       if isInput or isOutput:
 
-        # Check if the file already contains a path (e.g. already contains the
-        # '/' character.
-        if '/' not in tl.toolArguments[task][argument]:
-          filePath = ''
-          if isResource: filePath = tl.toolArguments['pipeline']['--resource-path'] + '/' + tl.toolArguments[task][argument]
-          elif isInput:  filePath = tl.toolArguments['pipeline']['--input-path']    + '/' + tl.toolArguments[task][argument]
-          elif isOutput: filePath = tl.toolArguments['pipeline']['--output-path']   + '/' + tl.toolArguments[task][argument]
-          tl.toolArguments[task][argument] = filePath
+        # Check if there is a list of filenames, rather than a single value.
+        isFileList = True if isinstance(tl.toolArguments[task][argument], list) else False
 
-        # If the file path is given, ensure that the full path is given. For example,
-        # if './file' is specified, modify the './' to the full path of the current
-        # directory.  If the path specified is a parameter and as such begins with '$(',
-        # do not modify the path.
+        # Check the paths and the extension.
+        if isFileList:
+          fileList = []
+          for filename in tl.toolArguments[task][argument]:
+            intermediateFilename = self.setFile(tl, filename, isInput, isOutput, isResource)
+            finalFilename        = self.checkExtension(tl, task, tool, argument, isOutput, intermediateFilename)
+            fileList.append(finalFilename)
+          tl.toolArguments[task][argument] = fileList
         else:
-          if not tl.toolArguments[task][argument].startswith('$('):
-            givenPath = tl.toolArguments[task][argument].split('/')
-            filename  = givenPath.pop()
-            givenPath = '/'.join(givenPath)
-            fullPath  = os.path.abspath(givenPath)
-            tl.toolArguments[task][argument] = fullPath + '/' + filename
-
-        # Check that the file has the correct extension.
-        self.checkExtension(tl, task, tool, argument, isOutput)
+          intermediateFilename = self.setFile(tl, tl.toolArguments[task][argument], isInput, isOutput, isResource)
+          finalFilename        = self.checkExtension(tl, task, tool, argument, isOutput, intermediateFilename)
+          tl.toolArguments[task][argument] = finalFilename
 
     if tl.toolArguments['pipeline']['--verbose']:
       print('done.', file = sys.stdout)
       sys.stdout.flush()
 
+  # Provided the filename, check if resource, input or output and set the file accordingly.
+  def setFile(self, tl, filename, isInput, isOutput, isResource):
+
+    # Check if the file already contains a path (e.g. already contains the
+    # '/' character.
+    filePath = ''
+    if '/' not in filename:
+      if isResource: filePath = tl.toolArguments['pipeline']['--resource-path'] + '/' + filename
+      elif isInput:  filePath = tl.toolArguments['pipeline']['--input-path']    + '/' + filename
+      elif isOutput: filePath = tl.toolArguments['pipeline']['--output-path']   + '/' + filename
+
+    # If the file path is given, ensure that the full path is given. For example,
+    # if './file' is specified, modify the './' to the full path of the current
+    # directory.  If the path specified is a parameter and as such begins with '$(',
+    # do not modify the path.
+    else:
+      if not filename.startswith('$('):
+        givenPath = filename.split('/')
+        filename  = givenPath.pop()
+        givenPath = '/'.join(givenPath)
+        filePath  = os.path.abspath(givenPath) + '/' + filename
+      else: filePath = filename
+
+    return filePath
+
   # Check the filename extension.  If the filename is not a stub and the
   # name soesn't end with the expected extension, throw an error.
-  def checkExtension(self, tl, task, tool, argument, isOutput):
+  def checkExtension(self, tl, task, tool, argument, isOutput, filename):
     er      = errors()
     correct = False
 
@@ -431,21 +479,23 @@ class commandLine:
         else:
           for extension in extensions:
             extension = '.' + extension
-            if tl.toolArguments[task][argument].endswith(extension):
+            if filename.endswith(extension):
               correct = True
               break
 
           # If all the extensions have been checked and the files extension did not
           # match any of them, throw an error.
           if not correct and isOutput:
-            tl.toolArguments[task][argument] += '.' + extensions[0]
+            filename += '.' + extensions[0]
           elif not correct:
             print(file = sys.stdout)
-            er.extensionError(argument, tl.toolArguments[task][argument], tl.toolInfo[tool]['arguments'][argument]['extension'])
+            er.extensionError(argument, filename, tl.toolInfo[tool]['arguments'][argument]['extension'])
             er.terminate()
       else:
         er.toolArgumentsError('extension', tool, argument)
         er.terminate()
+
+    return filename
 
   # Loop over the tools and check that all required information has been set.
   def checkParameters(self, tl, pl, gknoHelp, task, tool, checkRequired):

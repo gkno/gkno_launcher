@@ -57,7 +57,21 @@
           "resource" : "false",
           "dependent" : "true",
           "type" : "string",
-          "extension" : "bam"
+          "extension" : "bam",
+          "use for filenames" : "true",
+          "allow multiple definitions" : "true"
+        },
+        "-in-list" : {
+          "description" : "the input BAM file list.",
+          "input" : "true",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "bam",
+          "list of input files" : "true",
+          "apply by repeating this argument" : "-in"
         },
         "-out" : {
           "description" : "the output BAM file. Required input.",
@@ -116,9 +130,22 @@
           "required" : "true",
           "resource" : "false",
           "dependent" : "true",
-          "use for filenames" : "true",
           "type" : "string",
-          "extension" : "bam"
+          "extension" : "bam",
+          "use for filenames" : "true",
+          "allow multiple definitions" : "true"
+        },
+        "-in-list" : {
+          "description" : "the input BAM file list.",
+          "input" : "true",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "bam",
+          "list of input files" : "true",
+          "apply by repeating this argument" : "-in"
         },
         "-out" : {
           "description" : "the output BAM file.",
@@ -157,6 +184,7 @@
       "path" : "bamtools/bin",
       "executable" : "bamtools",
       "modifier" : "merge",
+      "allows multiple inputs" : "true",
       "help" : "--help|-h",
       "arguments" : {
         "-in" : {
@@ -166,9 +194,22 @@
           "required" : "true",
           "resource" : "false",
           "dependent" : "true",
-          "use for filenames" : "true",
           "type" : "string",
-          "extension" : "bam"
+          "extension" : "bam",
+          "use for filenames" : "true",
+          "allow multiple definitions" : "true"
+        },
+        "-in-list" : {
+          "description" : "the input BAM file list.",
+          "input" : "true",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "bam",
+          "list of input files" : "true",
+          "apply by repeating this argument" : "-in"
         },
         "-out" : {
           "description" : "the output BAM file.",
@@ -189,6 +230,47 @@
           "resource" : "false",
           "dependent" : "false",
           "type" : "string"
+        }
+      }
+    },
+
+    "bamtools-stats" : {
+      "description" : "Prints general alignment statistics.",
+      "path" : "bamtools/bin",
+      "executable" : "bamtools",
+      "modifier" : "stats",
+      "help" : "--help|-h",
+      "additional files" : {
+        "from input arguments" : [
+          {
+            "type" : "output",
+            "command" : "-in",
+            "remove extension" : "false",
+            "add extension" : "true",
+            "output extension" : "stats",
+            "stub" : "false"
+          }
+        ]
+      },
+      "arguments" : {
+        "-in" : {
+          "description" : "the input BAM file.",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "bam"
+        },
+        "-insert" : {
+          "description" : "summarize insert size data.",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "flag"
         }
       }
     }
