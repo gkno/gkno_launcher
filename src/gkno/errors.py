@@ -30,7 +30,8 @@ class errors:
     self.error = True
 
   # If a required field in a tool configuration file is missing.
-  def missingFieldForTool(self, pad, task, argument, field, value):
+  def missingFieldForTool(self, newLine, pad, task, argument, field, value):
+    if newLine: print(file = sys.stderr)
     print(pad, 'ERROR: Required field \'', field, '\' in configuration file for \'', task, '\' argument ', sep = '', end = '', file = sys.stderr)
     print('\'', argument, '\' is ', sep = '', end = '', file = sys.stderr)
     if value == '': print('missing.', sep = '', file = sys.stderr)
@@ -320,6 +321,13 @@ class errors:
     print(pad, 'ERROR: The multiple-runs input file has the wrong number of entries.', sep = '', file = sys.stderr)
     print(pad, 'ERROR: Please check the entries in the data list.', sep = '', file = sys.stderr)
     self.error = True
+
+  # If a file has an unexpected extension, flag the problem.
+  def extensionError(self, newLine, pad, option, filename, extension):
+    if newLine: print(file = sys.stderr)
+    print(pad, 'ERROR: File \'', filename, '\' does not end with the expected extension \'', extension, '\'', sep = '', end = '', file = sys.stderr)
+    print(pad, ' (option: \'', option, '\')', sep = '', file = sys.stderr)
+    self.error = True
   
   # Terminate the script after errors have been found.
   def terminate(self):
@@ -425,12 +433,6 @@ class errors:
     print("\t\tERROR: Input '", option, "' to tool '", task, " (", tool, ")' is a stub.", sep = "", file = sys.stderr)
     print("\t\tERROR: A list of file extensions is required in the configuration file to determine dependent files.", sep = "", file = sys.stderr)
     print("\t\tERROR: Ensure the configuration file contains the value 'outputs' listing the extensions.", file = sys.stderr)
-    self.error = True
-
-  # If a file has an unexpected extension, flag the problem.
-  def extensionError(self, option, filename, extension):
-    print("\t\tERROR: File '", filename, "' does not end with the expected extension '", extension, "'", sep = "", end = "", file = sys.stderr)
-    print(" (option: '", option, "')", sep = "", file = sys.stderr)
     self.error = True
 
   # The additional files section of the configuration file contains an unknown file

@@ -263,7 +263,7 @@
           "resource" : "false",
           "dependent" : "false",
           "type" : "flag",
-          "extension" : "null"
+          "extension" : "no extension"
         },
         "-m" : {
           "description" : "alignment mode: [unique, all]. def: all",
@@ -273,7 +273,7 @@
           "resource" : "false",
           "dependent" : "false",
           "type" : "string",
-          "extension" : "null"
+          "extension" : "no extension"
         },
         "-hs" : {
           "description" : "hash size [4 - 32].",
@@ -283,7 +283,7 @@
           "resource" : "false",
           "dependent" : "false",
           "type" : "integer",
-          "extension" : "null",
+          "extension" : "no extension",
           "default" : "15"
         }
       }

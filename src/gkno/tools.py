@@ -68,27 +68,28 @@ class tools:
       self.toolsWithMultipleInputs[task] = True if value == 'true' else False
 
       for argument in self.toolInfo[task]['arguments']:
+        newLine = True if self.toolArguments['pipeline']['--verbose'] else False
 
         # Check that the 'input' field is present...
         value = self.toolInfo[task]['arguments'][argument]['input'] if 'input' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'true') and (value != 'false'):  er.missingFieldForTool('', task, argument, 'input', value)
+        if (value != 'true') and (value != 'false'):  er.missingFieldForTool(newLine, '', task, argument, 'input', value)
 
         # output...
         value = self.toolInfo[task]['arguments'][argument]['output'] if 'output' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'true') and (value != 'false'): er.missingFieldForTool('', task, argument, 'output', value)
+        if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, '', task, argument, 'output', value)
 
         # required...
         value = self.toolInfo[task]['arguments'][argument]['required'] if 'required' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'true') and (value != 'false'): er.missingFieldForTool('', task, argument, 'required', value)
+        if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, '', task, argument, 'required', value)
 
         # dependent...
         value = self.toolInfo[task]['arguments'][argument]['dependent'] if 'dependent' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'true') and (value != 'false'): er.missingFieldForTool('', task, argument, 'dependent', value)
+        if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, '', task, argument, 'dependent', value)
 
         # type...
         value = self.toolInfo[task]['arguments'][argument]['type'] if 'type' in self.toolInfo[task]['arguments'][argument] else ''
         if (value != 'string') and (value != 'flag') and (value != 'integer') and (value != 'float'): 
-          er.missingFieldForTool('', task, argument, 'type', value)
+          er.missingFieldForTool(newLine, '', task, argument, 'type', value)
 
         # If the resource field is missing, assume that it isn't a resource file.
         value = self.toolInfo[task]['arguments'][argument]['resource'] if 'resource' in self.toolInfo[task]['arguments'][argument] else ''
@@ -255,7 +256,7 @@ class tools:
   # requested input filename, remove the extension and replace with the required
   # extension for this output file.
   def constructFilenameFromInput(self, tl, pl, task, tool, outputFile, argument):
-    er        = errors()
+    er = errors()
 
     # If the output filename is to be generated from an input file, but there are
     # multiple files, use the first file in the list for generating the output

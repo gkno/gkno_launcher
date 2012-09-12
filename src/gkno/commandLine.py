@@ -459,6 +459,8 @@ class commandLine:
   def checkExtension(self, tl, task, tool, argument, isOutput, filename):
     er      = errors()
     correct = False
+    newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
+    pad     = "\t\t\t" if tl.toolArguments['pipeline']['--verbose'] else ''
 
     # First check if the filename is a stub.
     isStub = False
@@ -475,7 +477,7 @@ class commandLine:
 
         # If the extension is listed as null, do not check the extension as it is
         # permitted to be anything.
-        if (len(extensions) == 1) and (extensions[0] == 'null'): next
+        if (len(extensions) == 1) and (extensions[0] == 'no extension'): next
         else:
           for extension in extensions:
             extension = '.' + extension
@@ -488,11 +490,10 @@ class commandLine:
           if not correct and isOutput:
             filename += '.' + extensions[0]
           elif not correct:
-            print(file = sys.stdout)
-            er.extensionError(argument, filename, tl.toolInfo[tool]['arguments'][argument]['extension'])
+            er.extensionError(newLine, pad, argument, filename, tl.toolInfo[tool]['arguments'][argument]['extension'])
             er.terminate()
       else:
-        er.toolArgumentsError('extension', tool, argument)
+        er.missingFieldForTool(newLine, pad, tool, argument, 'extension', '')
         er.terminate()
 
     return filename

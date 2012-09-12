@@ -2,7 +2,8 @@
   "tools" : {
     "generate-md5" : {
       "description" : "Generate the MD5 checksum for a file.",
-      "path" : "",
+      "path" : "no path",
+      "hide tool" : "true",
       "executable" : "md5sum",
       "help" : "--help|-h",
       "arguments" : {
@@ -14,19 +15,27 @@
           "resource" : "false",
           "dependent" : "true",
           "type" : "string",
-          "short form argument" : "-i"
+          "short form argument" : "-i",
+          "extension" : "no extension",
+          "modify argument name on command line" : "hide"
         },
         "--out" : {
-          "description" : "the output file containing the md5 checksum",
+          "description" : "the output md5 checksum.",
           "input" : "false",
           "output" : "true",
+          "required" : "true",
           "resource" : "false",
-          "required" : "false",
           "dependent" : "false",
           "type" : "string",
-          "short form argument" : "-o"
+          "short form argument" : "-o",
+          "extension" : "md5",
+          "modify argument name on command line" : "stdout"
         }
-      }
+      },
+      "argument order" : [
+        "--in",
+        "--out"
+      ]
     }
   }
 }

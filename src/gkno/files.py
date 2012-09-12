@@ -295,7 +295,7 @@ class files:
       # Only print out the path if it isn't defined as 'null'.  Unix commands will
       # be defined as 'null' as they do not need to include a path, for example.
       pathVariable = ''
-      if path != 'null':
+      if path != 'no path':
         pathVariable = (tool.replace(" ", "_")  + '_PATH').upper()
         print(pathVariable, "=$(TOOL_BIN)/", path, sep = "" , file = self.makeFilehandle)
   
@@ -386,10 +386,15 @@ class files:
         # Some tools do not require a --argument or -argument in front of each value,
         # but just demand a particular order.  The configuration file contains an
         # argument for these for bookkeeping purposes, but they should not be printed
-        # to the command line.
+        # to the command line. Also, commands can be included for instructing gkno to
+        # print to stdout (e.g. use '>') or stderr ('2>').
         hideArgument = False
-        if 'hide argument name on command line' in tl.toolInfo[tool]['arguments'][argument]:
-          hideArgument = True if tl.toolInfo[tool]['arguments'][argument]['hide argument name on command line'] == 'true' else False
+        useStdout    = False
+        useStderr    = False
+        if 'modify argument name on command line' in tl.toolInfo[tool]['arguments'][argument]:
+          hideArgument = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'hide' else False
+          useStdout    = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'stdout' else False
+          useStderr    = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'stderr' else False
 
         if tl.toolInfo[tool]['arguments'][argument]['type'] == 'flag': isFlag = True
 
@@ -411,29 +416,9 @@ class files:
           # If the option is given a value, print it out.
           elif tl.toolArguments[task][argument] != '':
             if hideArgument: print(" \\\n\t", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
+            elif useStdout: print(" \\\n\t> ", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
+            elif useStderr: print(" \\\n\t2> ", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
             else: print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
-
-#        else:
-#          if tl.toolInfo[tool]['arguments'][argument]['type'] == 'flag': isFlag = True
-#
-#          # If the command is a flag, check if the value is 'set' or 'unset'.  If 'set',
-#          # write out the command.
-#          if isFlag:
-#            if tl.toolArguments[task][argument] == 'set': print(" \\\n\t", argument, sep = '', end = '', file = self.makeFilehandle)
-#          else:
-#
-#            # Some command lines allow multiple options to be set and the command line can
-#            # therefore be repeated multiple times.  If the defined value is a list, this
-#            # is the case and the command should be written out once for each value in the
-#            # list.
-#            isList = isinstance(tl.toolArguments[task][argument], list)
-#            if isList:
-#              for value in tl.toolArguments[task][argument]:
-#                print(" \\\n\t", argument, delimiter, value, sep = '', end = '', file = self.makeFilehandle)
-#
-#            # If the option is given a value, print it out.
-#            elif tl.toolArguments[task][argument] != '':
-#              print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
 
   # If any intermediate files are marked as to be deleted after this step, add the command
   # to the rule.

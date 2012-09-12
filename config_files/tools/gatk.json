@@ -83,7 +83,7 @@
           "required" : "false",
           "dependent" : "false",
           "type" : "string",
-          "extension" : "null",
+          "extension" : "no extension",
           "short form argument" : "-T",
           "default" : "BaseRecalibrator"
         },

@@ -99,7 +99,7 @@
             "value" : ""
           },
           "if input is stream" : "-",
-          "hide argument name on command line" : "true"
+          "modify argument name on command line" : "hide"
         },
         "--reference-fasta" : {
           "description" : "Reference fasta file.",
@@ -109,7 +109,7 @@
           "required" : "false",
           "dependent" : "false",
           "type" : "string",
-          "hide argument name on command line" : "true"
+          "modify argument name on command line" : "hide"
         }
       },
       "argument order" : [

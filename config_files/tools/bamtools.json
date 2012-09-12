@@ -37,7 +37,7 @@
           "required" : "false",
           "dependent" : "false",
           "type" : "flag",
-          "extension" : "null"
+          "extension" : "no extension"
         }
       }
     },
@@ -91,7 +91,7 @@
           "required" : "false",
           "dependent" : "false",
           "type" : "flag",
-          "extension" : "null"
+          "extension" : "no extension"
         },
         "-n" : {
           "description" : "max number of alignments per temp file. Default: 500,000",
@@ -101,7 +101,7 @@
           "required" : "false",
           "dependent" : "false",
           "type" : "integer",
-          "extension" : "null"
+          "extension" : "no extension"
         },
         "-mem" : {
           "description" : "max memory to use. Default: 1,024",
@@ -111,7 +111,7 @@
           "required" : "false",
           "dependent" : "false",
           "type" : "integer",
-          "extension" : "null"
+          "extension" : "no extension"
         }
       }
     },

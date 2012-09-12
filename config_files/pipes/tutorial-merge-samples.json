@@ -6,14 +6,16 @@
     "index-bam",
     "mark-duplicates",
     "index-final-bam",
-    "generate-bam-statistics"
+    "generate-bam-statistics",
+    "generate-md5"
   ],
   "tools" : {
     "merge-bam" : "bamtools-merge",
     "index-bam" : "bamtools-index",
     "mark-duplicates" : "picard-mark-duplicates",
     "index-final-bam" : "bamtools-index",
-    "generate-bam-statistics" : "bamtools-stats"
+    "generate-bam-statistics" : "bamtools-stats",
+    "generate-md5" : "generate-md5"
   },
   "linkage" : {
     "index-bam" : {
@@ -36,6 +38,12 @@
     },
     "generate-bam-statistics" : {
       "-in" : {
+        "link to this task" : "mark-duplicates",
+        "link to this argument" : "OUTPUT"
+      }
+    },
+    "generate-md5" : {
+      "--in" : {
         "link to this task" : "mark-duplicates",
         "link to this argument" : "OUTPUT"
       }
