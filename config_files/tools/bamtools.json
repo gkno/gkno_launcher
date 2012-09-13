@@ -240,18 +240,6 @@
       "executable" : "bamtools",
       "modifier" : "stats",
       "help" : "--help|-h",
-      "additional files" : {
-        "from input arguments" : [
-          {
-            "type" : "output",
-            "command" : "-in",
-            "remove extension" : "false",
-            "add extension" : "true",
-            "output extension" : "stats",
-            "stub" : "false"
-          }
-        ]
-      },
       "arguments" : {
         "-in" : {
           "description" : "the input BAM file.",
@@ -271,8 +259,25 @@
           "resource" : "false",
           "dependent" : "false",
           "type" : "flag"
+        },
+        "--out" : {
+          "description" : "the output stats file.",
+          "input" : "false",
+          "output" : "true",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "short form argument" : "-o",
+          "extension" : "stats",
+          "modify argument name on command line" : "stdout"
         }
-      }
+      },
+      "argument order" : [
+        "-in",
+        "-insert",
+        "--out"
+      ]
     }
   }
 }

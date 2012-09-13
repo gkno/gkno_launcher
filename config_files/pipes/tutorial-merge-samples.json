@@ -62,5 +62,12 @@
       "short form argument" : "-bl",
       "type" : "string"
     }
+  },
+  "delete files" : {
+    "merge-bam" : {
+      "-out" : {
+        "delete after task" : "mark-duplicates"
+      }
+    }
   }
 }

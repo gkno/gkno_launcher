@@ -1,0 +1,65 @@
+{
+  "description" : "Call variants on a set of bam files.",
+  "resource path" : "tutorial/current",
+  "workflow" : [
+    "filter-bam",
+    "realign-gaps",
+    "left-align-indels",
+    "variant-call"
+  ],
+  "tools" : {
+    "filter-bam" : "bamtools-filter",
+    "realign-gaps" : "ogap",
+    "left-align-indels" : "bamleftalign",
+    "variant-call" : "freebayes"
+  },
+  "tools outputting to stream" : [
+    "filter-bam",
+    "realign-gaps",
+    "left-align-indels"
+  ],
+  "linkage" : {
+    "left-align-indels" : {
+      "--fasta-reference" : {
+        "link to this task" : "realign-gaps",
+        "link to this argument" : "--fasta-reference"
+      }
+    },
+    "variant-call" : {
+      "--bam" : {
+        "link to this task" : "filter-bam",
+        "link to this argument" : "-out"
+      },
+      "--fasta-reference" : {
+        "link to this task" : "realign-gaps",
+        "link to this argument" : "--fasta-reference"
+      }
+    }
+  },
+  "arguments" : {
+    "--fasta" : {
+      "link to this task" : "realign-gaps",
+      "link to this argument" : "--fasta-reference",
+      "short form argument" : "-f",
+      "type" : "string"
+    },
+    "--bam" : {
+      "link to this task" : "filter-bam",
+      "link to this argument" : "-in",
+      "short form argument" : "-b",
+      "type" : "string"
+    },
+    "--bam-list" : {
+      "link to this task" : "filter-bam",
+      "link to this argument" : "-in-list",
+      "short form argument" : "-bl",
+      "type" : "string"
+    },
+    "--region" : {
+      "link to this task" : "filter-bam",
+      "link to this argument" : "-region",
+      "short form argument" : "-r",
+      "type" : "string"
+    }
+  }
+}

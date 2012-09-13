@@ -102,7 +102,7 @@
           "required" : "true",
           "dependent" : "false",
           "type" : "string",
-          "default" : "$(PWD)/tmp"
+          "default" : "$(PWD)/$(MAKEFILE_ID)_tmp"
         },
         "-st" : {
           "description" : "sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",

@@ -267,7 +267,7 @@ class tools:
     inputFile = useFile.split('/')[-1]
 
     # Check if the input file that is to be used for constructing the output filename is
-    # blank.  If soi, terminate gkno as the output filename cannot be determined.
+    # blank.  If so, terminate gkno as the output filename cannot be determined.
     if inputFile == '':
 
       # Find the pipeline argument that goes with the task argument.

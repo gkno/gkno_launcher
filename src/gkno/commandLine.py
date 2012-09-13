@@ -500,7 +500,9 @@ class commandLine:
 
   # Loop over the tools and check that all required information has been set.
   def checkParameters(self, tl, pl, gknoHelp, task, tool, checkRequired):
-    er = errors()
+    er      = errors()
+    newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
+    pad     = "\t\t\t" if tl.toolArguments['pipeline']['--verbose'] else ''
 
     if tl.toolArguments['pipeline']['--verbose']:
       print("\t\tChecking all required information is set and valid...", end = '', file = sys.stdout)
@@ -528,11 +530,20 @@ class commandLine:
           if 'tools outputting to stream' in pl.information:
             if previousTask in pl.information['tools outputting to stream']: inputIsStream = True
         
+        # If the input to task is not a stream and the input is not set,
+        # terminate with an error.
         if not inputIsStream:
-          newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
-          pad     = "\t\t\t" if tl.toolArguments['pipeline']['--verbose'] else ''
           er.missingRequiredValue(newLine, pad, task, tool, argument, tl, pl)
           er.terminate()
+
+        # If the input to this task is a stream, check if this particular argument has
+        # instructions on how to handle the stream.  If it doesn't have any, then this
+        # input still needs to be set.
+        else:
+          ignoreInput = True if 'if input is stream' in tl.toolInfo[tool]['arguments'][argument] else False
+          if not ignoreInput:
+            er.missingRequiredValue(newLine, pad, task, tool, argument, tl, pl)
+            er.terminate()
 
       # If the value is set, check that the data type is correct.
       elif isArgumentSet:

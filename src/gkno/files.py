@@ -143,11 +143,14 @@ class files:
     if tl.toolArguments['pipeline']['--verbose']:
       print("Generating Makefile...", file = sys.stdout)
       sys.stdout.flush()
-    print("### gkno Makefile\n", file = self.makeFilehandle)
-    print("GKNO_PATH=", sourcePath, "/src/gkno", sep = "", file = self.makeFilehandle)
-    print("TOOL_BIN=", sourcePath, "/tools", sep = "", file = self.makeFilehandle)
+    print('### gkno Makefile', file = self.makeFilehandle)
+    print(file = self.makeFilehandle)
+    print('GKNO_PATH=', sourcePath, "/src/gkno", sep = '', file = self.makeFilehandle)
+    print('TOOL_BIN=', sourcePath, "/tools", sep = '', file = self.makeFilehandle)
     resourcesPath = '/resources' if pl.information['resource path'] == '' else '/resources/' + pl.information['resource path']
-    print("RESOURCES=", sourcePath, resourcesPath, "\n", sep = "", file = self.makeFilehandle)
+    print('RESOURCES=', sourcePath, resourcesPath, sep = '', file = self.makeFilehandle)
+    print('MAKEFILE_ID=', self.filename.split('/')[-1].split('.')[0], sep = '', file = self.makeFilehandle)
+    print(file = self.makeFilehandle)
   
     # Loop over each tool in the work flow and generate the command lines
     # for each.  Work in reverse order building up the dependencies.
@@ -232,8 +235,16 @@ class files:
         tempOutputs      = {}
         tempDependencies = {}
         for task in taskBlock:
-          for output in tl.outputs[task]: tempOutputs[output] = True
-          for dependent in tl.dependencies[task]: tempDependencies[dependent] = True
+          for output in tl.outputs[task]:
+            if isinstance(output, list):
+              for outputList in output: tempOutputs[outputList] = True
+            else:
+              tempOutputs[output] = True
+          for dependent in tl.dependencies[task]:
+            if isinstance(dependent, list):
+              for dependentList in dependent: tempDependencies[dependentList] = True
+            else:
+              tempDependencies[dependent] = True
 
         for dependent in tempDependencies:
           if dependent in tempOutputs:
