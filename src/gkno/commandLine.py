@@ -105,21 +105,26 @@ class commandLine:
   def checkForMultipleRuns(self, io, pl):
     er = errors()
 
-    for count, argument in enumerate(sys.argv):
+    # Get the name of the file containing a list of all of the inputs, check that
+    # the file exists and is a valid json.
+    #
+    # When iterating over the arguments in the multiple runs data structure,
+    # the command line will have to be built each time.  All of the arguments
+    # on the command line that are not in the multiple runs file need to be
+    # included on each command line, so store this information.
+    self.baseCommandLine = []
+    while(True):
+      if len(sys.argv) >= 1: argument = sys.argv.pop(0)
+      else: break
       if (argument == '--multiple-runs') or (argument == '-mr'):
-
-        # Get the name of the file containing a list of all of the inputs, check that
-        # the file exists and is a valid json.
-        try: multipleName = sys.argv[count + 1]
+        try: multipleName = sys.argv.pop(0)
         except: er.missingFileForMultipleRuns(False, '')
         if er.error: er.terminate()
         pl.hasMultipleRuns = True
+      else: self.baseCommandLine.append(argument)
 
-        # Remove the multiple-runs arguments from the command line.
-        sys.argv.pop(0)
-        sys.argv.pop(0)
-        break
-
+    # If multiple runs are being performed, open the json file with the information
+    # for the multiple runs and populate the relevant data structures.
     if pl.hasMultipleRuns:
 
       # Open the json file.
@@ -150,13 +155,6 @@ class commandLine:
         er.terminate()
   
       pl.numberOfMultipleRuns          = numberOfInputArguments / pl.multipleRunsNumberOfArguments
-    
-    # When iterating over the arguments in the multiple runs data structure,
-    # the command line will have to be built each time.  All of the arguments
-    # on the command line that are not in the multiple runs file need to be
-    # included on each command line, so store this information.
-    self.baseCommandLine = []
-    for argument in sys.argv: self.baseCommandLine.append(argument)
 
   # Build the command line using the information in the multiple runs data structure.
   def buildCommandLineMultipleRuns(self, pl):

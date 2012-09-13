@@ -44,9 +44,9 @@
       "type" : "string"
     },
     "--bam" : {
+      "short form argument" : "-b",
       "link to this task" : "filter-bam",
       "link to this argument" : "-in",
-      "short form argument" : "-b",
       "type" : "string"
     },
     "--bam-list" : {

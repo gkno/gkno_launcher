@@ -70,7 +70,7 @@
           "dependent" : "false",
           "type" : "string",
           "extension" : "json",
-          "default" : "mosaikParameters.json"
+          "default" : "$(MAKEFILE_ID)_mosaikParameters.json"
         },
         "-annse" : {
           "description" : "neural network file (single end)",
