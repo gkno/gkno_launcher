@@ -31,14 +31,25 @@ class adminUtils:
     self.modeDescriptions["update-resource"] = "Update resource data for an organism."
 
     # General data members
+    self.error        = errors()
     self.isRequested  = False
     self.isVerbose    = False
     self.mode         = ""
-    self.sourcePath   = sourcePath 
-    self.userSettings = {}
+    self.userSettings = { }
 
-    # Import user settings from file, initializing defaults if it doesn't exist
+    # Commonly used path names
+    self.sourcePath    = sourcePath 
+    self.resourcesPath = sourcePath + "/resources/"
+    self.toolsPath     = sourcePath + "/tools/"
+    self.logsPath      = sourcePath + "/logs/"
+    
+    # Import user settings from file (or initialize defaults if file doesn't exist)
     self.importUserSettings()
+
+    # Make sure our common directories exist
+    self.ensureMakeDir(self.resourcesPath)
+    self.ensureMakeDir(self.toolsPath)
+    self.ensureMakeDir(self.logsPath)
 
   # -------------------------------------------
   # Main entry point for running admin mode
@@ -54,34 +65,37 @@ class adminUtils:
     # Check that requested admin operation is compatible with our "built" status
     if self.mode == "build":
       if self.isBuilt():
-        er = errors()
-        er.gknoAlreadyBuilt()
-        er.terminate()
+        self.error.gknoAlreadyBuilt()
+        return True
     else:
-      self.requireBuilt()
+      if not self.isBuilt():
+        self.error.gknoNotBuilt()
+        return False
       
     # Run the requested operation
-    if   self.mode == "build"  : self.build()
-    elif self.mode == "update" : self.update()
+    success = False
+    if   self.mode == "build" : success = self.build()
+    elif self.mode == "update": success = self.update()
     else:
     
-      # Check command line for organism and/or release name
+      # Check command line for organism and/or release name, then resolve any potential alias.
       possibleResourceAlias, hasReleaseArg, releaseName = self.getResourceArgs(commandLine)
+      resolvedOk, resourceName = self.resolveAlias(possibleResourceAlias)
+      if not resolvedOk:
+        self.error.requestedUnknownResource(possibleResourceAlias)
+        return False
 
-      # Resolve any alias used
-      resourceName = self.resolveAlias(possibleResourceAlias)
-      if resource == "" :
-        er = errors()
-        er.requestedUnknownResource(possibleResourceAlias)
-        er.terminate()
-
-      # Add/remove requested resource/release 
-      if   self.mode == "add-resource"    : self.addResource(resourceName, hasReleaseArg, releaseName)
-      elif self.mode == "remove-resource" : self.removeResource(resourceName, hasReleaseArg, releaseName)
-      elif self.mode == "update-resource" : self.updateResource(resourceName)
+      # Add/remove/update as requested
+      if   self.mode == "add-resource"   : success = self.addResource(resourceName, hasReleaseArg, releaseName)
+      elif self.mode == "remove-resource": success = self.removeResource(resourceName, hasReleaseArg, releaseName)
+      elif self.mode == "update-resource": success = self.updateResource(resourceName)
 
     # If admin mode ran successfully, update our user settings file
-    self.exportUserSettings()
+    if success:
+      self.exportUserSettings()
+
+    # Return success/failure
+    return success
 
   # -------------------------------------------
   # Admin mode main operations
@@ -98,43 +112,42 @@ class adminUtils:
     # Cache our starting working directory since we're going to move around
     originalWorkingDir = os.getcwd()
 
-    # Cache other common directory paths
-    resourcesDir = self.sourcePath + "/resources/"
-    toolsDir     = self.sourcePath + "/tools/"
+    # FIXME: Check requirements (attempt to access 3rd party dependencies/tools)
 
     # Make sure submodules are intialized & up-to-date
-    os.chdir(self.sourcePath)
     print("Initializing component data...", end="", file=sys.stdout)
-    status = self.runCommand("git submodule update --init --recursive")
-    if status == 0:
+    sys.stdout.flush()
+    if self.gitSubmoduleUpdate():
       print("done.", file=sys.stdout)
     else:
-      pass # FIXME: git submodule update error
+      self.error.gitSubmoduleUpdateFailed(dest=sys.stdout)
+      return False
 
-    # Build all built-in tools
+    # Build all tools
     print("Building tools: ", file=sys.stdout)
     for tool in conf.tools:
-      print("\t" + tool.name + "...", end="", file=sys.stdout)
-      os.chdir(toolsDir + tool.installDir)
-      status = tool.build()
-      if status == 0: 
+      print("  "+tool.name+"...", end="", file=sys.stdout)
+      sys.stdout.flush()
+      if self.buildTool(tool):
         print("done.", file=sys.stdout)
       else:
-        pass # FIXME: tool build error
-    print("\n", file=sys.stdout)
+        self.error.toolBuildFailed(tool.name, dest=sys.stdout)
+        return False
 
     # Fetch all default resources (current releases only)
     print("Fetching default resources:", file=sys.stdout)
     for resource in conf.resources:
       if resource.isDefault:
-        print("\t" + resource.name + "...", end="", file=sys.stdout)
-        self.addResource(resource.name)
-        print("done.", file=sys.stdout)
-    print("\n", file=sys.stdout)
-     
-    # Clean up & mark built status
+        print("  "+resource.name+":", file=sys.stdout)
+        sys.stdout.flush()
+        if not self.addCurrentRelease(resource.name, "    "):
+          self.error.resourceFetchFailed(resource.name, dest=sys.stdout)
+          return False
+
+    # If we get here - clean up, mark built status, and return success
     os.chdir(originalWorkingDir)
     self.userSettings["isBuilt"] = True
+    return True
 
   # "gkno update"
   #
@@ -145,42 +158,46 @@ class adminUtils:
 
     # Update main gkno repo
     print("Updating gkno...", end="", file=sys.stdout)
-    status = self.runCommand("git pull origin master")
-    if status == 0:
+    sys.stdout.flush()
+    if self.gitUpdate():
       print("done.", file=sys.stdout)
     else:
-      pass # FIXME: git update error
+      self.error.gitUpdateFailed(dest=sys.stdout)
+      return False
 
     # Make sure submodules are intialized & up-to-date
-    print("Updating component data...", end="", file=sys.stdout)
-    os.chdir(self.sourcePath)
-    status = self.runCommand("git submodule update --init --recursive")
-    if status == 0:
+    print("Initializing component data...", end="", file=sys.stdout)
+    sys.stdout.flush()
+    if self.gitSubmoduleUpdate():
       print("done.", file=sys.stdout)
     else:
-      pass # FIXME: git submodule update error
+      self.error.gitSubmoduleUpdateFailed(dest=sys.stdout)
+      return False
 
     # Update all built-in tools 
     print("Checking tools: ", file=sys.stdout)
     for tool in conf.tools:
-      print("\t" + tool.name + "...", end="", file=sys.stdout)
-      os.chdir(toolsDir + tool.installDir)
-      tool.update()
-      if status == 0: 
+      print("  "+tool.name+"...", end="", file=sys.stdout)
+      sys.stdout.flush()
+      if self.updateTool(tool):
         print("done.", file=sys.stdout)
       else:
-        pass # FIXME: tool update error
-    print("\n", file=sys.stdout)
+        self.error.toolUpdateFailed(tool.name, dest=sys.stdout)
+        return False
 
-    # List any resources with new updates
+    # Check resources for new updates
     print("Checking resources...", file=sys.stdout)
+    sys.stdout.flush()
     updates = self.getUpdatableResources()
     print("done.", file=sys.stdout)
-    print("\n", file=sys.stdout)
 
+    # List any 'updatable' resources
     if len(updates) != 0:
       self.listUpdatableResources(updates)
-      print("\n", file=sys.stdout)
+      print("", file=sys.stdout)
+
+    # Return success
+    return True
     
   # "gkno add-resource [organism] [options]"
   #
@@ -192,7 +209,7 @@ class adminUtils:
     # ("gkno add-resource")
     if resourceName == "":
       self.listAddableResources()
-      return
+      return True
 
     # Otherwise, make sure that gkno actually knows about this organism
     else:
@@ -202,24 +219,28 @@ class adminUtils:
           found = True
           break
       if not found:
-        # FIXME: attempting to add unknown resource
-        return
+        self.error.requestedUnknownResource(resourceName)
+        return False
 
     # If no release mentioned at all, fetch the current release for requested organism
     # ("gkno add-resource X")
     if not hasReleaseArg:
-      self.addCurrentRelease(resourceName)
-      return
+      print("Fetching current release for "+resourceName+":", file=sys.stdout)
+      sys.stdout.flush()
+      return self.addCurrentRelease(resourceName, "  ")
 
     # If "--release" was entered without a release name, list all available releases for specified organism
     # ("gkno add-resource X --release")
     if releaseName == "":
       self.listAddableReleases(resourceName)
+      return True
 
     # Otherwise, fetch requested release for requested organism
-    # (i.e. "gkno add-resource X --release Y")
+    # ("gkno add-resource X --release Y")
     else:
-      self.addRelease(resourceName, releaseName)
+      print("Fetching release "+releaseName+" for "+resourceName+":", file=sys.stdout)
+      sys.stdout.flush()
+      return self.addRelease(resourceName, releaseName, "  ")
 
   # "gkno remove-resource [organism] [options]"
   #
@@ -231,7 +252,7 @@ class adminUtils:
     # ("gkno remove-resource")
     if resourceName == "":
       self.listRemovableResources()
-      return
+      return True
 
     # Otherwise, make sure that gkno actually knows about this organism
     else:
@@ -241,59 +262,168 @@ class adminUtils:
           found = True
           break
       if not found:
-        # FIXME: attempting to remove unknown resource
-        return
+        self.error.requestedUnknownResource(resourceName)
+        return False
 
     # If no release mentioned at all, remove all releases for requested organism
     # ("gkno remove-resource X")
     if not hasReleaseArg:
-      self.removeAllReleases(resourceName)
-      return
+      print("Removing all releases for "+resourceName+"...", end="", file=sys.stdout)
+      sys.stdout.flush()
+      success = self.removeAllReleases(resourceName)
+      if success:
+        print("done.", file=sys.stdout)
+      else:
+        pass
+        #FIXME: error message
+      return success
 
     # If "--release" was entered without a release name, list all of our releases for specified organism
     # ("gkno remove-resource X --release")
     if releaseName == "":
       self.listRemovableReleases(resourceName)
+      return True
 
     # Otherwise, remove only the requested release for requested organism
-    # (i.e. "gkno remove-resource X --release Y")
+    # ("gkno remove-resource X --release Y")
     else:
-      self.removeRelease(resourceName, releaseName)
+      print("Removing release "+releaseName+" for "+resourceName+"...", end="", file=sys.stdout)
+      sys.stdout.flush()
+      success = self.removeRelease(resourceName, releaseName)
+      if success:
+        print("done.", file=sys.stdout)
+      else:
+        pass
+        #FIXME: error message
+      return success
 
   # "gkno update-resource <organism>"
   #
   # Functionally equivalent to the "gkno add-resource X" operation, 
   # but provided as a command-line convenience.
   def updateResource(self, resourceName):
-    self.addCurrentRelease(resourceName)
+
+    # If no organism name provided, list all organisms we can update
+    # ("gkno update-resource")
+    if resourceName == "":
+      updates = self.getUpdatableResources()
+      self.listUpdatableResources(updates)
+      return True
+
+    # Otherwise, add the current release for this organism
+    # ("gkno update-resource <organism>")
+    else:
+      print("Updating "+resourceName+":", file=sys.stdout)
+      sys.stdout.flush()
+      return self.addCurrentRelease(resourceName, "  ")
 
   # -------------------------------------------
-  # Resource helper methods
+  # Admin mode 'subroutines'
+  # -------------------------------------------
+
+  def buildTool(self, tool):
+    stub = "build_" + tool.name
+    outFilename = self.logsPath + stub + ".out"
+    errFilename = self.logsPath + stub + ".err"
+    out = sys.stdout
+    err = sys.stderr
+    if not self.isVerbose:
+      out = open(outFilename, 'w')
+      err = open(errFilename, 'w')
+    os.chdir(self.toolsPath + tool.installDir)
+    success = tool.build(out, err)
+    if not self.isVerbose:
+      out.close()
+      err.close()
+      if success: 
+        os.remove(outFilename)
+        os.remove(errFilename)
+    return success
+
+  def updateTool(self, tool):
+    stub = "update_" + tool.name
+    outFilename = self.logsPath + stub + ".out"
+    errFilename = self.logsPath + stub + ".err"
+    out = sys.stdout
+    err = sys.stderr
+    if not self.isVerbose:
+      out = open(outFilename, 'w')
+      err = open(errFilename, 'w')
+    os.chdir(self.toolsPath + tool.installDir)
+    success = tool.update(out, err)
+    if not self.isVerbose:
+      out.close()
+      err.close()
+      if success: 
+        os.remove(outFilename)
+        os.remove(errFilename)
+    return success
+
+  def gitSubmoduleUpdate(self):
+    outFilename = self.logsPath + "submodule_update.out"
+    errFilename = self.logsPath + "submodule_update.err"
+    out = sys.stdout
+    err = sys.stderr
+    if not self.isVerbose:
+      out = open(outFilename, 'w')
+      err = open(errFilename, 'w')
+    os.chdir(self.sourcePath)
+    success = self.runCommand("git submodule update --init --recursive", out, err)
+    if not self.isVerbose:
+      out.close()
+      err.close()
+      if success:
+        os.remove(outFilename)
+        os.remove(errFilename)
+    return success
+
+  def gitUpdate(self):
+    outFilename = self.logsPath + "gkno_update.out"
+    errFilename = self.logsPath + "gkno_update.err"
+    out = sys.stdout
+    err = sys.stderr
+    if not self.isVerbose:
+      out = open(outFilename, 'w')
+      err = open(errFilename, 'w')
+    os.chdir(self.sourcePath)
+    success = self.runCommand("git pull origin master", out, err)
+    if not self.isVerbose:
+      out.close()
+      err.close()
+      if success:
+        os.remove(outFilename)
+        os.remove(errFilename)
+    return success
+
+  # -------------------------------------------
+  # Release helper methods
   # -------------------------------------------
 
   # Adds a resource's "current" release
-  def addCurrentRelease(self, resourceName):
+  def addCurrentRelease(self, resourceName, outputIndent=""):
 
     # Fetch the name resource's "current" release
     currentReleaseName = self.getCurrentReleaseName(resourceName)
     if currentReleaseName == "":
-      # FIXME: no current release available for resource
-      return
+      self.error.noCurrentReleaseAvailable(resourceName)
+      return False
 
     # Add named release
-    self.addRelease(resourceName, currentReleaseName)
+    if not self.addRelease(resourceName, currentReleaseName, outputIndent):
+      return False
 
     # Make a symlink-ed directory "current" that points to release's directory
-    currentDir = self.sourcePath + "/resources/" + resourceName + "/current"
-    releaseDir = self.sourcePath + "/resources/" + resourceName + "/" + currentReleaseName
+    currentDir = self.resourcesPath + resourceName + "/current"
+    releaseDir = self.resourcesPath + resourceName + "/" + currentReleaseName
     os.symlink(releaseDir, currentDir)
     
-    # Update settings
+    # Update settings & return success
     self.userSettings["resources"][resourceName]["isTracking"] = True
     self.userSettings["resources"][resourceName]["current"]    = currentReleaseName
+    return True
 
   # Add a named release for a named resource
-  def addRelease(self, resourceName, releaseName):
+  def addRelease(self, resourceName, releaseName, outputIndent=""):
 
     # If this is the first release for a requested organism resource, initialize its settings
     if resourceName not in self.userSettings["resources"]:
@@ -304,33 +434,48 @@ class adminUtils:
 
     # Make sure we don't already have this release
     if releaseName in self.userSettings["resources"][resourceName]["releases"]:
-      # FIXME: warn: already added this release
-      return 
+      self.error.resourceAlreadyAdded(resourceName)
+      return False
 
     # Move into resource's directory
-    os.chdir(self.sourcePath + "/resources/" + resourceName)
+    os.chdir(self.resourcesPath + resourceName)
 
     # Get URL for release's tarball
-    tarballURL = self.getUrlForRelease(resourceName, releaseName)
-    if tarballURL == "":
-      #FIXME: no URL for this resource/release
-      return
+    tarballUrl = self.getUrlForRelease(resourceName, releaseName)
+    if tarballUrl == "":
+      self.error.noReleaseUrlFound(resourceName, releaseName)
+      return False
 
     # Download release tarball
-    filename, headers = urllib.urlretrieve(tarballURL) 
-
+    print(outputIndent+"Downloading files...  0%", end="", file=sys.stdout)
+    sys.stdout.flush()
+    try:
+      filename, headers = urllib.urlretrieve(tarballUrl, reporthook=downloadProgress) 
+    except IOError:
+      self.error.urlRetrieveFailed(tarballUrl)
+      return False
+    print("", file=sys.stdout)
+  
     # Extract files from tarball
     # N.B. - tarball should be set up so that all of its contents are 
     #        in a parent directory whose name matches its 'releaseName'
-    tar = tarfile.open(filename)
-    tar.extractall()
-    tar.close()
+    print(outputIndent+"Unpacking files...", end="", file=sys.stdout)
+    sys.stdout.flush()
+    try:
+      tar = tarfile.open(filename)
+      tar.extractall()
+      tar.close()
+    except tarfile.TarError:
+      self.error.extractTarballFailed(filename)
+      return False
+    print("done.", file=sys.stdout)
 
     # Delete tarball
     os.remove(filename)
 
-    # Add release to our settings for this resource
+    # Add release to our settings for this resource & return success
     self.userSettings["resources"][resourceName]["releases"].append(releaseName)
+    return True
 
   # Returns a dictionary of all tracked genomes with new 'current' releases
   # { resourceName : newReleaseName }
@@ -346,14 +491,17 @@ class adminUtils:
 
   # Removes all releases for a named resource
   def removeAllReleases(self, resourceName):
+    allRemovedOk = True
     for releaseName in self.userSettings["resources"][resourceName]["releases"]:
-      self.removeRelease(resourceName, releaseName)
+      if not self.removeRelease(resourceName, releaseName):
+        allRemovedOk = False
+    return allRemovedOk
 
   # Removes a named release for a named resource
   def removeRelease(self, resourceName, releaseName):
 
     # Delete release directory (and all of its contents)
-    shutil.rmtree(self.sourcePath + "/resources/" + resourceName + "/" + releaseName)
+    shutil.rmtree(self.resourcesPath + resourceName + "/" + releaseName)
     
     # Remove release from settings
     self.settings["resources"][resourceName]["releases"].remove(releaseName)
@@ -361,6 +509,9 @@ class adminUtils:
     # If this was the last release for an organism, remove its entry for settings
     if len(self.settings["resources"][resourceName]["releases"]) == 0:
       self.settings["resources"].remove(resourceName)
+
+    # Return success (any possible failures here?)
+    return True
 
   # -------------------------------------------
   # Resource target file methods
@@ -381,15 +532,13 @@ class adminUtils:
 
   # Fetch & return resource's target data (JSON)
   def readTargetsFile(self, resourceName):
-    targetFile = open(self.sourcePath + "/resources/" + resourceName + "/targets.json")
+    targetFile = open(self.resourcesPath + resourceName + "/targets.json")
     try: 
       return json.load(targetFile)
     except:
-      er = errors()
-      er.error = True
       exc_type, exc_value, exc_traceback = sys.exc_info()
-      er.jsonOpenError("\t", exc_value)
-      er.terminate()
+      self.error.jsonOpenError(True, "\t", exc_value)
+      self.error.terminate()
 
   # -------------------------------------------
   # Resource listing methods
@@ -397,33 +546,193 @@ class adminUtils:
 
   # Print a list of all genomes that we have no data for
   def listAddableResources(self):
-    print("List all genomes that we can add", file = sys.stdout)
-    # FIXME: implement
-    
-    allResourceNames = []
+
+    # Print header
+    print("The following organism resources are available. (Aliases in parentheses)", file=sys.stdout)
+    print("Add using: 'gkno add-resource <organism>'", file=sys.stdout)
+    print("", file=sys.stdout)
+
+    # Lookup all possible resource names (& store corresponding aliases)
+    allResources = {}
     for resource in conf.resources:
-      allResourceNames.append(resource.name)
+      allResources[resource.name] = resource.aliases
+
+    # Lookup all user's resources
+    userResourceNames = []
+    for name in self.userSettings["resources"].keys():
+      userResourceNames.append(name)
+
+    # Determine padding based on longest resource name
+    maxNameLength = 0
+    for name in allResources.keys():
+      currentNameLength = len(name)
+      if currentNameLength > maxNameLength:
+        maxNameLength = currentNameLength
+    maxNameLength += 4
+
+    # Print resource list
+    allResourceNames = allResources.keys()
+    allResourceNames.sort()
+    for name in allResourceNames:
+      print("    ", sep="", end="", file=sys.stdout)
+      if name in userResourceNames:
+        print("* ", sep="", end="", file=sys.stdout)
+      else:
+        print("  ", sep="", end="", file=sys.stdout)
+      print(name, end="", file=sys.stdout)
+      print(" "*(maxNameLength-len(name)), end="", file=sys.stdout)
+      aliases = allResources[name]
+      numAliases = len(aliases)
+      if numAliases > 0:
+        print("(", end="", file=sys.stdout)
+        i = 1
+        for alias in aliases:
+          if i < numAliases:
+            print(alias+", ", end="", file=sys.stdout)
+          else:
+            print(alias, end="", file=sys.stdout)
+          i += 1
+        print(")", end="")
+      print("", file=sys.stdout)
+    print("", file=sys.stdout)
+
+    # Print footer
+    print("Resources preceded by a '*' have already been added.", file=sys.stdout)
+    print("", file=sys.stdout)
 
   # Print a list of all releases available for named resource
   def listAddableReleases(self, resourceName):
-    print("List all releases for", resourceName, "that we can add", sep=" ", file = sys.stdout)
-    # FIXME: implement
+
+    # Print header
+    print("The following releases are available for "+resourceName+".", file=sys.stdout)
+    print("Add using: 'gkno add-resource "+resourceName+" --release <name>'", file=sys.stdout)
+    print("", file=sys.stdout)
+
+    # Lookup all possible releases for resource
+    targetSettings = self.readTargetsFile(resourceName)
+    allReleaseNames = []
+    for target in targetSettings["targets"]:
+      allReleaseNames.append(target["name"])
+
+    # Lookup all user's releases for resource
+    userReleaseNames = []
+    if resourceName in self.userSettings["resources"]:
+      for releaseName in self.userSettings["resources"][resourceName]["releases"]:
+        userReleaseNames.append(releaseName)
+
+    # Print release list
+    for name in allReleaseNames:
+      print("    ", sep="", end="", file=sys.stdout)
+      if name in userReleaseNames:
+        print("* ", sep="", end="", file=sys.stdout)
+      else:
+        print("  ", sep="", end="", file=sys.stdout)
+      print(name, file=sys.stdout)
+    print("", file=sys.stdout)
+
+    # Print footer
+    print("Releases preceded by a '*' have already been added.", file=sys.stdout)
+    print("", file=sys.stdout)
 
   # Print a list of all genomes we have data for
   def listRemovableResources(self):
-    print("List all genomes that we can remove", file = sys.stdout)
-    # FIXME: implement
+
+    # Print header
+    print("The following organism resources can be removed. (Aliases in parentheses)", file=sys.stdout)
+    print("Remove using: 'gkno remove-resource <organism>'", file=sys.stdout)
+    print("", file=sys.stdout)
+
+    # Lookup all possible resource names (& store corresponding aliases)
+    allResources = {}
+    for resource in conf.resources:
+      allResources[resource.name] = resource.aliases
+  
+    # Determine padding based on longest removable resource name
+    maxNameLength = 0
+    removableResourceNames = self.userSettings["resources"].keys()
+    for name in removableResourceNames:
+      currentNameLength = len(name)
+      if currentNameLength > maxNameLength:
+        maxNameLength = currentNameLength
+    maxNameLength += 4
+
+    # Print resource list
+    removableResourceNames.sort()
+    for name in removableResourceNames:
+      print("    "+name, end="", file=sys.stdout)
+      print(" "*(maxNameLength-len(name)), end="", file=sys.stdout)
+      aliases = allResources[name]
+      numAliases = len(aliases)
+      if numAliases > 0:
+        print("(", end="", file=sys.stdout)
+        i = 1
+        for alias in aliases:
+          if i < numAliases:
+            print(alias+", ", end="", file=sys.stdout)
+          else:
+            print(alias, end="", file=sys.stdout)
+          i += 1
+        print(")", end="")
+      print("", file=sys.stdout)
+    print("", file=sys.stdout)
 
   # Print a list of all releases we have for named resource
   def listRemovableReleases(self, resourceName):
-    print("List all releases for", resourceName, "that we can remove", sep=" ", file = sys.stdout)
-    # FIXME: implement
 
-  # Print a list of all updatable resources/releases
-  # @param updates => dictionary { resourceName : newReleaseName }
+    # Print header
+    print("The following releases can be removed for "+resourceName+".", file=sys.stdout)
+    print("Remove using: 'gkno remove-resource "+resourceName+" --release <name>'", file=sys.stdout)
+    print("", file=sys.stdout)
+
+    # Print release list
+    if resourceName in self.userSettings["resources"]:
+      allReleaseNames = self.userSettings["resources"][resourceName]["releases"]
+      allReleaseNames.sort()
+      for name in allReleaseNames:
+        print("    "+name, file=sys.stdout)
+    print("", file=sys.stdout)
+
+  # Print a list of all updatable resources
   def listUpdatableResources(self, updates):
-    print("List all releases for", resourceName, "that we can remove", sep=" ", file = sys.stdout)
-    # FIXME: implement
+
+    # Print header
+    print("The following organisms have new releases available. (Aliases in parentheses)", file=sys.stdout)
+    print("Update using: 'gkno update-resource <organism>'", file=sys.stdout)
+    print("", file=sys.stdout)
+
+    # Lookup all possible resource names (& store corresponding aliases)
+    allResources = {}
+    for resource in conf.resources:
+      allResources[resource.name] = resource.aliases
+
+    # Determine padding based on longest updatable resource name
+    maxNameLength = 0
+    updatableResourceNames = updates.keys()
+    for name in updatableResourceNames:
+      currentNameLength = len(name)
+      if currentNameLength > maxNameLength:
+        maxNameLength = currentNameLength
+    maxNameLength += 4
+
+    # Print resource list
+    updatableResourceNames.sort()
+    for name in updatableResourceNames:
+      print("    "+name, end="", file=sys.stdout)
+      print(" "*(maxNameLength-len(name)), end="", file=sys.stdout)
+      aliases = allResources[name]
+      numAliases = len(aliases)
+      if numAliases > 0:
+        print("(", end="", file=sys.stdout)
+        i = 1
+        for alias in aliases:
+          if i < numAliases:
+            print(alias+", ", end="", file=sys.stdout)
+          else:
+            print(alias, end="", file=sys.stdout)
+          i += 1
+        print(")", end="")
+      print("", file=sys.stdout)
+    print("", file=sys.stdout)
 
   # -------------------------------------------
   # Settings file & build status methods
@@ -440,11 +749,9 @@ class adminUtils:
       try: 
         self.userSettings = json.load(settingsFile)
       except:
-        er = errors()
-        er.error = True
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        er.jsonOpenError("\t", exc_value)
-        er.terminate()
+        self.error.jsonOpenError(True, "\t", exc_value)
+        self.error.terminate()
   
   # Write settings to file in JSON format
   def exportUserSettings(self):
@@ -455,14 +762,6 @@ class adminUtils:
   # Returns True if gkno has been 'built'
   def isBuilt(self):
     return self.userSettingsFileExists() and self.userSettings["isBuilt"]
-
-  # Checks gkno's 'built' status. Prints error message if 'gkno build' has not 
-  # been run.
-  def requireBuilt(self):
-    if not self.isBuilt():
-      er = errors()
-      er.gknoNotBuilt()
-      er.terminate()
   
   # Returns path to user settings file.
   # This file lists our 'built' status and all tracked resources.
@@ -476,6 +775,11 @@ class adminUtils:
   # -------------------------------------------
   # Other utility methods
   # -------------------------------------------
+
+  # Creates directory if it doesn't already exist
+  def ensureMakeDir(self, directory, mode=0777):
+    if not os.path.exists(directory):
+      os.makedirs(directory, mode)
 
   # Parse command line arguments
   # "gkno mode" values have already been removed
@@ -491,9 +795,8 @@ class adminUtils:
       
       # We require the first one to be a bare-word resource name
       if commandLine[0].startswith("-"):
-        er = errors()
-        er.invalidResourceArgs(self.mode)
-        er.terminate()
+        self.error.invalidResourceArgs(self.mode)
+        self.error.terminate()
       resourceName = commandLine[0].lower()
       commandLine.pop(0)
       
@@ -503,18 +806,16 @@ class adminUtils:
 
         # All of our args must start with '-'
         if not argument.startswith("-"):
-          er = errors()
-          er.invalidResourceArgs(self.mode)
-          er.terminate()
+          self.error.invalidResourceArgs(self.mode)
+          self.error.terminate()
 
         # If arg is '--release' 
         if argument == "--release":
 
           # "update-resource" does not recognize '--release' arg
           if self.mode == "update-resource":
-            er = errors()
-            er.invalidResourceArgs(self.mode)
-            er.terminate()
+            self.error.invalidResourceArgs(self.mode)
+            self.error.terminate()
 
           # Otherwise, set flag & see if a release name exists
           hasReleaseArg = True
@@ -524,16 +825,15 @@ class adminUtils:
             releaseName = ""
 
         # If arg is '--verbose' or '-vb', ignore it (we've already set our verbose-ness).
-        if argument == "--verbose" or argument == "-vb":
+        elif argument == "--verbose" or argument == "-vb":
           continue
 
         # If arg is ( ADD ANY NEW ARG HANDLING HERE )
 
         # If argument unrecognized
         else:
-          er = errors()
-          er.invalidResourceArgs(self.mode)
-          er.terminate()
+          self.error.invalidResourceArgs(self.mode)
+          self.error.terminate()
           
     # Return parsed results 
     return (resourceName, hasReleaseArg, releaseName)
@@ -544,16 +844,25 @@ class adminUtils:
   # If input is an alias, return resource's actual name.
   # If input is not recognized, return empty string.
   def resolveAlias(self, possibleAlias) :
+    if possibleAlias == "":
+      return (True, "")
     for resource in conf.resources:
       if (possibleAlias == resource.name) or (possibleAlias in resource.aliases):
-        return resource.name
-    return ""        
+        return (True, resource.name)
+    return (False, "")
 
-  # Convenience method for running "system" calls. 
-  # Adds the option to run in 'quiet' mode and suppress all output.
-  def runCommand(self, command, quiet=False):                             # Final FIXME: change this to quiet=True
-    if quiet:
-      return subprocess.call(command.split(), stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
-    else:
-      return subprocess.call(command.split(), stdout=sys.stdout, stderr=sys.stderr)
+  # Convenience method for running "system" calls with easier syntax (no array syntax in calling code)
+  # Adds the option to direct stdout/stderr to any file objects (defaults to normal stdout/stderr)
+  # Converts command exit status to True/False (under assumption of common practice that exit status of 0 is success)
+  def runCommand(self, command, out=sys.stdout, err=sys.stderr):
+    status = subprocess.call(command.split(), stdout=out, stderr=err)
+    return status == 0
 
+  # Convenience method for runCommand(), where all output (stdout/stderr) is suppressed
+  def runSilentCommand(self, command):
+    return self.runCommand(command, out=open(os.devnull, 'w'), err=open(os.devnull, 'w'))
+
+def downloadProgress(count, blockSize, totalSize):
+    percent = int(count*blockSize*100/totalSize)
+    sys.stdout.write("\b\b\b%2d%%" % percent)
+    sys.stdout.flush()

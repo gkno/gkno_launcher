@@ -81,9 +81,9 @@ class ToxoplasmaGondii(GknoResource):
 ##############################################################
 
 List = [ Tutorial(),
-        #CaenorhabditisElegans(),
-        #EscherichiaColi(),
-        HomoSapiens(),
-        #MusMusculus(),
-        #ToxoplasmaGondii()
+         #CaenorhabditisElegans(),
+         #EscherichiaColi(),
+         HomoSapiens(),
+         #MusMusculus(),
+         #ToxoplasmaGondii()
        ] 
