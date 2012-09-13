@@ -28,20 +28,24 @@ class GknoTool(object):
     #   So 'git submodule add ... tools/X' means this installDir = "X"
     self.installDir = ""
 
+    # Default output destinations
+    self.out = sys.stdout
+    self.err = sys.stderr
+
   # Define the build (e.g. compile) steps needed for the tool. 
-  # Return exit status of 0 if successful, non-zero if failed.
+  # Returns True/False for success/failure.
   # * If there is no build step needed (e.g. the tool is script-
-  #   based and needs no compiling), simply return zero.
+  #   based and needs no compiling), simply return True.
   #
   # When this method is entered, the 'current working directory' 
   # is the tool's root directory.
-  def build(self):
+  def doBuild(self):
     assert False
-    return 1
+    return False
 
   # Define the update (e.g. recompile) steps needed for the tool. 
-  # Return exit status of 0 if successful, non-zero if failed.
-  # * If there is no update step needed, simply return zero.
+  # Returns True/False for success/failure.
+  # * If there is no update step needed, simply return True.
   #
   # In many cases, the build & update operations share steps.
   # Feel free to have these methods call each other in any
@@ -49,25 +53,39 @@ class GknoTool(object):
   #
   # When this method is entered, the 'current working directory' 
   # is the tool's root directory.
-  def update(self):
+  def doUpdate(self):
     assert False
-    return 1
+    return False
+
+  # External entry point for build step.
+  # Sets output destination & calls subclass implementation
+  def build(self, out=sys.stdout, err=sys.stderr):
+    self.out = out
+    self.err = err
+    return self.doBuild()
+
+  # External entry point for update step.
+  # Sets output destination & calls subclass implementation
+  def update(self, out=sys.stdout, err=sys.stderr):
+    self.out = out
+    self.err = err
+    return self.doUpdate()
 
   # --------------------------------------------
   # OS/shell utility helper methods
   # --------------------------------------------
 
-  # Run external command, suppressing output by default
-  def runCommand(self, command, quiet=False):   # FIXME: <-- change quiet=True
-    if quiet:
-      return subprocess.call(command.split(), stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
-    else:
-      return subprocess.call(command.split(), stdout=sys.stdout, stderr=sys.stderr)
+  # Convenience method for running "system" calls with easier syntax (no array syntax in calling code)
+  # Uses the output destinations (stdout/stderr) set by earlier external caller
+  # Converts command exit status to True/False (under assumption of common practice that exit status of 0 is success)
+  def runCommand(self, command):
+    status = subprocess.call(command.split(), stdout=self.out, stderr=self.err)
+    return status == 0
 
   # Creates directory if it doesn't already exist
   def ensureMakeDir(self, directory, mode=0777):
     if not os.path.exists(directory):
-        os.makedirs(directory, mode)
+      os.makedirs(directory, mode)
 
   # --------------------------------------------
   # Build-system helper methods
@@ -101,17 +119,17 @@ class BamTools(GknoTool):
   # $ cd build  
   # $ cmake .. 
   # $ make -j N 
-  def build(self):
+  def doBuild(self):
     buildDir = os.getcwd() + "/build/"
     self.ensureMakeDir(buildDir)
-    os.chdir(buildDir)   
-    self.cmake("..")
-    self.make()
-    return 0
+    os.chdir(buildDir)
+    if not self.cmake(".."):
+      return False
+    return self.make()
 
-  # Same as build()
-  def update(self):
-    return self.build()
+  # Same as doBuild()
+  def doUpdate(self):
+    return self.doBuild()
 
 # freebayes
 class Freebayes(GknoTool):
@@ -120,16 +138,15 @@ class Freebayes(GknoTool):
     self.name       = "freebayes"
     self.installDir = "freebayes"
 
-  # $ make clean 
   # $ make -j N   
-  def build(self):
-    self.makeClean()
-    return self.update()
+  def doBuild(self):
+#    if not self.makeClean(): 
+#      return False 
+    return self.make()
 
   # $ make -j N   
-  def update(self):
-    self.make()
-    return 0
+  def doUpdate(self):
+    return self.make()
 
 # gatk
 class Gatk(GknoTool):
@@ -145,37 +162,36 @@ class Gatk(GknoTool):
 
   # $ ant clean
   # $ ant -Dcompile.scala.by.default=false
-  def build(self):
-    self.antClean()
-    return self.update()
+  def doBuild(self):
+    if not self.antClean():
+      return False
+    return self.doUpdate()
 
   # $ ant -Dcompile.scala.by.default=false
-  def update(self):
-    self.ant("-Dcompile.scala.by.default=false")
-    return 0
+  def doUpdate(self):
+    return self.ant("-Dcompile.scala.by.default=false")
 
 # mosaik
 class Mosaik(GknoTool):
   def __init__(self):
     super(Mosaik, self).__init__()
-    self.name       = "MOSAIK"
+    self.name       = "mosaik"
     self.installDir = "MOSAIK"
 
   # $ cd src
   # # make clean
   # $ make -j N
-  def build(self):
+  def doBuild(self):
     os.chdir("src") 
-    self.makeClean()                   
-    self.make()
-    return 0 
+    if not self.makeClean():
+      return False
+    return self.make()
   
   # $ cd src
   # $ make -j N
-  def update(self):
+  def doUpdate(self):
     os.chdir("src")                    
-    self.make()
-    return 0
+    return self.make()
 
 # ogap
 class Ogap(GknoTool):
@@ -184,16 +200,15 @@ class Ogap(GknoTool):
     self.name       = "ogap"
     self.installDir = "ogap"
 
-  # $ make clean
   # $ make -j N  
-  def build(self):     
-    self.makeClean()
-    return self.update()
+  def doBuild(self):    
+#    if not self.makeClean():
+#      return False
+    return self.doUpdate()
 
   # $ make -j N
-  def update(self):
-    self.make()
-    return 0
+  def doUpdate(self):
+    return self.make()
 
 # picard 
 class Picard(GknoTool):
@@ -205,16 +220,17 @@ class Picard(GknoTool):
   # $ ant clean
   # $ ant sam-jar
   # $ ant -lib lib/ant package-commands
-  def build(self):
-    self.antClean()  
-    return self.update()
+  def doBuild(self):
+    if not self.antClean():
+      return False
+    return self.doUpdate()
 
   # $ ant sam-jar
   # $ ant -lib lib/ant package-commands
-  def update(self):
-    self.ant("sam-jar")
-    self.ant("-lib lib/ant package-commands")
-    return 0
+  def doUpdate(self):
+    if not self.ant("sam-jar"):
+      return False
+    return self.ant("-lib lib/ant package-commands")
 
 # premo
 class Premo(GknoTool):
@@ -227,17 +243,17 @@ class Premo(GknoTool):
   # $ cd build 
   # $ cmake .. 
   # $ make -j N
-  def build(self):
+  def doBuild(self):
     buildDir = os.getcwd() + "/build/"
     self.ensureMakeDir(buildDir)
-    os.chdir(buildDir)  
-    self.cmake("..")
-    self.make()          
-    return 0
+    os.chdir(buildDir)
+    if not self.cmake(".."):
+      return False
+    return self.make()
 
-  # Same as build()
-  def update(self):
-    return self.build()
+  # Same as doBuild()
+  def doUpdate(self):
+    return self.doBuild()
 
 # samtools
 class SamTools(GknoTool):
@@ -248,15 +264,14 @@ class SamTools(GknoTool):
  
   # $ make clean
   # $ make -j N
-  def build(self) :
-    self.makeClean()
-    self.make()
-    return 0
+  def doBuild(self):
+    if not self.makeClean():
+      return False
+    return self.make()
 
   # $ make -j N
-  def update(self) :
-    self.make()
-    return 0
+  def doUpdate(self):
+    return self.make()
 
 ##############################################################
 # Add any new built-in gkno tools to the list below.

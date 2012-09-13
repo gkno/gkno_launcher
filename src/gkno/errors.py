@@ -537,24 +537,48 @@ class errors:
   # Admin mode errors
   #####################
   
+  def attemptingRemoveUnknownResource(self, resourceName, dest=sys.stderr):
+    print("WARNING: Resource '" + resourceName + "' was not removed because it is unknown", file=dest)
+
+  def extractTarballFailed(self, filename, dest=sys.stderr):
+    print("ERROR: Could not extract contents of"+filename, file=dest)
+
+  def gitSubmoduleUpdateFailed(self, dest=sys.stderr):
+    print("ERROR: See logs/submodule_update.* files for more details.", file=dest)
+
+  def gitUpdateFailed(self, dest=sys.stderr):
+    print("ERROR: See logs/gkno_update.* files for more details.", file=dest)
+
   def gknoAlreadyBuilt(self):
-    print("WARNING: 'gkno build' has already been run.", sep="", end="", file=sys.stderr)
+    print("Already built.", file=sys.stdout)
 
-  def gknoNotBuilt(self):
-    print("ERROR: 'gkno build' must be run before performing this operation", sep="", end="", file=sys.stderr)
-    self.error = True
+  def gknoNotBuilt(self, dest=sys.stderr):
+    print("ERROR: 'gkno build' must be run before performing this operation", file=dest)
 
-  def resourceAlreadyAdded(self, resourceName):
-    print("WARNING: Requested resource '" + resourceName + "' has already been added to gkno", sep="", end="", file=sys.stderr)
+  def invalidResourceArgs(self, mode, dest=sys.stderr):
+    print("ERROR: Invalid arguments or order used. Type 'gkno", mode, "--help' for a usage example.", file=dest)
     
-  def attemptingRemoveUntrackedResource(self, resourceName):
-    print("WARNING: Resource '" + resourceName + "' was not removed because it has not been added", sep="", end="", file=sys.stderr)
+  def noCurrentReleaseAvailable(self, resourceName, dest=sys.stderr):
+    print("ERROR: Resource: " + resourceName + " has no release marked as 'current'. Cannot fetch.", file=dest)
 
-  def requestedUnknownResource(self, resourceName):
-    print("ERROR: Requested resource '" + resourceName + "' is not recognized", sep="", end="", file=sys.stderr)
-    self.error = True
+  def noReleaseUrlFound(self, resourceName, releaseName, dest=sys.stderr):
+    print("ERROR: Could not fetch files for resource: "+resourceName+", release: "+releaseName+" - URL not found", file=dest)
 
-  def invalidResourceArgs(self, mode):
-    print("ERROR: Invalid arguments or order used. Type 'gkno",mode,"--help' for a usage example.", end="", file=sys.stderr)
-    self.error = True
+  def requestedUnknownResource(self, resourceName, dest=sys.stderr):
+    print("ERROR: Requested resource '" + resourceName + "' is not recognized", file=dest)
+
+  def resourceAlreadyAdded(self, resourceName, dest=sys.stderr):
+    print("WARNING: Requested resource '" + resourceName + "' has already been added to gkno", file=dest)
+
+  def resourceFetchFailed(self, resourceName, dest=sys.stderr):
+    print("ERROR:  See logs/build_"+resourceName+".* files for more details.", file=dest)
+  
+  def toolBuildFailed(self, toolName, dest=sys.stderr):
+    print("ERROR: See logs/build_"+toolName+".* files for more details.", file=dest)
+
+  def toolUpdateFailed(self, toolName, dest=sys.stderr):
+    print("ERROR: See logs/update_"+toolName+".* files for more details.", file=dest)
+
+  def urlRetrieveFailed(self, url, dest=sys.stderr):
+    print("ERROR: Could not retrieve file at "+url, file=dest)
     

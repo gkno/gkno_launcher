@@ -81,8 +81,10 @@ def main():
 
     # Make sure we've actually been "built" before doing any real processing.
     # Skip this requirement if we're only going to be printing a help message later.
-    if not gknoHelp.printHelp:
-      admin.requireBuilt()
+    if not gknoHelp.printHelp and not admin.isBuilt():
+      er = errors()
+      er.gknoNotBuilt()
+      er.terminate()
 
     # Each of the tools available to gkno should have a config file to
     # describe its operation, purpose etc.  These are contained in
@@ -123,8 +125,12 @@ def main():
   # If admin mode requested, then run it & terminate script.
   # No need to bother with running tools or pipes.
   if admin.isRequested:
-    admin.run(sys.argv)
-    exit(0)
+    success = admin.run(sys.argv)
+    if success:
+      exit(0)
+    else:
+      er = errors()
+      er.terminate()
   
   # Print information about the pipeline to screen.
   if pl.isPipeline: pl.printPipelineInformation(tl)
