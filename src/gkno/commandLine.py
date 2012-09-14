@@ -33,7 +33,7 @@ class commandLine:
 
       # If a pipeline has been selected set the mode to pipe and get the name of
       # the pipeline.
-      if argument == "pipe":
+      if argument == 'pipe':
         pl.isPipeline   = True
         pl.pipelineName = ''
 
@@ -41,6 +41,12 @@ class commandLine:
         except:
           gknoHelp.pipelineHelp = True
           gknoHelp.printHelp    = True
+
+      # If the test described in the 'Getting started with gkno' tutorial is
+      # requested, set the mode to 'pipe' and set the pipelineName to run-test.
+      elif argument == 'run-test':
+        pl.isPipeline   = True
+        pl.pipelineName = 'run-test'
 
       # If any admin operation was requested, set requested mode.
       # (We'll parse for add'l args later.)
