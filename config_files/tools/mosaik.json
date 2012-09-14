@@ -178,6 +178,7 @@
         }
       }
     },
+
     "mosaik-aligner" : {
       "description" : "Pairwise alignment of a read archive",
       "path" : "MOSAIK/bin",

@@ -86,7 +86,7 @@
           "type" : "flag"
         },
         "--use-best-n-alleles" : {
-          "description" : "Evaluate only the best N SNP alleles, ranked by sum of|supporting quality scores.  (Set to 0 to use all; default: all)",
+          "description" : "Evaluate only the best N SNP alleles, ranked by sum of supporting quality scores.  (Set to 0 to use all; default: all)",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
@@ -96,7 +96,7 @@
           "type" : "flag"
         },
         "--max-complex-gap" : {
-          "description" : "Allow complex alleles with contiguous embedded matches of up|to this length.",
+          "description" : "Allow complex alleles with contiguous embedded matches of up to this length.",
           "input" : "false",
           "output" : "false",
           "resource" : "false",

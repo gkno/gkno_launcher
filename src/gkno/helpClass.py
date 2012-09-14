@@ -22,7 +22,7 @@ class helpClass:
     # General gkno usage.
     if self.generalHelp:
       self.printHeader(version, date)
-      self.usage(io, tl, admin)
+      self.usage(io, tl, admin, path)
 
     # gkno tool mode usage.
     elif self.toolHelp:
@@ -72,13 +72,13 @@ class helpClass:
     print(file = sys.stdout)
 
   # Print usage information.
-  def usage(self, io, tl, admin):
-    print("The gkno package can be run in three different modes:", file=sys.stdout)
-    print("\tADMIN mode:     lets you manage gkno itself", file = sys.stdout)
-    print("\tTOOL mode:      runs a single tool", file=sys.stdout)
-    print("\tPIPE mode:      runs a predetermined pipeline of tools", file=sys.stdout)
+  def usage(self, io, tl, admin, path):
+    print('The gkno package can be run in three different modes:', file=sys.stdout)
+    print('     ADMIN mode:     lets you manage gkno itself', file = sys.stdout)
+    print('     TOOL mode:      runs a single tool', file=sys.stdout)
+    print('     PIPE mode:      runs a predetermined pipeline of tools', file=sys.stdout)
     print(file = sys.stdout)
-    print("See below for usage instructions for each mode.", file = sys.stdout)
+    print('See below for usage instructions for each mode.', file = sys.stdout)
     print(file = sys.stdout)
 
     # Print out admin help.
@@ -88,7 +88,7 @@ class helpClass:
     self.printToolModeUsage(tl)
 
     # Print out pipeline help.
-    self.printPipelineModeUsage(io)
+    self.printPipelineModeUsage(io, path)
 
   # Print usage information on the admin mode of operation.
   def printAdminModeUsage(self, admin):
@@ -96,9 +96,9 @@ class helpClass:
     print('  admin mode'  , file = sys.stdout)
     print('==============', file = sys.stdout)
     print(file = sys.stdout)
-    print("Usage: gkno <admin operation> [options]", file = sys.stdout)
+    print('Usage: gkno <admin operation> [options]', file = sys.stdout)
     print(file = sys.stdout)
-    print("\t<admin operation>:", file = sys.stdout)
+    print('     <admin operation>:', file = sys.stdout)
 
     # For the purposes of formatting the screen output, find the longest admin
     # operation name and use this to define the format length.
@@ -108,10 +108,11 @@ class helpClass:
     length += 5
 
     for mode in admin.allModes:
+
       # Get the tool description.
       description = admin.modeDescriptions[mode]
       printTool = mode + ":"
-      print("\t\t%-*s%-*s" % (length, printTool, 1, description), file = sys.stdout)
+      self.writeFormattedText(printTool, description, length, 2, '')
     print(file = sys.stdout)
 
   # Print usage information on the tool mode of operation.
@@ -122,7 +123,7 @@ class helpClass:
     print(file = sys.stdout)
     print("Usage: gkno <tool name> [options]", file = sys.stdout)
     print(file = sys.stdout)
-    print("\t<tool name>:", file = sys.stdout)
+    print('     <tool name>:', file = sys.stdout)
 
     # For the purposes of formatting the screen output, find the longest tool
     # name and use this to define the format length.
@@ -136,24 +137,39 @@ class helpClass:
 
       # Get the tool description.
       description = tl.toolInfo[tool]['description']
-      printTool = tool + ":"
-      if not tl.hiddenTools[tool]: print("\t\t%-*s%-*s" % (length, printTool, 1, description), file = sys.stdout)
+      printTool   = tool + ":"
+
+      if not tl.hiddenTools[tool]: self.writeFormattedText(printTool, description, length, 2, '')
     print(file = sys.stdout)
 
   # Print usage information on the pipeline mode of operation.
-  def printPipelineModeUsage(self, io):
+  def printPipelineModeUsage(self, io, path):
     print('=================', file = sys.stdout)
     print('  pipeline mode', file = sys.stdout)
     print('=================', file = sys.stdout)
     print(file = sys.stdout)
-    print("Usage: gkno pipe <pipeline name> [options]", file = sys.stdout)
+    print('Usage: gkno pipe <pipeline name> [options]', file = sys.stdout)
     print(file = sys.stdout)
-    print("\t<pipeline name>:", file = sys.stdout)
+    print('     <pipeline name>:', file = sys.stdout)
 
+    # For the purposes of formatting the screen output, find the longest tool
+    # name and use this to define the format length.
     sortedKeys = sorted(io.jsonPipelineFiles.keys())
+    length = 0
     for pipeline in sortedKeys:
       pipeline = pipeline[0:(len(pipeline) - 5)]
-      print("\t\t", pipeline, sep = '', file = sys.stdout)
+      if len(pipeline) > length: length = len(pipeline)
+    length += 5
+
+    for pipeline in sortedKeys:
+
+      # Open the json file and get the pipeline description.
+      pipelineFile = path + '/config_files/pipes/' + pipeline
+      jsonData     = io.getJsonData(pipelineFile)
+      description  = jsonData['description'] if 'description' in jsonData else 'No description'
+
+      pipeline = pipeline[0:(len(pipeline) - 5)] + ':'
+      self.writeFormattedText(pipeline, description, length, 2, '')
     sys.stdout.flush()
 
   # Print out tool usage.
@@ -191,36 +207,32 @@ class helpClass:
     length += 5
 
     if len(sRequiredArguments) != 0:
-      print("\trequired arguments:", file = sys.stdout)
+      print('     required arguments:', file = sys.stdout)
       for argument in sRequiredArguments:
         printArgument = argument + ':'
         description   = tl.toolInfo[tool]['arguments'][argument]['description']
-        print("\t\t%-*s%-*s" % (length, printArgument, 1, description), file = sys.stdout)
+        dataType      = tl.toolInfo[tool]['arguments'][argument]['type']
+        self.writeFormattedText(printArgument, description, length, 2, dataType)
       print(file = sys.stdout)
       sys.stdout.flush()
 
     if len(sDefaultArguments) != 0:
-      print("\trequired arguments with set defaults:", file = sys.stdout)
+      print('     required arguments with set defaults:', file = sys.stdout)
       for argument in sDefaultArguments:
         printArgument = argument + ':'
-        description   = tl.toolInfo[tool]['arguments'][argument]['description'].split('|')
+        description   = tl.toolInfo[tool]['arguments'][argument]['description']
         dataType      = tl.toolInfo[tool]['arguments'][argument]['type']
-        for counter, desc in enumerate(description):
-          if counter == 0: print("\t\t%-*s%-*s%-*s" % (length, printArgument, 10, dataType, 1, desc), file = sys.stdout)
-          else: print("\t\t%-*s%-*s" % ((length + 10), ' ', 1, desc), file = sys.stdout)
+        self.writeFormattedText(printArgument, description, length, 2, dataType)
       print(file = sys.stdout)
       sys.stdout.flush()
 
     if len(sOptionalArguments) != 0:
-      print("\toptional arguments:", file = sys.stdout)
+      print('     optional arguments:', file = sys.stdout)
       for argument in sOptionalArguments:
         printArgument = argument + ':'
-        description   = tl.toolInfo[tool]['arguments'][argument]['description'].split('|')
+        description   = tl.toolInfo[tool]['arguments'][argument]['description']
         dataType      = tl.toolInfo[tool]['arguments'][argument]['type']
-        for counter, desc in enumerate(description):
-          if counter == 0: print("\t\t%-*s%-*s%-*s" % (length, printArgument, 10, dataType, 1, desc), file = sys.stdout)
-          else: print("\t\t%-*s%-*s" % ((length + 10), ' ', 1, desc), file = sys.stdout)
-        
+        self.writeFormattedText(printArgument, description, length, 2, dataType)
       print(file = sys.stdout)
       sys.stdout.flush()
 
@@ -247,9 +259,8 @@ class helpClass:
       io.getPipelineDescription(tl, pl, False)
 
       pipeline       = pipeline[0:-5] + ':'
-      if 'description' in pl.information: description = pl.information['description']
-      else: description = 'No description'
-      print("\t\t%-*s%-*s" % (length, pipeline, 1, description), file = sys.stdout)
+      description    = pl.information['description'] if 'description' in pl.information else 'No description'
+      self.writeFormattedText(pipeline, description, length, 2, '')
     sys.stdout.flush()
 
   # If help with a specific pipeline was requested, write out all of the commands available
@@ -266,7 +277,7 @@ class helpClass:
     # Print out the decription of the pipeline.
     description = pl.information['description'] if 'description' in pl.information else 'No description'
     print('Description:', file = sys.stdout)
-    print("\t", description, sep = '', file = sys.stdout)
+    self.writeFormattedText('', description, 0, 1, '')
     print(file = sys.stdout)
 
     # List the options available at the pipeline level.
@@ -291,22 +302,22 @@ class helpClass:
     length += 4
 
     if len(requiredArguments) != 0:
-      print("\tRequired pipeline specific arguments:\t", file = sys.stdout)
+      print('     Required pipeline specific arguments:', file = sys.stdout)
       sortedArguments = sorted(requiredArguments.keys())
       for argument in sortedArguments:
-        print("\t\t%-*s%-*s" % (length, argument, 1, requiredArguments[argument]), file = sys.stdout)
+        self.writeFormattedText(argument, requiredArguments[argument], length, 2, '')
       print(file = sys.stdout)
 
     if len(arguments) != 0:
-      print("\tOptional pipeline specific arguments:\t", file = sys.stdout)
+      print('     Optional pipeline specific arguments:', file = sys.stdout)
       sortedArguments = sorted(arguments.keys())
       for argument in sortedArguments:
-        print("\t\t%-*s%-*s" % (length, argument, 1, arguments[argument]), file = sys.stdout)
+        self.writeFormattedText(argument, arguments[argument], length, 2, '')
       print(file = sys.stdout)
 
     # List the names of the tools in the pipeline.  These can appear as command line arguments
     # in order to modify parameters for the specified tool.
-    print("\tThe following tools can have parameters modified:", file = sys.stdout)
+    print('     The following tools can have parameters modified:', file = sys.stdout)
     length = 0
     for task in pl.information['workflow']:
       length = len(task) if (len(task) > length) else length
@@ -317,8 +328,35 @@ class helpClass:
       tool  = pl.information['tools'][task]
       if not tl.hiddenTools[tool]:
         task += ':'
-        print("\t\t--%-*s%-*s parameters" % (length, task, 1, tool), file = sys.stdout)
+        self.writeFormattedText('--' + task, tool, length + 2, 2, '')
     sys.stdout.flush()
+
+  # Write out key value pairs in a formatted manned.  These may be tool and
+  # description or command line argument and description or whatever else is
+  # required.
+  def writeFormattedText(self, key, value, length, noTabs, dataType):
+
+    # Set the maximum width of the line.
+    maxLength   = 100
+
+    # Determine the amount of text prior to the value.
+    startLength = length + (5 * noTabs) + 3
+    if dataType != '': startLength += 10
+
+    valueList = []
+    while len(value) > (maxLength - startLength):
+      index = value.rfind(' ', 0, (maxLength - startLength))
+      valueList.append(value[0:index])
+      value = value[index + 1:len(value)]
+    if value != '': valueList.append(value)
+
+    value = valueList.pop(0)
+    if dataType == '':
+      print("%-*s%-*s%-*s" % ((5 * noTabs), ' ', length, key, 1, value), file = sys.stdout)
+      for value in valueList:  print('%-*s%-*s%-*s' % ((5 * noTabs), ' ', length, ' ', 1, value), file = sys.stdout)
+    else:
+      print("%-*s%-*s%-*s%-*s" % ((5 * noTabs), ' ', length, key, 10, dataType, 1, value), file = sys.stdout)
+      for value in valueList:  print('%-*s%-*s%-*s' % ((5 * noTabs) + 10, ' ', length, ' ', 1, value), file = sys.stdout)
 
   # If an admin mode's help was requested.
   def adminModeUsage(self, admin):
