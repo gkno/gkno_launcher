@@ -352,10 +352,10 @@ class helpClass:
 
     value = valueList.pop(0)
     if dataType == '':
-      print("%-*s%-*s%-*s" % ((5 * noTabs), ' ', length, key, 1, value), file = sys.stdout)
+      print("%-*s%-*s%-*s" % ((5 * noTabs), '', length, key, 1, value), file = sys.stdout)
       for value in valueList:  print('%-*s%-*s%-*s' % ((5 * noTabs), ' ', length, ' ', 1, value), file = sys.stdout)
     else:
-      print("%-*s%-*s%-*s%-*s" % ((5 * noTabs), ' ', length, key, 10, dataType, 1, value), file = sys.stdout)
+      print("%-*s%-*s%-*s%-*s" % ((5 * noTabs), '', length, key, 10, dataType, 1, value), file = sys.stdout)
       for value in valueList:  print('%-*s%-*s%-*s' % ((5 * noTabs) + 10, ' ', length, ' ', 1, value), file = sys.stdout)
 
   # If an admin mode's help was requested.

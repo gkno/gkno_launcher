@@ -28,7 +28,7 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.21"
+__version__ = "0.22"
 __date__ = "September 2012"
 
 def main():
@@ -114,8 +114,7 @@ def main():
     tl.checkForRequiredFields()
 
     # If a single tool is being run, check that it is a valid tool.
-    if not pl.isPipeline: 
-      tl.checkTool(gknoHelp)
+    if not pl.isPipeline: tl.checkTool(gknoHelp)
     pl.addPipelineSpecificOptions(tl)
 
   # If help was requested or there were problems (e.g. the tool name or pipeline
@@ -133,7 +132,7 @@ def main():
       er.terminate()
   
   # Print information about the pipeline to screen.
-  if pl.isPipeline: pl.printPipelineInformation(tl)
+  if pl.isPipeline: pl.printPipelineInformation(tl, gknoHelp)
 
   # For each of the tools in the pipeline, or the single tool if in tool mode,
   # parse the configuration file and put all of the allowed command line
@@ -160,17 +159,19 @@ def main():
     if not pl.isPipeline: pl.pipelineName = tl.tool
     io.makefileNames.append(pl.pipelineName + '_' + str(makefileID) + '.make')
     if pl.hasMultipleRuns:
-      cl.buildCommandLineMultipleRuns(pl)
+      currentCommandLine = cl.buildCommandLineMultipleRuns(pl)
       tl.toolArguments['pipeline']['--verbose'] = False
       if makefileID == 1:
         print('Verbose messages disabled as multiple Makefiles are being generated.', file = sys.stdout)
         print(file = sys.stdout)
         sys.stdout.flush()
 
+    else: currentCommandLine = cl.baseCommandLine
+
     # Parse the command line.  Anything set by the user will overide configuration
     # file defaults or linkages.
-    if pl.isPipeline: cl.parsePipelineCommandLine(gknoHelp, io, tl, pl)
-    else: cl.parseToolCommandLine(gknoHelp, io, tl, pl, sys.argv, tl.tool, tl.tool, True)
+    if pl.isPipeline: cl.parsePipelineCommandLine(gknoHelp, io, tl, pl, currentCommandLine)
+    else: cl.parseToolCommandLine(gknoHelp, io, tl, pl, cl.baseCommandLine, tl.tool, tl.tool, True)
 
     # I the --export-config has been set, then the user is attempting to create a
     # new configuration file based on the selected pipeline.  This can only be
@@ -200,7 +201,7 @@ def main():
     for task in pl.information['workflow']:
       tool = pl.information['tools'][task]
       if tl.toolArguments['pipeline']['--verbose']:
-        print("\t", task, ' (', tool, ')...', sep = '', file = sys.stdout)
+        print('     ', task, ' (', tool, ')...', sep = '', file = sys.stdout)
         sys.stdout.flush()
   
       # Some of the tools included in gkno can have multiple input files set on the

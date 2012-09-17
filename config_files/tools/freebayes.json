@@ -7,6 +7,7 @@
       "help" : "--help|-h",
       "arguments" : {
         "--bam" : {
+          "short form argument" : "-b",
           "description" : "Add FILE to the set of BAM files to be analyzed.",
           "input" : "true",
           "use for filenames" : "true",
@@ -14,96 +15,119 @@
           "resource" : "false",
           "required" : "true",
           "dependent" : "true",
-          "short form argument" : "-b",
           "extension" : "bam",
           "if input is stream" : "replace",
           "replace argument with" : {
             "argument" : "--stdin",
             "value" : ""
           },
-          "type" : "string"
+          "type" : "string",
+          "allow multiple definitions" : "true"
+        },
+        "--bam-list" : {
+          "short form argument" : "-bl",
+          "description" : "the input BAM file list.",
+          "input" : "true",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "bam",
+          "list of input files" : "true",
+          "apply by repeating this argument" : "--bam"
         },
         "--vcf" : {
+          "short form argument" : "-v",
           "description" : "Output VCF-format results to FILE.",
           "input" : "false",
           "output" : "true",
           "resource" : "false",
           "required" : "true",
           "dependent" : "false",
-          "short form argument" : "-v",
           "extension" : "vcf",
           "type" : "string"
         },
         "--fasta-reference" : {
+          "short form argument" : "-f",
           "description" : "Use FILE as the reference sequence for analysis.",
           "input" : "true",
           "output" : "false",
           "resource" : "true",
           "required" : "true",
           "dependent" : "true",
-          "short form argument" : "-f",
           "extension" : "fa|fasta",
           "type" : "string"
         },
         "--no-snps" : {
+          "short form argument" : "-I",
           "description" : "Ignore SNP alleles.",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "short form argument" : "-I",
           "type" : "flag"
         },
         "--no-indels" : {
+          "short form argument" : "-i",
           "description" : "Ignore insertion and deletion alleles.",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "short form argument" : "-i",
           "type" : "flag"
         },
         "--no-mnps" : {
+          "short form argument" : "-X",
           "description" : "Ignore multi-nuceotide polymorphisms, MNPs.",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "short form argument" : "-X",
           "type" : "flag"
         },
         "--no-complex" : {
+          "short form argument" : "-u",
           "description" : "Ignore complex events (composites of other classes).",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "short form argument" : "-u",
           "type" : "flag"
         },
         "--use-best-n-alleles" : {
+          "short form argument" : "-n",
           "description" : "Evaluate only the best N SNP alleles, ranked by sum of supporting quality scores.  (Set to 0 to use all; default: all)",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "short form argument" : "-n",
-          "type" : "flag"
+          "type" : "integer"
         },
         "--max-complex-gap" : {
+          "short form argument" : "-E",
           "description" : "Allow complex alleles with contiguous embedded matches of up to this length.",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
           "required" : "false",
           "dependent" : "false",
-          "short form argument" : "-E",
-          "type" : "flag"
+          "type" : "integer"
+        },
+        "--region" : {
+          "short form argument" : "-r",
+          "description" : "<chrom>:<start_position>..<end_position>. Limit analysis to the specified region, 0-base coordinates, end_position not included (same as BED format).",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "string"
         }
       }
     }

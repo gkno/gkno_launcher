@@ -6,13 +6,260 @@ import sys
 
 class errors:
   def __init__(self):
-    self.error = False;
+    self.error = False
+    self.text  = []
+
+  # Write out key value pairs in a formatted manner.  These may be tool and
+  # description or command line argument and description or whatever else is
+  # required.
+  def writeFormattedText(self, noTab):
+
+    # Set the maximum width of the line.
+    maxLength   = 93 - (5 * noTab)
+
+    for line in self.text:
+      textList = []
+      while len(line) > maxLength:
+        index = line.rfind(' ', 0, maxLength)
+        textList.append(line[0:index])
+        line = line[index + 1:len(line)]
+      if line != '': textList.append(line)
+
+      line = textList.pop(0)
+      print("%-*sERROR: %-*s" % ((5 * noTab), '', 1, line), file = sys.stdout)
+      for line in textList:  print('%-*sERROR: %-*s' % ((5 * noTab), '', 1, line), file = sys.stdout)
+
+  ##############
+  # File errors.
+  ##############
+
+  # If attempting to perform multiple runs and no file is supplied, throw an error.
+  def missingFileForMultipleRuns(self, newLine, noTab):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'File containing information for multiple runs \'--multiple-runs (-mr)\' is not supplied.'
+    self.text.append(text)
+    self.error = True
+
+  # If a file has an unexpected extension, flag the problem.
+  def fileExtensionError(self, newLine, noTab, option, filename, extension):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'File \'' + filename + '\' does not end with the expected extension \'' + extension + '\'' + ' (option: \'' + option + '\')'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+  
+  ##############
+  # Json errors.
+  ##############
 
   # If a json configuration file is malformed, terminate the script with an error.
-  def jsonOpenError(self, newLine, pad, error):
+  def jsonOpenError(self, newLine, noTab, error, filename):
+    self.text = []
     if newLine: print(file = sys.stderr)
-    print(pad, 'ERROR: json file is malformed: \'', error, '\'.', sep = '', file = sys.stderr)
+    text = 'json file \'' + filename + '\' is malformed: \'' + str(error) + '\'.'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
     self.error = True
+
+  # If a required field in a tool configuration file is missing.
+  def missingFieldForTool(self, newLine, noTab, task, argument, field, value):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'Required field \'' + field + '\' in configuration file for \'' + task + '\' argument ' + argument + '\' is '
+    if value == '': text += 'missing.'
+    else: text += 'invalid (value: \'' + value + '\')'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  # When parsing the pipeline configuration file, there are a list of commands that
+  # are either pipeline specific or associated with a contained tool.  If the 'tool'
+  # value is not present in the file, throw an error.
+  def optionAssociationError(self, newLine, noTab, message, argument, tool):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'Value \'' + message + '\' is missing for argument \'' + argument + '\' in the \'' + tool + '\' configuration file.'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  # The pipeline configuration file contains an argument that points to a constituent
+  # tool, however the tool argument it points to is invalid.
+  def incorrectArgumentInPipelineConfigurationFile(self, newLine, noTab, tool, argument, linkedArgument):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'The pipeline configuration file \'arguments\' block defines \'' + argument + '\' as linked to \'' + linkedArgument + \
+    '\' in tool \'' + tool + '\''
+    self.text.append(text)
+    text = 'This argument (\'' + linkedArgument + '\') does not exist for this tool.  Please check the pipeline configuration file.'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+    self.error = True
+
+  ######################
+  # Command line errors.
+  ######################
+
+  # If a command line argument expects a value (e.g. it is not a flag), but no value
+  # was supplied, throw an error.
+  def expectedValueForArgument(self, newLine, noTab, task, argument, dataType, givenValue):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'Argument \'' + argument + '\' for task \'' + task + '\' requires a value of type \'' + dataType + '\''
+    if givenValue == '': text += ' but no data was given.'
+    else: text += '. The received value was: ' + givenValue
+    self.text.append(text)
+    if dataType == 'flag':
+      text = 'No value is expected for a flag.'
+      self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  # A required value is not given.
+  def missingRequiredValue(self, newLine, noTab, task, tool, argument, shortForm, tl, pl):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    if shortForm == '':
+      text = 'Argument \'' + argument + '\' for tool \'' + task + ' (' + tool + ')\' is required and not set.  '
+    else:
+      text = 'Argument \'' + argument + ' (' + shortForm + ')\' for tool \'' + task + ' (' + tool + ')\' is required and not set.  '
+    self.text.append(text)
+
+    if pl.isPipeline:
+      for pipelineArgument in pl.information['arguments']:
+        pipelineTask      = pl.information['arguments'][pipelineArgument]['link to this task']
+        if pipelineTask  == 'pipeline': continue
+        linkedArgument    = pl.information['arguments'][pipelineArgument]['link to this argument']
+        if (pipelineTask == task) and (linkedArgument == argument):
+          description     = tl.toolInfo[tool]['arguments'][argument]['description']
+          if 'short form argument' in pl.information['arguments'][pipelineArgument]:
+            pipelineAlt = pl.information['arguments'][pipelineArgument]['short form argument']
+            text = 'This can be set on the command line using the pipeline argument \'' + pipelineArgument + ' (' + pipelineAlt + ')\'.'
+            self.text.append(text)
+            text = '\'' + pipelineArgument + ' (' + pipelineAlt + ')\' description: ' + description
+            self.text.append(text)
+          else:
+            text = 'This can be set on the command line using the pipeline argument \'' + pipelineArgument + '\'.'
+            self.text.append(text)
+            text = '\'' + pipelineArgument +'\' description: ' + description
+            self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  # The input file used for constructing an output file is blank.
+  def noInputFilenameForFilenameConstruction(self, newLine, noTab, task, tool, outputFile, argument, pipelineArgument, shortform, tl):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'Constructing output filename \'' + outputFile + '\' in task \'' + task + ' (\'' + tool + '\')\' failed.'
+    self.text.append(text)
+    text = 'Input filename (argument \'' + argument + '\') used in the construction is blank.'
+    self.text.append(text)
+    if pipelineArgument != '':
+      description = tl.toolInfo[tool]['arguments'][argument]['description']
+      text = 'This can be set on the command line using the pipeline argument \'' + pipelineArgument + ' (' + shortform + ')\'.'
+      self.text.append(text)
+      text = '\'' + pipelineArgument + '\' description: '+  description
+      self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  # If a command line argument is given a value with the wrong data type, throw an error.
+  def incorrectDataType(self, newLine, noTab, tool, argument, value, dataType):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'Argument \'' + argument + '\' in tool \'' + tool + '\' expects a value of data type \'' + dataType + '\'. Given \'' + value + '\'.'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  ##############
+  # Tool errors.
+  ##############
+
+  def unknownTool(self, newLine, noTab, task, tool):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'Task name \'' + task + '\' is associated with tool \'' + tool + '\' but this tool is not available in the gkno package. ' + \
+    'Please ensure that the configuration file is correct.'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  ##################
+  # Pipeline errors.
+  ##################
+
+  # A tool name in the pipeline configuration file is not associated with an actual tool.
+  def unassociatedTask(self, newLine, noTab, task):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'Task \'' + task + '\' appearing in the pipeline \'workflow\' does not appear in the \'tools\' section of the pipeline ' + \
+    'configuration file.  Consequently, it is unknown which tool to use for this task.  Please check the \'workflow\' and \'tools\'' + \
+    ' sections of the pipeline configuration file.'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  # Each tool name appearing in the pipeline configuration file is required
+  # to be unique to avoid ambiguous linkages.  If repeated names are discovered
+  # give an error and terminate.
+  def repeatedTool(self, newLine, noTab, task):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'Task name \'' + task + '\' appears multiple times in the pipeline configuration file. Ensure that all task names in the ' + \
+    '\'workflow\' section of the pipeline configuration file are unique.'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  #############################
+  # Errors generating makefile.
+  #############################
+
+  # If the json file specifies an order for the arguments and an unknown argument
+  # is encountered.
+  def unknownArgumentInArgumentOrder(self, newLine, noTab, task, tool, argument):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'The configuration file specifies an order for the command line arguments for task \'' + task + ' (' + tool + \
+    ')\'.  The ordered list contains an unknown argument: ' + argument + '.'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  # If the json file specifies an order for the arguments, but not all of the arguments
+  # for the tool appear in the list.
+
+  def missingArgumentsInOrderList(self, newLine, noTab, task, tool, argumentDict):
+    self.text     = []
+    if newLine: print(file = sys.stderr)
+    text = 'The configuration file specifies an order for the command line arguments for task \'' + task + ' (' + tool + \
+    ')\'.  The following arguments would not be included on the command line as they do not appear in this ordered list:'
+    self.text.append(text)
+    for argument in argumentDict: self.text.append(argument)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # If an unknown command line argument is given.
   def unknownToolArgument(self, pad, tool, argument):
@@ -29,15 +276,6 @@ class errors:
     sys.stderr.flush()
     self.error = True
 
-  # If a required field in a tool configuration file is missing.
-  def missingFieldForTool(self, newLine, pad, task, argument, field, value):
-    if newLine: print(file = sys.stderr)
-    print(pad, 'ERROR: Required field \'', field, '\' in configuration file for \'', task, '\' argument ', sep = '', end = '', file = sys.stderr)
-    print('\'', argument, '\' is ', sep = '', end = '', file = sys.stderr)
-    if value == '': print('missing.', sep = '', file = sys.stderr)
-    else: print('invalid (value: \'', value, '\')', sep = '', file = sys.stderr)
-    self.error = True
-
   # If the command line argument is a tool name, a list of tool specific commands must
   # follow (in quotation marks).  If not, then there is an error.
   def commandLineToolError(self, pad, pipelineName, tool):
@@ -51,15 +289,6 @@ class errors:
   def associatedToolNotInPipeline(self, text, tool, argument):
     print(text, 'ERROR: Pipeline argument \'', argument, '\' is associated with a tool that is not ', sep = '', end = '', file = sys.stderr)
     print('part of the pipeline (\'', tool, '\')', sep = '', file = sys.stderr)
-    self.error = True
-
-  # The pipeline configuration file contains an argument that points to a constituent
-  # tool, however the tool argument it points to is invalid.
-  def incorrectArgumentInPipelineConfigurationFile(self, pad, tool, argument, linkedArgument):
-    print(pad, 'ERROR: The pipeline configuration file \'arguments\' block defines \'', argument, '\'', sep = '', end = '', file = sys.stderr)
-    print(' as linked to \'', linkedArgument, '\' in tool \'', tool, '\'', sep = '', end = '', file = sys.stderr)
-    print(pad, 'ERROR: This argument (\'', linkedArgument, '\') does not exist for this tool.', sep = '', end = '', file = sys.stderr)
-    print('  Please check the pipeline configuration file.', sep = '', file = sys.stderr)
     self.error = True
 
   # A supplied argument is invalid.
@@ -110,28 +339,6 @@ class errors:
     print(pad, 'ERROR: This file should contain the heading \'filename list\' and be followed by a json list.', sep = '', file = sys.stderr)
     self.error = True
 
-  # When parsing the pipeline configuration file, there are a list of commands that
-  # are either pipeline specific or associated with a contained tool.  If the 'tool'
-  # value is not present in the file, throw an error.
-  def optionAssociationError(self, newLine, pad, text, option, tool):
-    if newLine: print(file = sys.stderr)
-    print(pad, 'ERROR: Value \'', text, '\' is missing for option \'', option, '\' in the \'', tool, sep = '', end = '', file = sys.stderr)
-    print('\' configuration file.', file = sys.stderr)
-    self.error = True
-
-  # The input file used for constructing an output file is blank.
-  def noInputFilenameForFilenameConstruction(self, newLine, pad, task, tool, outputFile, argument, pipelineArgument, shortform, tl):
-    if newLine: print(file = sys.stderr)
-    print(pad, 'ERROR: Constructing output filename \'', outputFile, '\' in task \'', task, sep = '', end = '', file = sys.stderr)
-    print(' (\'', tool, '\')\' failed.', sep = '', file = sys.stderr)
-    print(pad, 'ERROR: Input filename (argument \'', argument, '\') used in the construction is blank.', sep = '', file = sys.stderr)
-    if pipelineArgument != '':
-      description = tl.toolInfo[tool]['arguments'][argument]['description']
-      print(pad, 'ERROR: This can be set on the command line using the pipeline argument \'', sep = '', end = '', file = sys.stderr)
-      print(pipelineArgument, ' (', shortform,')\'.', sep = '', file = sys.stderr)
-      print(pad, 'ERROR: \'', pipelineArgument, '\' description: ', description, sep = '', file = sys.stderr)
-    self.error = True
-
   # The pipeline configuration file may contain a block describing how to construct the
   # name of an output file.  In this description, the 'additional text from variables'
   # block may appear describing the tool and argument from which to take a variable.  If
@@ -159,35 +366,6 @@ class errors:
     print(pad, 'ERROR: Variable \'', text, '\' comes from \'', addTask, '\' argument \'', addArgument, '\'.', sep = '', file = sys.stderr)
     if taskError: print(pad, 'ERROR: This tool (\'', addTask, '\') does not exist.', sep = '', file = sys.stderr)
     else: print(pad, 'ERROR: This argument (\'', addArgument, '\') does not exist.', sep = '', file = sys.stderr)
-    self.error = True
-
-  # A required value is not given.
-  def missingRequiredValue(self, newLine, pad, task, tool, argument, tl, pl):
-    if newLine: print(file = sys.stderr)
-    print(pad, 'ERROR: Argument \'', argument, '\' for tool \'', task, ' (', tool, ')\' is required and not set.', sep = '', file = sys.stderr)
-    if pl.isPipeline:
-      for pipelineArgument in pl.information['arguments']:
-        pipelineTask      = pl.information['arguments'][pipelineArgument]['link to this task']
-        if pipelineTask  == 'pipeline': continue
-        linkedArgument    = pl.information['arguments'][pipelineArgument]['link to this argument']
-        if (pipelineTask == task) and (linkedArgument == argument):
-          description     = tl.toolInfo[tool]['arguments'][argument]['description']
-          if 'short form argument' in pl.information['arguments'][pipelineArgument]:
-            pipelineAlt = pl.information['arguments'][pipelineArgument]['short form argument']
-            print(pad, 'ERROR: This can be set on the command line using the pipeline argument \'', sep = '', end = '', file = sys.stderr)
-            print(pipelineArgument, ' (', pipelineAlt, ')\'.', sep = '', file = sys.stderr)
-            print(pad, 'ERROR: \'', pipelineArgument, ' (', pipelineAlt, ')\' description: ', description, sep = '', file = sys.stderr)
-          else:
-            print(pad, 'ERROR: This can be set on the command line using the pipeline argument \'', sep = '', end = '', file = sys.stderr)
-            print(pipelineArgument, '\'.', sep = '', file = sys.stderr)
-            print(pad, 'ERROR: \'', pipelineArgument, '\' description: ', description, sep = '', file = sys.stderr)
-    self.error = True
-
-  # If a command line argument is given a value with the wrong data type, throw an error.
-  def incorrectDataType(self, newLine, pad, tool, argument, value, dataType):
-    if newLine: print(file = sys.stderr)
-    print(pad, 'ERROR: Argument \'', argument, '\' in tool \'', tool, '\' expects a value of data type \'', sep = '', end = '', file = sys.stderr)
-    print(dataType, '\'.  Given \'', value, '\'', sep = '', file = sys.stderr)
     self.error = True
 
   # If the data type specified in the configuration file is unknown, throw an error.
@@ -293,12 +471,6 @@ class errors:
     for json in io.jsonPipelineFiles: print(pad, "\t", json, sep = '', file = sys.stderr)
     self.error = True
 
-  # If attempting to perform multiple runs and no file is supplied, throw an error.
-  def missingFileForMultipleRuns(self, newLine, pad):
-    if newLine: print(file = sys.stderr)
-    print(pad, 'ERROR: File containing information for multiple runs \'--multiple-runs (-mr)\' is not supplied.', sep = '', file = sys.stderr)
-    self.error = True
-
   # Missing pipeline json configuration file.
   def missingFile(self, newLine, pad, filename):
     if newLine: print(file = sys.stderr)
@@ -322,13 +494,6 @@ class errors:
     print(pad, 'ERROR: Please check the entries in the data list.', sep = '', file = sys.stderr)
     self.error = True
 
-  # If a file has an unexpected extension, flag the problem.
-  def extensionError(self, newLine, pad, option, filename, extension):
-    if newLine: print(file = sys.stderr)
-    print(pad, 'ERROR: File \'', filename, '\' does not end with the expected extension \'', extension, '\'', sep = '', end = '', file = sys.stderr)
-    print(pad, ' (option: \'', option, '\')', sep = '', file = sys.stderr)
-    self.error = True
-  
   # Terminate the script after errors have been found.
   def terminate(self):
     print(file = sys.stderr)
@@ -353,11 +518,6 @@ class errors:
   def missingPipelineJsonFile(self, jsonFile):
     print("ERROR: Unable to find pipeline configuration file: ", jsonFile, sep = "", file = sys.stderr)
 
-  def unknownTool(self, task, tool):
-    print("\tERROR: Tool name '", task, "' is associated with tool '", tool, "' but this tool", sep = "", end = "", file = sys.stderr)
-    print(" is not available in the gkno package.", file = sys.stderr)
-    self.error = True
-
   # If the pipeline configuration contains an option that is not in the tool
   # configuration file, there is an error in the linkage section of the pipeline
   # configuration file.
@@ -370,22 +530,6 @@ class errors:
   # If an expected json block is missing from the file.
   def missingJsonEntry(self, value, tool):
     print("\t\tERROR: The json file for tool '", tool, "' is missing the entry '", value, "'.", sep = '', file = sys.stderr)
-    self.error = True
-
-  # A tool name in the pipeline configuration file is not associated
-  # with an actual tool name.
-  def unknownToolName(self, task):
-    print("\t\tERROR: Tool name '", task, "' in the pipeline configuration is not associated", sep = "", end = "", file = sys.stderr)
-    print(" with a tool available to gkno.", file = sys.stderr)
-    print("\t\tERROR: Check that the tool appears in the workflow names block of the configuration file.", sep = "", file = sys.stderr)
-    self.error = True
-
-  # Each tool name appearing in the pipeline configuration file is required
-  # to be unique to avoid ambiguous linkages.  If repeated names are discovered
-  # give an error and terminate.
-  def repeatedTool(self, task):
-    print("\t\tERROR: tool name '", task, "' appears multiple times in the pipeline configuration file.", sep = "", file = sys.stderr)
-    print("\t\tERROR: Ensure that all tool names are unique.", file = sys.stderr)
     self.error = True
 
   # Unknown command in the tools dependency list.

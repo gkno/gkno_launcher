@@ -5,6 +5,9 @@ from __future__ import print_function
 import errors
 from errors import *
 
+import helpClass
+from helpClass import *
+
 import json
 import os
 import sys
@@ -91,7 +94,7 @@ class pipeline:
       self.information['arguments']['--multiple-runs']['default']             = ''
 
   # Print to screen information about the selected pipeline.
-  def printPipelineInformation(self, tl):
+  def printPipelineInformation(self, tl, gknoHelp):
     er = errors()
 
     if tl.toolArguments['pipeline']['--verbose']:
@@ -100,11 +103,11 @@ class pipeline:
       length  = 0
       for task in self.information['workflow']:
         if task not in self.information['tools']:
-          er.unknownToolName(task)
+          er.unassociatedTask(False, 0, task)
           er.terminate()
         tool = self.information['tools'][task]
         if tool not in tl.toolInfo:
-          er.unknownTool(task, tool)
+          er.unknownTool(False, 0, task, tool)
           er.terminate()
   
         text   = task + ' (' + tool + '):'
@@ -117,7 +120,7 @@ class pipeline:
         tool        = self.information['tools'][task]
         text        = task + ' (' + tool + '):'
         description = tl.toolInfo[tool]['description'] if 'description' in tl.toolInfo[tool] else 'No description'
-        print("\t%-*s%-*s" % (length, text, 1, description), file = sys.stdout)
+        gknoHelp.writeFormattedText(text, description, length, 1, '')
       print(file = sys.stdout)
 
   # Modify pipeline information to handle an individual tool.
@@ -140,6 +143,9 @@ class pipeline:
     er             = errors()
     linkToTask     = ''
     linkToArgument = ''
+    newLine        = True if tl.toolArguments['pipeline']['--verbose'] else False
+    noTab          = 2 if tl.toolArguments['pipeline']['--verbose'] else 0
+    
     if tl.toolArguments['pipeline']['--verbose']:
       print('Setting up pipeline defaults...', end = '', file = sys.stdout)
       sys.stdout.flush()
@@ -152,7 +158,7 @@ class pipeline:
       # will be 'pipeline', otherwise it will point to the individual tool.  For
       # tool commands, overwrite the current value stored.
       if 'link to this task' not in self.information['arguments'][argument]:
-        er.optionAssociationError(True, "\t\t", 'link to this task', argument, 'pipeline')
+        er.optionAssociationError(newLine, noTab, 'link to this task', argument, 'pipeline')
         er.terminate()
       else: task = self.information['arguments'][argument]['link to this task']
       default = ''
@@ -172,13 +178,13 @@ class pipeline:
         tool = self.information['tools'][task] if task != 'pipeline' else ''
 
         if 'link to this argument' not in self.information['arguments'][argument]:
-          er.optionAssociationError(True, "\t\t", 'link to this argument', argument, 'pipeline')
+          er.optionAssociationError(newLine, noTab, 'link to this argument', argument, 'pipeline')
           er.terminate()
         else: linkToArgument = self.information['arguments'][argument]['link to this argument']
 
         # Check that the argument is valid.
         if linkToArgument not in tl.toolArguments[task]:
-          er.incorrectArgumentInPipelineConfigurationFile("\n\t", task, argument, linkToArgument)
+          er.incorrectArgumentInPipelineConfigurationFile(newLine, noTab, task, argument, linkToArgument)
           er.terminate()
 
         if default != '': tl.toolArguments[task][linkToArgument] = default
@@ -200,6 +206,8 @@ class pipeline:
   # Construct filenames using the instructions in the pipeline configuration file.
   def constructFileNameFromJson(self, tl, task, tool, argument):
     er = errors()
+    newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
+    noTab   = 3 if tl.toolArguments['pipeline']['--verbose'] else 0
 
     constructBlock = self.information['construct filenames'][task][argument]
     basename       = constructBlock['filename root'] if 'filename root' in constructBlock else ''
@@ -306,7 +314,7 @@ class pipeline:
     er            = errors()
     linkArguments = {}
     if tl.toolArguments['pipeline']['--verbose']:
-      print("\t\tChecking linkage to other tools in the pipeline...", end = '', file = sys.stdout)
+      print('          Checking linkage to other tools in the pipeline...', end = '', file = sys.stdout)
       sys.stdout.flush()
 
     # Work through each argument in turn and identify all of the input and output files.
@@ -357,15 +365,17 @@ class pipeline:
   # value accordingly.
   def checkLinkage(self, tl, task, tool, argument):
     er = errors()
+    newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
+    noTab   = 2 if tl.toolArguments['pipeline']['--verbose'] else 0
 
     targetToolName = ''
     try: targetToolName = self.information['linkage'][task][argument]['link to this task']
-    except: er.optionAssociationError(True, "\t\t", 'link to this task', argument, tool)
+    except: er.optionAssociationError(newLine, noTab, 'link to this task', argument, tool)
     if er.error: er.terminate()
 
     targetArgument = ''
     try: targetArgument = self.information['linkage'][task][argument]['link to this argument']
-    except: er.optionAssociationError(True, "\t\t", 'link to this argument', argument, tool)
+    except: er.optionAssociationError(newLine, noTab, 'link to this argument', argument, tool)
     if er.error: er.terminate()
 
     # Check that the targetToolName and the targetOption are valid.

@@ -36,7 +36,7 @@ class files:
 
     # If the json file has a problem, terminate the script with an error.
     if er.error:
-      er.jsonOpenError(True, '', exc_value)
+      er.jsonOpenError(True, 0, exc_value, filename)
       er.terminate()
 
     return inputData
@@ -52,41 +52,6 @@ class files:
     # Find configuration files for pipelines.
     for files in os.listdir(path + "pipes"):
       if files.endswith('.json'): self.jsonPipelineFiles[files] = True
-
-  # From the list of json files, popluate a hash table with the names
-  # and descriptions of the tools.
-  def getToolDescriptions(self, tl, pl, sourcePath, verbose):
-    er = errors()
-
-    if verbose and tl.toolArguments['pipeline']['--verbose']: verbose = True
-
-    if verbose:
-      print("Reading in tool configuration files...", file = sys.stdout)
-      sys.stdout.flush()
-    for toolFile in self.jsonToolFiles:
-      if verbose:
-        print("\t", toolFile, '...', sep = '', end = '', file = sys.stdout)
-        sys.stdout.flush()
-      jsonData = open(sourcePath + '/' + toolFile)
-      try: toolData = json.load(jsonData)
-      except:
-        er.error = True
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-
-      # If the json file has a problem, terminate the script with an error.
-      if er.error:
-        er.jsonOpenError(True, "\t\t", exc_value)
-        er.terminate()
-      else:
-        for tool in toolData['tools']:
-          tl.toolInfo[tool] = toolData['tools'][tool]
-        if verbose:
-          print("done.", file = sys.stdout)
-          sys.stdout.flush()
-
-    if verbose:
-      print(file = sys.stdout)
-      sys.stdout.flush()
 
   # If a pipeline is being run, search for the corresponding config file.
   def getPipelineConfigurationFile(self, gknoHelp, pl, path):
@@ -116,19 +81,54 @@ class files:
     jsonData = open(self.jsonPipelineFile)
     try: pl.information = json.load(jsonData)
     except:
-      if verbose: print(file = sys.stdout)
       er.error = True
       exc_type, exc_value, exc_traceback = sys.exc_info()
 
     # If the json file has a problem, terminate the script with an error.
     if er.error:
-      er.jsonOpenError(True, "\t", exc_value)
+      er.jsonOpenError(True, 1, exc_value, self.jsonPipelineFile)
       er.terminate()
     if verbose:
-      print("done\n", file = sys.stdout)
+      print('done.', file = sys.stdout)
+      print(file = sys.stdout)
       sys.stdout.flush()
 
     return 'pipe/' + pl.pipelineName
+
+  # From the list of json files, popluate a hash table with the names
+  # and descriptions of the tools.
+  def getToolDescriptions(self, tl, pl, sourcePath, verbose):
+    er = errors()
+
+    if verbose and tl.toolArguments['pipeline']['--verbose']: verbose = True
+
+    if verbose:
+      print('Reading in tool configuration files...', file = sys.stdout)
+      sys.stdout.flush()
+    for toolFile in self.jsonToolFiles:
+      if verbose:
+        print('     ', toolFile, '...', sep = '', end = '', file = sys.stdout)
+        sys.stdout.flush()
+      jsonData = open(sourcePath + '/' + toolFile)
+      try: toolData = json.load(jsonData)
+      except:
+        er.error = True
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+
+      # If the json file has a problem, terminate the script with an error.
+      if er.error:
+        er.jsonOpenError(True, 2, exc_value, toolFile)
+        er.terminate()
+      else:
+        for tool in toolData['tools']:
+          tl.toolInfo[tool] = toolData['tools'][tool]
+        if verbose:
+          print("done.", file = sys.stdout)
+          sys.stdout.flush()
+
+    if verbose:
+      print(file = sys.stdout)
+      sys.stdout.flush()
 
   # The set of tools and the associated parameters are set
   # in the config file, so build up the scripts to run the
@@ -141,7 +141,7 @@ class files:
     self.filename       = os.path.abspath(filename)
   
     if tl.toolArguments['pipeline']['--verbose']:
-      print("Generating Makefile...", file = sys.stdout)
+      print("Generating Makefile...", end = '', file = sys.stdout)
       sys.stdout.flush()
     print('### gkno Makefile', file = self.makeFilehandle)
     print(file = self.makeFilehandle)
@@ -211,6 +211,7 @@ class files:
     # Close the Makefile.
     self.makeFilehandle.close()
     if tl.toolArguments['pipeline']['--verbose']:
+      print('done.', file = sys.stdout)
       print(file = sys.stdout)
       sys.stdout.flush()
 
@@ -346,7 +347,9 @@ class files:
   def generateCommand(self, tl, pl, path, task, tool, lineStart):
     er        = errors()
     delimiter = tl.argumentDelimiters[tool]
-  
+    newLine   = True if tl.toolArguments['pipeline']['--verbose'] else False
+    noTab     = 2 if tl.toolArguments['pipeline']['--verbose'] else 0
+
     # Print out the command line.
     print(lineStart, end = '', file = self.makeFilehandle)
     if 'precommand' in tl.toolInfo[tool]:
@@ -362,9 +365,25 @@ class files:
     # command line 'mv A B', where A and B are filenames that have to appear
     # in the correct order.
     argumentOrder = []
+    argumentDict  = {}
+    for argument in tl.toolInfo[tool]['arguments']: argumentDict[argument] = True
     if 'argument order' in tl.toolInfo[tool]:
       for argument in tl.toolInfo[tool]['argument order']:
-        if argument in tl.toolArguments[task]: argumentOrder.append(argument)
+        if argument in tl.toolArguments[task]:
+          argumentOrder.append(argument)
+          del(argumentDict[argument])
+        else:
+          er.unknownArgumentInArgumentOrder(newLine, noTab, task, tool, argument)
+          er.terminate()
+
+      # Having stepped through all of the arguments included in the ordered list, check
+      # if there are any arguments left in the argumentDict dictionary.  This dictionary
+      # was built from all of the arguments for this tool and if it is not empty, then
+      # some of the arguments for this tool are not included in the list and thus would
+      # not be included in the command line.  Terminate with an error if this is the case,
+      if len(argumentDict) != 0:
+        er.missingArgumentsInOrderList(newLine, noTab, task, tool, argumentDict)
+        er.terminate()
     else:
       for argument in tl.toolArguments[task]: argumentOrder.append(argument)
  
@@ -379,7 +398,7 @@ class files:
         # needs to contain a 'json block' argument.  This tells the script the name of
         # the block in the json file from which to extract parameters.
         if 'json block' not in pl.information['linkage'][task]['json parameters']:
-          er.optionAssociationError('json block', 'json parameters', 'pipeline')
+          er.optionAssociationError(newLine, noTab, 'json block', 'json parameters', 'pipeline')
           er.terminate()
         else:
          jsonBlock = pl.information['linkage'][task]['json parameters']['json block']

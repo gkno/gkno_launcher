@@ -37,6 +37,13 @@ class tools:
   def checkForRequiredFields(self):
     er         = errors()
     firstError = True
+    verbose    = True if self.toolArguments['pipeline']['--verbose'] else False
+    newLine    = True if verbose else False
+    noTab      = 1 if verbose else 0
+
+    if verbose:
+      print('Checking configuration files contain required fields...', end = '', file = sys.stdout)
+      sys.stdout.flush()
 
     for task in self.toolInfo:
 
@@ -72,37 +79,45 @@ class tools:
 
         # Check that the 'input' field is present...
         value = self.toolInfo[task]['arguments'][argument]['input'] if 'input' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'true') and (value != 'false'):  er.missingFieldForTool(newLine, '', task, argument, 'input', value)
+        if (value != 'true') and (value != 'false'):  er.missingFieldForTool(newLine, noTab, task, argument, 'input', value)
 
         # output...
         value = self.toolInfo[task]['arguments'][argument]['output'] if 'output' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, '', task, argument, 'output', value)
+        if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, noTab, task, argument, 'output', value)
 
         # required...
         value = self.toolInfo[task]['arguments'][argument]['required'] if 'required' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, '', task, argument, 'required', value)
+        if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, noTab, task, argument, 'required', value)
 
         # dependent...
         value = self.toolInfo[task]['arguments'][argument]['dependent'] if 'dependent' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, '', task, argument, 'dependent', value)
+        if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, noTab, task, argument, 'dependent', value)
 
         # type...
         value = self.toolInfo[task]['arguments'][argument]['type'] if 'type' in self.toolInfo[task]['arguments'][argument] else ''
         if (value != 'string') and (value != 'flag') and (value != 'integer') and (value != 'float'): 
-          er.missingFieldForTool(newLine, '', task, argument, 'type', value)
+          er.missingFieldForTool(newLine, noTab, task, argument, 'type', value)
 
         # If the resource field is missing, assume that it isn't a resource file.
         value = self.toolInfo[task]['arguments'][argument]['resource'] if 'resource' in self.toolInfo[task]['arguments'][argument] else ''
         if value == '': self.toolInfo[task]['arguments'][argument]['resource'] == 'false'
 
+    if er.error: er.terminate()
+    if verbose:
+      print('done.', file = sys.stdout)
+      print(file = sys.stdout)
+      sys.stdout.flush()
+
   # Loop over each tool in the pipeline and set up a hash of hashes.
   # For each tool, the set of allowed options along with default values
   # if defined.
   def setupToolOptions(self, cl, pl):
-    er = errors()
+    er      = errors()
+    newLine = True if self.toolArguments['pipeline']['--verbose'] else False
+    noTab   = 2 if self.toolArguments['pipeline']['--verbose'] else 0
 
     if self.toolArguments['pipeline']['--verbose']:
-      print("Setting up tool defaults...", file = sys.stdout)
+      print('Setting up tool defaults...', file = sys.stdout)
       sys.stdout.flush()
     for task in pl.information['workflow']:
 
@@ -111,33 +126,24 @@ class tools:
       # This ensures that all tools can be anambiguously linked with any of the
       # others.
       if task in self.toolArguments:
-        er.repeatedTool(task)
+        er.repeatedTool(False, noTab, task)
         er.terminate()
 
       # Parse new tools.
       else:
         tool = pl.information['tools'][task]
         if self.toolArguments['pipeline']['--verbose']:
-          print("\t", tool, " (", task, ")...", sep = '', end = '', file = sys.stdout)
+          print('     ', tool, ' (', task, ')...', sep = '', end = '', file = sys.stdout)
           sys.stdout.flush()
         self.toolArguments[task] = {}
         for argument in self.toolInfo[tool]['arguments']:
 
           # If a default value for the argument is assigned, set this value in the data structure.
           default = self.toolInfo[tool]['arguments'][argument]['default'] if 'default' in self.toolInfo[tool]['arguments'][argument] else ''
-
-          # Determined the required data type.
-          if 'type' not in self.toolInfo[tool]['arguments'][argument]:
-            er.toolArgumentsError('type', tool, argument)
-            er.terminate()
-
-          # Check if a value for this particular option is required.
-          if 'required' not in self.toolInfo[tool]['arguments'][argument]:
-            er.toolArgumentsError('required', tool, argument)
-            er.terminate()
           self.toolArguments[task][argument] = default
+
         if self.toolArguments['pipeline']['--verbose']:
-          print("done.", file = sys.stdout)
+          print('done.', file = sys.stdout)
           sys.stdout.flush()
     if self.toolArguments['pipeline']['--verbose']:
       print(file = sys.stdout)
@@ -181,10 +187,12 @@ class tools:
   # if any of the input files have 'use for filenames' set to true.  If so, use this
   # filename to build the output (changing the extension as required).
   def constructFilenames(self, tl, pl, task, tool):
-    er = errors()
+    er      = errors()
+    newLine = True if self.toolArguments['pipeline']['--verbose'] else False
+    noTab   = 2 if self.toolArguments['pipeline']['--verbose'] else 0
 
     if self.toolArguments['pipeline']['--verbose']:
-      print("\t\tConstructing filenames...", end = '', file = sys.stdout)
+      print('          Constructing filenames...', end = '', file = sys.stdout)
       sys.stdout.flush()
 
     # First identify the input and output files and how their names should be constructed.
@@ -248,6 +256,7 @@ class tools:
           else:
             er.unknownFilenameConstructor(True, "\t\t", task, tool, outputFile)
             er.terminate()
+
     if self.toolArguments['pipeline']['--verbose']:
       print('done.', file = sys.stdout)
       sys.stdout.flush()
@@ -256,7 +265,9 @@ class tools:
   # requested input filename, remove the extension and replace with the required
   # extension for this output file.
   def constructFilenameFromInput(self, tl, pl, task, tool, outputFile, argument):
-    er = errors()
+    er      = errors()
+    newLine = True if self.toolArguments['pipeline']['--verbose'] else False
+    noTab   = 3 if self.toolArguments['pipeline']['--verbose'] else 0
 
     # If the output filename is to be generated from an input file, but there are
     # multiple files, use the first file in the list for generating the output
@@ -283,7 +294,7 @@ class tools:
             foundArgument = True
             break
       if not foundArgument: pipelineArgument = ''
-      er.noInputFilenameForFilenameConstruction(True, "\t\t\t", task, tool, outputFile, argument, pipelineArgument, shortform, tl)
+      er.noInputFilenameForFilenameConstruction(newLine, noTab, task, tool, outputFile, argument, pipelineArgument, shortform, tl)
       er.terminate()
     else:
       inputExtension = ''
@@ -366,7 +377,7 @@ class tools:
     for task in pl.information['workflow']:
       tool = pl.information['tools'][task]
       if self.toolArguments['pipeline']['--verbose']:
-        print("\t", task, '...', sep = '', end = '', file = sys.stdout)
+        print('     ', task, '...', sep = '', end = '', file = sys.stdout)
         sys.stdout.flush()
 
       self.dependencies[task] = []
@@ -423,7 +434,7 @@ class tools:
                 else: self.dependencies[task].append(value)
 
       if self.toolArguments['pipeline']['--verbose']:
-        print("done.", file = sys.stdout)
+        print('done.', file = sys.stdout)
         sys.stdout.flush()
     if self.toolArguments['pipeline']['--verbose']:
       print(file = sys.stdout)
@@ -439,7 +450,10 @@ class tools:
   # included at the beginning of the tools configuration files.  Parse these
   # additional output files (if there are any) and add to the outputs string.
   def determineAdditionalFiles(self, pl):
-    er = errors()
+    er      = errors()
+    newLine = True if self.toolArguments['pipeline']['--verbose'] else False
+    noTab   = 2 if self.toolArguments['pipeline']['--verbose'] else 0
+
     if self.toolArguments['pipeline']['--verbose']:
       print('Determining additional dependencies and output files...', file = sys.stdout)
       sys.stdout.flush()
@@ -449,7 +463,7 @@ class tools:
       if task not in self.outputs: self.outputs[task] = []
       tool = pl.information['tools'][task]
       if self.toolArguments['pipeline']['--verbose']:
-        print("\t", task, " (", tool, ")...", sep = '', end = '', file = sys.stdout)
+        print('     ', task, ' (', tool, ')...', sep = '', end = '', file = sys.stdout)
         sys.stdout.flush()
       if 'additional files' in self.toolInfo[tool]:
 
@@ -469,24 +483,18 @@ class tools:
             try: fileType = argument['type']
             except: er.error = True
             if er.error:
-              print(file = sys.stdout)
-              sys.stdout.flush()
-              er.optionAssociationError('type', 'additional files\' -> \'from input arguments', task)
+              er.optionAssociationError(newLine, noTab, 'type', 'additional files\' -> \'from input arguments', task)
               er.terminate()
 
             try: command = argument['command']
             except: er.error = True
             if er.error:
-              print(file = sys.stdout)
-              sys.stdout.flush()
-              er.optionAssociationError('command', 'additional files\' -> \'from input arguments', task)
+              er.optionAssociationError(newLine, noTab, 'command', 'additional files\' -> \'from input arguments', task)
               er.terminate()
 
             try: filename = self.toolArguments[task][command]
             except: er.error = True
             if er.error:
-              print(file = sys.stdout)
-              sys.stdout.flush()
               er.missingCommand(task, tool, command)
               er.terminate()
               
@@ -501,9 +509,7 @@ class tools:
                 try: extension = argument['output extension']
                 except: er.error = True
                 if er.error:
-                  print(file = sys.stdout)
-                  sys.stdout.flush()
-                  er.optionAssociationError('output extension', 'additional files\' -> \'from input arguments', task)
+                  er.optionAssociationError(newLine, noTab, 'output extension', 'additional files\' -> \'from input arguments', task)
                   er.terminate()
                 filename += '.' + extension
 
@@ -516,7 +522,7 @@ class tools:
               er.terminate()
 
       if self.toolArguments['pipeline']['--verbose']:
-        print("done.", file = sys.stdout)
+        print('done.', file = sys.stdout)
         sys.stdout.flush()
     if self.toolArguments['pipeline']['--verbose']:
       print(file = sys.stdout)

@@ -58,20 +58,7 @@
           "dependent" : "true",
           "type" : "string",
           "extension" : "bam",
-          "use for filenames" : "true",
-          "allow multiple definitions" : "true"
-        },
-        "-in-list" : {
-          "description" : "the input BAM file list.",
-          "input" : "true",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "true",
-          "type" : "string",
-          "extension" : "bam",
-          "list of input files" : "true",
-          "apply by repeating this argument" : "-in"
+          "use for filenames" : "true"
         },
         "-out" : {
           "description" : "the output BAM file. Required input.",
@@ -260,15 +247,14 @@
           "dependent" : "false",
           "type" : "flag"
         },
-        "--out" : {
+        "-out" : {
           "description" : "the output stats file.",
-          "input" : "false",
           "output" : "true",
+          "input" : "false",
           "required" : "true",
           "resource" : "false",
           "dependent" : "false",
           "type" : "string",
-          "short form argument" : "-o",
           "extension" : "stats",
           "modify argument name on command line" : "stdout"
         }
@@ -276,7 +262,7 @@
       "argument order" : [
         "-in",
         "-insert",
-        "--out"
+        "-out"
       ]
     }
   }
