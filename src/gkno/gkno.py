@@ -28,7 +28,7 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.22"
+__version__ = "0.23"
 __date__ = "September 2012"
 
 def main():
@@ -278,7 +278,7 @@ def main():
     pl.determineToolWriteOrder()
   
     # Generate scripts to run the selected pipeline.
-    io.generateMakefile(tl, pl, sourcePath, io.makefileNames[-1])
+    io.generateMakefile(tl, pl, sourcePath, io.makefileNames[-1], makefileID)
 
     # Terminate the loop when all the required Makefiles have been produced.
     if not pl.hasMultipleRuns or len(pl.multipleRunsInputArguments) == 0: break
@@ -297,6 +297,8 @@ def main():
     print(file = sys.stdout)
     for makefile in io.makefileNames:
       print('Executing makefile: ', makefile, sep = '', file = sys.stdout)
+      print(file = sys.stdout)
+      sys.stdout.flush()
       execute = 'make --file ' + makefile
       success = subprocess.call(execute.split())
       if success == 0: print("\ngkno completed tasks successfully.", file = sys.stdout)

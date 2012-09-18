@@ -23,7 +23,7 @@
           "input" : "false",
           "output" : "true",
           "resource" : "false",
-          "required" : "false",
+          "required" : "true",
           "dependent" : "true",
           "type" : "string",
           "extension" : "dat"
@@ -88,7 +88,7 @@
           "description" : "sets the sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
           "input" : "false",
           "output" : "false",
-          "required" : "false",
+          "required" : "true",
           "resource" : "false",
           "dependent" : "false",
           "type" : "string"
@@ -98,7 +98,7 @@
           "input" : "false",
           "output" : "true",
           "resource" : "false",
-          "required" : "false",
+          "required" : "true",
           "dependent" : "false",
           "type" : "string",
           "extension" : "mkb"
@@ -129,7 +129,7 @@
           "input" : "false",
           "output" : "true",
           "resource" : "false",
-          "required" : "false",
+          "required" : "true",
           "dependent" : "false",
           "type" : "string",
           "stub" : "true",

@@ -98,6 +98,10 @@
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-fq2"
       },
+      "-st" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-st"
+      },
       "json parameters" : {
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-out",
@@ -224,7 +228,8 @@
       "link to this task" : "build-jump-database",
       "link to this argument" : "-hs",
       "type" : "integer",
-      "short form argument" : "-hs"
+      "short form argument" : "-hs",
+      "default" : "10"
     },
     "--fastq" : {
       "link to this task" : "generate-mosaik-parameters",
@@ -263,7 +268,8 @@
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-st",
       "short form argument" : "-st",
-      "type" : "string"
+      "type" : "string",
+      "default" : "illumina"
     },
     "--median-fragment-length" : {
       "link to this task" : "build-read-archive",

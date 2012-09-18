@@ -4,10 +4,11 @@
       "description" : "Determine MosaikAligner parameters based on read and fragment length",
       "path" : "premo/bin",
       "executable" : "premo",
+      "resource path" : "tutorial/current",
       "help" : "--help|-h",
       "arguments" : {
         "-fq1" : {
-          "description" : "the input fastq file (first mate)",
+          "description" : "The input fastq file (first mate)",
           "input" : "true",
           "output" : "false",
           "required" : "true",
@@ -17,10 +18,10 @@
           "extension" : "fq|fastq|fq.gz|fastq.gz"
         },
         "-fq2" : {
-          "description" : "the input fastq file (second mate)",
+          "description" : "The input fastq file (second mate)",
           "input" : "true",
           "output" : "false",
-          "required" : "true",
+          "required" : "false",
           "resource" : "false",
           "dependent" : "true",
           "type" : "string",
@@ -37,7 +38,7 @@
           "extension" : "dat"
         },
         "-jmp" : {
-          "description" : "stub for Mosaik jump table files",
+          "description" : "Stub for Mosaik jump table files",
           "input" : "true",
           "output" : "false",
           "required" : "true",
@@ -52,7 +53,7 @@
           ]
         },
         "-mosaik" : {
-          "description" : "path to Mosaik bin",
+          "description" : "Path to Mosaik bin",
           "input" : "false",
           "output" : "false",
           "required" : "true",
@@ -62,7 +63,7 @@
           "default" : "$(TOOL_BIN)/MOSAIK/bin"
         },
         "-out" : {
-          "description" : "output json file",
+          "description" : "Output json file",
           "input" : "false",
           "output" : "true",
           "required" : "true",
@@ -73,7 +74,7 @@
           "default" : "$(MAKEFILE_ID)_mosaikParameters.json"
         },
         "-annse" : {
-          "description" : "neural network file (single end)",
+          "description" : "Neural network file (single end)",
           "input" : "true",
           "output" : "false",
           "resource" : "true",
@@ -84,7 +85,7 @@
           "default" : "se.100.005.ann"
         },
         "-annpe" : {
-          "description" : "neural network file (paired end)",
+          "description" : "Neural network file (paired end)",
           "input" : "true",
           "output" : "false",
           "resource" : "true",
@@ -95,7 +96,7 @@
           "default" : "pe.100.01.ann"
         },
         "-tmp" : {
-          "description" : "scratch directory for generated files",
+          "description" : "Scratch directory for generated files",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
@@ -105,7 +106,7 @@
           "default" : "$(PWD)/$(MAKEFILE_ID)_tmp"
         },
         "-st" : {
-          "description" : "sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
+          "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
@@ -115,7 +116,7 @@
           "default" : "illumina"
         },
         "-n" : {
-          "description" : "# of pairs to align per batch",
+          "description" : "Number of pairs to align per batch",
           "input" : "false",
           "output" : "false",
           "resource" : "false",

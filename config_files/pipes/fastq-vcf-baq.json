@@ -16,7 +16,7 @@
     "filter-bam",
     "realign-gaps",
     "left-align-indels",
-    "BAQ-filter",
+    "baq-filter",
     "variant-call"
   ],
   "tools" : {
@@ -34,14 +34,14 @@
     "filter-bam" : "bamtools-filter",
     "realign-gaps" : "ogap",
     "left-align-indels" : "bamleftalign",
-    "BAQ-filter" : "samtools-calmd",
+    "baq-filter" : "samtools-calmd",
     "variant-call" : "freebayes"
   },
   "tools outputting to stream" : [
     "filter-bam",
     "realign-gaps",
     "left-align-indels",
-    "BAQ-filter"
+    "baq-filter"
   ],
   "construct filenames" : {
     "build-reference" : {
@@ -100,6 +100,10 @@
       "-q2" : {
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-fq2"
+      },
+      "-st" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-st"
       },
       "json parameters" : {
         "link to this task" : "generate-mosaik-parameters",
@@ -203,7 +207,7 @@
         "link to this argument" : "-fr"
       }
     },
-    "BAQ-filter" : {
+    "baq-filter" : {
       "--reference-fasta" : {
         "link to this task" : "build-reference",
         "link to this argument" : "-fr"
@@ -225,8 +229,7 @@
       "link to this task" : "build-reference",
       "link to this argument" : "-fr",
       "short form argument" : "-f",
-      "type" : "string",
-      "default" : "test_genome.fa"
+      "type" : "string"
     },
     "--hash-size" : {
       "description" : "hash-size",
@@ -236,49 +239,59 @@
       "short form argument" : "-hs"
     },
     "--fastq" : {
+      "short form argument" : "-q",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq1",
-      "short form argument" : "-q",
-      "type" : "string"
+      "description" : "The input fastq file (first mate)",
+      "type" : "string",
+      "user entry required" : "true",
+      "default" : "$(RESOURCES)/simulated_reads_1.fq"
     },
     "--fastq2" : {
+      "short form argument" : "-q2",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq2",
-      "short form argument" : "-q2",
-      "type" : "string"
+      "description" : "The input fastq file (second mate)",
+      "type" : "string",
+      "user entry required" : "true",
+      "default" : "$(RESOURCES)/simulated_reads_2.fq"
     },
     "--mosaik-reference" : {
+      "short form argument" : "-r",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-ref",
-      "short form argument" : "-r",
+      "description" : "Mosaik reference archive",
       "type" : "string",
-      "default" : "test_genome.dat"
+      "default" : "$(RESOURCES)/test_genome.dat"
     },
     "--mosaik-jump-database" : {
+      "short form argument" : "-j",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-jmp",
-      "short form argument" : "-j",
+      "description" : "Stub for Mosaik jump table files",
       "type" : "string",
-      "default" : "test_genome"
+      "default" : "$(RESOURCES)/test_genome_15"
     },
     "--batch-size" : {
+      "short form argument" : "-b",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-n",
-      "short form argument" : "-b",
+      "description" : "number of pairs to align per batch",
       "type" : "integer"
     },
     "--sequencing-technology" : {
-      "description" : "sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
+      "short form argument" : "-st",
+      "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-st",
-      "short form argument" : "-st",
       "type" : "string"
     },
     "--median-fragment-length" : {
+      "short form argument" : "-mfl",
       "link to this task" : "build-read-archive",
       "link to this argument" : "-mfl",
-      "type" : "integer",
-      "short form argument" : "-mfl"
+      "description" : "Median fragment length. e.g. 150",
+      "type" : "integer"
     },
     "--out" : {
       "link to this task" : "build-read-archive",

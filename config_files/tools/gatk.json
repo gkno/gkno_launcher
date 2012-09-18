@@ -43,6 +43,7 @@
           "extension" : "sam|bam"
         },
         "--out" : {
+          "short form argument" : "-o",
           "description" : "output covariates table recalibration file",
           "input" : "false",
           "output" : "true",
@@ -50,7 +51,6 @@
           "required" : "true",
           "dependent" : "false",
           "type" : "string",
-          "short form argument" : "-recalFile",
           "extension" : "csv"
         },
         "-knownSites" : {

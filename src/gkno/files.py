@@ -133,7 +133,7 @@ class files:
   # The set of tools and the associated parameters are set
   # in the config file, so build up the scripts to run the
   # pipeline.
-  def generateMakefile(self, tl, pl, sourcePath, filename):
+  def generateMakefile(self, tl, pl, sourcePath, filename, makefileID):
     er = errors()
 
     # Open a script file.
@@ -147,7 +147,8 @@ class files:
     print(file = self.makeFilehandle)
     print('GKNO_PATH=', sourcePath, "/src/gkno", sep = '', file = self.makeFilehandle)
     print('TOOL_BIN=', sourcePath, "/tools", sep = '', file = self.makeFilehandle)
-    resourcesPath = '/resources' if pl.information['resource path'] == '' else '/resources/' + pl.information['resource path']
+    if pl.isPipeline: resourcesPath = '/resources' if pl.information['resource path'] == '' else '/resources/' + pl.information['resource path']
+    else: resourcesPath = '/resources' if 'resource path' not in tl.toolInfo[tl.tool] else '/resources/' + tl.toolInfo[tl.tool]['resource path']
     print('RESOURCES=', sourcePath, resourcesPath, sep = '', file = self.makeFilehandle)
     print('MAKEFILE_ID=', self.filename.split('/')[-1].split('.')[0], sep = '', file = self.makeFilehandle)
     print(file = self.makeFilehandle)
@@ -199,13 +200,26 @@ class files:
       pathList = self.getExecutablePath(tl, pl, taskBlock)
       self.writeOutputsToMakefile(outputBlock)
       self.writeDependenciesToMakefile(dependencyBlock)
-      lineStart = "\t"
+      lineStart    = "\t"
+      firstCommand = True
       for task, path in zip(taskBlock, pathList):
+        if firstCommand: print("\t@echo -e \"Executing task: ", taskBlock[-1], '...\\c"', sep = '', file = self.makeFilehandle)
         tool = pl.information['tools'][task]
-        self.generateCommand(tl, pl, path, task, tool, lineStart)
+        self.generateCommand(tl, pl, path, task, tool, lineStart, firstCommand)
         if task != taskBlock[-1]: lineStart = " \\\n\t| "
-        self.deleteFiles(tl, pl, task)
-      print(file = self.makeFilehandle)
+        firstCommand = False
+      print(' \\', file = self.makeFilehandle)
+
+      # If there are multiple runs of the pipeline, the stdout and stderr from each of
+      # the commands in the makefile will be written out to files of the form
+      # <task>_<ID>.stdout, where ID is an integer
+      if pl.hasMultipleRuns: outputID = str(taskBlock[-1]) + '_' + str(makefileID)
+      else: outputID = str(taskBlock[-1])
+
+      print("\t> ", outputID, '.stdout \\', sep = '', file = self.makeFilehandle)
+      print("\t2> ", outputID, '.stderr', sep = '', file = self.makeFilehandle)
+      print("\t@echo -e \"completed successfully.\"", sep = '', file = self.makeFilehandle)
+      self.deleteFiles(tl, pl, task)
       print(file = self.makeFilehandle)
 
     # Close the Makefile.
@@ -344,7 +358,7 @@ class files:
         print(output, end = endOfLine, file = self.makeFilehandle)
 
   # Generate commands for the makefile
-  def generateCommand(self, tl, pl, path, task, tool, lineStart):
+  def generateCommand(self, tl, pl, path, task, tool, lineStart, firstCommand):
     er        = errors()
     delimiter = tl.argumentDelimiters[tool]
     newLine   = True if tl.toolArguments['pipeline']['--verbose'] else False
@@ -352,6 +366,13 @@ class files:
 
     # Print out the command line.
     print(lineStart, end = '', file = self.makeFilehandle)
+
+    # If this is a single command, or the first command in a set of piped commands, 
+    # start the line with the '@' character.  This will stop make 'echoing' the command
+    # to the screen.
+    if firstCommand: print('@', end = '', file = self.makeFilehandle)
+
+    # Write the command line.
     if 'precommand' in tl.toolInfo[tool]:
       print(tl.toolInfo[tool]['precommand'], ' ', sep = '', end = '', file = self.makeFilehandle)
     if path == '': print(tl.toolInfo[tool]['executable'], sep = '', end = '', file = self.makeFilehandle)
@@ -457,7 +478,7 @@ class files:
       print(file = self.makeFilehandle)
       for argument in pl.deleteFiles[task]:
         for fileToDelete in pl.deleteFiles[task][argument]:
-          print("\trm -f ", fileToDelete, sep = '', file = self.makeFilehandle)
+          print("\t@rm -f ", fileToDelete, sep = '', file = self.makeFilehandle)
 
   # Ping the website with usage information.
   def phoneHome(self, sourcePath):

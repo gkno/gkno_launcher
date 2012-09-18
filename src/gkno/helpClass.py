@@ -203,13 +203,20 @@ class helpClass:
     length = 0
     sortedKeys = sorted(tl.toolInfo[tool]['arguments'])
     for argument in sortedKeys:
-      length = len(argument) if (len(argument) > length) else length
+      if 'short form argument' in tl.toolInfo[tool]['arguments'][argument]:
+        shortForm = tl.toolInfo[tool]['arguments'][argument]['short form argument']
+        newLength = len(argument) + len(shortForm) + 3
+      else: newLength = len(argument)
+      length = newLength if (newLength > length) else length
     length += 5
 
     if len(sRequiredArguments) != 0:
       print('     required arguments:', file = sys.stdout)
       for argument in sRequiredArguments:
-        printArgument = argument + ':'
+        if 'short form argument' in tl.toolInfo[tool]['arguments'][argument]:
+          shortForm = tl.toolInfo[tool]['arguments'][argument]['short form argument']
+          printArgument = argument + ' (' + shortForm + '):'
+        else: printArgument = argument + ':'
         description   = tl.toolInfo[tool]['arguments'][argument]['description']
         dataType      = tl.toolInfo[tool]['arguments'][argument]['type']
         self.writeFormattedText(printArgument, description, length, 2, dataType)
@@ -219,7 +226,10 @@ class helpClass:
     if len(sDefaultArguments) != 0:
       print('     required arguments with set defaults:', file = sys.stdout)
       for argument in sDefaultArguments:
-        printArgument = argument + ':'
+        if 'short form argument' in tl.toolInfo[tool]['arguments'][argument]:
+          shortForm = tl.toolInfo[tool]['arguments'][argument]['short form argument']
+          printArgument = argument + ' (' + shortForm + '):'
+        else: printArgument = argument + ':'
         description   = tl.toolInfo[tool]['arguments'][argument]['description']
         dataType      = tl.toolInfo[tool]['arguments'][argument]['type']
         self.writeFormattedText(printArgument, description, length, 2, dataType)
@@ -229,7 +239,10 @@ class helpClass:
     if len(sOptionalArguments) != 0:
       print('     optional arguments:', file = sys.stdout)
       for argument in sOptionalArguments:
-        printArgument = argument + ':'
+        if 'short form argument' in tl.toolInfo[tool]['arguments'][argument]:
+          shortForm = tl.toolInfo[tool]['arguments'][argument]['short form argument']
+          printArgument = argument + ' (' + shortForm + '):'
+        else: printArgument = argument + ':'
         description   = tl.toolInfo[tool]['arguments'][argument]['description']
         dataType      = tl.toolInfo[tool]['arguments'][argument]['type']
         self.writeFormattedText(printArgument, description, length, 2, dataType)

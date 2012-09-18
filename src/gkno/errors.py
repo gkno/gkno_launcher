@@ -23,7 +23,7 @@ class errors:
         index = line.rfind(' ', 0, maxLength)
         textList.append(line[0:index])
         line = line[index + 1:len(line)]
-      if line != '': textList.append(line)
+      if (line != '') and (line != ' '): textList.append(line)
 
       line = textList.pop(0)
       print("%-*sERROR: %-*s" % ((5 * noTab), '', 1, line), file = sys.stdout)

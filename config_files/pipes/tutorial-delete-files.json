@@ -1,6 +1,9 @@
 {
   "description" : "Simple tutorial pipeline to demonstrate how to delete intermediate files.",
+  "resource path" : "tutorial/current",
   "workflow" : [
+    "build-reference",
+    "build-jump-database",
     "generate-mosaik-parameters",
     "build-read-archive",
     "align",
@@ -8,13 +11,55 @@
     "sort-multiple-bam"
   ],
   "tools" : {
+    "build-reference" : "mosaik-build-reference",
+    "build-jump-database" : "mosaik-jump",
     "generate-mosaik-parameters" : "premo",
     "build-read-archive" : "mosaik-build-fastq",
     "align" : "mosaik-aligner",
     "sort-primary-bam" : "bamtools-sort",
     "sort-multiple-bam" : "bamtools-sort"
   },
+  "construct filenames" : {
+    "build-jump-database" : {
+      "-out" : {
+        "filename root" : "from argument",
+        "get root from task" : "build-reference",
+        "get root from argument" : "-fr",
+        "remove input extension" : "true",
+        "additional text from parameters" : {
+          "order" : [
+            "filename root",
+            "hash-size"
+          ],
+          "hash-size" : {
+            "get parameter from task" : "build-jump-database",
+            "get parameter from argument" : "-hs"
+          }
+        }
+      }
+    }
+  },
   "linkage" : {
+    "build-jump-database" : {
+      "-ia" : {
+        "link to this task" : "build-reference",
+        "link to this argument" : "-oa"
+      }
+    },
+    "generate-mosaik-parameters" : {
+      "-hs" : {
+        "link to this task" : "build-jump-database",
+        "link to this argument" : "-hs"
+      },
+      "-ref" : {
+        "link to this task" : "build-reference",
+        "link to this argument" : "-oa"
+      },
+      "-jmp" : {
+        "link to this task" : "build-jump-database",
+        "link to this argument" : "-out"
+      }
+    },
     "build-read-archive" : {
       "-q" : {
         "link to this task" : "generate-mosaik-parameters",
@@ -23,6 +68,10 @@
       "-q2" : {
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-fq2"
+      },
+      "-st" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-st"
       },
       "json parameters" : {
         "link to this task" : "generate-mosaik-parameters",
@@ -74,59 +123,76 @@
     }
   },
   "arguments" : {
+    "--fasta" : {
+      "link to this task" : "build-reference",
+      "link to this argument" : "-fr",
+      "short form argument" : "-f",
+      "type" : "string",
+      "default" : "test_genome.fa"
+    },
+    "--hash-size" : {
+      "description" : "hash-size",
+      "link to this task" : "build-jump-database",
+      "link to this argument" : "-hs",
+      "type" : "integer",
+      "short form argument" : "-hs",
+      "default" : "10"
+    },
     "--fastq" : {
+      "short form argument" : "-q",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq1",
-      "short form argument" : "-q",
+      "description" : "The input fastq file (first mate)",
       "type" : "string",
       "user entry required" : "true",
       "default" : "$(RESOURCES)/simulated_reads_1.fq"
     },
     "--fastq2" : {
+      "short form argument" : "-q2",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq2",
-      "short form argument" : "-q2",
+      "description" : "The input fastq file (second mate)",
       "type" : "string",
       "user entry required" : "true",
       "default" : "$(RESOURCES)/simulated_reads_2.fq"
     },
     "--mosaik-reference" : {
+      "short form argument" : "-r",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-ref",
-      "short form argument" : "-r",
+      "description" : "Mosaik reference archive",
       "type" : "string",
       "default" : "$(RESOURCES)/test_genome.dat"
     },
     "--mosaik-jump-database" : {
+      "short form argument" : "-j",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-jmp",
-      "short form argument" : "-j",
+      "description" : "Stub for Mosaik jump table files",
       "type" : "string",
       "default" : "$(RESOURCES)/test_genome_15"
     },
     "--batch-size" : {
+      "short form argument" : "-b",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-n",
-      "short form argument" : "-b",
+      "description" : "number of pairs to align per batch",
       "type" : "integer"
     },
     "--sequencing-technology" : {
+      "short form argument" : "-st",
+      "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-st",
-      "short form argument" : "-st",
-      "type" : "string"
+      "type" : "string",
+      "default" : "illumina"
     },
     "--median-fragment-length" : {
+      "short form argument" : "-mfl",
       "link to this task" : "build-read-archive",
       "link to this argument" : "-mfl",
-      "type" : "integer",
-      "short form argument" : "-mfl"
-    },
-    "--out" : {
-      "link to this task" : "build-read-archive",
-      "link to this argument" : "-out",
-      "short form argument" : "-o",
-      "type" : "string"
+      "description" : "Median fragment length. e.g. 150",
+      "type" : "integer"
     }
   },
 

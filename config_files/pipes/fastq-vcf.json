@@ -98,6 +98,10 @@
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-fq2"
       },
+      "-st" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-st"
+      },
       "json parameters" : {
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-out",
@@ -226,47 +230,59 @@
       "short form argument" : "-hs"
     },
     "--fastq" : {
+      "short form argument" : "-q",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq1",
-      "short form argument" : "-q",
-      "type" : "string"
+      "description" : "The input fastq file (first mate)",
+      "type" : "string",
+      "user entry required" : "true",
+      "default" : "$(RESOURCES)/simulated_reads_1.fq"
     },
     "--fastq2" : {
+      "short form argument" : "-q2",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq2",
-      "short form argument" : "-q2",
-      "type" : "string"
+      "description" : "The input fastq file (second mate)",
+      "type" : "string",
+      "user entry required" : "true",
+      "default" : "$(RESOURCES)/simulated_reads_2.fq"
     },
     "--mosaik-reference" : {
+      "short form argument" : "-r",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-ref",
-      "short form argument" : "-r",
-      "type" : "string"
+      "description" : "Mosaik reference archive",
+      "type" : "string",
+      "default" : "$(RESOURCES)/test_genome.dat"
     },
     "--mosaik-jump-database" : {
+      "short form argument" : "-j",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-jmp",
-      "short form argument" : "-j",
-      "type" : "string"
+      "description" : "Stub for Mosaik jump table files",
+      "type" : "string",
+      "default" : "$(RESOURCES)/test_genome_15"
     },
     "--batch-size" : {
+      "short form argument" : "-b",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-n",
-      "short form argument" : "-b",
+      "description" : "number of pairs to align per batch",
       "type" : "integer"
     },
     "--sequencing-technology" : {
-      "description" : "sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
+      "short form argument" : "-st",
+      "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-st",
-      "short form argument" : "-st",
       "type" : "string"
     },
     "--median-fragment-length" : {
+      "short form argument" : "-mfl",
       "link to this task" : "build-read-archive",
       "link to this argument" : "-mfl",
-      "type" : "integer",
-      "short form argument" : "-mfl"
+      "description" : "Median fragment length. e.g. 150",
+      "type" : "integer"
     },
     "--out" : {
       "link to this task" : "build-read-archive",

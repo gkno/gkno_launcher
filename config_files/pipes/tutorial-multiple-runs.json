@@ -73,6 +73,10 @@
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-fq2"
       },
+      "-st" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-st"
+      },
       "json parameters" : {
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-out",
@@ -156,7 +160,8 @@
       "description" : "sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
       "link to this argument" : "-st",
       "short form argument" : "-st",
-      "type" : "string"
+      "type" : "string",
+      "default" : "illumina"
     },
     "--median-fragment-length" : {
       "link to this task" : "build-read-archive",
