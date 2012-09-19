@@ -93,6 +93,22 @@ class pipeline:
       self.information['arguments']['--multiple-runs']['type']                = 'string'
       self.information['arguments']['--multiple-runs']['default']             = ''
 
+    if '--task-stdout' not in self.information:
+      self.information['arguments']['--task-stdout']                        = {}
+      self.information['arguments']['--task-stdout']['description']         = 'Generate a stdout and stderr for each task.'
+      self.information['arguments']['--task-stdout']['link to this task']   = 'pipeline'
+      self.information['arguments']['--task-stdout']['short form argument'] = '-ts'
+      self.information['arguments']['--task-stdout']['type']                = 'bool'
+      self.information['arguments']['--task-stdout']['default']             = False
+
+    if '--instance' not in self.information:
+      self.information['arguments']['--instance']                        = {}
+      self.information['arguments']['--instance']['description']         = 'Generate a stdout and stderr for each task.'
+      self.information['arguments']['--instance']['link to this task']   = 'pipeline'
+      self.information['arguments']['--instance']['short form argument'] = '-is'
+      self.information['arguments']['--instance']['type']                = 'string'
+      self.information['arguments']['--instance']['default']             = ''
+
   # Print to screen information about the selected pipeline.
   def printPipelineInformation(self, tl, gknoHelp):
     er = errors()

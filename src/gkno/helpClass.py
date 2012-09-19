@@ -289,9 +289,22 @@ class helpClass:
 
     # Print out the decription of the pipeline.
     description = pl.information['description'] if 'description' in pl.information else 'No description'
-    print('Description:', file = sys.stdout)
-    self.writeFormattedText('', description, 0, 1, '')
+    print('     Description:', file = sys.stdout)
+    self.writeFormattedText('', description, 0, 2, '')
     print(file = sys.stdout)
+
+    # If this pipeline has different instances, print them to screen.
+    if 'instances' in pl.information:
+      print('     Instances:', file = sys.stdout)
+      length = 0
+      for instance in pl.information['instances']: length = len(instance) if len(instance) > length else length
+      length += 4
+
+      for instance in pl.information['instances']:
+        description = pl.information['instances'][instance]['description'] if 'description' in pl.information['instances'][instance] else \
+        'No description'
+        self.writeFormattedText(instance + ":", description, length, 2, '')
+      print(file = sys.stdout)
 
     # List the options available at the pipeline level.
 
@@ -366,10 +379,10 @@ class helpClass:
     value = valueList.pop(0)
     if dataType == '':
       print("%-*s%-*s%-*s" % ((5 * noTabs), '', length, key, 1, value), file = sys.stdout)
-      for value in valueList:  print('%-*s%-*s%-*s' % ((5 * noTabs), ' ', length, ' ', 1, value), file = sys.stdout)
+      for value in valueList:  print('%-*s%-*s%-*s' % ((5 * noTabs), '', length, '', 1, value), file = sys.stdout)
     else:
       print("%-*s%-*s%-*s%-*s" % ((5 * noTabs), '', length, key, 10, dataType, 1, value), file = sys.stdout)
-      for value in valueList:  print('%-*s%-*s%-*s' % ((5 * noTabs) + 10, ' ', length, ' ', 1, value), file = sys.stdout)
+      for value in valueList:  print('%-*s%-*s%-*s' % ((5 * noTabs) + 10, '', length, '', 1, value), file = sys.stdout)
 
   # If an admin mode's help was requested.
   def adminModeUsage(self, admin):

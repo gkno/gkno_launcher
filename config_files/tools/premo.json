@@ -134,6 +134,15 @@
           "dependent" : "false",
           "type" : "integer",
           "default" : "15"
+        },
+        "-se" : {
+          "description" : "Specify that only single end reads are used as input.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag"
         }
       }
     }

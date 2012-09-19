@@ -215,6 +215,37 @@ class errors:
     self.writeFormattedText(noTab)
     self.error = True
 
+  ##################
+  # Instance errors.
+  ##################
+
+  # If an invalid pipeline instance is requested, throw an error and list the available
+  # instances for this pipeline.
+  def invalidPipelineInstance(self, newLine, noTab, instance, instances):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'A different instance of the pipeline was requested (\'' + instance + '\') but this is not a valid instance.'
+    self.text.append(text)
+    if len(instances) == 0:
+      text = 'There are no additional instances for this pipeline, so the --instance (-is) argument cannot be used.'
+      self.text.append(text)
+    else:
+      text = 'The available instances for this pipeline are:'
+      self.text.append(text)
+      for availableInstance in instances: self.text.append(availableInstance)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  # If the instance argument is not an argument in the pipeline.
+  def invalidArgumentInInstance(self, newLine, noTab, instance, argument):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'The argument \'' + argument + '\' appears in the list of arguments for instance \'' + instance + '\' but this is not ' + \
+    'a valid argument for this pipeline.  Please check the instance arguments in the configuration file.'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
   #############################
   # Errors generating makefile.
   #############################

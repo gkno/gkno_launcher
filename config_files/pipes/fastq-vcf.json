@@ -323,5 +323,16 @@
         "delete after task" : "mark-duplicates"
       }
     }
+  },
+
+  "instances" : {
+    "a" : {
+      "description" : "alternative instance",
+      "--hash-size" : "9"
+    },
+    "bdfjhgdsjfhgdsfj" : {
+      "description" : "alternative instance b",
+      "--hash-size" : "8"
+    }
   }
 }

@@ -202,23 +202,36 @@ class files:
       self.writeDependenciesToMakefile(dependencyBlock)
       lineStart    = "\t"
       firstCommand = True
+
+      # Set the name of the stdout and stderr and output the name of the task to the
+      # file.
+      # If there are multiple runs of the pipeline, the stdout and stderr from each of
+      # the commands in the makefile will be written out to files of the form
+      # <task>_<ID>.stdout, where ID is an integer
+      if tl.toolArguments['pipeline']['--task-stdout']:
+        if pl.hasMultipleRuns: outputID = str(taskBlock[-1]) + '_' + str(makefileID)
+        else: outputID = str(taskBlock[-1])
+        redirect = '>'
+      else:
+        if pl.hasMultipleRuns: outputID = str(self.filename.split('.')[0]) + '_' + str(makefileID)
+        else: outputID = str(self.filename.split('.')[0])
+        redirect = '>' if taskBlock == pl.taskBlocks[0] else '>>'
+
       for task, path in zip(taskBlock, pathList):
         if firstCommand: print("\t@echo -e \"Executing task: ", taskBlock[-1], '...\\c"', sep = '', file = self.makeFilehandle)
         tool = pl.information['tools'][task]
         self.generateCommand(tl, pl, path, task, tool, lineStart, firstCommand)
         if task != taskBlock[-1]: lineStart = " \\\n\t| "
         firstCommand = False
+
+      # Write the stdout and stderr to file.
       print(' \\', file = self.makeFilehandle)
-
-      # If there are multiple runs of the pipeline, the stdout and stderr from each of
-      # the commands in the makefile will be written out to files of the form
-      # <task>_<ID>.stdout, where ID is an integer
-      if pl.hasMultipleRuns: outputID = str(taskBlock[-1]) + '_' + str(makefileID)
-      else: outputID = str(taskBlock[-1])
-
-      print("\t> ", outputID, '.stdout \\', sep = '', file = self.makeFilehandle)
-      print("\t2> ", outputID, '.stderr', sep = '', file = self.makeFilehandle)
+      print("\t", redirect, ' ', outputID, '.stdout \\', sep = '', file = self.makeFilehandle)
+      print("\t2", redirect, ' ', outputID, '.stderr', sep = '', file = self.makeFilehandle)
       print("\t@echo -e \"completed successfully.\"", sep = '', file = self.makeFilehandle)
+
+      # If any intermediate files are marked as to be deleted after this task, put in the
+      # command to delete them.
       self.deleteFiles(tl, pl, task)
       print(file = self.makeFilehandle)
 

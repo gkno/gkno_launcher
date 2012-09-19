@@ -102,7 +102,7 @@ class commandLine:
     # Remove the path, 'pipe' and pipeline name from the command line if gkno is
     # being run in pipeline mode, or the path and tool name if in tool mode, leaving
     # just the user specified arguments.
-    if pl.isPipeline: countMax = 4
+    if pl.isPipeline and (pl.pipelineName != 'run-test'): countMax = 4
     else: countMax = 3
     for i in range(1, countMax):
       if len(sys.argv) != 0: sys.argv.pop(0)
@@ -306,6 +306,8 @@ class commandLine:
     writingOnNewLine     = False
     er                   = errors()
     verbose              = True if tl.toolArguments['pipeline']['--verbose'] else False
+    newLine              = True if verbose else False
+    noTab                = 2 if verbose else 0
 
     if verbose:
       print('Parsing the command line...', end = '', file = sys.stdout)
@@ -414,11 +416,49 @@ class commandLine:
         # If this is the last argument and the argument is not a flag then there is an
         # error.  A value must be set.
         elif (dataType != 'flag') and (isLastArgument or (nextArgument.startswith('-'))):
-          er.missingCommandLineArgumentValue(False, "\t\t", linkToTask, linkToArgument, argument)
+          er.expectedValueForArgument(newLine, noTab, linkToTask, argument, dataType, nextArgument)
           er.terminate()
 
     if verbose:
       if not toolsWrittenToScreen: print('done.', file = sys.stdout)
+      print(file = sys.stdout)
+      sys.stdout.flush()
+
+  # Check if a different instance of the pipeline was requested and if so, set the parameters.
+  def checkInstance(self, tl, pl):
+    er       = errors()
+    newLine  = True if tl.toolArguments['pipeline']['--verbose'] else False
+    noTab    = 1 if tl.toolArguments['pipeline']['--verbose'] else 0
+    instance = tl.toolArguments['pipeline']['--instance']
+
+    if tl.toolArguments['pipeline']['--verbose']:
+      print('Setting parameters for requested instance: \'', instance, '\'...', sep = '', end = '', file = sys.stdout)
+      sys.stdout.flush()
+
+    # Check if the requested instance is valid.
+    instances = []
+    instances = pl.information['instances'].keys() if 'instances' in pl.information else ''
+    if instance not in instances:
+      er.invalidPipelineInstance(newLine, noTab, instance, instances)
+      er.terminate()
+
+    # Get the parameters for this instance.
+    for argument in pl.information['instances'][instance]:
+      if argument == 'description': description = argument
+      else:
+
+        # Check that this is a valid argument.
+        if argument not in pl.information['arguments']:
+          er.invalidArgumentInInstance(newLine, noTab, instance, argument)
+          er.terminate()
+
+        # Get the task and argument that this links to within the pipeline.
+        linkToTask     = pl.information['arguments'][argument]['link to this task']
+        linkToArgument = pl.information['arguments'][argument]['link to this argument']
+        tl.toolArguments[linkToTask][linkToArgument] = pl.information['instances'][instance][argument]
+
+    if tl.toolArguments['pipeline']['--verbose']:
+      print('done.', file = sys.stdout)
       print(file = sys.stdout)
       sys.stdout.flush()
 

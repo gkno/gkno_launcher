@@ -28,7 +28,7 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.23"
+__version__ = "0.24"
 __date__ = "September 2012"
 
 def main():
@@ -157,7 +157,12 @@ def main():
   # executed (unless otherwise stated).
   while True:
     if not pl.isPipeline: pl.pipelineName = tl.tool
-    io.makefileNames.append(pl.pipelineName + '_' + str(makefileID) + '.make')
+
+    # Define the name of the Makefile.  If there are multiple runs, append an intefer
+    # ID to the end of the name.  This will be incremented for each subsequent Makefile.
+    if pl.hasMultipleRuns: io.makefileNames.append(pl.pipelineName + '_' + str(makefileID) + '.make')
+    else: io.makefileNames.append(pl.pipelineName + '.make')
+
     if pl.hasMultipleRuns:
       currentCommandLine = cl.buildCommandLineMultipleRuns(pl)
       tl.toolArguments['pipeline']['--verbose'] = False
@@ -173,7 +178,11 @@ def main():
     if pl.isPipeline: cl.parsePipelineCommandLine(gknoHelp, io, tl, pl, currentCommandLine)
     else: cl.parseToolCommandLine(gknoHelp, io, tl, pl, cl.baseCommandLine, tl.tool, tl.tool, True)
 
-    # I the --export-config has been set, then the user is attempting to create a
+    # Check if an instance of the pipeline was selected.  If so, read the specific
+    # instance parameters.
+    if tl.toolArguments['pipeline']['--instance'] != '': cl.checkInstance(tl, pl)
+
+    # If the --export-config has been set, then the user is attempting to create a
     # new configuration file based on the selected pipeline.  This can only be
     # selected for a pipeline and multiple runs are NOT being performed.
     if tl.toolArguments['pipeline']['--export-config'] != '' and pl.isPipeline and not pl.hasMultipleRuns:
