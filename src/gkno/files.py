@@ -219,14 +219,14 @@ class files:
 
       for task, path in zip(taskBlock, pathList):
         if firstCommand: print("\t@echo -e \"Executing task: ", taskBlock[-1], '...\\c"', sep = '', file = self.makeFilehandle)
-        tool = pl.information['tools'][task]
-        self.generateCommand(tl, pl, path, task, tool, lineStart, firstCommand)
-        if task != taskBlock[-1]: lineStart = " \\\n\t| "
+        tool         = pl.information['tools'][task]
+        usedStdout   = self.generateCommand(tl, pl, path, task, tool, lineStart, firstCommand)
+        if task     != taskBlock[-1]: lineStart = " \\\n\t| "
         firstCommand = False
 
       # Write the stdout and stderr to file.
       print(' \\', file = self.makeFilehandle)
-      print("\t", redirect, ' ', outputID, '.stdout \\', sep = '', file = self.makeFilehandle)
+      if not usedStdout: print("\t", redirect, ' ', outputID, '.stdout \\', sep = '', file = self.makeFilehandle)
       print("\t2", redirect, ' ', outputID, '.stderr', sep = '', file = self.makeFilehandle)
       print("\t@echo -e \"completed successfully.\"", sep = '', file = self.makeFilehandle)
 
@@ -376,6 +376,7 @@ class files:
     delimiter = tl.argumentDelimiters[tool]
     newLine   = True if tl.toolArguments['pipeline']['--verbose'] else False
     noTab     = 2 if tl.toolArguments['pipeline']['--verbose'] else 0
+    useStdout = False
 
     # Print out the command line.
     print(lineStart, end = '', file = self.makeFilehandle)
@@ -475,7 +476,10 @@ class files:
           isList = isinstance(tl.toolArguments[task][argument], list)
           if isList:
             for value in tl.toolArguments[task][argument]:
-              print(" \\\n\t", argument, delimiter, value, sep = '', end = '', file = self.makeFilehandle)
+              if hideArgument: print(" \\\n\t", value, sep = '', end = '', file = self.makeFilehandle)
+              elif useStdout: print(" \\\n\t> ", value, sep = '', end = '', file = self.makeFilehandle)
+              elif useStderr: print(" \\\n\t2> ", value, sep = '', end = '', file = self.makeFilehandle)
+              else: print(" \\\n\t", argument, delimiter, value, sep = '', end = '', file = self.makeFilehandle)
 
           # If the option is given a value, print it out.
           elif tl.toolArguments[task][argument] != '':
@@ -483,6 +487,8 @@ class files:
             elif useStdout: print(" \\\n\t> ", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
             elif useStderr: print(" \\\n\t2> ", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
             else: print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
+
+    return useStdout
 
   # If any intermediate files are marked as to be deleted after this step, add the command
   # to the rule.

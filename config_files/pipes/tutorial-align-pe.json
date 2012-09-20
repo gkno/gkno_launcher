@@ -31,6 +31,10 @@
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-fq2"
       },
+      "-st" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-st"
+      },
       "json parameters" : {
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-out",

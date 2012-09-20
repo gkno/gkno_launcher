@@ -45,6 +45,7 @@
           "resource" : "false",
           "dependent" : "true",
           "type" : "string",
+          "extension" : "stub",
           "stub" : "true",
           "outputs" : [
             "_keys.jmp",

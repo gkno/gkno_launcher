@@ -1,0 +1,43 @@
+{
+  "tools" : {
+    "concatenate-files" : {
+      "description" : "Join multiple files",
+      "path" : "no path",
+      "hide tool" : "true",
+      "executable" : "cat",
+      "help" : "--help|-h",
+      "arguments" : {
+        "--in" : {
+          "short form argument" : "-i",
+          "description" : "Input files to be joined.",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "no extension",
+          "allow multiple definitions" : "true",
+          "modify argument name on command line" : "hide"
+        },
+        "--out" : {
+          "short form argument" : "-o",
+          "description" : "the output concatenated file.",
+          "input" : "false",
+          "output" : "true",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "no extension",
+          "do not contruct filename from input" : "true",
+          "modify argument name on command line" : "stdout"
+        }
+      },
+      "argument order" : [
+        "--in",
+        "--out"
+      ]
+    }
+  }
+}

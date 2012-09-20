@@ -80,10 +80,12 @@ class tools:
         # Check that the 'input' field is present...
         value = self.toolInfo[task]['arguments'][argument]['input'] if 'input' in self.toolInfo[task]['arguments'][argument] else ''
         if (value != 'true') and (value != 'false'):  er.missingFieldForTool(newLine, noTab, task, argument, 'input', value)
+        isInput = True if self.toolInfo[task]['arguments'][argument]['input'] == 'true' else False
 
         # output...
         value = self.toolInfo[task]['arguments'][argument]['output'] if 'output' in self.toolInfo[task]['arguments'][argument] else ''
         if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, noTab, task, argument, 'output', value)
+        isOutput = True if self.toolInfo[task]['arguments'][argument]['output'] == 'true' else False
 
         # required...
         value = self.toolInfo[task]['arguments'][argument]['required'] if 'required' in self.toolInfo[task]['arguments'][argument] else ''
@@ -97,6 +99,12 @@ class tools:
         value = self.toolInfo[task]['arguments'][argument]['type'] if 'type' in self.toolInfo[task]['arguments'][argument] else ''
         if (value != 'string') and (value != 'flag') and (value != 'integer') and (value != 'float'): 
           er.missingFieldForTool(newLine, noTab, task, argument, 'type', value)
+
+        # If the argument is an input or an output file, the extension value must be available,
+        # even if it is blank.
+        if isInput or isOutput:
+          value = self.toolInfo[task]['arguments'][argument]['extension'] if 'extension' in self.toolInfo[task]['arguments'][argument] else 'missing'
+          if value == 'missing': er.missingFieldForTool(newLine, noTab, task, argument, 'extension', '')
 
         # If the resource field is missing, assume that it isn't a resource file.
         value = self.toolInfo[task]['arguments'][argument]['resource'] if 'resource' in self.toolInfo[task]['arguments'][argument] else ''
@@ -232,7 +240,17 @@ class tools:
                   if constructArgument == argument: outputFiles[argument] = 'construct'
                   break
 
-          if argument not in outputFiles: outputFiles[argument] = 'from input'
+          if argument not in outputFiles:
+
+            # If the configuration file specifically states not to construct the filename from
+            # the input file, terminate as the user needs to input the output filename.  Otherwise
+            # use the input file.
+            if 'do not contruct filename from input' in tl.toolInfo[tool]['arguments'][argument]:
+              shortForm = tl.toolInfo[tool]['arguments'][argument]['short form argument'] if 'short form argument' in \
+              tl.toolInfo[tool]['arguments'][argument] else ''
+              er.missingRequiredValue(newLine, noTab, task, tool, argument, shortForm, self, pl)
+              er.terminate()
+            else: outputFiles[argument] = 'from input'
 
     # Now all of the output files have been identified and the method of filename generation
     # determined, build the filenames.

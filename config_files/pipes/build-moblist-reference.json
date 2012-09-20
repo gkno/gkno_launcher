@@ -1,0 +1,80 @@
+{
+  "description" : "Concatenate reference fasta files and enerate Mosaik reference and jump database.",
+  "workflow" : [
+    "merge-fasta",
+    "build-reference",
+    "build-jump-database"
+  ],
+  "tools" : {
+    "merge-fasta" : "concatenate-files",
+    "build-reference" : "mosaik-build-reference",
+    "build-jump-database" : "mosaik-jump"
+  },
+  "construct filenames" : {
+    "build-jump-database" : {
+      "-out" : {
+        "filename root" : "from argument",
+        "get root from task" : "build-reference",
+        "get root from argument" : "-fr",
+        "remove input extension" : "true",
+        "additional text from parameters" : {
+          "order" : [
+            "filename root",
+            "hash-size"
+          ],
+          "hash-size" : {
+            "get parameter from task" : "build-jump-database",
+            "get parameter from argument" : "-hs"
+          }
+        }
+      }
+    }
+  },
+  "linkage" : {
+    "build-reference" : {
+      "-fr" : {
+        "link to this task" : "merge-fasta",
+        "link to this argument" : "--out"
+      }
+    },
+    "build-jump-database" : {
+      "-ia" : {
+        "link to this task" : "build-reference",
+        "link to this argument" : "-oa"
+      }
+    }
+  },
+  "arguments" : {
+    "--fasta" : {
+      "short form argument" : "-f",
+      "link to this task" : "merge-fasta",
+      "link to this argument" : "--in",
+      "type" : "string"
+    },
+    "--out" : {
+      "short form argument" : "-o",
+      "link to this task" : "merge-fasta",
+      "link to this argument" : "--out",
+      "type" : "string"
+    },
+    "--hash-size" : {
+      "description" : "hash-size",
+      "link to this task" : "build-jump-database",
+      "link to this argument" : "-hs",
+      "type" : "integer",
+      "short form argument" : "-hs"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires user to input all input filenames."
+    },
+    "human" : {
+      "description" : "Human instance builds the reference using the 'current' human resources.",
+      "--resource-path" : "$(RESOURCES)/homo_sapiens/current",
+      "--in" : "human_reference_v37_decoys.fa",
+      "--in" : "mobile_element_sequences.fa",
+      "--out" : "human_reference_v37_decoys_moblist.fa"
+    }
+  }
+}

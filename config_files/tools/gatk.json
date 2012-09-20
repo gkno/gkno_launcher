@@ -61,7 +61,7 @@
           "required" : "true",
           "dependent" : "true",
           "type" : "string",
-          "extension" : "vcf"
+          "extension" : "vcf|vcf.gz"
         },
         "--logging_level" : {
           "description" : "minimum level of logging",

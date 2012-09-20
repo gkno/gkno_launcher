@@ -549,6 +549,7 @@ class commandLine:
       # The extension could be a list of allowable extensions separated by pipes.
       # Split the extension on the pipes and check the files extension against
       # all the allowed extensions.
+
       if 'extension' in tl.toolInfo[tool]['arguments'][argument]:
         extensions = tl.toolInfo[tool]['arguments'][argument]['extension'].split('|')
 

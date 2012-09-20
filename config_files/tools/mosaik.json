@@ -133,6 +133,7 @@
           "dependent" : "false",
           "type" : "string",
           "stub" : "true",
+          "extension" : "stub",
           "outputs" : [
             "_keys.jmp",
             "_meta.jmp",
@@ -214,6 +215,7 @@
           "dependent" : "true",
           "type" : "string",
           "stub" : "true",
+          "extension" : "stub",
           "outputs" : [
             "_keys.jmp",
             "_meta.jmp",
@@ -229,6 +231,7 @@
           "resource" : "false",
           "type" : "string",
           "stub" : "true",
+          "extension" : "stub",
           "outputs" : [
             ".bam",
             ".multiple.bam"

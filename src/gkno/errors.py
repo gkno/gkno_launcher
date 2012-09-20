@@ -21,8 +21,17 @@ class errors:
       textList = []
       while len(line) > maxLength:
         index = line.rfind(' ', 0, maxLength)
-        textList.append(line[0:index])
-        line = line[index + 1:len(line)]
+        if index == -1:
+          index = line.find(' ', 0, len(line))
+          if index == -1:
+            textList.append(line)
+            line = ''
+          else:
+            textList.append(line[0:index])
+            line = line[index + 1:len(line)]
+        else:
+          textList.append(line[0:index])
+          line = line[index + 1:len(line)]
       if (line != '') and (line != ' '): textList.append(line)
 
       line = textList.pop(0)
@@ -39,6 +48,7 @@ class errors:
     if newLine: print(file = sys.stderr)
     text = 'File containing information for multiple runs \'--multiple-runs (-mr)\' is not supplied.'
     self.text.append(text)
+    self.writeFormattedText(noTab)
     self.error = True
 
   # If a file has an unexpected extension, flag the problem.

@@ -94,6 +94,7 @@
           "dependent" : "false",
           "type" : "string",
           "if input is stream" : "replace",
+          "extension" : "bam",
           "replace argument with" : {
             "argument" : "--stdin",
             "value" : ""
