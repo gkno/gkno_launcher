@@ -444,7 +444,7 @@ class adminUtils:
               "    minimum version: ", dep.minimumVersion, 
               "    found version: "  , dep.currentVersion, sep="", file=sys.stdout)
       print("", file=sys.stdout)
-    if len(missing) > 0 and len(incompatible) > 0:
+    if len(missing) > 0 or len(incompatible) > 0:
       print("", file=sys.stdout)
       print("gkno (and its components) require a few 3rd-party utilities", file=sys.stdout)
       print("to either build or run properly.  To obtain/update the utilities ", file=sys.stdout)
