@@ -112,7 +112,13 @@ class adminUtils:
     # Cache our starting working directory since we're going to move around
     originalWorkingDir = os.getcwd()
 
-    # FIXME: Check requirements (attempt to access 3rd party dependencies/tools)
+    # Check requirements (attempt to access 3rd party dependencies/tools)
+    print("Checking dependencies...", end="", file=sys.stdout)
+    sys.stdout.flush()
+    if self.checkDependencies():
+      print("done.", file=sys.stdout)
+    else:
+      return False  # error message displayed in subroutine
 
     # Make sure submodules are intialized & up-to-date
     print("Initializing component data...", end="", file=sys.stdout)
@@ -318,7 +324,7 @@ class adminUtils:
       return self.addCurrentRelease(resourceName, "  ")
 
   # -------------------------------------------
-  # Admin mode 'subroutines'
+  # Build/update helper methods
   # -------------------------------------------
 
   def buildTool(self, tool):
@@ -394,6 +400,73 @@ class adminUtils:
         os.remove(outFilename)
         os.remove(errFilename)
     return success
+
+  def checkDependencies(self):
+    
+    # Initialize our error lists
+    missing      = []
+    incompatible = []
+    unknown      = []
+    
+    # For each dependency
+    allChecksPassed = True
+    for dependency in conf.dependencies:
+
+      # If check failed, store in respective list 
+      if not dependency.check():
+        if   dependency.isMissing:        missing.append(dependency)
+        elif dependency.isUnknownVersion: unknown.append(dependency)
+        else:                             incompatible.append(dependency)
+        allChecksPassed = False
+        
+    # Return success if all checks passed
+    if allChecksPassed:
+      return True
+
+    #------------------------------------------------------------------------
+    # Failed
+    #------------------------------------------------------------------------
+
+    # Print helpful message 
+    print("failed.", file=sys.stdout)
+    sys.stdout.flush()
+    print("", file=sys.stdout)
+    
+    if len(missing) > 0:
+      print("    Missing:", file=sys.stdout)
+      for dep in missing:
+        print("        ",dep.name, sep="", file=sys.stdout)
+      print("", file=sys.stdout)
+    if len(incompatible) > 0:
+      print("    Not up-to-date:", file=sys.stdout)
+      for dep in incompatible:
+        print("        ", dep.name, 
+              "    minimum version: ", dep.minimumVersion, 
+              "    found version: "  , dep.currentVersion, sep="", file=sys.stdout)
+      print("", file=sys.stdout)
+    if len(missing) > 0 and len(incompatible) > 0:
+      print("", file=sys.stdout)
+      print("gkno (and its components) require a few 3rd-party utilities", file=sys.stdout)
+      print("to either build or run properly.  To obtain/update the utilities ", file=sys.stdout)
+      print("listed above, check your system's package manager or search the ", file=sys.stdout)
+      print("web for download instructions.", file=sys.stdout)
+      print("", file=sys.stdout)
+
+    # ODD CASE
+    if len(unknown) > 0:
+      print("----------------------------------------", file=sys.stdout)
+      print("The following utilities have version numbers that could not be ", file=sys.stdout)
+      print("determined by gkno:", file=sys.stdout)
+      for dep in unknown:
+        print("        ",dep.name, sep="", file=sys.stdout)
+      print("", file=sys.stdout)
+      print("This indicates a likely bug or as-yet-unseen oddity.", file=sys.stdout)
+      print("Please contact the gkno development team to report this issue.  Thanks.", file=sys.stdout)
+      print("", file=sys.stdout)
+      print("----------------------------------------", file=sys.stdout)
+
+    # Return failure
+    return False
 
   # -------------------------------------------
   # Release helper methods
