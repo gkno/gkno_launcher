@@ -767,3 +767,38 @@ class errors:
   def urlRetrieveFailed(self, url, dest=sys.stderr):
     print("ERROR: Could not retrieve file at "+url, file=dest)
     
+  def dependencyCheckFailed(self, missing, unknown, incompatible, dest=sys.stderr):
+    if len(missing) > 0:
+      print("    Missing:", file=dest)
+      for dep in missing:
+        print("        ",dep.name, sep="", file=dest)
+      print("", file=dest)
+    if len(incompatible) > 0:
+      print("    Not up-to-date:", file=dest)
+      for dep in incompatible:
+        print("        ", dep.name, 
+              "    minimum version: ", dep.minimumVersion, 
+              "    found version: "  , dep.currentVersion, sep="", file=dest)
+      print("", file=dest)
+    if len(missing) > 0 or len(incompatible) > 0:
+      print("", file=dest)
+      print("gkno (and its components) require a few 3rd-party utilities", file=dest)
+      print("to either build or run properly.  To obtain/update the utilities ", file=dest)
+      print("listed above, check your system's package manager or search the ", file=dest)
+      print("web for download instructions.", file=dest)
+      print("", file=dest)
+
+    # ODD CASE
+    if len(unknown) > 0:
+      print("----------------------------------------", file=dest)
+      print("The following utilities have version numbers that could not be ", file=dest)
+      print("determined by gkno:", file=dest)
+      for dep in unknown:
+        print("        ",dep.name, sep="", file=dest)
+      print("", file=dest)
+      print("This indicates a likely bug or as-yet-unseen oddity.", file=dest)
+      print("Please contact the gkno development team to report this issue.  Thanks.", file=dest)
+      print("", file=dest)
+      print("----------------------------------------", file=dest)
+      print("", file=dest)
+

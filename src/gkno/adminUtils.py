@@ -112,7 +112,13 @@ class adminUtils:
     # Cache our starting working directory since we're going to move around
     originalWorkingDir = os.getcwd()
 
-    # FIXME: Check requirements (attempt to access 3rd party dependencies/tools)
+    # Check requirements (attempt to access 3rd party dependencies/tools)
+    print("Checking dependencies...", end="", file=sys.stdout)
+    sys.stdout.flush()
+    if self.checkDependencies():
+      print("done.", file=sys.stdout)
+    else:
+      return False  # error message displayed in subroutine
 
     # Make sure submodules are intialized & up-to-date
     print("Initializing component data...", end="", file=sys.stdout)
@@ -318,7 +324,7 @@ class adminUtils:
       return self.addCurrentRelease(resourceName, "  ")
 
   # -------------------------------------------
-  # Admin mode 'subroutines'
+  # Build/update helper methods
   # -------------------------------------------
 
   def buildTool(self, tool):
@@ -394,6 +400,33 @@ class adminUtils:
         os.remove(outFilename)
         os.remove(errFilename)
     return success
+
+  def checkDependencies(self):
+    
+    # Initialize our error lists
+    missing      = []
+    incompatible = []
+    unknown      = []
+    
+    # For each dependency
+    allChecksPassed = True
+    for dependency in conf.dependencies:
+
+      # If check failed, store in respective list 
+      if not dependency.check():
+        if   dependency.isMissing:        missing.append(dependency)
+        elif dependency.isUnknownVersion: unknown.append(dependency)
+        else:                             incompatible.append(dependency)
+        allChecksPassed = False
+        
+    # Print message if anything failed
+    if not allChecksPassed:
+      print("failed.", file=sys.stdout)
+      sys.stdout.flush()
+      self.error.dependencyCheckFailed(missing, unknown, incompatible)
+  
+    # Return success/failure
+    return allChecksPassed
 
   # -------------------------------------------
   # Release helper methods

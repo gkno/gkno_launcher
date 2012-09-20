@@ -71,7 +71,14 @@ def main():
   # files, the '--multiple-runs (-mr)' argument can be set.  If this is set, the
   # whole pipeline needs to be looped over with each iteration built from the new
   # input files.  Check to see if this value is set.
-  cl.checkForMultipleRuns(io, pl)
+  #
+  # This call pops args off of the command line, so we don't want to run if admin
+  # mode was requested. 
+  #
+  # FIXME: The "if not" guard here is a hack. We should clean up the sequence of 
+  #        command-line parsing that goes on here.
+  if not admin.isRequested: 
+    cl.checkForMultipleRuns(io, pl)
 
   # Print gkno title and version to the screen.
   if not gknoHelp.printHelp: gknoHelp.printHeader(__version__, __date__)
