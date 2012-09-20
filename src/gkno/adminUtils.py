@@ -419,54 +419,14 @@ class adminUtils:
         else:                             incompatible.append(dependency)
         allChecksPassed = False
         
-    # Return success if all checks passed
-    if allChecksPassed:
-      return True
-
-    #------------------------------------------------------------------------
-    # Failed
-    #------------------------------------------------------------------------
-
-    # Print helpful message 
-    print("failed.", file=sys.stdout)
-    sys.stdout.flush()
-    print("", file=sys.stdout)
-    
-    if len(missing) > 0:
-      print("    Missing:", file=sys.stdout)
-      for dep in missing:
-        print("        ",dep.name, sep="", file=sys.stdout)
-      print("", file=sys.stdout)
-    if len(incompatible) > 0:
-      print("    Not up-to-date:", file=sys.stdout)
-      for dep in incompatible:
-        print("        ", dep.name, 
-              "    minimum version: ", dep.minimumVersion, 
-              "    found version: "  , dep.currentVersion, sep="", file=sys.stdout)
-      print("", file=sys.stdout)
-    if len(missing) > 0 or len(incompatible) > 0:
-      print("", file=sys.stdout)
-      print("gkno (and its components) require a few 3rd-party utilities", file=sys.stdout)
-      print("to either build or run properly.  To obtain/update the utilities ", file=sys.stdout)
-      print("listed above, check your system's package manager or search the ", file=sys.stdout)
-      print("web for download instructions.", file=sys.stdout)
-      print("", file=sys.stdout)
-
-    # ODD CASE
-    if len(unknown) > 0:
-      print("----------------------------------------", file=sys.stdout)
-      print("The following utilities have version numbers that could not be ", file=sys.stdout)
-      print("determined by gkno:", file=sys.stdout)
-      for dep in unknown:
-        print("        ",dep.name, sep="", file=sys.stdout)
-      print("", file=sys.stdout)
-      print("This indicates a likely bug or as-yet-unseen oddity.", file=sys.stdout)
-      print("Please contact the gkno development team to report this issue.  Thanks.", file=sys.stdout)
-      print("", file=sys.stdout)
-      print("----------------------------------------", file=sys.stdout)
-
-    # Return failure
-    return False
+    # Print message if anything failed
+    if not allChecksPassed:
+      print("failed.", file=sys.stdout)
+      sys.stdout.flush()
+      self.error.dependencyCheckFailed(missing, unknown, incompatible)
+  
+    # Return success/failure
+    return allChecksPassed
 
   # -------------------------------------------
   # Release helper methods
