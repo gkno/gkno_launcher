@@ -241,8 +241,8 @@ List = [
         Java("1.6"),
         Javac("1.6"),
         Make("3.80"),
-        Python("2.6"),
-        Scala("2.7.7"),
-        Scalac("2.7.7")
+        Python("2.6")
+        #Scala("2.7.7"),
+        #Scalac("2.7.7")
        ]
 

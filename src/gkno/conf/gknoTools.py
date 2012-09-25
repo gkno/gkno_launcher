@@ -169,7 +169,7 @@ class Gatk(GknoTool):
 
   # $ ant -Dcompile.scala.by.default=false
   def doUpdate(self):
-    return self.ant("-Dcompile.scala.by.default=false")
+    return self.ant()
 
 # mosaik
 class Mosaik(GknoTool):
