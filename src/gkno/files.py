@@ -452,8 +452,10 @@ class files:
       # tl.toolInfo structure as it doesn't contain the required values (the other
       # entries contain information on flags, data types etc).
       elif isReplace:
-        print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
 
+        # If the line is blank, do not print to file.
+        if not ((argument == '') and (tl.toolArguments[task][argument] == '')):
+          print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
       else:
 
         # Some tools do not require a --argument or -argument in front of each value,

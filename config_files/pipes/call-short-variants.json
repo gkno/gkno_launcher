@@ -60,6 +60,13 @@
       "short form argument" : "-bl",
       "type" : "string"
     },
+    "--out" : {
+      "description" : "The output file containing the variants.",
+      "link to this task" : "compress-vcf",
+      "link to this argument" : "--out",
+      "short form argument" : "-o",
+      "type" : "string"
+    },
     "--region" : {
       "description" : "The genomic region to anaylse.",
       "link to this task" : "filter-bam",
