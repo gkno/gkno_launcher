@@ -427,6 +427,14 @@ class files:
 
       # Check if the option is a flag.
       isFlag = False
+
+      # Check if this argument is in the toolInfo structure.  Arguments dealing with
+      # the stream may not be contained.
+      inInfo    = True if argument in tl.toolInfo[tool]['arguments'] else False
+      isReplace = False
+      if inInfo:
+        if tl.toolInfo[tool]['arguments'][argument] == 'replacement': isReplace = True
+
       if argument == 'json parameters':
 
         # If a json file is being used to generate parameters, the configuration file
@@ -443,7 +451,7 @@ class files:
       # If the argument is a replacement to handle a stream, do not interrogate the
       # tl.toolInfo structure as it doesn't contain the required values (the other
       # entries contain information on flags, data types etc).
-      elif tl.toolInfo[tool]['arguments'][argument] == 'replacement':
+      elif isReplace:
         print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
 
       else:
@@ -456,12 +464,13 @@ class files:
         hideArgument = False
         useStdout    = False
         useStderr    = False
-        if 'modify argument name on command line' in tl.toolInfo[tool]['arguments'][argument]:
-          hideArgument = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'hide' else False
-          useStdout    = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'stdout' else False
-          useStderr    = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'stderr' else False
+        if inInfo:
+          if 'modify argument name on command line' in tl.toolInfo[tool]['arguments'][argument]:
+            hideArgument = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'hide' else False
+            useStdout    = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'stdout' else False
+            useStderr    = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'stderr' else False
 
-        if tl.toolInfo[tool]['arguments'][argument]['type'] == 'flag': isFlag = True
+          if tl.toolInfo[tool]['arguments'][argument]['type'] == 'flag': isFlag = True
 
         # If the command is a flag, check if the value is 'set' or 'unset'.  If 'set',
         # write out the command.

@@ -15,6 +15,22 @@
             "add extension" : "true",
             "output extension" : "bai",
             "stub" : "false"
+          },
+          {
+            "type" : "dependency",
+            "command" : "--reference_sequence",
+            "remove extension" : "false",
+            "add extension" : "true",
+            "output extension" : "fai",
+            "stub" : "false"
+          },
+          {
+            "type" : "dependency",
+            "command" : "--reference_sequence",
+            "remove extension" : "true",
+            "add extension" : "true",
+            "output extension" : "dict",
+            "stub" : "false"
           }
         ]
       },

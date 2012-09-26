@@ -93,8 +93,8 @@
           "required" : "true",
           "dependent" : "false",
           "type" : "string",
-          "if input is stream" : "replace",
           "extension" : "bam",
+          "if input is stream" : "replace",
           "replace argument with" : {
             "argument" : "--stdin",
             "value" : ""
@@ -125,6 +125,41 @@
         "--in",
         "--reference-fasta"
       ]
+    },
+
+    "samtools-index-fasta" : {
+      "description" : "Generate an index for a reference fasta file.",
+      "path" : "samtools",
+      "executable" : "samtools",
+      "modifier" : "faidx",
+      "hide tool" : "true",
+      "help" : "--help|-h",
+      "additional files" : {
+        "from input arguments" : [
+          {
+            "type" : "output",
+            "command" : "--in",
+            "remove extension" : "false",
+            "add extension" : "true",
+            "output extension" : "fai",
+            "stub" : "false"
+          }
+        ]
+      },
+      "arguments" : {
+        "--in" : {
+          "short form argument" : "-i",
+          "description" : "Input FASTA file.",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "fasta|fa",
+          "modify argument name on command line" : "hide"
+        }
+      }
     }
   }
 }

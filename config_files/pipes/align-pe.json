@@ -7,6 +7,8 @@
     "sort-primary-bam",
     "sort-multiple-bam",
     "index-primary-bam",
+    "index-fasta",
+    "create-sequence-dictionary",
     "count-covariates",
     "recalibrate-bq"
   ],
@@ -17,6 +19,8 @@
     "sort-primary-bam" : "bamtools-sort",
     "sort-multiple-bam" : "bamtools-sort",
     "index-primary-bam" : "bamtools-index",
+    "index-fasta" : "samtools-index-fasta",
+    "create-sequence-dictionary" : "picard-create-sequence-dictionary",
     "count-covariates" : "gatk-count-covariates",
     "recalibrate-bq" : "gatk-recalibrate-bq"
   },
@@ -57,6 +61,14 @@
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-jmp"
       },
+      "-annse" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-annse"
+      },
+      "-annpe" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-annpe"
+      },
       "json parameters" : {
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-out",
@@ -88,7 +100,17 @@
         "link to this argument" : "-out"
       }
     },
+    "create-sequence-dictionary" : {
+      "REFERENCE" : {
+        "link to this task" : "index-fasta",
+        "link to this argument" : "--in"
+      }
+    },
     "count-covariates" : {
+      "--reference_sequence" : {
+        "link to this task" : "index-fasta",
+        "link to this argument" : "--in"
+      },
       "--input_file" : {
         "link to this task" : "sort-primary-bam",
         "link to this argument" : "-out"
@@ -96,8 +118,8 @@
     },
     "recalibrate-bq" : {
       "--reference_sequence" : {
-        "link to this task" : "count-covariates",
-        "link to this argument" : "--reference_sequence"
+        "link to this task" : "index-fasta",
+        "link to this argument" : "--in"
       },
       "--input_file" : {
         "link to this task" : "count-covariates",
@@ -111,6 +133,7 @@
   },
   "arguments" : {
     "--fastq" : {
+      "description" : "The input fastq file (first mate).",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq1",
       "short form argument" : "-q",
@@ -118,6 +141,7 @@
       "user entry required" : "true"
     },
     "--fastq2" : {
+      "description" : "The input fastq file (second mate).",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq2",
       "short form argument" : "-q2",
@@ -125,54 +149,77 @@
       "user entry required" : "true"
     },
     "--mosaik-reference" : {
+      "description" : "The Mosaik format reference genome (.dat).",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-ref",
       "short form argument" : "-r",
       "type" : "string"
     },
     "--mosaik-jump-database" : {
+      "description" : "The input Mosaik jump database stub.",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-jmp",
       "short form argument" : "-j",
       "type" : "string"
     },
     "--batch-size" : {
+      "description" : "Number of pairs to align per batch.",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-n",
       "short form argument" : "-b",
       "type" : "integer"
     },
     "--hash-size" : {
+      "description" : "The hash-size used in Mosaik [4 - 32].",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-hs",
       "type" : "integer",
       "short form argument" : "-hs"
     },
     "--sequencing-technology" : {
+      "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'.",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-st",
       "short form argument" : "-st",
       "type" : "string"
     },
+    "--ann-se" : {
+      "description" : "Neural network file for Mosaik mapping quality scores (single end).",
+      "short form argument" : "-as",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-annse",
+      "type" : "string"
+    },
+    "--ann-pe" : {
+      "description" : "Neural network file for Mosaik mapping quality scores (paired end).",
+      "short form argument" : "-ap",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-annpe",
+      "type" : "string"
+    },
     "--median-fragment-length" : {
+      "description" : "median fragment length.",
       "link to this task" : "build-read-archive",
       "link to this argument" : "-mfl",
       "type" : "integer",
       "short form argument" : "-mfl"
     },
     "--out" : {
+      "description" : "The output read archive.",
       "link to this task" : "build-read-archive",
       "link to this argument" : "-out",
       "short form argument" : "-o",
       "type" : "string"
     },
     "--reference-fasta" : {
-      "link to this task" : "count-covariates",
-      "link to this argument" : "--reference_sequence",
+      "description" : "The reference fasta genome.  This must be the fasta from which the Mosaik archive was generated.",
+      "link to this task" : "index-fasta",
+      "link to this argument" : "--in",
       "short form argument" : "-rf",
       "type" : "string"
     },
-    "--knownSites" : {
+    "--known-sites" : {
+      "description" : "A database of known polymorphic sites to skip over in the recalibration algorithm.",
       "link to this task" : "count-covariates",
       "link to this argument" : "-knownSites",
       "short form argument" : "-k",
@@ -184,6 +231,66 @@
       "-out" : {
         "delete after task" : "align"
       }
+    },
+    "align" : {
+      "-out" : {
+        ".bam" : {
+          "delete after task" : "sort-primary-bam"
+        },
+        ".multiple.bam" : {
+          "delete after task" : "sort-multiple-bam"
+        }
+      }
+    },
+    "sort-primary-bam" : {
+      "-out" : {
+        "delete after task" : "recalibrate-bq"
+      }
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires user to input all input filenames."
+    },
+    "human" : {
+      "description" : "Human instance uses the human reference from the resources.  It is assumed that the Mosaik reference files have been created in the current working directory.",
+      "--mosaik-jump-database" : "$(PWD)/human_reference_v37_decoys_moblist_15",
+      "--mosaik-reference" : "$(PWD)/human_reference_v37_decoys_moblist.dat",
+      "--ann-se" : "$(RESOURCES)/homo_sapiens/current/se.100.005.ann",
+      "--ann-pe" : "$(RESOURCES)/homo_sapiens/current/pe.100.01.ann",
+      "--known-sites" : "$(RESOURCES)/homo_sapiens/current/ALL.wgs.dbsnp.build135.snps.sites.vcf.gz",
+      "--reference-fasta" : "$(PWD)/human_reference_v37_decoys_moblist.fa"
+    },
+      "description" : "Human-moblist instance uses the human reference with moblistfrom the resources.  It is assumed that the Mosaik reference files have been created in the current working directory.",
+    "human-moblist" : {
+      "--mosaik-jump-database" : "$(PWD)/human_reference_v37_decoys_moblist_15",
+      "--mosaik-reference" : "$(PWD)/human_reference_v37_decoys_moblist.dat",
+      "--ann-se" : "$(RESOURCES)/homo_sapiens/current/se.100.005.ann",
+      "--ann-pe" : "$(RESOURCES)/homo_sapiens/current/pe.100.01.ann",
+      "--known-sites" : "$(RESOURCES)/homo_sapiens/current/ALL.wgs.dbsnp.build135.snps.sites.vcf.gz",
+      "--reference-fasta" : "$(PWD)/human_reference_v37_decoys_moblist.fa"
+    },
+    "tutorial" : {
+      "description" : "Tutorial instance uses files from the tutorial resources.",
+      "--mosaik-jump-database" : "$(PWD)/test_genome_10",
+      "--mosaik-reference" : "$(PWD)/test_genome.dat",
+      "--fastq" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq",
+      "--fastq2" : "$(RESOURCES)/tutorial/current/simulated_reads_2.fq",
+      "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
+      "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
+      "--known-sites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf",
+      "--reference-fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--hash-size" : "10"
+    },
+    "1000G-tutorial" : {
+      "description" : "1000G tutorial instance is for use with the 1000G tutorial only.",
+      "--mosaik-jump-database" : "$(PWD)/test_genome_10",
+      "--mosaik-reference" : "$(PWD)/test_genome.dat",
+      "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
+      "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
+      "--known-sites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf",
+      "--reference-fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--hash-size" : "10"
     }
   }
 }

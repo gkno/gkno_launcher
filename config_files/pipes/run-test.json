@@ -1,6 +1,5 @@
 {
   "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
-  "resource path" : "tutorial/current",
   "workflow" : [
     "build-reference",
     "build-jump-database",
@@ -125,6 +124,14 @@
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-jmp"
       },
+      "-annse" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-annse"
+      },
+      "-annpe" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-annpe"
+      },
       "json parameters" : {
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-out",
@@ -221,7 +228,7 @@
       "link to this argument" : "-fr",
       "short form argument" : "-f",
       "type" : "string",
-      "default" : "$(RESOURCES)/test_genome.fa"
+      "default" : "$(RESOURCES)/tutorial/current/test_genome.fa"
     },
     "--hash-size" : {
       "description" : "hash-size",
@@ -236,14 +243,14 @@
       "link to this argument" : "-fq1",
       "short form argument" : "-q",
       "type" : "string",
-      "default" : "$(RESOURCES)/simulated_reads_1.fq"
+      "default" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq"
     },
     "--fastq2" : {
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq2",
       "short form argument" : "-q2",
       "type" : "string",
-      "default" : "$(RESOURCES)/simulated_reads_2.fq"
+      "default" : "$(RESOURCES)/tutorial/current/simulated_reads_2.fq"
     },
     "--mosaik-reference" : {
       "link to this task" : "generate-mosaik-parameters",
@@ -256,6 +263,20 @@
       "link to this argument" : "-jmp",
       "short form argument" : "-j",
       "type" : "string"
+    },
+    "--ann-se" : {
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-annse",
+      "short form argument" : "-as",
+      "type" : "integer",
+      "default" : "$(RESOURCES)/tutorial/current/se.100.005.ann"
+    },
+    "--ann-pe" : {
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-annpe",
+      "short form argument" : "-ap",
+      "type" : "integer",
+      "default" : "$(RESOURCES)/tutorial/current/pe.100.01.ann"
     },
     "--batch-size" : {
       "link to this task" : "generate-mosaik-parameters",
@@ -288,7 +309,7 @@
       "link to this argument" : "-knownSites",
       "short form argument" : "-k",
       "type" : "flag",
-      "default" : "$(RESOURCES)/test_genome.dbSNP.snps.sites.vcf"
+      "default" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf"
     }
   },
   "delete files" : {

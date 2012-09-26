@@ -197,7 +197,7 @@ class tools:
   def constructFilenames(self, tl, pl, task, tool):
     er      = errors()
     newLine = True if self.toolArguments['pipeline']['--verbose'] else False
-    noTab   = 2 if self.toolArguments['pipeline']['--verbose'] else 0
+    noTab   = 3 if self.toolArguments['pipeline']['--verbose'] else 0
 
     if self.toolArguments['pipeline']['--verbose']:
       print('          Constructing filenames...', end = '', file = sys.stdout)

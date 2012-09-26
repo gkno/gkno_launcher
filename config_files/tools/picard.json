@@ -10,7 +10,7 @@
       "help" : "--help|-h",
       "arguments" : {
         "INPUT" : {
-          "description" : "the input BAM file. Required.",
+          "description" : "the input BAM file.",
           "input" : "true",
           "use for filenames" : "true",
           "output" : "false",
@@ -22,7 +22,7 @@
           "extension" : "bam"
         },
         "OUTPUT" : {
-          "description" : "the output BAM file. Required.",
+          "description" : "the output BAM file.",
           "input" : "false",
           "output" : "true",
           "resource" : "false",
@@ -33,7 +33,7 @@
           "extension" : "dup.bam"
         },
         "METRICS_FILE" : {
-          "description" : "File to write duplication metrics to. Required.",
+          "description" : "File to write duplication metrics to.",
           "input" : "false",
           "output" : "true",
           "resource" : "false",
@@ -52,6 +52,41 @@
           "dependent" : "false",
           "type" : "string",
           "default" : "$(PWD)"
+        }
+      }
+    },
+
+    "picard-create-sequence-dictionary" : {
+      "description" : "Generate a dictionary containing all of the sequences in the input reference fasta.",
+      "hide tool" : "true",
+      "path" : "picard/dist",
+      "executable" : "CreateSequenceDictionary.jar",
+      "precommand" : "java -jar",
+      "argument delimiter" : "=",
+      "help" : "--help|-h",
+      "arguments" : {
+        "REFERENCE" : {
+          "description" : "the input reference FASTA file.",
+          "input" : "true",
+          "use for filenames" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "short form argument" : "R",
+          "type" : "string",
+          "extension" : "fa|fasta"
+        },
+        "OUTPUT" : {
+          "description" : "the output sequence dictionary.",
+          "input" : "false",
+          "output" : "true",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "short form argument" : "O",
+          "type" : "string",
+          "extension" : "dict"
         }
       }
     }

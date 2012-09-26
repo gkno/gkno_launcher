@@ -455,7 +455,17 @@ class commandLine:
         # Get the task and argument that this links to within the pipeline.
         linkToTask     = pl.information['arguments'][argument]['link to this task']
         linkToArgument = pl.information['arguments'][argument]['link to this argument']
-        tl.toolArguments[linkToTask][linkToArgument] = pl.information['instances'][instance][argument]
+
+        # Check if this argument allows multiple values.
+        linkToTool = pl.information['tools'][linkToTask] if linkToTask in pl.information['tools'] else ''
+        value      = pl.information['instances'][instance][argument]
+        if 'allow multiple definitions' in tl.toolInfo[linkToTool]['arguments'][linkToArgument]:
+          if len(tl.toolArguments[linkToTask][linkToArgument]) == 0: tl.toolArguments[linkToTask][linkToArgument] = []
+          if isinstance(value, list):
+            for entry in value: tl.toolArguments[linkToTask][linkToArgument].append(entry)
+          else: tl.toolArguments[linkToTask][linkToArgument].append(value)
+        else:
+          tl.toolArguments[linkToTask][linkToArgument] = pl.information['instances'][instance][argument]
 
     if tl.toolArguments['pipeline']['--verbose']:
       print('done.', file = sys.stdout)

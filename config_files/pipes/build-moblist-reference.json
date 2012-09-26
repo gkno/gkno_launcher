@@ -2,11 +2,15 @@
   "description" : "Concatenate reference fasta files and enerate Mosaik reference and jump database.",
   "workflow" : [
     "merge-fasta",
+    "index-fasta",
+    "create-sequence-dictionary",
     "build-reference",
     "build-jump-database"
   ],
   "tools" : {
     "merge-fasta" : "concatenate-files",
+    "index-fasta" : "samtools-index-fasta",
+    "create-sequence-dictionary" : "picard-create-sequence-dictionary",
     "build-reference" : "mosaik-build-reference",
     "build-jump-database" : "mosaik-jump"
   },
@@ -31,6 +35,18 @@
     }
   },
   "linkage" : {
+    "index-fasta" : {
+      "--in" : {
+        "link to this task" : "merge-fasta",
+        "link to this argument" : "--out"
+      }
+    },
+    "create-sequence-dictionary" : {
+      "REFERENCE" : {
+        "link to this task" : "merge-fasta",
+        "link to this argument" : "--out"
+      }
+    },
     "build-reference" : {
       "-fr" : {
         "link to this task" : "merge-fasta",
@@ -71,10 +87,19 @@
     },
     "human" : {
       "description" : "Human instance builds the reference using the 'current' human resources.",
-      "--resource-path" : "$(RESOURCES)/homo_sapiens/current",
-      "--in" : "human_reference_v37_decoys.fa",
-      "--in" : "mobile_element_sequences.fa",
+      "--fasta" : [
+        "$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa",
+        "$(RESOURCES)/homo_sapiens/current/mobile_element_sequences.fa"
+      ],
       "--out" : "human_reference_v37_decoys_moblist.fa"
+    },
+    "tutorial" : {
+      "description" : "Tutorial instance builds the reference using the 'current' tutorial resources.",
+      "--fasta" : [
+        "$(RESOURCES)/tutorial/current/test_genome.fa",
+        "$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"
+      ],
+      "--out" : "test_genome_moblist.fa"
     }
   }
 }

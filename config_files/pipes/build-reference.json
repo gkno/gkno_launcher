@@ -50,5 +50,19 @@
       "type" : "integer",
       "short form argument" : "-hs"
     }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires user to input all input filenames."
+    },
+    "human" : {
+      "description" : "Human instance builds the reference using the 'current' human resources.",
+      "--fasta" : "$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"
+    },
+    "tutorial" : {
+      "description" : "Tutorial instance builds the reference using the 'current' tutorial resources.",
+      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--hash-size" : "10"
+    }
   }
 }
