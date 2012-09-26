@@ -280,9 +280,13 @@ class VcfLib(GknoTool):
     self.name       = "vcflib"
     self.installDir = "vcflib"
 
-  def doBuild(self):
+  # $ make -j N  
+  def doBuild(self):    
+#    if not self.makeClean():
+#      return False
     return self.doUpdate()
-  
+
+  # $ make -j N
   def doUpdate(self):
     return self.make()
 
