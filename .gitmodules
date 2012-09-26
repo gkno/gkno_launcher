@@ -28,3 +28,6 @@
 [submodule "tools/ogap"]
 	path = tools/ogap
 	url = git://github.com/gkno/ogap.git
+[submodule "tools/vcflib"]
+	path = tools/vcflib
+	url = git://github.com/gkno/vcflib.git

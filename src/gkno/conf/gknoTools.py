@@ -273,6 +273,19 @@ class SamTools(GknoTool):
   def doUpdate(self):
     return self.make()
 
+# vcflib
+class VcfLib(GknoTool):
+  def __init__(self):
+    super(VcfLib, self).__init__()
+    self.name       = "vcflib"
+    self.installDir = "vcflib"
+
+  def doBuild(self):
+    return self.doUpdate()
+  
+  def doUpdate(self):
+    return self.make()
+
 ##############################################################
 # Add any new built-in gkno tools to the list below.
 ##############################################################
@@ -285,6 +298,7 @@ List = [
         Ogap(),
         Picard(),
         Premo(),
-        SamTools()
+        SamTools(),
+        VcfLib()
        ]
 
