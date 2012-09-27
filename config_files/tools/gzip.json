@@ -18,11 +18,7 @@
           "short form argument" : "-i",
           "extension" : "no extension",
           "modify argument name on command line" : "hide",
-          "if input is stream" : "replace",
-          "replace argument with" : {
-            "argument" : "",
-            "value" : ""
-          }
+          "if input is stream" : "do not include"
         },
         "--out" : {
           "short form argument" : "-o",

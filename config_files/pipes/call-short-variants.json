@@ -20,6 +20,24 @@
     "left-align-indels",
     "variant-call"
   ],
+  "construct filenames" : {
+    "compress-vcf" : {
+      "--out" : {
+        "filename root" : "short-variants",
+        "additional text from parameters" : {
+          "order" : [
+            "filename root",
+            "region"
+          ],
+          "region" : {
+            "get parameter from task" : "filter-bam",
+            "get parameter from argument" : "-region"
+          }
+        },
+        "output extension" : "vcf.gz"
+      }
+    }
+  },
   "linkage" : {
     "left-align-indels" : {
       "--fasta-reference" : {

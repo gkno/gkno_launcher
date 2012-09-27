@@ -178,7 +178,8 @@ class tools:
     # additional options have been added to toolInfo, but the added options were
     # tracked in the pl.addedToToolInfo structure.
     for task in pl.addedToToolInfo:
-      for argument in pl.addedToToolInfo[task]: del(self.toolInfo[task]['arguments'][argument])
+      for argument in pl.addedToToolInfo[task]:
+        del(self.toolInfo[task]['arguments'][argument])
 
     # Reset other data structures.
     self.dependencies  = {}

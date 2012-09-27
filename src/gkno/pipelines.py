@@ -319,7 +319,16 @@ class pipeline:
     if not isStub:
       if 'extension' not in tl.toolInfo[tool]['arguments'][argument]: extension = ''
       else: extension = tl.toolInfo[tool]['arguments'][argument]['extension']
-      name += '.' + str(extension)
+
+      # Some tools can operate on any file (e.g. gzip) and so have the extension listed as
+      # 'no extension'.  If this is the case, check if the output extension is given in the
+      # pipeline configuration file.  If so, use this extension, if not, do not add an
+      # extension.
+      if extension == 'no extension':
+        outputExtension = constructBlock['output extension'] if 'output extension' in constructBlock else ''
+        if outputExtension != '': name += '.' + str(outputExtension)
+
+      else: name += '.' + str(extension)
 
     # Having built the filename, set the value in the tl.toolArguments data structure.
     tl.toolArguments[task][argument] = name
