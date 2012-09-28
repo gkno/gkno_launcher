@@ -273,6 +273,24 @@ class SamTools(GknoTool):
   def doUpdate(self):
     return self.make()
 
+# tabix (& bgzip)
+class Tabix(GknoTool):
+  def __init__(self):
+    super(Tabix, self).__init__()
+    self.name       = "tabix"
+    self.installDir = "tabix"
+ 
+  # $ make clean
+  # $ make -j N
+  def doBuild(self):
+    if not self.makeClean():
+      return False
+    return self.make()
+
+  # $ make -j N
+  def doUpdate(self):
+    return self.make()
+
 # vcflib
 class VcfLib(GknoTool):
   def __init__(self):
@@ -303,6 +321,7 @@ List = [
         Picard(),
         Premo(),
         SamTools(),
+        Tabix(),
         VcfLib()
        ]
 

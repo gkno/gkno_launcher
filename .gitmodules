@@ -31,3 +31,6 @@
 [submodule "tools/vcflib"]
 	path = tools/vcflib
 	url = git://github.com/gkno/vcflib.git
+[submodule "tools/tabix"]
+	path = tools/tabix
+	url = git://github.com/gkno/tabix.git
