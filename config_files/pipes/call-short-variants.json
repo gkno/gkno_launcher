@@ -175,6 +175,11 @@
   "instances" : {
     "default" : {
       "description" : "The default parameters for short-variant calling.  Assumed low coverage data for a large population."
+    },
+    "tutorial" : {
+      "description" : "Tutorial instance uses lenient parameters so that variants are discovered with the simulated data.",
+      "--min-alternate-count" : "1",
+      "--min-alternate-qsum" : "20"
     }
   }
 }

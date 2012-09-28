@@ -541,26 +541,26 @@ class pipeline:
           # following search.  There is no input or output commands as the tool is
           # expecting to be receiving and outputting to the stream.
           if tl.toolsDemandingOutputStream[tool]: canOutputToStream = True
+          if not canOutputToStream:
 
-          # Check if the tool allows the output to be sent to a stream.
-          for argument in tl.toolInfo[tool]['arguments']:
-            isOutput = True if tl.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
-            if isOutput:
-              if 'if output to stream' in tl.toolInfo[tool]['arguments'][argument]:
-                if canOutputToStream:
-                  er.multipleOutputsToStream(True, "\t", task, tool)
-                  er.terminate()
-                canOutputToStream = True
-
-                # If the entry in the configuration file is 'do not include', just
-                # remove this argument from the toolArguments structure.
-                if tl.toolInfo[tool]['arguments'][argument]['if output to stream'] == 'do not include':
-                  del(tl.toolArguments[task][argument])
-
-                # Otherwise, handle as appropriate.
-                else:
-                  print('NOT YET HANDLED THIS STREAM OPTION', task, argument, file = sys.stdout)
-                  er.terminate()
+            # Check if the tool allows the output to be sent to a stream.
+            for argument in tl.toolInfo[tool]['arguments']:
+              isOutput = True if tl.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
+              if isOutput:
+                if 'if output to stream' in tl.toolInfo[tool]['arguments'][argument]:
+                  if canOutputToStream:
+                    er.multipleOutputsToStream(True, "\t", task, tool)
+                    er.terminate()
+                  canOutputToStream = True
+  
+                  # If the entry in the configuration file is 'do not include', just
+                  # remove this argument from the toolArguments structure.
+                  if tl.toolInfo[tool]['arguments'][argument]['if output to stream'] == 'do not include': del(tl.toolArguments[task][argument])
+  
+                  # Otherwise, handle as appropriate.
+                  else:
+                    print('NOT YET HANDLED THIS STREAM OPTION', task, argument, file = sys.stdout)
+                    er.terminate()
 
           # Now check that the subsequent tool can accept the stream as an input.  If
           # this was the last task in the pipeline, fail as the output needs to pipe

@@ -218,7 +218,11 @@ class files:
         redirect = '>' if taskBlock == pl.taskBlocks[0] else '>>'
 
       for task, path in zip(taskBlock, pathList):
-        if firstCommand: print("\t@echo -e \"Executing task: ", taskBlock[-1], '...\\c"', sep = '', file = self.makeFilehandle)
+        if firstCommand:
+          if len(taskBlock) == 1:
+            print("\t@echo -e \"Executing task: ", taskBlock[-1], '...\\c"', sep = '', file = self.makeFilehandle)
+          else:
+            print("\t@echo -e \"Executing piped tasks (", taskBlock[0], ' -> ', taskBlock[-1], ')...\\c"', sep = '', file = self.makeFilehandle)
         tool         = pl.information['tools'][task]
         usedStdout   = self.generateCommand(tl, pl, path, task, tool, lineStart, firstCommand)
         if task     != taskBlock[-1]: lineStart = " \\\n\t| "
@@ -494,10 +498,13 @@ class files:
 
           # If the option is given a value, print it out.
           elif tl.toolArguments[task][argument] != '':
-            if hideArgument: print(" \\\n\t", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
-            elif useStdout: print(" \\\n\t> ", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
-            elif useStderr: print(" \\\n\t2> ", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
-            else: print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
+            if tl.toolArguments[task][argument] == 'no value':
+              print(" \\\n\t", argument, sep = '', end = '', file = self.makeFilehandle)
+            else:
+              if hideArgument: print(" \\\n\t", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
+              elif useStdout: print(" \\\n\t> ", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
+              elif useStderr: print(" \\\n\t2> ", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
+              else: print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
 
     return useStdout
 

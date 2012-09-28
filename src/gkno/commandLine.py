@@ -602,13 +602,20 @@ class commandLine:
       # Check if the option has a value.  Non-required elements may remain unset and
       # this is allowed.
       isArgumentSet = True if tl.toolArguments[task][argument] != '' else False
+        
+      # If the argument is an input file (not from the stream) or an output file,
+      # check that it does not contain the ':' character as this is a special
+      # character in the Makefile.  If it does, replace the ':' with a '_'.
+      isInput  = True if tl.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
+      isOutput = True if tl.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
+      if isInput or isOutput:
+        if ':' in tl.toolArguments[task][argument]: tl.toolArguments[task][argument] = tl.toolArguments[task][argument].replace(':', '_')
 
-     # If the value is required and no value has been provided, terminate.
+      # If the value is required and no value has been provided, terminate.
       if isRequired and checkRequired and not isArgumentSet:
 
         # Check if the argument is an input file and if so, if the input is coming from
         # the stream.  If so, this does not need to be set.
-        isInput = True if tl.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
         inputIsStream = False
         if isInput:
           previousTask = ''
@@ -617,7 +624,7 @@ class commandLine:
             else: previousTask = currentTask
           if 'tools outputting to stream' in pl.information:
             if previousTask in pl.information['tools outputting to stream']: inputIsStream = True
-        
+
         # Find the short form of the argument if one exists.
         shortForm = tl.toolInfo[tool]['arguments'][argument]['short form argument'] if 'short form argument' in \
         tl.toolInfo[tool]['arguments'][argument] else ''

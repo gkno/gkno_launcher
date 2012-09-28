@@ -388,7 +388,9 @@ class tools:
   # Determine which files are required for each tool to run.  For each tool, these files
   # are stored in a list and are used to define the dependencies in the Makefile.
   def determineDependencies(self, cl, pl):
-    er = errors()
+    er           = errors()
+    hasStream    = True if 'tools outputting to stream' in pl.information else False
+    previousTask = ''
 
     if self.toolArguments['pipeline']['--verbose']:
       print('Determine tool dependencies...', file = sys.stdout)
@@ -412,12 +414,21 @@ class tools:
           # file.  If it is an output, the file should be added to the string containing
           # all outputs from this tool.  If it is an input or dependent file, this will
           # be added to the string containing all files required for this tool to run.
-          isInput     = True if self.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
-          isOutput    = True if self.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
-          isResource  = True if self.toolInfo[tool]['arguments'][argument]['dependent'] == 'true' else False
-          isDependent = True if self.toolInfo[tool]['arguments'][argument]['resource'] == 'true' else False
-          isFlag      = True if self.toolInfo[tool]['arguments'][argument]['type'] == 'flag' else False
-  
+          isInput        = True if self.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
+          isOutput       = True if self.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
+          isResource     = True if self.toolInfo[tool]['arguments'][argument]['dependent'] == 'true' else False
+          isDependent    = True if self.toolInfo[tool]['arguments'][argument]['resource'] == 'true' else False
+          isFlag         = True if self.toolInfo[tool]['arguments'][argument]['type'] == 'flag' else False
+
+          # Determine if the input and output from this task are the stream.  If so, the
+          # dependencies and outputs structures do not need to be updated to include these
+          # arguments
+          outputToStream = False
+          inputIsStream  = False
+          if hasStream:
+            if task in pl.information['tools outputting to stream']: outputToStream = True
+            if (previousTask != '') and (previousTask in pl.information['tools outputting to stream']): inputIsStream = True
+
           if isInput or isDependent or isOutput or isResource:
   
             # If the input/output file is defined, check that the extension is as expected.
@@ -441,16 +452,28 @@ class tools:
                 sys.stdout.flush()
                 er.stubNoOutputs(tool, argument)
                 er.terminate()
+
+              # Do not add the output to the self.outputs structure if the task is outputting
+              # to the stream.
               else:
                 for name in self.toolInfo[tool]['arguments'][argument]['outputs']:
-                  if isOutput: self.outputs[task].append(value + name)
-                  else: self.dependencies[task].append(value + name)
+                  if isOutput:
+                    if not outputToStream: self.outputs[task].append(value + name)
+                  elif isInput:
+                    if not inputIsStream: self.dependencies[task].append(value + name)
   
             # If the filename is not a stub, just include the value.
             else:
               if (value != '') and not isFlag:
-                if isOutput: self.outputs[task].append(value)
-                else: self.dependencies[task].append(value)
+                if isOutput:
+                  if not outputToStream: self.outputs[task].append(value)
+                elif isInput:
+                 if not inputIsStream: self.dependencies[task].append(value)
+
+
+      # Update the previous task and previous tool to be the task and tool just evaluated.
+      previousTask = task
+      previousTool = tool
 
       if self.toolArguments['pipeline']['--verbose']:
         print('done.', file = sys.stdout)

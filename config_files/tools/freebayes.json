@@ -19,7 +19,7 @@
           "if input is stream" : "replace",
           "replace argument with" : {
             "argument" : "--stdin",
-            "value" : ""
+            "value" : "no value"
           },
           "type" : "string",
           "allow multiple definitions" : "true"
