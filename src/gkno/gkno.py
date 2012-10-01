@@ -28,8 +28,8 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.33"
-__date__ = "September 2012"
+__version__ = "0.34"
+__date__ = "October 2012"
 
 def main():
 

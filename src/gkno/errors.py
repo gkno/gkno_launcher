@@ -60,6 +60,36 @@ class errors:
     self.writeFormattedText(noTab)
     self.error = True
   
+  # If the pipeline configuration contains an option that is not in the tool
+  # configuration file, there is an error in the linkage section of the pipeline
+  # configuration file.
+  def invalidToolName(self, newLine, noTab, value, tool):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'Invalid tool name \'' + tool + '\' in the \'' + value + '\' section of the pipeline configuration file.'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  # A supplied argument is invalid.
+  def invalidArgument(self, newLine, noTab, value, argument, tool):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'Invalid argument (' + argument + ') in the \'' + value + '\' section of the pipeline configuration file for tool \'' + tool + '\'.'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
+  # If the argument associated with the filename list is invalid.
+  def invalidArgumentToRepeat(self, newLine, noTab, task, tool, argument, linkedArgument):
+    self.text = []
+    if newLine: print(file = sys.stderr)
+    text = 'A list of files was selected for task \'' + task + '\' argument \'' + argument + '\'.  The command line argument (\'' + linkedArgument + \
+     '\') to input these files is not valid for tool (\'' + tool + '\').  Please check the json file.'
+    self.text.append(text)
+    self.writeFormattedText(noTab)
+    self.error = True
+
   ##############
   # Json errors.
   ##############
@@ -332,13 +362,6 @@ class errors:
     print('part of the pipeline (\'', tool, '\')', sep = '', file = sys.stderr)
     self.error = True
 
-  # A supplied argument is invalid.
-  def invalidArgument(self, newLine, pad, text, argument, tool):
-    if newLine: print(file = sys.stderr)
-    print(pad, 'ERROR: Invalid argument (', argument, ') in the \'', text, '\' section ', sep = '', file = sys.stderr)
-    print(pad, 'ERROR: of the pipeline configuration file for tool \'', tool, '\'.', sep = '', file = sys.stderr)
-    self.error = True
-
   # The tool configuration file has multiple input files designated for use as output
   # filename constructors.
   def multipleFilenameConstructors(self, pad, task, tool, argumentA, argumentB):
@@ -363,14 +386,6 @@ class errors:
     print(pad, 'ERROR: A list of files was selected for task \'', task, '\' argument \'', argument, '\'.', sep = '', file = sys.stderr)
     print(pad, 'ERROR: The json file for this tool (\'', tool, '\') and argument does not contain the value:', sep = '', file = sys.stderr)
     print(pad, 'ERROR: \'apply by repeating this argument\' with the argument to use on the command line.', sep = '', file = sys.stderr)
-    self.error = True
-
-  # If the argument associated with the filename list is invalid.
-  def invalidArgumentToRepeat(self, newLine, pad, task, tool, argument, linkedArgument):
-    if newLine: print(file = sys.stderr)
-    print(pad, 'ERROR: A list of files was selected for task \'', task, '\' argument \'', argument, '\'.', sep = '', file = sys.stderr)
-    print(pad, 'ERROR: The command line argument (\'', linkedArgument, '\') to input these files', sep = '', file = sys.stderr)
-    print(pad, 'ERROR: is not valid for tool (\'', tool, '\').  Please check the json file.', sep = '', file = sys.stderr)
     self.error = True
 
   # If the list of filenames is not a list or is missing the correct title.
@@ -558,15 +573,6 @@ class errors:
   # Missing pipeline json configuration file.
   def missingPipelineJsonFile(self, jsonFile):
     print("ERROR: Unable to find pipeline configuration file: ", jsonFile, sep = "", file = sys.stderr)
-
-  # If the pipeline configuration contains an option that is not in the tool
-  # configuration file, there is an error in the linkage section of the pipeline
-  # configuration file.
-  def invalidToolName(self, newLine, pad, text, tool):
-    if newLine: print(file = sys.stderr)
-    print(pad, 'ERROR: Invalid tool name \'', tool, '\' in the \'', text, '\' section of the pipeline ', sep = '', end = '', file = sys.stderr)
-    print('configuration file.', sep = '', file = sys.stderr)
-    self.error = True
 
   # If an expected json block is missing from the file.
   def missingJsonEntry(self, value, tool):

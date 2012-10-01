@@ -1,0 +1,65 @@
+{
+  "description" : "Merge together all bam files for a sample and mark duplicate reads.",
+  "workflow" : [
+    "merge-vcf-files",
+    "filter-vcf"
+  ],
+  "tools" : {
+    "merge-vcf-files" : "merge-vcf-files",
+    "filter-vcf" : "vcflib-filter"
+  },
+  "tools outputting to stream" : [
+    "merge-vcf-files"
+  ],
+  "linkage" : {
+    "filter-vcf" : {
+      "--in" : {
+        "link to this task" : "merge-vcf-files",
+        "link to this argument" : "--out"
+      }
+    }
+  },
+  "arguments" : {
+    "--vcf-list" : {
+      "description" : "A file containing a list of input VCF files.",
+      "link to this task" : "merge-vcf-files",
+      "link to this argument" : "--vcf-list",
+      "short form argument" : "-vl",
+      "type" : "string"
+    },
+    "--out" : {
+      "description" : "The output filtered VCF file.",
+      "link to this task" : "filter-vcf",
+      "link to this argument" : "--out",
+      "short form argument" : "-o",
+      "type" : "string"
+    },
+    "--info-filter" : {
+      "description" : "Rule(s) to filter VCF file on.",
+      "link to this task" : "filter-vcf",
+      "link to this argument" : "--info-filter",
+      "short form argument" : "-f",
+      "type" : "string",
+      "default" : "\"QUAL < 1\""
+    },
+    "--tag" : {
+      "description" : "Text to include in the filter field of the VCF file.",
+      "link to this task" : "filter-vcf",
+      "link to this argument" : "--tag",
+      "short form argument" : "-t",
+      "type" : "string",
+      "default" : "\"Q1\""
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires user to input all input filenames."
+    },
+    "tutorial" : {
+      "description" : "Tutorial instance uses files in the 'current' tutorial resources.",
+      "--vcf-list" : "tutorial-files",
+      "--out" : "short-variants",
+      "--info-filter" : "\"QUAL < 20\""
+    }
+  }
+}

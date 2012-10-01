@@ -460,7 +460,7 @@ class commandLine:
         linkToTool = pl.information['tools'][linkToTask] if linkToTask in pl.information['tools'] else ''
         value      = pl.information['instances'][instance][argument]
         if 'allow multiple definitions' in tl.toolInfo[linkToTool]['arguments'][linkToArgument]:
-          if len(tl.toolArguments[linkToTask][linkToArgument]) == 0: tl.toolArguments[linkToTask][linkToArgument] = []
+          tl.toolArguments[linkToTask][linkToArgument] = []
           if isinstance(value, list):
             for entry in value: tl.toolArguments[linkToTask][linkToArgument].append(entry)
           else: tl.toolArguments[linkToTask][linkToArgument].append(value)

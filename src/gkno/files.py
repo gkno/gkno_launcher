@@ -412,8 +412,21 @@ class files:
           argumentOrder.append(argument)
           del(argumentDict[argument])
         else:
-          er.unknownArgumentInArgumentOrder(newLine, noTab, task, tool, argument)
-          er.terminate()
+          self.error = False
+
+          # If the argument is for an input or output, it is possible that these arguments
+          # have been removed if dealing with the stream.  Check if this is the case and
+          # if so, do not terminate.
+          if 'if output to stream' in tl.toolInfo[tool]['arguments'][argument]:
+            if tl.toolInfo[tool]['arguments'][argument]['if output to stream'] == 'do not include': del(argumentDict[argument])
+            else: self.error = True
+          elif 'if input is stream' in tl.toolInfo[tool]['arguments'][argument]:
+            if tl.toolInfo[tool]['arguments'][argument]['if input is stream'] == 'do not include': del(argumentDict[argument])
+            else: self.error = True
+          else: self.error = True
+          if self.error:
+            er.unknownArgumentInArgumentOrder(newLine, noTab, task, tool, argument)
+            er.terminate()
 
       # Having stepped through all of the arguments included in the ordered list, check
       # if there are any arguments left in the argumentDict dictionary.  This dictionary
@@ -459,7 +472,8 @@ class files:
 
         # If the line is blank, do not print to file.
         if not ((argument == '') and (tl.toolArguments[task][argument] == '')):
-          print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
+          if tl.toolArguments[task][argument] == 'no value': print(" \\\n\t", argument, sep = '', end = '', file = self.makeFilehandle)
+          else: print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
       else:
 
         # Some tools do not require a --argument or -argument in front of each value,

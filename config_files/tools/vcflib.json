@@ -1,0 +1,119 @@
+{
+  "tools" : {
+    "vcflib-filter" : {
+      "description" : "Filter vcf files on a variety of parameters.",
+      "path" : "vcflib",
+      "executable" : "vcffilter",
+      "hide tool" : "true",
+      "help" : "--help|-h",
+      "arguments" : {
+        "--in" : {
+          "description" : "The input vcf file.",
+          "short form argument" : "-i",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "true",
+          "dependent" : "false",
+          "extension" : "vcf|vcf.gz",
+          "if input is stream" : "do not include",
+          "type" : "string"
+        },
+        "--out" : {
+          "description" : "The output filtered VCF file.",
+          "short form argument" : "-o",
+          "output" : "true",
+          "input" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "filtered.vcf",
+          "modify argument name on command line" : "stdout"
+        },
+        "--info-filter" : {
+          "description" : "Specifies a filter to apply to the info fields of records, removes alleles which do not pass the filter.",
+          "short form argument" : "-f",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "allow multiple definitions" : "true",
+          "type" : "string"
+        },
+        "--genotype-filter" : {
+          "description" : "Specifies a filter to apply to the genotype fields of records.",
+          "short form argument" : "-g",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "string"
+        },
+        "--tag" : {
+          "description" : "Tag vcf records as filtered with this tag instead of suppressing them.",
+          "short form argument" : "-t",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "string"
+        },
+        "--allele-tag" : {
+          "description" : "Apply -t on a per-allele basis.  Adds or sets the corresponding INFO field tag.",
+          "short form argument" : "-a",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag"
+        },
+        "--invert" : {
+          "description" : "Inverts the filter, e.g. grep -v.",
+          "short form argument" : "-v",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag"
+        },
+        "--or" : {
+          "description" : "Use logical OR instead of AND to combine filters.",
+          "short form argument" : "-or",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "flag"
+        },
+        "--region" : {
+          "description" : "Specify a region on which to target the filtering, requires a BGZF compressed file which has been indexed with tabix.  Any number of regions may be specified.",
+          "short form argument" : "-r",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "string"
+        }
+      },
+      "argument order" : [
+        "--info-filter",
+        "--genotype-filter",
+        "--tag",
+        "--allele-tag",
+        "--invert",
+        "--or",
+        "--region",
+        "--in",
+        "--out"
+      ]
+    }
+  }
+}

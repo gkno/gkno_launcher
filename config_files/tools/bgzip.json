@@ -1,0 +1,39 @@
+{
+  "tools" : {
+    "bgzip" : {
+      "description" : "Compress a file using bgzip.",
+      "path" : "tabix",
+      "hide tool" : "true",
+      "executable" : "bgzip",
+      "help" : "--help|-h",
+      "arguments" : {
+        "--in" : {
+          "description" : "The file to be compressed.",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "short form argument" : "-i",
+          "extension" : "no extension",
+          "modify argument name on command line" : "hide",
+          "if input is stream" : "do not include"
+        },
+        "--out" : {
+          "short form argument" : "-o",
+          "description" : "The compressed output file.",
+          "input" : "false",
+          "output" : "true",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "no extension",
+          "do not contruct filename from input" : "true",
+          "modify argument name on command line" : "stdout"
+        }
+      }
+    }
+  }
+}

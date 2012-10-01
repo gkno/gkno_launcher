@@ -203,7 +203,17 @@ class pipeline:
           er.incorrectArgumentInPipelineConfigurationFile(newLine, noTab, task, argument, linkToArgument)
           er.terminate()
 
-        if default != '': tl.toolArguments[task][linkToArgument] = default
+        # Some arguments are allowed to take multiple values.  If this is the case, set
+        # the toolArguments object to a list and append the default value.
+        if default != '':
+          multiple = False
+          if 'allow multiple definitions' in tl.toolInfo[tool]['arguments'][linkToArgument]:
+            if tl.toolInfo[tool]['arguments'][linkToArgument]['allow multiple definitions'] == 'true': multiple = True
+
+          if multiple:
+            if len(tl.toolArguments[task][linkToArgument]) == 0: tl.toolArguments[task][linkToArgument] = []
+            tl.toolArguments[task][linkToArgument].append(default)
+          else: tl.toolArguments[task][linkToArgument] = default
       else:
         default = self.information['arguments'][argument]['default']
 
@@ -391,7 +401,7 @@ class pipeline:
   def checkLinkage(self, tl, task, tool, argument):
     er = errors()
     newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
-    noTab   = 2 if tl.toolArguments['pipeline']['--verbose'] else 0
+    noTab   = 3 if tl.toolArguments['pipeline']['--verbose'] else 0
 
     targetToolName = ''
     try: targetToolName = self.information['linkage'][task][argument]['link to this task']
@@ -405,11 +415,11 @@ class pipeline:
 
     # Check that the targetToolName and the targetOption are valid.
     if targetToolName not in tl.toolArguments:
-      er.invalidToolName('linkage', targetToolName)
+      er.invalidToolName(newLine, noTab, 'linkage', targetToolName)
       er.terminate()
 
     if targetArgument not in tl.toolArguments[targetToolName]:
-      er.invalidArgument('linkage', targetArgument, targetToolName)
+      er.invalidArgument(newLine, noTab, 'linkage', targetArgument, targetToolName)
       er.terminate()
 
     # If the linkage block contains 'extension', the linked value requires this
