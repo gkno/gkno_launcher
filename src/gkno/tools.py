@@ -179,7 +179,7 @@ class tools:
     # tracked in the pl.addedToToolInfo structure.
     for task in pl.addedToToolInfo:
       for argument in pl.addedToToolInfo[task]:
-        del(self.toolInfo[task]['arguments'][argument])
+        if argument in self.toolInfo[task]['arguments']: del(self.toolInfo[task]['arguments'][argument])
 
     # Reset other data structures.
     self.dependencies  = {}

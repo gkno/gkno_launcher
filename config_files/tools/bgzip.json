@@ -16,22 +16,22 @@
           "dependent" : "true",
           "type" : "string",
           "short form argument" : "-i",
-          "extension" : "no extension",
+          "extension" : "vcf",
           "modify argument name on command line" : "hide",
           "if input is stream" : "do not include"
         },
         "--out" : {
-          "short form argument" : "-o",
-          "description" : "The compressed output file.",
+          "description" : "The output file.",
           "input" : "false",
           "output" : "true",
           "required" : "true",
           "resource" : "false",
           "dependent" : "false",
           "type" : "string",
-          "extension" : "no extension",
-          "do not contruct filename from input" : "true",
-          "modify argument name on command line" : "stdout"
+          "short form argument" : "-o",
+          "extension" : "gz",
+          "modify argument name on command line" : "omit",
+          "if output is stream" : "do not include"
         }
       }
     }

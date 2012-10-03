@@ -176,6 +176,10 @@
     "default" : {
       "description" : "The default parameters for short-variant calling.  Assumed low coverage data for a large population."
     },
+    "human" : {
+      "description" : "The human instance will call on the autosome only using segments of DNA of 1Mbp in length.",
+      "--fasta" : "$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"
+    },
     "tutorial" : {
       "description" : "Tutorial instance uses lenient parameters so that variants are discovered with the simulated data.",
       "--min-alternate-count" : "1",

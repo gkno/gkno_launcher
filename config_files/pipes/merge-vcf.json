@@ -2,11 +2,15 @@
   "description" : "Merge together all bam files for a sample and mark duplicate reads.",
   "workflow" : [
     "merge-vcf-files",
-    "filter-vcf"
+    "filter-vcf",
+    "compress-vcf",
+    "index-vcf"
   ],
   "tools" : {
     "merge-vcf-files" : "merge-vcf-files",
-    "filter-vcf" : "vcflib-filter"
+    "filter-vcf" : "vcflib-filter",
+    "compress-vcf" : "bgzip",
+    "index-vcf" : "tabix-index-vcf"
   },
   "tools outputting to stream" : [
     "merge-vcf-files"
@@ -15,6 +19,22 @@
     "filter-vcf" : {
       "--in" : {
         "link to this task" : "merge-vcf-files",
+        "link to this argument" : "--out"
+      }
+    },
+    "compress-vcf" : {
+      "--in" : {
+        "link to this task" : "filter-vcf",
+        "link to this argument" : "--out"
+      },
+      "--out" : {
+        "link to this task" : "filter-vcf",
+        "link to this argument" : "--out"
+      }
+    },
+    "index-vcf" : {
+      "--in" : {
+        "link to this task" : "compress-vcf",
         "link to this argument" : "--out"
       }
     }
@@ -40,7 +60,7 @@
       "link to this argument" : "--info-filter",
       "short form argument" : "-f",
       "type" : "string",
-      "default" : "\"QUAL < 1\""
+      "default" : "\"QUAL < 10\""
     },
     "--tag" : {
       "description" : "Text to include in the filter field of the VCF file.",
@@ -55,11 +75,18 @@
     "default" : {
       "description" : "Default instance requires user to input all input filenames."
     },
+    "human" : {
+      "description" : "Human instance uses more realistic filtering criteria",
+      "--info-filter" : "\"QUAL < 20\"",
+      "--info-filter" : "\"AB < 0.35\"",
+      "--tag" : "\"Q20,AB0.35\""
+    },
     "tutorial" : {
       "description" : "Tutorial instance uses files in the 'current' tutorial resources.",
       "--vcf-list" : "tutorial-files",
       "--out" : "short-variants",
-      "--info-filter" : "\"QUAL < 20\""
+      "--info-filter" : "\"QUAL < 20\"",
+      "--tag" : "\"Q20\""
     }
   }
 }

@@ -1,6 +1,5 @@
 {
   "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
-  "resource path" : "tutorial/current",
   "workflow" : [
     "build-reference",
     "build-jump-database",
@@ -125,6 +124,14 @@
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-jmp"
       },
+      "-annse" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-annse"
+      },
+      "-annpe" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-annpe"
+      },
       "json parameters" : {
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-out",
@@ -217,6 +224,7 @@
   },
   "arguments" : {
     "--fasta" : {
+      "description" : "The reference fasta genome.",
       "link to this task" : "build-reference",
       "link to this argument" : "-fr",
       "short form argument" : "-f",
@@ -235,8 +243,7 @@
       "link to this argument" : "-fq1",
       "description" : "The input fastq file (first mate)",
       "type" : "string",
-      "user entry required" : "true",
-      "default" : "$(RESOURCES)/simulated_reads_1.fq"
+      "user entry required" : "true"
     },
     "--fastq2" : {
       "short form argument" : "-q2",
@@ -244,8 +251,7 @@
       "link to this argument" : "-fq2",
       "description" : "The input fastq file (second mate)",
       "type" : "string",
-      "user entry required" : "true",
-      "default" : "$(RESOURCES)/simulated_reads_2.fq"
+      "user entry required" : "true"
     },
     "--mosaik-reference" : {
       "short form argument" : "-r",
@@ -277,6 +283,20 @@
       "link to this argument" : "-st",
       "type" : "string"
     },
+    "--ann-se" : {
+      "description" : "Neural network file for Mosaik mapping quality scores (single end).",
+      "short form argument" : "-as",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-annse",
+      "type" : "string"
+    },
+    "--ann-pe" : {
+      "description" : "Neural network file for Mosaik mapping quality scores (paired end).",
+      "short form argument" : "-ap",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-annpe",
+      "type" : "string"
+    },
     "--median-fragment-length" : {
       "short form argument" : "-mfl",
       "link to this task" : "build-read-archive",
@@ -285,12 +305,14 @@
       "type" : "integer"
     },
     "--out" : {
+      "description" : "The output read archive.",
       "link to this task" : "build-read-archive",
       "link to this argument" : "-out",
       "short form argument" : "-o",
       "type" : "string"
     },
     "--knownSites" : {
+      "description" : "A database of known polymorphic sites to skip over in the recalibration algorithm.",
       "link to this task" : "count-covariates",
       "link to this argument" : "-knownSites",
       "short form argument" : "-k",
@@ -326,13 +348,18 @@
   },
 
   "instances" : {
-    "a" : {
-      "description" : "alternative instance",
-      "--hash-size" : "9"
+    "default" : {
+      "description" : "The default instance requires the user to input all parameters and files."
     },
-    "bdfjhgdsjfhgdsfj" : {
-      "description" : "alternative instance b",
-      "--hash-size" : "8"
+    "tutorial" : {
+      "description" : "The tutorial instance uses files from the tutorial resources.",
+      "--hash-size" : "10",
+      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--fastq" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq",
+      "--fastq2" : "$(RESOURCES)/tutorial/current/simulated_reads_2.fq",
+      "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
+      "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
+      "--knownSites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf"
     }
   }
 }

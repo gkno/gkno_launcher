@@ -482,6 +482,7 @@ class files:
         # to the command line. Also, commands can be included for instructing gkno to
         # print to stdout (e.g. use '>') or stderr ('2>').
         hideArgument = False
+        writeNothing = False
         useStdout    = False
         useStderr    = False
         if inInfo:
@@ -489,6 +490,7 @@ class files:
             hideArgument = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'hide' else False
             useStdout    = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'stdout' else False
             useStderr    = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'stderr' else False
+            writeNothing = True if tl.toolInfo[tool]['arguments'][argument]['modify argument name on command line'] == 'omit' else False
 
           if tl.toolInfo[tool]['arguments'][argument]['type'] == 'flag': isFlag = True
 
@@ -506,6 +508,7 @@ class files:
           if isList:
             for value in tl.toolArguments[task][argument]:
               if hideArgument: print(" \\\n\t", value, sep = '', end = '', file = self.makeFilehandle)
+              elif writeNothing: pass
               elif useStdout: print(" \\\n\t> ", value, sep = '', end = '', file = self.makeFilehandle)
               elif useStderr: print(" \\\n\t2> ", value, sep = '', end = '', file = self.makeFilehandle)
               else: print(" \\\n\t", argument, delimiter, value, sep = '', end = '', file = self.makeFilehandle)
@@ -516,6 +519,7 @@ class files:
               print(" \\\n\t", argument, sep = '', end = '', file = self.makeFilehandle)
             else:
               if hideArgument: print(" \\\n\t", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
+              elif writeNothing: pass
               elif useStdout: print(" \\\n\t> ", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
               elif useStderr: print(" \\\n\t2> ", tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
               else: print(" \\\n\t", argument, delimiter, tl.toolArguments[task][argument], sep = '', end = '', file = self.makeFilehandle)
