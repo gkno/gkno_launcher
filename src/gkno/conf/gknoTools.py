@@ -179,19 +179,35 @@ class Mosaik(GknoTool):
     self.installDir = "MOSAIK"
 
   # $ cd src
-  # # make clean
+  # (platform-specific export commands)
+  # $ make clean
   # $ make -j N
   def doBuild(self):
-    os.chdir("src") 
+    os.chdir("src")
+    if not doPlatformExports(): 
+      return False
     if not self.makeClean():
       return False
     return self.make()
   
   # $ cd src
+  # (platform-specific export commands)
   # $ make -j N
   def doUpdate(self):
-    os.chdir("src")                    
+    os.chdir("src") 
+    if not doPlatformExports():
+      return False                   
     return self.make()
+
+  # Mosaik has some platform-specific export commands
+  def doPlatformExports(self):
+    if sys.platform == 'darwin':
+      pl='macosx'
+      if sys.maxsize > 2**32:
+        pl = 'macosx64'
+      return self.runCommand("export BLD_PLATFORM="+pl)
+    else:
+      return True
 
 # ogap
 class Ogap(GknoTool):
