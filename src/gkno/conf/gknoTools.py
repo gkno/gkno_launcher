@@ -184,7 +184,7 @@ class Mosaik(GknoTool):
   # $ make -j N
   def doBuild(self):
     os.chdir("src")
-    if not doPlatformExports(): 
+    if not self.doPlatformExports(): 
       return False
     if not self.makeClean():
       return False
@@ -195,7 +195,7 @@ class Mosaik(GknoTool):
   # $ make -j N
   def doUpdate(self):
     os.chdir("src") 
-    if not doPlatformExports():
+    if not self.doPlatformExports():
       return False                   
     return self.make()
 
