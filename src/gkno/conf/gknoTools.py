@@ -82,6 +82,13 @@ class GknoTool(object):
     status = subprocess.call(command.split(), stdout=self.out, stderr=self.err)
     return status == 0
 
+  # Similar to our runCommand() method, except the command is executed through the shell
+  # Uses the output destinations (stdout/stderr) set by earlier external caller
+  # Converts command exit status to True/False (under assumption of common practice that exit status of 0 is success)
+  def runShellCommand(self, command):
+    status = subprocess.call(command.split(), stdout=self.out, stderr=self.err, shell=True)
+    return status == 0
+
   # Creates directory if it doesn't already exist
   def ensureMakeDir(self, directory, mode=0777):
     if not os.path.exists(directory):
@@ -205,7 +212,7 @@ class Mosaik(GknoTool):
       pl='macosx'
       if sys.maxsize > 2**32:
         pl = 'macosx64'
-      return self.runCommand("export BLD_PLATFORM="+pl)
+      return self.runShellCommand("export BLD_PLATFORM="+pl)
     else:
       return True
 
