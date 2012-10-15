@@ -180,6 +180,11 @@
       "description" : "The human instance will call on the autosome only using segments of DNA of 1Mbp in length.",
       "--fasta" : "$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"
     },
+    "human-high-coverage" : {
+      "description" : "The human instance will call on the autosome only using segments of DNA of 1Mbp in length.",
+      "--fasta" : "$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa",
+      "--min-alternate-count" : "5"
+    },
     "tutorial" : {
       "description" : "Tutorial instance uses lenient parameters so that variants are discovered with the simulated data.",
       "--min-alternate-count" : "1",

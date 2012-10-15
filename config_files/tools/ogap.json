@@ -16,7 +16,7 @@
           "required" : "true",
           "dependent" : "true",
           "short form argument" : "-f",
-          "extension" : "fa|fastq",
+          "extension" : "fa|fasta",
           "type" : "string"
         },
         "--flanking-window" : {

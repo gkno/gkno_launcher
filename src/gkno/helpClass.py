@@ -300,7 +300,8 @@ class helpClass:
       for instance in pl.information['instances']: length = len(instance) if len(instance) > length else length
       length += 4
 
-      for instance in pl.information['instances']:
+      sortedInstances = sorted(pl.information['instances'].keys())
+      for instance in sortedInstances:
         description = pl.information['instances'][instance]['description'] if 'description' in pl.information['instances'][instance] else \
         'No description'
         self.writeFormattedText(instance + ":", description, length, 2, '')

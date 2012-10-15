@@ -95,7 +95,7 @@ def main():
 
     # Each of the tools available to gkno should have a config file to
     # describe its operation, purpose etc.  These are contained in
-    # config_files/tools.  Find all of the config file and create a hash
+    # config_files/tools.  Find all of the config files and create a hash
     # table with all available tools.
     io.getJsonFiles(sourcePath + '/config_files/')
 
