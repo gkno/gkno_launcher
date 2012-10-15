@@ -82,6 +82,13 @@ class GknoTool(object):
     status = subprocess.call(command.split(), stdout=self.out, stderr=self.err)
     return status == 0
 
+  # Similar to our runCommand() method, except the command is executed through the shell
+  # Uses the output destinations (stdout/stderr) set by earlier external caller
+  # Converts command exit status to True/False (under assumption of common practice that exit status of 0 is success)
+  def runShellCommand(self, command):
+    status = subprocess.call(command.split(), stdout=self.out, stderr=self.err, shell=True)
+    return status == 0
+
   # Creates directory if it doesn't already exist
   def ensureMakeDir(self, directory, mode=0777):
     if not os.path.exists(directory):
@@ -179,19 +186,35 @@ class Mosaik(GknoTool):
     self.installDir = "MOSAIK"
 
   # $ cd src
-  # # make clean
+  # (platform-specific export commands)
+  # $ make clean
   # $ make -j N
   def doBuild(self):
-    os.chdir("src") 
+    os.chdir("src")
+    if not self.doPlatformExports(): 
+      return False
     if not self.makeClean():
       return False
     return self.make()
   
   # $ cd src
+  # (platform-specific export commands)
   # $ make -j N
   def doUpdate(self):
-    os.chdir("src")                    
+    os.chdir("src") 
+    if not self.doPlatformExports():
+      return False                   
     return self.make()
+
+  # Mosaik has some platform-specific export commands
+  def doPlatformExports(self):
+    if sys.platform == 'darwin':
+      pl='macosx'
+      if sys.maxsize > 2**32:
+        pl = 'macosx64'
+      return self.runShellCommand("export BLD_PLATFORM="+pl)
+    else:
+      return True
 
 # ogap
 class Ogap(GknoTool):
