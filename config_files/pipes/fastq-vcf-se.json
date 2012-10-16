@@ -8,6 +8,8 @@
     "sort-primary-bam",
     "sort-multiple-bam",
     "index-primary-bam",
+    "index-fasta",
+    "create-sequence-dictionary",
     "count-covariates",
     "recalibrate-bq",
     "filter-bam",
@@ -23,6 +25,8 @@
     "sort-primary-bam" : "bamtools-sort",
     "sort-multiple-bam" : "bamtools-sort",
     "index-primary-bam" : "bamtools-index",
+    "index-fasta" : "samtools-index-fasta",
+    "create-sequence-dictionary" : "picard-create-sequence-dictionary",
     "count-covariates" : "gatk-count-covariates",
     "recalibrate-bq" : "gatk-recalibrate-bq",
     "filter-bam" : "bamtools-filter",
@@ -111,6 +115,18 @@
       "-in" : {
         "link to this task" : "sort-primary-bam",
         "link to this argument" : "-out"
+      }
+    },
+    "index-fasta" : {
+      "--in" : {
+        "link to this task" : "build-reference",
+        "link to this argument" : "-fr"
+      }
+    },
+    "create-sequence-dictionary" : {
+      "REFERENCE" : {
+        "link to this task" : "index-fasta",
+        "link to this argument" : "--in"
       }
     },
     "count-covariates" : {
@@ -210,7 +226,8 @@
       "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
       "link to this task" : "build-read-archive",
       "link to this argument" : "-st",
-      "type" : "string"
+      "type" : "string",
+      "default" : "illumina"
     },
     "--ann-se" : {
       "description" : "Neural network file for Mosaik mapping quality scores (single end).",
