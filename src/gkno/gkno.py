@@ -28,7 +28,7 @@ import pipelines
 from pipelines import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.36"
+__version__ = "0.37"
 __date__ = "October 2012"
 
 def main():
@@ -200,7 +200,7 @@ def main():
       # filename is unique.
       ej = exportJson()
       ej.checkExportName(tl, io)
-      ej.getData(tl, pl, gknoHelp)
+      ej.getData(cl, tl, pl, gknoHelp)
       ej.modifyPipelineInformation(tl, pl)
       ej.writeNewConfigurationFile(pl, sourcePath)
   

@@ -67,7 +67,7 @@ class exportJson:
     sys.stdout.flush()
 
   # Get the data for the new configuration file.
-  def getData(self, tl, pl, gknoHelp):
+  def getData(self, cl, tl, pl, gknoHelp):
 
     # Set the paths for all of the inputted files and check that all set parameters
     # are valid.
