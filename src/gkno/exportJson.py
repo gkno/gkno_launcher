@@ -39,11 +39,11 @@ class exportJson:
     print('Setting up new defaults...', end = '', file = sys.stdout)
     sys.stdout.flush()
     for argument in pl.information['arguments']:
-      tool         = pl.information['arguments'][argument]['tool']
+      tool = pl.information['arguments'][argument]['link to this task']
       if tool == 'pipeline':
         pass
       else:
-        toolArgument = pl.information['arguments'][argument]['command']
+        toolArgument = pl.information['arguments'][argument]['link to this argument']
         pl.information['arguments'][argument]['default'] = tl.toolArguments[tool][toolArgument]
     print('done.', file = sys.stdout)
 
