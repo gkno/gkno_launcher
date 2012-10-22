@@ -1,0 +1,25 @@
+{
+  "description" : "Mark duplicate reads using Picard.",
+  "workflow" : [
+    "mark-duplicates"
+  ],
+  "tools" : {
+    "mark-duplicates" : "picard-mark-duplicates"
+  },
+  "arguments" : {
+    "--bam" : {
+      "description" : "The input BAM file.",
+      "link to this task" : "mark-duplicates",
+      "link to this argument" : "INPUT",
+      "short form argument" : "-b",
+      "type" : "string"
+    },
+    "--out" : {
+      "description" : "The output bam file.",
+      "link to this task" : "mark-duplicates",
+      "link to this argument" : "OUTPUT",
+      "short form argument" : "-o",
+      "type" : "string"
+    }
+  }
+}

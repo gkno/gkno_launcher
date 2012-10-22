@@ -454,13 +454,15 @@ class tools:
                 er.terminate()
 
               # Do not add the output to the self.outputs structure if the task is outputting
-              # to the stream.
+              # to the stream.  Only add these values if it has been defined (i.e. value is not
+              # and empty string).
               else:
-                for name in self.toolInfo[tool]['arguments'][argument]['outputs']:
-                  if isOutput:
-                    if not outputToStream: self.outputs[task].append(value + name)
-                  elif isInput:
-                    if not inputIsStream: self.dependencies[task].append(value + name)
+                if value != '':
+                  for name in self.toolInfo[tool]['arguments'][argument]['outputs']:
+                    if isOutput:
+                      if not outputToStream: self.outputs[task].append(value + name)
+                    elif isInput:
+                      if not inputIsStream: self.dependencies[task].append(value + name)
   
             # If the filename is not a stub, just include the value.
             else:

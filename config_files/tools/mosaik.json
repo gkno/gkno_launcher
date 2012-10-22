@@ -30,6 +30,7 @@
         }
       }
     },
+
     "mosaik-build-fastq" : {
       "description" : "Build the Mosaik read archive",
       "path" : "MOSAIK/bin",
@@ -210,7 +211,7 @@
           "description" : "the Mosaik jump database",
           "input" : "true",
           "output" : "false",
-          "required" : "true",
+          "required" : "false",
           "resource" : "false",
           "dependent" : "true",
           "type" : "string",
@@ -287,6 +288,56 @@
           "type" : "integer",
           "extension" : "no extension",
           "default" : "15"
+        },
+        "-mmp" : {
+          "description" : "the percentage of mismatches allowed [0.0 - 1.0]",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "float",
+          "extension" : "no extension"
+        },
+        "-act" : {
+          "description" : "the alignment candidate threshold (length)",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "integer",
+          "extension" : "no extension"
+        },
+        "-bw" : {
+          "description" : "specifies the Smith-Waterman bandwidth.  Default: 9",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "integer",
+          "extension" : "no extension"
+        },
+        "-mhp" : {
+          "description" : "the maximum number of positions stored per seed",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "integer",
+          "extension" : "no extension"
+        },
+        "-p" : {
+          "description" : "uses the specified number of processors",
+          "input" : "false",
+          "output" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "integer",
+          "extension" : "no extension"
         }
       }
     }

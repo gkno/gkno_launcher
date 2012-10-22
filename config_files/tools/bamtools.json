@@ -265,6 +265,86 @@
         "-insert",
         "-out"
       ]
+    },
+
+    "bamtools-resolve" : {
+      "description" : "Resolves paired-end reads (marking the IsProperPair flag as needed).",
+      "path" : "bamtools/bin",
+      "executable" : "bamtools",
+      "modifier" : "resolve",
+      "help" : "--help|-h",
+      "arguments" : {
+        "-in" : {
+          "description" : "the input BAM file.",
+          "input" : "true",
+          "output" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "bam"
+        },
+        "-out" : {
+          "description" : "the output marked BAM file.",
+          "output" : "true",
+          "input" : "false",
+          "required" : "true",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "marked.bam"
+        },
+        "-stats" : {
+          "description" : "input/output stats file, depending on selected mode (see below). This file is human-readable, storing fragment length data generated per read group, as well as the options used to configure the -makeStats mode.",
+          "output" : "true",
+          "input" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "string",
+          "extension" : "stats"
+        },
+        "-makeStats" : {
+          "description" : "generates a fragment-length stats file from the input BAM. Data is written to file specified using the -stats option. MarkPairs Mode Settings are DISABLED.",
+          "output" : "false",
+          "input" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "-markPairs" : {
+          "description" : "generates an output BAM with alignments marked with proper-pair status. Stats data is read from file specified using the -stats option. MakeStats Mode settings are DISABLED.",
+          "output" : "false",
+          "input" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "-twoPass" : {
+          "description" : "combines the -makeStats & -markPairs modes into a single command.  However, due to the two-pass nature of paired-end resolution, piping BAM data via stdin is DISABLED. You must supply an explicit input BAM file. Output BAM may be piped to stdout, however, if desired. All MakeStats & MarkPairs Mode Settings are available. The intermediate stats file if not necessary, but if the -stats options is used, then one will be generated. You may find this useful for documentation purposes.",
+          "output" : "false",
+          "input" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "-minMQ" : {
+          "description" : "minimum map quality. Used in -makeStats mode as a heuristic for determining a mate's uniqueness. Used in -markPairs mode as a filter for marking candidate proper pairs.",
+          "output" : "false",
+          "input" : "false",
+          "required" : "false",
+          "resource" : "false",
+          "dependent" : "false",
+          "type" : "integer",
+          "extension" : "no extension"
+        }
+      }
     }
   }
 }
