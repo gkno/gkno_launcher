@@ -130,6 +130,17 @@
           "dependent" : "false",
           "type" : "string"
         },
+        "--targets" : {
+          "short form argument" : "-t",
+          "description" : "<FILE>. Limit analysis to targets listed in the BED-format FILE.",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "true",
+          "extension" : "bed",
+          "type" : "string"
+        },
         "--min-alternate-count" : {
           "short form argument" : "-C",
           "description" : "Require at least this count of observations supporting an alternate allele within a single individual in order to evaluate the position.  default: 1",
