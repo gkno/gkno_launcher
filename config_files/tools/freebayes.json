@@ -152,7 +152,7 @@
         },
         "--pvar" : {
           "short form argument" : "-P",
-          "description" : "Report sites if the probability that there is a polymorphism at the site is greater than N.  default: 0.0001",
+          "description" : "Report sites if the probability that there is a polymorphism at the site is greater than N.  default: 0.0001.",
           "input" : "false",
           "output" : "false",
           "resource" : "false",
@@ -209,6 +209,28 @@
           "required" : "false",
           "dependent" : "false",
           "type" : "integer"
+        },
+        "--ploidy" : {
+          "short form argument" : "-p",
+          "description" : "Sets the default ploidy for the analysis to N.  default: 2.",
+          "input" : "false",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "false",
+          "type" : "integer",
+          "default" : "2"
+        },
+        "--targets" : {
+          "short form argument" : "-t",
+          "description" : "Limit analysis to targets listed in the BED-format FILE.",
+          "input" : "true",
+          "output" : "false",
+          "resource" : "false",
+          "required" : "false",
+          "dependent" : "true",
+          "type" : "string",
+          "extension" : "bed"
         }
       }
     }

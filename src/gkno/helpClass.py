@@ -373,8 +373,17 @@ class helpClass:
     valueList = []
     while len(value) > (maxLength - startLength):
       index = value.rfind(' ', 0, (maxLength - startLength))
-      valueList.append(value[0:index])
-      value = value[index + 1:len(value)]
+      if index == -1:
+        index = value.find(' ', 0, len(value))
+        if index == -1:
+          valueList.append(value)
+          value = ''
+        else:
+          valueList.append(value[0:index])
+          value = value[index + 1:len(value)]
+      else:
+        valueList.append(value[0:index])
+        value = value[index + 1:len(value)]
     if value != '': valueList.append(value)
 
     value = valueList.pop(0)
