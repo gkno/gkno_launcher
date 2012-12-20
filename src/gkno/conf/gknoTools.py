@@ -31,6 +31,9 @@ class GknoTool(object):
     # Default output destinations
     self.out = sys.stdout
     self.err = sys.stderr
+    
+    # Build platform attribute to be used to determine if linux, Mac, etc.
+    self.BLD_PLATFORM = ""
 
   # Define the build (e.g. compile) steps needed for the tool. 
   # Returns True/False for success/failure.
