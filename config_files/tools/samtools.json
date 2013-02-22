@@ -5,93 +5,109 @@
       "path" : "samtools",
       "executable" : "samtools",
       "modifier" : "calmd",
-      "hide tool" : "true",
-      "output is stream" : "true",
+      "hide tool" : true,
+      "output is stream" : true,
       "help" : "--help|-h",
       "arguments" : {
         "-A" : {
           "description" : "When used jointly with -r this option overwrites the original base quality.",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
           "type" : "flag",
-          "default" : "set"
+          "extension" : "no extension",
+          "default" : [
+            "set"
+          ]
         },
         "-e" : {
           "description" : "Convert the read base to = if it is identical to the aligned reference base.",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "flag"
         },
         "-u" : {
           "description" : "Output uncompressed BAM.",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
           "type" : "flag",
-          "default" : "set"
+          "extension" : "no extension",
+          "default" : [
+            "set"
+          ]
         },
         "-b" : {
           "description" : "Output compressed BAM.",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "flag"
         },
         "-S" : {
           "description" : "The input is SAM with header lines.",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "flag"
         },
         "-C" : {
           "description" : "Coefficient to cap mapping quality of poorly mapped reads. See the pileup command for details. [0]",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "integer"
         },
         "-r" : {
           "description" : "Compute the BQ tag (without -A) or cap base quality by BAQ (with -A).",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
           "type" : "flag",
-          "default" : "set"
+          "extension" : "no extension",
+          "default" : [
+            "set"
+          ]
         },
         "-E" : {
           "description" : "Extended BAQ calculation. This option trades specificity for sensitivity, though the effect is minor.",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "flag",
-          "default" : "set"
+          "default" : [
+            "set"
+          ]
         },
         "--in" : {
           "description" : "Input BAM file.",
-          "input" : "true",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "false",
+          "input" : true,
+          "output" : false,
+          "resource" : false,
+          "required" : true,
+          "dependent" : false,
           "type" : "string",
           "extension" : "bam",
           "if input is stream" : "replace",
@@ -99,17 +115,17 @@
             "argument" : "--stdin",
             "value" : ""
           },
-          "if input is stream" : "-",
           "modify argument name on command line" : "hide"
         },
         "--reference-fasta" : {
           "description" : "Reference fasta file.",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
           "type" : "string",
+          "extension" : "no extension",
           "modify argument name on command line" : "hide"
         }
       },
@@ -124,7 +140,12 @@
         "-E",
         "--in",
         "--reference-fasta"
-      ]
+      ],
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
+        }
+      }
     },
 
     "samtools-index-fasta" : {
@@ -132,17 +153,17 @@
       "path" : "samtools",
       "executable" : "samtools",
       "modifier" : "faidx",
-      "hide tool" : "true",
+      "hide tool" : true,
       "help" : "--help|-h",
       "additional files" : {
         "from input arguments" : [
           {
             "type" : "output",
-            "command" : "--in",
-            "remove extension" : "false",
-            "add extension" : "true",
+            "link to this argument" : "--in",
+            "remove extension" : false,
+            "add extension" : true,
             "output extension" : "fai",
-            "stub" : "false"
+            "stub" : false
           }
         ]
       },
@@ -150,14 +171,19 @@
         "--in" : {
           "short form argument" : "-i",
           "description" : "Input FASTA file.",
-          "input" : "true",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "false",
+          "input" : true,
+          "output" : false,
+          "resource" : false,
+          "required" : true,
+          "dependent" : false,
           "type" : "string",
           "extension" : "fasta|fa",
           "modify argument name on command line" : "hide"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     }

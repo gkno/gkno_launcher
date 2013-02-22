@@ -10,34 +10,39 @@
         "from input arguments" : [
           {
             "type" : "output",
-            "command" : "-in",
-            "remove extension" : "false",
-            "add extension" : "true",
+            "link to this argument" : "-in",
+            "remove extension" : false,
+            "add extension" : true,
             "output extension" : "bai",
-            "stub" : "false"
+            "stub" : false
           }
         ]
       },
       "arguments" : {
         "-in" : {
           "description" : "the input BAM file.",
-          "input" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "bam"
         },
         "-bti" : {
           "description" : "create non-standard (depth based) index file (*.bti). Default behaviour is to create standard BAM index (*.bai)",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
           "type" : "flag",
           "extension" : "no extension"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     },
@@ -51,54 +56,59 @@
       "arguments" : {
         "-in" : {
           "description" : "the input BAM file.",
-          "input" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "bam",
-          "use for filenames" : "true"
+          "use for filenames" : true
         },
         "-out" : {
           "description" : "the output BAM file.",
-          "input" : "false",
-          "output" : "true",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "false",
+          "input" : false,
+          "output" : true,
+          "resource" : false,
+          "required" : true,
+          "dependent" : false,
           "type" : "string",
           "extension" : "sorted.bam"
         },
         "-byname" : {
           "description" : "sort by alignment name.  Default is to sort by position.",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
           "type" : "flag",
           "extension" : "no extension"
         },
         "-n" : {
           "description" : "max number of alignments per temp file. Default: 500,000",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
           "type" : "integer",
           "extension" : "no extension"
         },
         "-mem" : {
           "description" : "max memory to use. Default: 1,024",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
           "type" : "integer",
           "extension" : "no extension"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     },
@@ -112,57 +122,63 @@
       "arguments" : {
         "-in" : {
           "description" : "the input BAM file.",
-          "input" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "bam",
-          "use for filenames" : "true",
-          "allow multiple definitions" : "true"
+          "use for filenames" : true,
+          "allow multiple definitions" : true
         },
         "-in-list" : {
           "description" : "the input BAM file list (in json format).",
-          "input" : "true",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "bam",
-          "list of input files" : "true",
+          "list of input files" : true,
           "apply by repeating this argument" : "-in"
         },
         "-out" : {
           "description" : "the output BAM file.",
-          "input" : "false",
-          "output" : "true",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "false",
+          "input" : false,
+          "output" : true,
+          "resource" : false,
+          "required" : true,
+          "dependent" : false,
           "type" : "string",
           "extension" : "filtered.bam",
           "if output to stream" : "do not include"
         },
         "-region" : {
           "description" : "only read data from this genomic region.",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "string"
         },
         "-script" : {
           "description" : "the filter script file (see bamtools documentation for more information).",
-          "input" : "true",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : true,
           "extension" : "json",
           "type" : "string"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     },
@@ -172,52 +188,57 @@
       "path" : "bamtools/bin",
       "executable" : "bamtools",
       "modifier" : "merge",
-      "allows multiple inputs" : "true",
       "help" : "--help|-h",
       "arguments" : {
         "-in" : {
           "description" : "the input BAM file.",
-          "input" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "bam",
-          "use for filenames" : "true",
-          "allow multiple definitions" : "true"
+          "use for filenames" : true,
+          "allow multiple definitions" : true
         },
         "-in-list" : {
           "description" : "the input BAM file list (in json format).",
-          "input" : "true",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "bam",
-          "list of input files" : "true",
+          "list of input files" : true,
           "apply by repeating this argument" : "-in"
         },
         "-out" : {
           "description" : "the output BAM file.",
-          "input" : "false",
-          "output" : "true",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "false",
+          "input" : false,
+          "output" : true,
+          "resource" : false,
+          "required" : true,
+          "dependent" : false,
           "type" : "string",
           "extension" : "merged.bam",
           "if output to stream" : "do not include"
         },
         "-region" : {
           "description" : "only read data from this genomic region.",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "string"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     },
@@ -231,30 +252,31 @@
       "arguments" : {
         "-in" : {
           "description" : "the input BAM file.",
-          "input" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "bam"
         },
         "-insert" : {
           "description" : "summarize insert size data.",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "flag"
         },
         "-out" : {
           "description" : "the output stats file.",
-          "output" : "true",
-          "input" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "false",
+          "output" : true,
+          "input" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : false,
           "type" : "string",
           "extension" : "stats",
           "modify argument name on command line" : "stdout"
@@ -264,7 +286,12 @@
         "-in",
         "-insert",
         "-out"
-      ]
+      ],
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
+        }
+      }
     },
 
     "bamtools-resolve" : {
@@ -276,73 +303,78 @@
       "arguments" : {
         "-in" : {
           "description" : "the input BAM file.",
-          "input" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "bam"
         },
         "-out" : {
           "description" : "the output marked BAM file.",
-          "output" : "true",
-          "input" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "false",
+          "output" : true,
+          "input" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : false,
           "type" : "string",
           "extension" : "marked.bam"
         },
         "-stats" : {
           "description" : "input/output stats file, depending on selected mode (see below). This file is human-readable, storing fragment length data generated per read group, as well as the options used to configure the -makeStats mode.",
-          "output" : "true",
-          "input" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "output" : true,
+          "input" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "string",
           "extension" : "stats"
         },
         "-makeStats" : {
           "description" : "generates a fragment-length stats file from the input BAM. Data is written to file specified using the -stats option. MarkPairs Mode Settings are DISABLED.",
-          "output" : "false",
-          "input" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "output" : false,
+          "input" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "flag",
           "extension" : "no extension"
         },
         "-markPairs" : {
           "description" : "generates an output BAM with alignments marked with proper-pair status. Stats data is read from file specified using the -stats option. MakeStats Mode settings are DISABLED.",
-          "output" : "false",
-          "input" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "output" : false,
+          "input" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "flag",
           "extension" : "no extension"
         },
         "-twoPass" : {
           "description" : "combines the -makeStats & -markPairs modes into a single command.  However, due to the two-pass nature of paired-end resolution, piping BAM data via stdin is DISABLED. You must supply an explicit input BAM file. Output BAM may be piped to stdout, however, if desired. All MakeStats & MarkPairs Mode Settings are available. The intermediate stats file if not necessary, but if the -stats options is used, then one will be generated. You may find this useful for documentation purposes.",
-          "output" : "false",
-          "input" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "output" : false,
+          "input" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "flag",
           "extension" : "no extension"
         },
         "-minMQ" : {
           "description" : "minimum map quality. Used in -makeStats mode as a heuristic for determining a mate's uniqueness. Used in -markPairs mode as a filter for marking candidate proper pairs.",
-          "output" : "false",
-          "input" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "output" : false,
+          "input" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "integer",
           "extension" : "no extension"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     }

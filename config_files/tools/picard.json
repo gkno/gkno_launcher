@@ -2,7 +2,7 @@
   "tools" : {
     "picard-mark-duplicates" : {
       "description" : "Mark duplicate reads.",
-      "hide tool" : "true",
+      "hide tool" : true,
       "path" : "picard/dist",
       "executable" : "MarkDuplicates.jar",
       "precommand" : "java -Xmx8g -jar",
@@ -11,54 +11,62 @@
       "arguments" : {
         "INPUT" : {
           "description" : "the input BAM file.",
-          "input" : "true",
-          "use for filenames" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "use for filenames" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : true,
           "short form argument" : "I",
           "type" : "string",
           "extension" : "bam"
         },
         "OUTPUT" : {
           "description" : "the output BAM file.",
-          "input" : "false",
-          "output" : "true",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "false",
+          "input" : false,
+          "output" : true,
+          "resource" : false,
+          "required" : true,
+          "dependent" : false,
           "short form argument" : "O",
           "type" : "string",
           "extension" : "dup.bam"
         },
         "METRICS_FILE" : {
           "description" : "File to write duplication metrics to.",
-          "input" : "false",
-          "output" : "true",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "false",
+          "input" : false,
+          "output" : true,
+          "resource" : false,
+          "required" : true,
+          "dependent" : false,
           "short form argument" : "M",
           "type" : "string",
           "extension" : "metrics"
         },
         "TMP_DIR" : {
           "description" : "Temporary directory for storing temporary data.",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
           "type" : "string",
-          "default" : "$(PWD)"
+          "extension" : "no extension",
+          "default" : [
+            "$(PWD)"
+          ]
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     },
 
     "picard-create-sequence-dictionary" : {
       "description" : "Generate a dictionary containing all of the sequences in the input reference fasta.",
-      "hide tool" : "true",
+      "hide tool" : true,
       "path" : "picard/dist",
       "executable" : "CreateSequenceDictionary.jar",
       "precommand" : "java -jar",
@@ -67,26 +75,31 @@
       "arguments" : {
         "REFERENCE" : {
           "description" : "the input reference FASTA file.",
-          "input" : "true",
-          "use for filenames" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "use for filenames" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : true,
           "short form argument" : "R",
           "type" : "string",
           "extension" : "fa|fasta"
         },
         "OUTPUT" : {
           "description" : "the output sequence dictionary.",
-          "input" : "false",
-          "output" : "true",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "false",
+          "input" : false,
+          "output" : true,
+          "resource" : false,
+          "required" : true,
+          "dependent" : false,
           "short form argument" : "O",
           "type" : "string",
           "extension" : "dict"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     }

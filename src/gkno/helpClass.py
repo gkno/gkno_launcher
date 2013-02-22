@@ -21,7 +21,6 @@ class helpClass:
 
     # General gkno usage.
     if self.generalHelp:
-      self.printHeader(version, date)
       self.usage(io, tl, admin, path)
 
     # gkno tool mode usage.
@@ -30,34 +29,23 @@ class helpClass:
         self.printToolModeUsage(tl)
         self.unknownToolMessage(tl.tool)
       else:
-        self.printHeader(version, date)
         self.toolUsage(tl, tl.tool)
 
     # General pipeline help.
     elif self.pipelineHelp:
-      self.printHeader(version, date)
       self.pipelineUsage(io, tl, pl, path)
       if self.unknownPipeline: self.unknownPipelineMessage(pl.pipelineName)
 
     # Specific pipeline help.
     elif self.specificPipelineHelp:
-      self.printHeader(version, date)
       self.specificPipelineUsage(tl, pl)
 
     # Admin mode help.
     elif self.adminHelp:
-      self.printHeader(version, date)
       self.adminModeUsage(admin)
 
     # Terminate.
     exit(0)
-
-  # If the command line contains a help request ('--help' or '-h') and there
-  # are further arguments on the command line, print a warning to screen.
-  def extraArgumentsWarning(self):
-    print('WARNING: Help requested (--help, -h), but additional command line arguments are present.  Check the command line.', file = sys.stdout)
-    print(file = sys.stdout)
-    sys.stdout.flush()
 
   # For most of the usage requests, the version number and date are printed out
   # at the start of the message.  Print these here.
@@ -128,18 +116,21 @@ class helpClass:
     # For the purposes of formatting the screen output, find the longest tool
     # name and use this to define the format length.
     length = 0
-    for tool in tl.toolInfo.keys():
+    for tool in tl.availableTools:
       if len(tool) > length: length = len(tool)
     length += 5
 
-    sortedKeys = sorted(tl.toolInfo.keys())
+    sortedKeys = sorted(tl.availableTools)
     for tool in sortedKeys:
 
       # Get the tool description.
-      description = tl.toolInfo[tool]['description']
+      description = tl.descriptions[tool]
       printTool   = tool + ":"
 
-      if not tl.hiddenTools[tool]: self.writeFormattedText(printTool, description, length, 2, '')
+      hidden = False
+      if tool in tl.hiddenTools:
+        if tl.hiddenTools[tool]: hidden = True
+      if not hidden: self.writeFormattedText(printTool, description, length, 2, '')
     print(file = sys.stdout)
 
   # Print usage information on the pipeline mode of operation.
@@ -165,7 +156,7 @@ class helpClass:
 
       # Open the json file and get the pipeline description.
       pipelineFile = path + '/config_files/pipes/' + pipeline
-      jsonData     = io.getJsonData(pipelineFile)
+      jsonData     = io.getJsonData(pipelineFile, True)
       description  = jsonData['description'] if 'description' in jsonData else 'No description'
 
       pipeline = pipeline[0:(len(pipeline) - 5)] + ':'
@@ -181,14 +172,32 @@ class helpClass:
     print('Usage: gkno ', tool, ' [options]', sep = '', file = sys.stdout)
     print(file = sys.stdout)
 
+    # Print out the tool description.
+    print('     Description:', file = sys.stdout)
+    self.writeFormattedText(tl.descriptions[tool], ' ', 2, 2, ' ')
+    print(file = sys.stdout)
+    sys.stdout.flush()
+
+    # If this pipeline has different instances, print them to screen.
+    if len(tl.instances) > 0:
+      print('     Instances:', file = sys.stdout)
+      length = 0
+      for instance in tl.instances: length = len(instance) if len(instance) > length else length
+      length += 4
+
+      sortedInstances = sorted(tl.instances)
+      for instance in sortedInstances:
+        description = tl.instances[instance]['description']
+        self.writeFormattedText(instance + ":", description, length, 2, '')
+      print(file = sys.stdout)
+
     # Split the tool inputs into a required and an optional set.
     defaultArguments  = []
     optionalArguments = []
     requiredArguments = []
-    for argument in tl.toolInfo[tool]['arguments']:
-      required = True if 'required' in tl.toolInfo[tool]['arguments'][argument] else False
-      default  = True if 'default' in tl.toolInfo[tool]['arguments'][argument] else False
-      if required: required = True if tl.toolInfo[tool]['arguments'][argument]['required'] == 'true' else False
+    for argument in tl.argumentInformation[tool]:
+      default  = True if 'default' in tl.argumentInformation[tool][argument] else False
+      required = tl.argumentInformation[tool][argument]['required']
       if required:
         if default: defaultArguments.append(argument)
         else: requiredArguments.append(argument)
@@ -201,24 +210,24 @@ class helpClass:
     # For the purposes of formatting the screen output, find the longest tool
     # name and use this to define the format length.
     length = 0
-    sortedKeys = sorted(tl.toolInfo[tool]['arguments'])
+    sortedKeys = sorted(tl.argumentInformation[tool])
     for argument in sortedKeys:
-      if 'short form argument' in tl.toolInfo[tool]['arguments'][argument]:
-        shortForm = tl.toolInfo[tool]['arguments'][argument]['short form argument']
+      if 'short form argument' in tl.argumentInformation[tool][argument]:
+        shortForm = tl.argumentInformation[tool][argument]['short form argument']
         newLength = len(argument) + len(shortForm) + 3
       else: newLength = len(argument)
       length = newLength if (newLength > length) else length
     length += 5
 
     if len(sRequiredArguments) != 0:
-      print('     required arguments:', file = sys.stdout)
+      print('     Required arguments:', file = sys.stdout)
       for argument in sRequiredArguments:
-        if 'short form argument' in tl.toolInfo[tool]['arguments'][argument]:
-          shortForm = tl.toolInfo[tool]['arguments'][argument]['short form argument']
+        if 'short form argument' in tl.argumentInformation[tool][argument]:
+          shortForm = tl.argumentInformation[tool][argument]['short form argument']
           printArgument = argument + ' (' + shortForm + '):'
         else: printArgument = argument + ':'
-        description   = tl.toolInfo[tool]['arguments'][argument]['description']
-        dataType      = tl.toolInfo[tool]['arguments'][argument]['type']
+        description   = tl.argumentInformation[tool][argument]['description']
+        dataType      = tl.argumentInformation[tool][argument]['type']
         self.writeFormattedText(printArgument, description, length, 2, dataType)
       print(file = sys.stdout)
       sys.stdout.flush()
@@ -226,25 +235,25 @@ class helpClass:
     if len(sDefaultArguments) != 0:
       print('     required arguments with set defaults:', file = sys.stdout)
       for argument in sDefaultArguments:
-        if 'short form argument' in tl.toolInfo[tool]['arguments'][argument]:
-          shortForm = tl.toolInfo[tool]['arguments'][argument]['short form argument']
+        if 'short form argument' in tl.argumentInformation[tool][argument]:
+          shortForm     = tl.argumentInformation[tool][argument]['short form argument']
           printArgument = argument + ' (' + shortForm + '):'
         else: printArgument = argument + ':'
-        description   = tl.toolInfo[tool]['arguments'][argument]['description']
-        dataType      = tl.toolInfo[tool]['arguments'][argument]['type']
+        description   = tl.argumentInformation[tool][argument]['description']
+        dataType      = tl.argumentInformation[tool][argument]['type']
         self.writeFormattedText(printArgument, description, length, 2, dataType)
       print(file = sys.stdout)
       sys.stdout.flush()
 
     if len(sOptionalArguments) != 0:
-      print('     optional arguments:', file = sys.stdout)
+      print('     Optional arguments:', file = sys.stdout)
       for argument in sOptionalArguments:
-        if 'short form argument' in tl.toolInfo[tool]['arguments'][argument]:
-          shortForm = tl.toolInfo[tool]['arguments'][argument]['short form argument']
+        if 'short form argument' in tl.argumentInformation[tool][argument]:
+          shortForm = tl.argumentInformation[tool][argument]['short form argument']
           printArgument = argument + ' (' + shortForm + '):'
         else: printArgument = argument + ':'
-        description   = tl.toolInfo[tool]['arguments'][argument]['description']
-        dataType      = tl.toolInfo[tool]['arguments'][argument]['type']
+        description   = tl.argumentInformation[tool][argument]['description']
+        dataType      = tl.argumentInformation[tool][argument]['type']
         self.writeFormattedText(printArgument, description, length, 2, dataType)
       print(file = sys.stdout)
       sys.stdout.flush()
@@ -257,7 +266,7 @@ class helpClass:
     print(file = sys.stdout)
     print('Usage: gkno pipe <pipeline name> [options]', file = sys.stdout)
     print(file = sys.stdout)
-    print('\t<pipeline name>:', file = sys.stdout)
+    print('     <pipeline name>:', file = sys.stdout)
 
     # Determine the length of the longest pipeline name.
     length = 0
@@ -268,12 +277,12 @@ class helpClass:
     for pipeline in sortedKeys:
 
       # For each available pipeline, open the json and get the pipeline description.
-      io.jsonPipelineFile = path + '/config_files/pipes/' + pipeline
-      io.getPipelineDescription(tl, pl, False)
-
-      pipeline       = pipeline[0:-5] + ':'
-      description    = pl.information['description'] if 'description' in pl.information else 'No description'
-      self.writeFormattedText(pipeline, description, length, 2, '')
+      pipelineFile = path + '/config_files/pipes/' + pipeline
+      pipeline     = pipeline[0:-5] + ':'
+      if pipeline[-10:-1] != 'instances':
+        pipelineData = io.getJsonData(pipelineFile, True)
+        description  = pipelineData['description'] if 'description' in pipelineData else '\t'
+        self.writeFormattedText(pipeline, description, length, 2, '')
     sys.stdout.flush()
 
   # If help with a specific pipeline was requested, write out all of the commands available
@@ -288,43 +297,46 @@ class helpClass:
     print(file = sys.stdout)
 
     # Print out the decription of the pipeline.
-    description = pl.information['description'] if 'description' in pl.information else 'No description'
+    description = pl.description
     print('     Description:', file = sys.stdout)
     self.writeFormattedText('', description, 0, 2, '')
     print(file = sys.stdout)
 
     # If this pipeline has different instances, print them to screen.
-    if 'instances' in pl.information:
+    if len(pl.instances) > 0:
       print('     Instances:', file = sys.stdout)
       length = 0
-      for instance in pl.information['instances']: length = len(instance) if len(instance) > length else length
+      #for instance in pl.information['instances']: length = len(instance) if len(instance) > length else length
+      for instance in pl.instances: length = len(instance) if len(instance) > length else length
       length += 4
 
-      sortedInstances = sorted(pl.information['instances'].keys())
+      sortedInstances = sorted(pl.instances)
       for instance in sortedInstances:
-        description = pl.information['instances'][instance]['description'] if 'description' in pl.information['instances'][instance] else \
-        'No description'
+        description = pl.instances[instance]['description']
         self.writeFormattedText(instance + ":", description, length, 2, '')
       print(file = sys.stdout)
 
     # List the options available at the pipeline level.
-
+    #
     # Loop over all the allowable arguments and determine if there is a short form and
     # the length of the combined '--argument (-a)' text.
     length            = 0
     arguments         = {}
     requiredArguments = {}
-    for argument in pl.information['arguments']:
+    for argument in pl.argumentInformation:
       text        = argument
       description = 'No description'
-      if 'short form argument' in pl.information['arguments'][argument]: text += ' (' + pl.information['arguments'][argument]['short form argument'] + ')'
-      if 'description' in pl.information['arguments'][argument]: description = pl.information['arguments'][argument]['description']
+      if 'short form argument' in pl.argumentInformation[argument]: text += ' (' + pl.argumentInformation[argument]['short form argument'] + ')'
+      if 'description' in pl.argumentInformation[argument]: description = pl.argumentInformation[argument]['description']
       text += ':'
-      length = len(text) if (len(text) > length) else length
-      userEntry = False
-      if 'user entry required' in pl.information['arguments'][argument]: 
-        if pl.information['arguments'][argument]['user entry required'] == 'true': userEntry = True
-      if userEntry: requiredArguments[text] = description
+      length       = len(text) if (len(text) > length) else length
+      isRequired   = False
+      task         = pl.argumentInformation[argument]['link to this task']
+      if task != 'pipeline':
+        tool         = pl.taskToTool[task]
+        toolArgument = pl.argumentInformation[argument]['link to this argument']
+        isRequired   = tl.argumentInformation[tool][toolArgument]['required']
+      if isRequired: requiredArguments[text] = description
       else: arguments[text] = description
     length += 4
 
@@ -346,14 +358,17 @@ class helpClass:
     # in order to modify parameters for the specified tool.
     print('     The following tools can have parameters modified:', file = sys.stdout)
     length = 0
-    for task in pl.information['workflow']:
+    for task in pl.workflow:
       length = len(task) if (len(task) > length) else length
     length += 5
 
-    sortedTasks = sorted(pl.information['workflow'])
+    sortedTasks = sorted(pl.workflow)
     for task in sortedTasks:
-      tool  = pl.information['tools'][task]
-      if not tl.hiddenTools[tool]:
+      tool   = pl.taskToTool[task]
+      hidden = False
+      if tool in tl.hiddenTools:
+        if tl.hiddenTools[tool]: hidden = True
+      if not hidden:
         task += ':'
         self.writeFormattedText('--' + task, tool, length + 2, 2, '')
     sys.stdout.flush()
@@ -361,13 +376,13 @@ class helpClass:
   # Write out key value pairs in a formatted manned.  These may be tool and
   # description or command line argument and description or whatever else is
   # required.
-  def writeFormattedText(self, key, value, length, noTabs, dataType):
+  def writeFormattedText(self, key, value, length, noTab, dataType):
 
     # Set the maximum width of the line.
     maxLength   = 100
 
     # Determine the amount of text prior to the value.
-    startLength = length + (5 * noTabs) + 3
+    startLength = length
     if dataType != '': startLength += 10
 
     valueList = []
@@ -388,11 +403,11 @@ class helpClass:
 
     value = valueList.pop(0)
     if dataType == '':
-      print("%-*s%-*s%-*s" % ((5 * noTabs), '', length, key, 1, value), file = sys.stdout)
-      for value in valueList:  print('%-*s%-*s%-*s' % ((5 * noTabs), '', length, '', 1, value), file = sys.stdout)
+      print("%-*s%-*s%-*s" % ((5 * noTab), '', length, key, 1, value), file = sys.stdout)
+      for value in valueList:  print('%-*s%-*s%-*s' % ((5 * noTab), '', length, '', 1, value), file = sys.stdout)
     else:
-      print("%-*s%-*s%-*s%-*s" % ((5 * noTabs), '', length, key, 10, dataType, 1, value), file = sys.stdout)
-      for value in valueList:  print('%-*s%-*s%-*s' % ((5 * noTabs) + 10, '', length, '', 1, value), file = sys.stdout)
+      print("%-*s%-*s%-*s%-*s" % ((5 * noTab), '', length, key, 10, dataType, 1, value), file = sys.stdout)
+      for value in valueList:  print('%-*s%-*s%-*s%-*s' % ((5 * noTab), '', length, '', 10, '', 1, value), file = sys.stdout)
 
   # If an admin mode's help was requested.
   def adminModeUsage(self, admin):

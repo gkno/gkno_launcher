@@ -45,7 +45,7 @@
         "filename root" : "from argument",
         "get root from task" : "build-reference",
         "get root from argument" : "-fr",
-        "remove input extension" : "true"
+        "remove input extension" : true
       }
     },
     "build-jump-database" : {
@@ -53,7 +53,7 @@
         "filename root" : "from argument",
         "get root from task" : "build-reference",
         "get root from argument" : "-fr",
-        "remove input extension" : "true",
+        "remove input extension" : true,
         "additional text from parameters" : {
           "order" : [
             "filename root",
@@ -61,7 +61,8 @@
           ],
           "hash-size" : {
             "get parameter from task" : "build-jump-database",
-            "get parameter from argument" : "-hs"
+            "get parameter from argument" : "-hs",
+            "remove extension" : false
           }
         }
       }
@@ -227,30 +228,26 @@
       "link to this task" : "build-reference",
       "link to this argument" : "-fr",
       "short form argument" : "-f",
-      "type" : "string",
-      "default" : "$(RESOURCES)/tutorial/current/test_genome.fa"
+      "type" : "string"
     },
     "--hash-size" : {
       "description" : "hash-size",
       "link to this task" : "build-jump-database",
       "link to this argument" : "-hs",
       "type" : "integer",
-      "short form argument" : "-hs",
-      "default" : "10"
+      "short form argument" : "-hs"
     },
     "--fastq" : {
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq1",
       "short form argument" : "-q",
-      "type" : "string",
-      "default" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq"
+      "type" : "string"
     },
     "--fastq2" : {
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq2",
       "short form argument" : "-q2",
-      "type" : "string",
-      "default" : "$(RESOURCES)/tutorial/current/simulated_reads_2.fq"
+      "type" : "string"
     },
     "--mosaik-reference" : {
       "link to this task" : "generate-mosaik-parameters",
@@ -268,15 +265,13 @@
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-annse",
       "short form argument" : "-as",
-      "type" : "integer",
-      "default" : "$(RESOURCES)/tutorial/current/se.100.005.ann"
+      "type" : "integer"
     },
     "--ann-pe" : {
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-annpe",
       "short form argument" : "-ap",
-      "type" : "integer",
-      "default" : "$(RESOURCES)/tutorial/current/pe.100.01.ann"
+      "type" : "integer"
     },
     "--batch-size" : {
       "link to this task" : "generate-mosaik-parameters",
@@ -289,8 +284,7 @@
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-st",
       "short form argument" : "-st",
-      "type" : "string",
-      "default" : "illumina"
+      "type" : "string"
     },
     "--median-fragment-length" : {
       "link to this task" : "build-read-archive",
@@ -308,8 +302,7 @@
       "link to this task" : "count-covariates",
       "link to this argument" : "-knownSites",
       "short form argument" : "-k",
-      "type" : "flag",
-      "default" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf"
+      "type" : "flag"
     }
   },
   "delete files" : {
@@ -320,12 +313,14 @@
     },
     "align" : {
       "-out" : {
-        ".bam" : {
-          "delete after task" : "sort-primary-bam"
-        },
-        ".multiple.bam" : {
-          "delete after task" : "sort-multiple-bam"
-        }
+        "output extension" : [
+          ".bam",
+          ".multiple.bam"
+        ],
+        "delete after task" : [
+          "sort-primary-bam",
+          "sort-multiple-bam"
+        ]
       }
     },
     "sort-primary-bam" : {
@@ -337,6 +332,20 @@
       "--out" : {
         "delete after task" : "mark-duplicates"
       }
+    }
+  },
+
+  "instances" : {
+    "default" : {
+      "description" : "The default instance sets all the parameters for the pipeline to run.",
+      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--hash-size" : "10",
+      "--fastq" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq",
+      "--fastq2" : "$(RESOURCES)/tutorial/current/simulated_reads_2.fq",
+      "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
+      "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
+      "--sequencing-technology" : "illumina",
+      "--knownSites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf"
     }
   }
 }

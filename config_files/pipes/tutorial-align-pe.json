@@ -1,6 +1,5 @@
 {
   "description" : "Align fastq files using Mosaik (additional processing steps included).",
-  "resource path" : "tutorial/current",
   "workflow" : [
     "generate-mosaik-parameters",
     "build-read-archive",
@@ -192,12 +191,14 @@
     },
     "align" : {
       "-out" : {
-        ".bam" : {
-          "delete after task" : "sort-primary-bam"
-        },
-        ".multiple.bam" : {
-          "delete after task" : "sort-multiple-bam"
-        }
+        "output extension" : [
+          ".bam",
+          ".multiple.bam"
+        ],
+        "delete after task" : [
+          "sort-primary-bam",
+          "sort-multiple-bam"
+        ]
       }
     },
     "sort-primary-bam" : {

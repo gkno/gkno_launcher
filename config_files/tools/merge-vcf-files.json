@@ -4,17 +4,17 @@
       "description" : "Merge multiple compressed vcf files and use bgzip to compess and tabix to index.",
       "path" : "scripts",
       "executable" : "merge-vcf.sh",
-      "hide tool" : "true",
+      "hide tool" : true,
       "help" : "--help|-h",
       "arguments" : {
         "--vcf-list" : {
           "description" : "Input compressed vcf file list.",
           "short form argument" : "-vl",
-          "input" : "true",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "false",
+          "input" : true,
+          "output" : false,
+          "resource" : false,
+          "required" : true,
+          "dependent" : false,
           "type" : "string",
           "extension" : "no extension",
           "modify argument name on command line" : "hide"
@@ -22,11 +22,11 @@
         "--out" : {
           "description" : "Output filename.",
           "short form argument" : "-o",
-          "input" : "false",
-          "output" : "true",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "false",
+          "input" : false,
+          "output" : true,
+          "resource" : false,
+          "required" : true,
+          "dependent" : false,
           "type" : "string",
           "modify argument name on command line" : "stdout",
           "if output to stream" : "do not include",
@@ -36,7 +36,12 @@
       "argument order" : [
         "--vcf-list",
         "--out"
-      ]
+      ],
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
+        }
+      }
     }
   }
 }

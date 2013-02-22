@@ -3,7 +3,7 @@
     "tabix-index-vcf" : {
       "description" : "Index a VCF file using tabix.",
       "path" : "tabix",
-      "hide tool" : "true",
+      "hide tool" : true,
       "executable" : "tabix",
       "modifier" : "-p vcf",
       "help" : "--help|-h",
@@ -11,11 +11,11 @@
         "from input arguments" : [
           {
             "type" : "output",
-            "command" : "--in",
-            "remove extension" : "false",
-            "add extension" : "true",
+            "link to this argument" : "--in",
+            "remove extension" : false,
+            "add extension" : true,
             "output extension" : "tbi",
-            "stub" : "false"
+            "stub" : false
           }
         ]
       },
@@ -23,15 +23,20 @@
         "--in" : {
           "description" : "The file to be indexed.",
           "short form argument" : "-i",
-          "input" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "vcf.gz",
           "modify argument name on command line" : "hide",
           "if input is stream" : "do not include"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     }

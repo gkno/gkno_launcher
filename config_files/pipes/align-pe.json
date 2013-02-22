@@ -234,12 +234,14 @@
     },
     "align" : {
       "-out" : {
-        ".bam" : {
-          "delete after task" : "sort-primary-bam"
-        },
-        ".multiple.bam" : {
-          "delete after task" : "sort-multiple-bam"
-        }
+        "output extension" : [
+          ".bam",
+          ".multiple.bam"
+        ],
+        "delete after task" : [
+          "sort-primary-bam",
+          "sort-multiple-bam"
+        ]
       }
     },
     "sort-primary-bam" : {
@@ -261,8 +263,8 @@
       "--known-sites" : "$(RESOURCES)/homo_sapiens/current/ALL.wgs.dbsnp.build135.snps.sites.vcf.gz",
       "--reference-fasta" : "$(PWD)/human_reference_v37_decoys_moblist.fa"
     },
-      "description" : "Human-moblist instance uses the human reference with moblistfrom the resources.  It is assumed that the Mosaik reference files have been created in the current working directory.",
     "human-moblist" : {
+      "description" : "Human-moblist instance uses the human reference with moblistfrom the resources.  It is assumed that the Mosaik reference files have been created in the current working directory.",
       "--mosaik-jump-database" : "$(PWD)/human_reference_v37_decoys_moblist_15",
       "--mosaik-reference" : "$(PWD)/human_reference_v37_decoys_moblist.dat",
       "--ann-se" : "$(RESOURCES)/homo_sapiens/current/se.100.005.ann",

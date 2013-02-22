@@ -8,25 +8,30 @@
       "arguments" : {
         "-fr" : {
           "description" : "the FASTA reference sequence file",
-          "input" : "true",
-          "use for filenames" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "true",
-          "dependent" : "true",
+          "input" : true,
+          "use for filenames" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : true,
+          "dependent" : true,
           "type" : "string",
           "short form argument" : "-a",
           "extension" : "fasta|fa"
         },
         "-oa" : {
           "description" : "the output Mosaik reference file",
-          "input" : "false",
-          "output" : "true",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "true",
+          "input" : false,
+          "output" : true,
+          "resource" : false,
+          "required" : true,
+          "dependent" : true,
           "type" : "string",
           "extension" : "dat"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     },
@@ -39,76 +44,84 @@
       "arguments" : {
         "-q" : {
           "description" : "the FASTQ file",
-          "input" : "true",
-          "use for filenames" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "use for filenames" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "fastq|fq|fastq.gz|fq.gz"
         },
         "-q2" : {
           "description" : "the FASTQ 2nd mate",
-          "input" : "true",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "fastq|fq|fastq.gz|fq.gz"
         },
         "-id" : {
           "description" : "read group ID. e.g. SRR009060",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "string"
         },
         "-mfl" : {
           "description" : "median fragment length. e.g. 150",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "integer"
         },
         "-sam" : {
           "description" : "sample name. e.g. NA12878",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "string"
         },
         "-st" : {
           "description" : "sets the sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
-          "input" : "false",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "string"
         },
         "-out" : {
           "description" : "the output read file",
-          "input" : "false",
-          "output" : "true",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "false",
+          "input" : false,
+          "output" : true,
+          "resource" : false,
+          "required" : true,
+          "dependent" : false,
           "type" : "string",
           "extension" : "mkb"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     },
   
     "mosaik-jump" : {
-      "name" : "MosaikJump",
       "description" : "Generate the jump database for a Mosaik reference",
       "path" : "MOSAIK/bin",
       "executable" : "MosaikJump",
@@ -116,24 +129,24 @@
       "arguments" : {
         "-ia" : {
           "description" : "input reference file",
-          "input" : "true",
-          "use for filenames" : "true",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "true",
+          "input" : true,
+          "use for filenames" : true,
+          "output" : false,
+          "resource" : false,
+          "required" : true,
+          "dependent" : true,
           "type" : "string",
           "extension" : "dat"
         },
         "-out" : {
           "description" : "output filename stub",
-          "input" : "false",
-          "output" : "true",
-          "resource" : "false",
-          "required" : "true",
-          "dependent" : "false",
+          "input" : false,
+          "output" : true,
+          "resource" : false,
+          "required" : true,
+          "dependent" : false,
           "type" : "string",
-          "stub" : "true",
+          "stub" : true,
           "extension" : "stub",
           "outputs" : [
             "_keys.jmp",
@@ -143,40 +156,51 @@
         },
         "-hs" : {
           "description" : "hash size [4 - 32]",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
           "type" : "integer",
-          "default" : "15"
+          "extension" : "no extension",
+          "default" : [
+            "15"
+          ]
         },
         "-kd" : {
           "description" : "keeps the key database on disk",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "flag"
         },
         "-mem" : {
           "description" : "the amount memory used when sorting <Gb>",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "integer"
         },
         "-iupac" : {
           "description" : "considers IUPAC codes",
-          "input" : "false",
-          "output" : "false",
-          "resource" : "false",
-          "required" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "resource" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "no extension",
           "type" : "flag"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     },
@@ -185,37 +209,38 @@
       "description" : "Pairwise alignment of a read archive",
       "path" : "MOSAIK/bin",
       "executable" : "MosaikAligner",
+      "help" : "--help|-h",
       "arguments" : {
         "-in" : {
           "description" : "the input read file",
-          "input" : "true",
-          "use for filenames" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "use for filenames" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "mkb"
         },
         "-ia" : {
           "description" : "the input reference file (Mosaik native dat file)",
-          "input" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
           "extension" : "dat"
         },
         "-j" : {
           "description" : "the Mosaik jump database",
-          "input" : "true",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : true,
           "type" : "string",
-          "stub" : "true",
+          "stub" : true,
           "extension" : "stub",
           "outputs" : [
             "_keys.jmp",
@@ -225,13 +250,13 @@
         },
         "-out" : {
           "description" : "the output alignment file",
-          "input" : "false",
-          "output" : "true",
-          "required" : "false",
-          "dependent" : "false",
-          "resource" : "false",
+          "input" : false,
+          "output" : true,
+          "required" : true,
+          "dependent" : false,
+          "resource" : false,
           "type" : "string",
-          "stub" : "true",
+          "stub" : true,
           "extension" : "stub",
           "outputs" : [
             ".bam",
@@ -240,104 +265,111 @@
         },
         "-annse" : {
           "description" : "neural network file for single end read mapping qualities",
-          "input" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "true",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : true,
+          "dependent" : true,
           "type" : "string",
           "extension" : "ann"
         },
         "-annpe" : {
           "description" : "neural network file for paired end read mapping qualities",
-          "input" : "true",
-          "output" : "false",
-          "required" : "true",
-          "resource" : "true",
-          "dependent" : "true",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "resource" : true,
+          "dependent" : true,
           "type" : "string",
           "extension" : "ann"
         },
         "-a" : {
           "description" : "alignment algorithm: [fast, single, multi, all]. def: all",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "flag",
           "extension" : "no extension"
         },
         "-m" : {
           "description" : "alignment mode: [unique, all]. def: all",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "string",
           "extension" : "no extension"
         },
         "-hs" : {
           "description" : "hash size [4 - 32].",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "integer",
           "extension" : "no extension",
-          "default" : "15"
+          "default" : [
+            "15"
+          ]
         },
         "-mmp" : {
           "description" : "the percentage of mismatches allowed [0.0 - 1.0]",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "float",
           "extension" : "no extension"
         },
         "-act" : {
           "description" : "the alignment candidate threshold (length)",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "integer",
           "extension" : "no extension"
         },
         "-bw" : {
           "description" : "specifies the Smith-Waterman bandwidth.  Default: 9",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "integer",
           "extension" : "no extension"
         },
         "-mhp" : {
           "description" : "the maximum number of positions stored per seed",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "integer",
           "extension" : "no extension"
         },
         "-p" : {
           "description" : "uses the specified number of processors",
-          "input" : "false",
-          "output" : "false",
-          "required" : "false",
-          "resource" : "false",
-          "dependent" : "false",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "resource" : false,
+          "dependent" : false,
           "type" : "integer",
           "extension" : "no extension"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
         }
       }
     }

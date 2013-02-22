@@ -11,159 +11,600 @@ class tools:
 
   # Initialise the tools class.
   def __init__(self):
+
+    # Set up a list of top level fields that must be present for all tools.
+    self.requiredFields = []
+    self.requiredFields.append('description')
+    self.requiredFields.append('help')
+    self.requiredFields.append('path')
+    self.requiredFields.append('executable')
+    self.requiredFields.append('arguments')
+    self.requiredFields.append('instances')
+
+    # The configuration file contains arguments for each tool.  Each argument also has a
+    # set of required fields that must be checked.
+    self.requiredArgumentFields = []
+    self.requiredArgumentFields.append('description')
+    self.requiredArgumentFields.append('dependent')
+    self.requiredArgumentFields.append('extension')
+    self.requiredArgumentFields.append('input')
+    self.requiredArgumentFields.append('output')
+    self.requiredArgumentFields.append('required')
+    self.requiredArgumentFields.append('resource')
+    self.requiredArgumentFields.append('type')
+
+    # Setup some structures to hold information on each of the tools.
+    self.additionalFiles            = {}
+    self.arguments                  = {}
+    self.argumentInformation        = {}
     self.argumentDelimiters         = {}
-    self.dependencies               = {}
+    self.argumentOrder              = {}
+    self.availableTools             = []
+    self.descriptions               = {}
+    self.executables                = {}
+    self.instances                  = {}
+    self.modifiers                  = {}
+    self.paths                      = {}
+    self.precommands                = {}
+    self.shortForms                 = {}
     self.hiddenTools                = {}
+    self.toolsDemandingInputStream  = {}
+    self.toolsDemandingOutputStream = {}
+
+    #TODO Remove these when the new system is implemented.
+    self.dependencies               = {}
     self.originalToolArguments      = {}
     self.outputs                    = {}
     self.tool                       = ''
     self.toolInfo                   = {}
     self.toolArguments              = {}
-    self.toolsDemandingInputStream  = {}
-    self.toolsDemandingOutputStream = {}
-    self.toolsWithMultipleInputs    = {}
+
+  # Given JSON data from a tool configuration file, check that everything contained within.
+  # the file is allowed.  The allowed values for the configuration file are defined in the
+  # initialisation of the tools object.
+  def checkToolConfigurationFile(self, data, filename, verbose):
+    er = errors()
+
+    # Ensure that the configuration file contains tools.
+    if 'tools' not in data:
+      er.missingToolsBlockInConfig(False, filename)
+      er.terminate()
+
+    # Loop over all of the tools contained in the configuration file.
+    for tool in data['tools']:
+
+      # Store the name of the tools.
+      self.availableTools.append(tool)
+      self.observedFields = {}
+      hasArgumentOrder    = False
+
+      for  field in data['tools'][tool]:
+
+        # Following is a list of all the allowed blocks in the configuration file.  Each is checked
+        # for errors before proceeding.
+        if field == 'additional files': self.checkAdditionalFiles(tool, data['tools'][tool][field], filename)
+        elif field == 'arguments': self.checkArguments(tool, data['tools'][tool][field], filename)
+        elif field == 'argument delimiter': self.checkArgumentDelimiter(tool, data['tools'][tool][field], filename)
+        elif field == 'description': self.checkDescription(tool, data['tools'][tool][field], filename)
+        elif field == 'executable': self.checkExecutable(tool, data['tools'][tool][field], filename)
+        elif field == 'help': self.checkHelp(tool, data['tools'][tool][field], filename)
+        elif field == 'hide tool': self.checkHideTool(tool, data['tools'][tool][field], filename)
+        elif field == 'input is stream': self.checkInputStream(tool, data['tools'][tool][field], filename)
+        elif field == 'instances': self.checkInstances(tool, data['tools'][tool][field], filename)
+        elif field == 'modifier': self.checkModifier(tool, data['tools'][tool][field], filename)
+        elif field == 'output is stream': self.checkOutputStream(tool, data['tools'][tool][field], filename)
+        elif field == 'path': self.checkPath(tool, data['tools'][tool][field], filename)
+        elif field == 'precommand': self.checkPrecommand(tool, data['tools'][tool][field], filename)
+
+        # The argument order needs to be checked against the tool arguments.  This is deferred until the
+        # end of this step to ensure that the arguments have been processed prior to performing the checks.
+        elif field == 'argument order': hasArgumentOrder = True
+
+        # If the field is anything other than those objects listed above, this is an
+        # unrecognised field and gkno will terminate citing problems with the configuration file.
+        else:
+          er.undefinedFieldInConfig(False, filename, tool, field)
+          er.terminate()
+
+      # Now check the argument order field, if this was present.
+      if hasArgumentOrder: self.checkArgumentOrder(tool, data['tools'][tool]['argument order'], filename)
+
+      # Having checked that everything present in the configuration file is valid, ensure that
+      # there are no omissions of required fields.  The dictionary requiredFields contains the
+      # required top level fields for checking.
+      missingVariables = []
+      for field in self.requiredFields:
+        if field not in self.observedFields: missingVariables.append(field)
+
+      if len(missingVariables) > 0:
+        er.missingRequiredFieldInConfig(False, filename, tool, missingVariables)
+        er.terminate()
+
+  # Check the validity of the configuration file block by block.  Start with the description.
+  def checkDescription(self, tool, description, filename):
+    er            = errors()
+    givenType     = type(description)
+    if givenType != str:
+      er.differentDataTypeInConfig(False, filename, tool, 'description', givenType, str)
+      er.terminate()
+    self.observedFields['description'] = True
+    self.descriptions[tool]            = description
+
+  # ...executable...
+  def checkExecutable(self, tool, executable, filename):
+    er            = errors()
+    givenType     = type(executable)
+    if givenType != str:
+      er.differentDataTypeInConfig(False, filename, tool, 'executable', givenType, str)
+      er.terminate()
+    self.observedFields['executable'] = True
+    self.executables[tool]            = executable
+
+  # ...help...
+  def checkHelp(self, tool, helpMessage, filename):
+    er            = errors()
+    givenType     = type(helpMessage)
+    if givenType != str:
+      er.differentDataTypeInConfig(False, filename, tool, 'help', givenType, str)
+      er.terminate()
+    self.observedFields['help'] = True
+
+  # ...path...
+  def checkPath(self, tool, path, filename):
+    er            = errors()
+    givenType     = type(path)
+    if givenType != str:
+      er.differentDataTypeInConfig(False, filename, tool, 'path', givenType, str)
+      er.terminate()
+    self.observedFields['path'] = True
+    self.paths[tool]            = path
+
+  # ...precommand...
+  def checkPrecommand(self, tool, precommand, filename):
+    er            = errors()
+    givenType     = type(precommand)
+    if givenType != str:
+      er.differentDataTypeInConfig(False, filename, tool, 'precommand', givenType, str)
+      er.terminate()
+    self.observedFields['precommand'] = True
+    self.precommands[tool]            = precommand
+
+  # ...modifier...
+  def checkModifier(self, tool, modifier, filename):
+    er            = errors()
+    givenType     = type(modifier)
+    if givenType != str:
+      er.differentDataTypeInConfig(False, filename, tool, 'modifier', givenType, str)
+      er.terminate()
+    self.observedFields['modifier'] = True
+    self.modifiers[tool]            = modifier
+
+  # ...argument delimiter...
+  def checkArgumentDelimiter(self, tool, delimiter, filename):
+    er            = errors()
+    givenType     = type(delimiter)
+    if givenType != str:
+      er.differentDataTypeInConfig(False, filename, tool, 'delimiter', givenType, str)
+      er.terminate()
+    self.observedFields['argument delimiter'] = True
+    self.argumentDelimiters[tool]             = delimiter
+
+  # ...arguments...
+  def checkArguments(self, tool, arguments, filename):
+    er            = errors()
+    givenType     = type(arguments)
+    if givenType != dict:
+      er.differentDataTypeInConfig(False, filename, tool, 'arguments', givenType, dict)
+      er.terminate()
+
+    # Now parse through all of the arguments and check the contents of each entry in the
+    # arguments field.  Any string is allowed as an argument, but each argument must contain
+    # some fields.  Optional fields are also checked and unknown fields will call gkno to
+    # terminate.
+    for argument in arguments:
+      givenType     = type(arguments[argument])
+      if givenType != dict:
+        er.differentDataTypeInConfig(False, filename, tool, 'arguments -> ' + str(argument), givenType, dict)
+        er.terminate()
+
+      # Parse through all entries for this argument.
+      self.observedArgumentFields = {}
+      for field in arguments[argument]:
+        if field == 'allow multiple definitions': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
+        elif field == 'apply by repeating this argument': self.checkRepeatArgument(tool, arguments, argument, field, str, filename)
+        elif field == 'default': self.checkGeneralField(tool, arguments[argument][field], field, list, filename)
+        elif field == 'dependent': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
+        elif field == 'description': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
+        elif field == 'do not construct filename from input': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
+        elif field == 'extension': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
+        elif field == 'if input is stream': self.checkArgumentInputStream(tool, arguments[argument], argument, field, arguments[argument][field], filename)
+        elif field == 'if output is stream': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
+        elif field == 'if output to stream': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
+        elif field == 'input': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
+        elif field == 'list of input files': self.checkInputList(tool, argument, arguments[argument], field, filename)
+        elif field == 'modify argument name on command line': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
+        elif field == 'output': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
+        elif field == 'outputs': self.checkArgumentOutputs(tool, argument, arguments[argument][field], filename)
+        elif field == 'required': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
+        elif field == 'resource': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
+        elif field == 'replace argument with': pass
+        elif field == 'short form argument': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
+        elif field == 'stub': self.checkArgumentStub(tool, arguments[argument], argument, arguments[argument][field], filename)
+        elif field == 'type': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
+        elif field == 'use for filenames': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
+
+        # If the field is unknown, terminate.
+        else:
+          er.undefinedFieldInConfig(False, filename, tool, 'arguments -> ' + str(argument) + ' -> ' + str(field))
+          er.terminate()
+
+      # Now check that all of the required fields for this argument were present.
+      missingVariables = []
+      for field in self.requiredArgumentFields:
+        if field not in self.observedArgumentFields: missingVariables.append('arguments -> ' + argument + ' -> ' + field)
+
+      if len(missingVariables) > 0:
+        er.missingRequiredFieldInConfig(False, filename, tool, missingVariables)
+        er.terminate()
+
+    # Update the self.argumentInformation structure to include the arguments for this tool.
+    self.argumentInformation[tool] = arguments
+    self.observedFields['arguments'] = True
+
+  # ...hide tool...
+  def checkHideTool(self, tool, hiddenTool, filename):
+    er            = errors()
+    givenType     = type(hiddenTool)
+    if givenType != bool:
+      er.differentDataTypeInConfig(False, filename, tool, 'hidden tools', givenType, bool)
+      er.terminate()
+    self.observedFields['hide tool'] = True
+    self.hiddenTools[tool] = hiddenTool
+
+  # ...argument order...
+  def checkArgumentOrder(self, tool, argumentOrder, filename):
+    er            = errors()
+    givenType     = type(argumentOrder)
+    if givenType != list:
+      er.differentDataTypeInConfig(False, filename, tool, 'argument order', givenType, list)
+      er.terminate()
+
+    # Parse through the contents of the list and ensure that the list is a complete list of all
+    # the arguments for this tool and no more.
+    for argument in argumentOrder:
+      if argument not in self.argumentInformation[tool]:
+        er.unknownArgumentInArgumentOrder(False, filename, tool, argument)
+        er.terminate()
+
+    # Then parse through the arguments for the tools and ensure that the argument order list
+    # is exhaustive.
+    for argument in self.argumentInformation[tool]:
+      if argument not in argumentOrder:
+        er.argumentMissingFromArgumentOrder(False, filename, tool, argument)
+        er.terminate()
+
+    self.argumentOrder[tool]              = argumentOrder
+    self.observedFields['argument order'] = True
+
+  # ...output is stream...
+  def checkOutputStream(self, tool, outputStream, filename):
+    er            = errors()
+    givenType     = type(outputStream)
+    if givenType != bool:
+      er.differentDataTypeInConfig(False, filename, tool, 'output is stream', givenType, bool)
+      er.terminate()
+    self.observedFields['output is stream'] = True
+    self.toolsDemandingOutputStream[tool] = outputStream
+
+  # ...input is stream...
+  def checkInputStream(self, tool, inputStream, filename):
+    er            = errors()
+    givenType     = type(inputStream)
+    if givenType != bool:
+      er.differentDataTypeInConfig(False, filename, tool, 'input is stream', givenType, bool)
+      er.terminate()
+    self.observedFields['input is stream'] = True
+    self.toolsDemandingInputStream[tool] = inputStream
+
+  # ...additional files...
+  def checkAdditionalFiles(self, tool, arguments, filename):
+    er       = errors()
+    required = []
+    required.append('type')
+    required.append('link to this argument')
+    required.append('remove extension')
+    required.append('add extension')
+    required.append('output extension')
+    required.append('stub')
+
+    # The only allowed fields within the 'additional fields' section are:
+    #   1. from input argument.
+    #
+    # Check that these are the only observed fields, and that their contents are as expected.
+    for field in arguments:
+      if field == 'from input arguments':
+
+        if type(arguments[field]) != list:
+          er.differentDataTypeInConfig(False, filename, tool, field, type(arguments[field]), list)
+          er.terminate()
+
+        # Check that the field is a list and that the list contents are dictionaries and that their
+        # contents are as expected.
+        for entry in arguments[field]:
+          if type(entry) != dict:
+            er.differentDataTypeInConfig(False, filename, tool, field + ' -> ' + entry, type(entry), dict)
+            er.terminate()
+
+          # Check the contents of each of the dictionaries.
+          for information in entry:
+
+            # The 'type' field can take the values "output" or "dependency".
+            if information == 'type':
+              if entry[information] != 'output' and entry[information] != 'dependency':
+                er.typeInAdditionalFieldsError(False, filename, tool, entry[information])
+                er.terminate()
+
+            # The "link to his argument field must link to an argument for this tool.
+            elif information == 'link to this argument':
+              if entry[information] not in self.argumentInformation[tool]:
+                er.unknownArgumentInAdditionalFiles(False, filename, tool, entry[information])
+                er.terminate()
+
+            # Check that the remove/add extension field is a Boolean.
+            elif information == 'remove extension':
+              if type(entry[information]) != bool:
+                er.incorrectBooleanInAdditionalFiles(False, filename, tool, information, entry[information])
+                er.terminate()
+
+            elif information == 'add extension':
+              if type(entry[information]) != bool:
+                er.incorrectBooleanInAdditionalFiles(False, filename, tool, information, entry[information])
+                er.terminate()
+
+            elif information == 'output extension': pass
+
+            # Check that the stub field is a Boolean.
+            elif information == 'stub':
+              if type(entry[information]) != bool:
+                er.incorrectBooleanInAdditionalFiles(False, filename, tool, information, entry[information])
+                er.terminate()
+
+            else:
+              er.unknownFieldInAdditionalFilesDictionary(False, filename, tool, information)
+              er.terminate()
+          
+
+          # Check that all of the required fields are present.
+          for information in required:
+            if information not in entry:
+              er.missingFieldInAdditionalFiles(False, filename, tool, information, required)
+              er.terminate()
+
+      # If the field is not known.
+      else:
+        er.unknownFieldInAdditionalFiles(False, filename, tool, field)
+        er.terminate()
+
+    self.additionalFiles[tool]              = arguments
+    self.observedFields['additional files'] = True
+
+  # ...instances...
+  def checkInstances(self, tool, instances, filename):
+    er            = errors()
+    givenType     = type(instances)
+    if givenType != dict:
+      er.differentDataTypeInConfig(False, filename, tool, 'instances', givenType, dict)
+      er.terminate()
+    self.observedFields['instances'] = True
+    for instance in instances: self.instances[instance] = instances[instance]
+
+  # If the field for an argument is expected to be of a specific type, check that it is.
+  def checkGeneralField(self, tool, value, text, expectedType, filename):
+    er            = errors()
+    givenType     = type(value)
+    if givenType != expectedType:
+      er.differentDataTypeInConfig(False, filename, tool, text, givenType, expectedType)
+      er.terminate()
+    self.observedArgumentFields[text] = True
+
+  def checkRepeatArgument(self, tool, arguments, argument, field, expectedType, filename):
+    er            = errors()
+    value         = arguments[argument][field]
+    givenType     = type(value)
+    if givenType != expectedType:
+      er.differentDataTypeInConfig(False, filename, tool, field, givenType, expectedType)
+      er.terminate()
+
+    # Now check that the value is an argument for this tool.
+    if value not in arguments:
+      text = 'arguments -> ' + argument + ' -> ' + field
+      er.invalidArgumentInRepeat(False, filename, tool, argument, text, value)
+      er.terminate()
+    self.observedArgumentFields[field] = True
+
+  # If the argument input is the stream, there are a number of ways that gkno can be instructed
+  # to modify the command line.  Check that the value given is valid and that any further information
+  # required is present.
+  def checkArgumentInputStream(self, tool, arguments, argument, field, value, filename):
+    er = errors()
+    if value == 'do not include': self.checkGeneralField(tool, value, field, str, filename)
+    elif value == 'replace':
+      if 'replace argument with' not in arguments:
+        er.replaceArgumentMissing(False, filename, tool, field)
+        er.terminate()
+
+      # If the "replace argument with" field is present, check that it is a dictionary containing an alternative
+      # argument and value to use.
+      givenType = type(arguments['replace argument with'])
+      text = 'arguments -> ' + argument + ' -> replace argument with'
+      if givenType != dict:
+        er.differentDataTypeInConfig(False, filename, tool, text, givenType, dict)
+        er.terminate()
+
+      # Check the contents.
+      if 'argument' not in arguments['replace argument with']:
+        er.missingFieldInReplace(False, filename, tool, text, 'argument')
+        er.terminate()
+      if 'value' not in arguments['replace argument with']:
+        er.missingFieldInReplace(False, filename, tool, text, 'value')
+        er.terminate()
+
+      # and finally check that the "argument" and "value" fields are strings.
+      givenType = type(arguments['replace argument with']['argument'])
+      if givenType != str:
+        er.differentDataTypeInConfig(False, filename, tool, text + ' -> argument', givenType, str)
+        er.terminate()
+
+      givenType = type(arguments['replace argument with']['value'])
+      if givenType != str:
+        er.differentDataTypeInConfig(False, filename, tool, text + ' -> value', givenType, str)
+        er.terminate()
+
+    # If the value is unknown to gkno, terminate.
+    else:
+      text = 'arguments -> ' + argument + ' -> if input is stream' + ' -> ' + value
+      er.undefinedFieldInConfig(False, filename, tool, text)
+      er.terminate()
+
+  # If the argument contains the 'outputs' field, this needs to be a list of outputs outputted by
+  # the tool.  Check that is is a list of strings.
+  def checkArgumentOutputs(self, tool, argument, value, filename):
+    er = errors()
+
+    # First check that the value for the 'outputs' argument is a list.
+    givenType = type(value)
+    text      = 'arguments -> ' + argument + ' -> outputs'
+    if givenType != list:
+      er.differentDataTypeInConfig(False, filename, tool, text, givenType, list)
+      er.terminate()
+
+    # Now check that the list contains strings only.
+    for field in value:
+      givenType = type(field)
+      text      = 'arguments -> ' + argument + ' -> outputs'
+      if givenType != str:
+        er.differentDataTypeInConfig(False, filename, tool, text, givenType, str)
+        er.terminate()
+
+  # If the 'stub' field is present, ensure that the value is a Boolean and that the outputs field is
+  # also present.
+  def checkArgumentStub(self, tool, arguments, argument, value, filename):
+    er = errors()
+
+    # First check that the value is a Boolean.
+    givenType = type(value)
+    if givenType != bool:
+      text = 'arguments -> ' + argument + ' -> stub'
+      er.differentDataTypeInConfig(False, filename, tool, text, givenType, bool)
+      er.terminate()
+
+    # ...then check that the 'outputs' field is also present.  It's contents are checked elsewhere
+    # if it is present, so only its presence is checked for here.
+    if 'outputs' not in arguments:
+      text = 'arguments -> ' + argument + ' -> outputs'
+      er.missingOutputsForStub(False, filename, tool, argument, text)
+      er.terminate()
+
+  # If the 'input is list' field is present, ensure that the accompanying value is a 
+  # Boolean and that the "apply by repeating this argument" is also present.
+  def checkInputList(self, tool, argument, arguments, field, filename):
+    er            = errors()
+    value         = arguments[field]
+    givenType     = type(value)
+    if givenType != bool:
+      er.differentDataTypeInConfig(False, filename, tool, 'list of input files', givenType, bool)
+      er.terminate()
+    self.observedArgumentFields['list of input files'] = True
+
+    # Check that the "apply by repeating this argument" is also present.
+    if value and 'apply by repeating this argument' not in arguments:
+      text = 'arguments -> ' + argument + ' -> apply by repeating this argument'
+      er.missingArgumentToRepeat(False, filename, tool, argument, text)
+      er.terminate()
+
+  # Parse through the allowed arguments for each tool and check if they have a short form
+  # equivalent.  If so, add them to the shortForms dictionary.
+  def setupShortFormArguments(self):
+    for tool in self.argumentInformation:
+      self.shortForms[tool] = {}
+      for argument in self.argumentInformation[tool]:
+        if 'short form argument' in self.argumentInformation[tool][argument]:
+          shortForm = self.argumentInformation[tool][argument]['short form argument']
+          self.shortForms[tool][shortForm] = argument
 
   # If gkno is being run in the single tool mode, check that the specified tool
   # exists.
   def checkTool(self, gknoHelp):
-    if self.tool not in self.toolInfo:
+    if self.tool not in self.availableTools:
       gknoHelp.toolHelp    = True
       gknoHelp.printHelp   = True
       gknoHelp.unknownTool = True
 
-  # For all of the tools, parse through the configuration files and ensure that all
-  # necessary fields are present.  Later subroutines will assume they are, so
-  # terminate here if the configuration file is incomplete.
-  def checkForRequiredFields(self):
-    er         = errors()
-    firstError = True
-    verbose    = True if self.toolArguments['pipeline']['--verbose'] else False
-    newLine    = True if verbose else False
-    noTab      = 1 if verbose else 0
+  # Loop over all of the allowed arguments for each tool and build up the arguments structure
+  # containing all of the defaults from the configuration file.
+  def getDefaults(self, workflow, tools, arguments, shortForms, verbose):
+    er = errors()
 
-    if verbose:
-      print('Checking configuration files contain required fields...', end = '', file = sys.stdout)
-      sys.stdout.flush()
+    for task in workflow:
+      tool = tools[task]
+      self.arguments[task] = {}
+      for argument in arguments[tool]:
 
-    for task in self.toolInfo:
+        # Check if the argument has a default value.
+        if 'default' in arguments[tool][argument]:
+          self.arguments[task][argument] = arguments[tool][argument]['default']
+          shortForm                      = shortForms[argument] if argument in shortForms else ''
 
-      # Check if the tool is hidden.  If so, it shouldn't appear as an
-      # available tool, or be accessible on the pipeline command line as
-      # modifiable.  It can, however, be built into pipelines.
-      value = self.toolInfo[task]['hide tool'] if 'hide tool' in self.toolInfo[task] else ''
-      self.hiddenTools[task] = True if value == 'true' else False
+          # Check that the given values are valid.
+          for value in self.arguments[task][argument]:
+            givenType = type(value)
+            dataType  = arguments[tool][argument]['type']
 
-      # The assumption is that command line arguments are of the form --argument value.
-      # There are certain tools that don't adhere to this (for example, Picard uses the
-      # form argument=value).  The 'argument delimiter' option with define the delimiter
-      # which defaults to ' ', if not specified.
-      value = self.toolInfo[task]['argument delimiter'] if 'argument delimiter' in self.toolInfo[task] else ''
-      self.argumentDelimiters[task] = ' ' if value == '' else value
+            # If the argument expects a Boolean, check that the given value is either 'true', 'True', 'false' or
+            # 'False'.
+            if dataType == 'bool':
 
-      # Some tools do not have an input argument but run using the stream as input.
-      # These tools can be identified using the 'input is stream' value.  If this is the
-      # case, the task prior to this task in the workflow must be listed as outputting
-      # to the stream.
-      value = self.toolInfo[task]['input is stream'] if 'input is stream' in self.toolInfo[task] else ''
-      self.toolsDemandingInputStream[task] = True if value == 'true' else False
-      value = self.toolInfo[task]['output is stream'] if 'output is stream' in self.toolInfo[task] else ''
-      self.toolsDemandingOutputStream[task] = True if value == 'true' else False
+              # Ensure that a valid argument has been provided.
+              if (value == 'true') or (value == 'True'): value = True
+              elif (value == 'false') or (value == 'False'): value = False
+              else:
+                er.incorrectDefaultBooleanValue(verbose, task, argument, shortForm, value)
+                er.terminate()
+          
+            # If the argument demands a string, no checks are required.
+            elif dataType == 'string': pass
+          
+            # If the argument demands an integer, check that the supplied value is an integer.
+            elif (dataType == 'integer'):
+              try: value = int(value)
+              except: er.incorrectDefaultDataType(verbose, task, argument, shortForm, value, 'integer')
+              if er.error: er.terminate()
+          
+            # If the argument demands a floating point...
+            elif dataType == 'float':
+              try: value = float(value)
+              except: er.incorrectDefaultDataType(verbose, task, argument, shortForm, value, 'float')
+              if er.error: er.terminate()
 
-      # Some tools allow multiple input files to be supplied.  If this is the case, the
-      # value 'allows multiple inputs' has to be set.
-      value = self.toolInfo[task]['allows multiple inputs'] if 'allows multiple inputs' in self.toolInfo[task] else ''
-      self.toolsWithMultipleInputs[task] = True if value == 'true' else False
 
-      for argument in self.toolInfo[task]['arguments']:
-        newLine = True if self.toolArguments['pipeline']['--verbose'] else False
 
-        # Check that the 'input' field is present...
-        value = self.toolInfo[task]['arguments'][argument]['input'] if 'input' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'true') and (value != 'false'):  er.missingFieldForTool(newLine, noTab, task, argument, 'input', value)
-        isInput = True if self.toolInfo[task]['arguments'][argument]['input'] == 'true' else False
 
-        # output...
-        value = self.toolInfo[task]['arguments'][argument]['output'] if 'output' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, noTab, task, argument, 'output', value)
-        isOutput = True if self.toolInfo[task]['arguments'][argument]['output'] == 'true' else False
 
-        # required...
-        value = self.toolInfo[task]['arguments'][argument]['required'] if 'required' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, noTab, task, argument, 'required', value)
 
-        # dependent...
-        value = self.toolInfo[task]['arguments'][argument]['dependent'] if 'dependent' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'true') and (value != 'false'): er.missingFieldForTool(newLine, noTab, task, argument, 'dependent', value)
 
-        # type...
-        value = self.toolInfo[task]['arguments'][argument]['type'] if 'type' in self.toolInfo[task]['arguments'][argument] else ''
-        if (value != 'string') and (value != 'flag') and (value != 'integer') and (value != 'float'): 
-          er.missingFieldForTool(newLine, noTab, task, argument, 'type', value)
 
-        # If the argument is an input or an output file, the extension value must be available,
-        # even if it is blank.
-        if isInput or isOutput:
-          value = self.toolInfo[task]['arguments'][argument]['extension'] if 'extension' in self.toolInfo[task]['arguments'][argument] else 'missing'
-          if value == 'missing': er.missingFieldForTool(newLine, noTab, task, argument, 'extension', '')
 
-        # If the resource field is missing, assume that it isn't a resource file.
-        value = self.toolInfo[task]['arguments'][argument]['resource'] if 'resource' in self.toolInfo[task]['arguments'][argument] else ''
-        if value == '': self.toolInfo[task]['arguments'][argument]['resource'] == 'false'
 
-    if er.error: er.terminate()
-    if verbose:
-      print('done.', file = sys.stdout)
-      print(file = sys.stdout)
-      sys.stdout.flush()
 
-  # Loop over each tool in the pipeline and set up a hash of hashes.
-  # For each tool, the set of allowed options along with default values
-  # if defined.
-  def setupToolOptions(self, cl, pl):
-    er      = errors()
-    newLine = True if self.toolArguments['pipeline']['--verbose'] else False
-    noTab   = 2 if self.toolArguments['pipeline']['--verbose'] else 0
 
-    if self.toolArguments['pipeline']['--verbose']:
-      print('Setting up tool defaults...', file = sys.stdout)
-      sys.stdout.flush()
-    for task in pl.information['workflow']:
 
-      # Check if this tool name has already been used.  It is required that 
-      # the names describing the order of the tools in the pipeline are unique.
-      # This ensures that all tools can be anambiguously linked with any of the
-      # others.
-      if task in self.toolArguments:
-        er.repeatedTool(False, noTab, task)
-        er.terminate()
 
-      # Parse new tools.
-      else:
-        tool = pl.information['tools'][task]
-        if self.toolArguments['pipeline']['--verbose']:
-          print('     ', tool, ' (', task, ')...', sep = '', end = '', file = sys.stdout)
-          sys.stdout.flush()
-        self.toolArguments[task] = {}
-        for argument in self.toolInfo[tool]['arguments']:
 
-          # If a default value for the argument is assigned, set this value in the data structure.
-          default = self.toolInfo[tool]['arguments'][argument]['default'] if 'default' in self.toolInfo[tool]['arguments'][argument] else ''
-          self.toolArguments[task][argument] = default
 
-        if self.toolArguments['pipeline']['--verbose']:
-          print('done.', file = sys.stdout)
-          sys.stdout.flush()
-    if self.toolArguments['pipeline']['--verbose']:
-      print(file = sys.stdout)
-      sys.stdout.flush()
 
-  # Set up tl.originalToolArguments structure.
-  def setupOriginalToolArguments(self):
-    for task in self.toolArguments:
-      if task not in self.originalToolArguments: self.originalToolArguments[task] = {}
-      for argument in self.toolArguments[task]:
-        if argument not in self.originalToolArguments[task]: self.originalToolArguments[task][argument] = {}
-        self.originalToolArguments[task][argument] = self.toolArguments[task][argument]
+
+
+
 
   # Reset the tl.toolArguments structure.
   def resetDataStructures(self, pl):
@@ -177,6 +618,7 @@ class tools:
     # Also reset the toolInfo structure.  If tools were streamed together, some
     # additional options have been added to toolInfo, but the added options were
     # tracked in the pl.addedToToolInfo structure.
+    #TODO pl.addedToToolInfo has been modified to make.addedInformation.
     for task in pl.addedToToolInfo:
       for argument in pl.addedToToolInfo[task]:
         if argument in self.toolInfo[task]['arguments']: del(self.toolInfo[task]['arguments'][argument])
@@ -188,386 +630,3 @@ class tools:
     pl.finalOutputs    = {}
     pl.streamedOutputs = {}
     pl.taskBlocks      = []
-
-  # For each tool, find the output files.  If these haven't already been given a
-  # value, then a value needs to be assigned.  First check if there is a 'construct
-  # filenames' block in the json file with instructions on how to build the filename
-  # (this applies to pipelines only).  If there are no explicit instructions, check
-  # if any of the input files have 'use for filenames' set to true.  If so, use this
-  # filename to build the output (changing the extension as required).
-  def constructFilenames(self, tl, pl, task, tool):
-    er      = errors()
-    newLine = True if self.toolArguments['pipeline']['--verbose'] else False
-    noTab   = 3 if self.toolArguments['pipeline']['--verbose'] else 0
-
-    if self.toolArguments['pipeline']['--verbose']:
-      print('          Constructing filenames...', end = '', file = sys.stdout)
-      sys.stdout.flush()
-
-    # First identify the input and output files and how their names should be constructed.
-    filenameConstructor = ''
-    inputFiles          = []
-    outputFiles         = {}
-    for argument in self.toolInfo[tool]['arguments']:
-      isInput  = True if self.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
-      isOutput = True if self.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
-
-      # If this is an input file, check to see if it is to be used for building filenames.
-      if isInput:
-        inputFiles.append(argument)
-        if 'use for filenames' in self.toolInfo[tool]['arguments'][argument]:
-          if self.toolInfo[tool]['arguments'][argument]['use for filenames'] == 'true':
-
-            # If there was an input file previous designated as the file to use for
-            # constructing output filenames for this tool, gkno cannot determine which
-            # file to use and so terminates.
-            if filenameConstructor != '':
-              er.multipleFilenameConstructors("\n\t\t", task, tool, argument, filenameConstructor)
-              er.terminate()
-            else:
-              filenameConstructor = argument
-
-      # If the argument is an output, check to see if it has already been defined.  If
-      # not, store this as a filename to be constructed.
-      if isOutput:
-        if self.toolArguments[task][argument] == '':
-
-          # For pipelines, check if the 'construct filenames' block exists and describes
-          # how to build this filename.
-          if pl.isPipeline and ('construct filenames' in pl.information):
-            for constructTask in pl.information['construct filenames']:
-              if constructTask == task:
-                for constructArgument in pl.information['construct filenames'][constructTask]:
-                  if constructArgument == argument: outputFiles[argument] = 'construct'
-                  break
-
-          if argument not in outputFiles:
-
-            # If the configuration file specifically states not to construct the filename from
-            # the input file, terminate as the user needs to input the output filename.  Otherwise
-            # use the input file.
-            if 'do not contruct filename from input' in tl.toolInfo[tool]['arguments'][argument]:
-              shortForm = tl.toolInfo[tool]['arguments'][argument]['short form argument'] if 'short form argument' in \
-              tl.toolInfo[tool]['arguments'][argument] else ''
-              er.missingRequiredValue(newLine, noTab, task, tool, argument, shortForm, self, pl)
-              er.terminate()
-            else: outputFiles[argument] = 'from input'
-
-    # Now all of the output files have been identified and the method of filename generation
-    # determined, build the filenames.
-    for outputFile in outputFiles:
-
-      # If to be constructed using information from the json file (pipelines), construct.
-      if outputFiles[outputFile] == 'construct':
-        pl.constructFileNameFromJson(self, task, tool, outputFile)
-
-      elif outputFiles[outputFile] == 'from input':
-        if filenameConstructor != '':
-          self.constructFilenameFromInput(tl, pl, task, tool, outputFile, filenameConstructor)
-
-        # If the output filename is to be generated using an input file from this task and there
-        # are no input files designated as to be used for generating the filename, check what
-        # input files there are.  If there is only one input for this task, use this file to
-        # generate the filenames.  If there are multiple or no input file arguments, terminate.
-        else:
-          if len(inputFiles) == 1:
-            self.constructFilenameFromInput(tl, pl, task, tool, outputFile, inputFiles[0])
-          else:
-            er.unknownFilenameConstructor(True, "\t\t", task, tool, outputFile)
-            er.terminate()
-
-    if self.toolArguments['pipeline']['--verbose']:
-      print('done.', file = sys.stdout)
-      sys.stdout.flush()
-
-  # If the output filename is to be constructed from an input filename, take the
-  # requested input filename, remove the extension and replace with the required
-  # extension for this output file.
-  def constructFilenameFromInput(self, tl, pl, task, tool, outputFile, argument):
-    er      = errors()
-    newLine = True if self.toolArguments['pipeline']['--verbose'] else False
-    noTab   = 3 if self.toolArguments['pipeline']['--verbose'] else 0
-
-    # If the output filename is to be generated from an input file, but there are
-    # multiple files, use the first file in the list for generating the output
-    # filename.
-    if isinstance(self.toolArguments[task][argument], list): useFile = self.toolArguments[task][argument][0]
-    else: useFile = self.toolArguments[task][argument]
-
-    inputFile = useFile.split('/')[-1]
-
-    # Check if the input file that is to be used for constructing the output filename is
-    # blank.  If so, terminate gkno as the output filename cannot be determined.
-    if inputFile == '':
-
-      # Find the pipeline argument that goes with the task argument.
-      foundArgument = False
-      shortform     = ''
-      for pipelineArgument in pl.information['arguments']:
-        linkToTask     = pl.information['arguments'][pipelineArgument]['link to this task']
-        if linkToTask != 'pipeline':
-          linkToArgument = pl.information['arguments'][pipelineArgument]['link to this argument']
-          if (linkToTask == task) and (linkToArgument == argument):
-            if 'short form argument' in pl.information['arguments'][pipelineArgument]:
-              shortform = pl.information['arguments'][pipelineArgument]['short form argument']
-            foundArgument = True
-            break
-      if not foundArgument: pipelineArgument = ''
-      er.noInputFilenameForFilenameConstruction(newLine, noTab, task, tool, outputFile, argument, pipelineArgument, shortform, tl)
-      er.terminate()
-    else:
-      inputExtension = ''
-      for extension in self.toolInfo[tool]['arguments'][argument]['extension'].split('|'):
-        if inputFile.endswith(extension):
-          inputExtension = extension
-          break
-
-      # Strip off the extension.
-      if inputExtension != '': inputFile = inputFile[0:(len(inputFile) - len(extension) - 1)]
-
-      # Add the output extension unless the output is a stub.
-      isStub = False
-      if 'stub' in self.toolInfo[tool]['arguments'][outputFile]:
-        if self.toolInfo[tool]['arguments'][outputFile]['stub'] == 'true': isStub = True
-      if not isStub: self.toolArguments[task][outputFile] = inputFile + '.' + self.toolInfo[tool]['arguments'][outputFile]['extension'].split('|')[0]
-      else: self.toolArguments[task][outputFile] = inputFile
-
-  # Some of the tools included in gkno can have multiple input files set on the
-  # command line.  When many files are to be included, it can be more convenient
-  # to allow a file including a list of files to be included.  Check if any of the
-  # tools have input lists specified and if so, add these to the actual command line
-  # argument list that should be used.
-  def checkInputLists(self, pl, io):
-    er      = errors()
-    newLine = True if self.toolArguments['pipeline']['--verbose'] else False
-    pad     = "\t\t\t" if self.toolArguments['pipeline']['--verbose'] else ''
-    argumentsToRemove = []
-
-    for task in self.toolArguments:
-      if task != 'pipeline':
-        tool = pl.information['tools'][task]
-        for argument in self.toolArguments[task]:
-          isList = False
-          if argument != 'json parameters':
-            if 'list of input files' in self.toolInfo[tool]['arguments'][argument]:
-              if self.toolInfo[tool]['arguments'][argument]['list of input files'] == 'true': isList = True
-  
-          if isList:
-            if 'apply by repeating this argument' in self.toolInfo[tool]['arguments'][argument]:
-              repeatArgument = self.toolInfo[tool]['arguments'][argument]['apply by repeating this argument']
-              if repeatArgument not in self.toolInfo[tool]['arguments']:
-                er.invalidArgumentToRepeat(newLine, pad, task, tool, argument, repeatArgument)
-                er.terminate()
-            else:
-              er.noArgumentToRepeat(newLine, pad, task, tool, argument)
-              er.terminate()
-
-            # Check that the file exists, open and read the contents.  The file should
-            # be a simple json list.  Only do this is a file is given.
-            if self.toolArguments[task][argument] != '':
-              data = io.getJsonData(self.toolArguments[task][argument])
-              if 'filename list' not in data: er.error = True
-              else:
-                if not isinstance(data['filename list'], list): er.error = True
-              if er.error:
-                er.malformedFilenameList(newLine, pad, task, tool, argument)
-                er.terminate()
-
-              # All of the data has been read in and is valid, so can be added to the
-              # lists of values for the specified argument.
-              if self.toolArguments[task][repeatArgument] == '': self.toolArguments[task][repeatArgument] = []
-              for filename in data['filename list']: self.toolArguments[task][repeatArgument].append(filename)
-
-            # Having accounted for all the files in the list, this option can be removed
-            # from the tools data structure.
-            argumentsToRemove.append((task, argument))
-
-    for task, argument in argumentsToRemove:
-      del(self.toolArguments[task][argument])
-
-  # Determine which files are required for each tool to run.  For each tool, these files
-  # are stored in a list and are used to define the dependencies in the Makefile.
-  def determineDependencies(self, cl, pl):
-    er           = errors()
-    hasStream    = True if 'tools outputting to stream' in pl.information else False
-    previousTask = ''
-
-    if self.toolArguments['pipeline']['--verbose']:
-      print('Determine tool dependencies...', file = sys.stdout)
-      sys.stdout.flush()
-    for task in pl.information['workflow']:
-      tool = pl.information['tools'][task]
-      if self.toolArguments['pipeline']['--verbose']:
-        print('     ', task, '...', sep = '', end = '', file = sys.stdout)
-        sys.stdout.flush()
-
-      self.dependencies[task] = []
-      self.outputs[task]      = []
-
-      for argument in self.toolArguments[task]:
-        if argument == 'json parameters':
-          value = self.toolArguments[task][argument]
-          self.dependencies[task].append(value)
-        else:
-
-          # Check if the file is an input or an output file, or is listed as a dependent
-          # file.  If it is an output, the file should be added to the string containing
-          # all outputs from this tool.  If it is an input or dependent file, this will
-          # be added to the string containing all files required for this tool to run.
-          isInput        = True if self.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
-          isOutput       = True if self.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
-          isResource     = True if self.toolInfo[tool]['arguments'][argument]['dependent'] == 'true' else False
-          isDependent    = True if self.toolInfo[tool]['arguments'][argument]['resource'] == 'true' else False
-          isFlag         = True if self.toolInfo[tool]['arguments'][argument]['type'] == 'flag' else False
-
-          # Determine if the input and output from this task are the stream.  If so, the
-          # dependencies and outputs structures do not need to be updated to include these
-          # arguments
-          outputToStream = False
-          inputIsStream  = False
-          if hasStream:
-            if task in pl.information['tools outputting to stream']: outputToStream = True
-            if (previousTask != '') and (previousTask in pl.information['tools outputting to stream']): inputIsStream = True
-
-          if isInput or isDependent or isOutput or isResource:
-  
-            # If the input/output file is defined, check that the extension is as expected.
-            value = self.toolArguments[task][argument] if self.toolArguments[task][argument] != '' else ''
-  
-            # If this file needs to be added to one of the string, check to see if it is a stub
-            # or not.  If so, all of the files associated with the stub need to be added to the
-            # string.
-            isStub = False
-            if 'stub' in self.toolInfo[tool]['arguments'][argument]:
-              if self.toolInfo[tool]['arguments'][argument]['stub'] == 'true': isStub = True
-  
-            # If this is a stub, create the string containing all of the files.
-            if isStub:
-  
-              # If the file that the tool requires for successful execution is a stub,
-              # make sure that all of the required files are listed in the list of
-              # dependencies.
-              if 'outputs' not in self.toolInfo[tool]['arguments'][argument]:
-                print(file = sys.stdout)
-                sys.stdout.flush()
-                er.stubNoOutputs(tool, argument)
-                er.terminate()
-
-              # Do not add the output to the self.outputs structure if the task is outputting
-              # to the stream.  Only add these values if it has been defined (i.e. value is not
-              # and empty string).
-              else:
-                if value != '':
-                  for name in self.toolInfo[tool]['arguments'][argument]['outputs']:
-                    if isOutput:
-                      if not outputToStream: self.outputs[task].append(value + name)
-                    elif isInput:
-                      if not inputIsStream: self.dependencies[task].append(value + name)
-  
-            # If the filename is not a stub, just include the value.
-            else:
-              if (value != '') and not isFlag:
-                if isOutput:
-                  if not outputToStream: self.outputs[task].append(value)
-                elif isInput:
-                 if not inputIsStream: self.dependencies[task].append(value)
-
-
-      # Update the previous task and previous tool to be the task and tool just evaluated.
-      previousTask = task
-      previousTool = tool
-
-      if self.toolArguments['pipeline']['--verbose']:
-        print('done.', file = sys.stdout)
-        sys.stdout.flush()
-    if self.toolArguments['pipeline']['--verbose']:
-      print(file = sys.stdout)
-      sys.stdout.flush()
-
-  # Determine additional dependencies that are not associated with an input
-  # command line argument.
-  #
-  # All of the included output files have already been added to the outputs
-  # string for each tool if they appear on the command line.  There are some
-  # programs that generate output files, however, without specifying the output
-  # file.  In these instances, the additional output files for the tool are
-  # included at the beginning of the tools configuration files.  Parse these
-  # additional output files (if there are any) and add to the outputs string.
-  def determineAdditionalFiles(self, pl):
-    er      = errors()
-    newLine = True if self.toolArguments['pipeline']['--verbose'] else False
-    noTab   = 2 if self.toolArguments['pipeline']['--verbose'] else 0
-
-    if self.toolArguments['pipeline']['--verbose']:
-      print('Determining additional dependencies and output files...', file = sys.stdout)
-      sys.stdout.flush()
-
-    # Loop over each tool in turn and check for additional output files.
-    for task in pl.information['workflow']:
-      if task not in self.outputs: self.outputs[task] = []
-      tool = pl.information['tools'][task]
-      if self.toolArguments['pipeline']['--verbose']:
-        print('     ', task, ' (', tool, ')...', sep = '', end = '', file = sys.stdout)
-        sys.stdout.flush()
-      if 'additional files' in self.toolInfo[tool]:
-
-        # There are different formats for building up output files.  Each of these can
-        # be dealt with separately.
-        #
-        # 1. If the output file can be constructed from a value given to one of the
-        # tools command line arguments.
-        if 'from input arguments' in self.toolInfo[tool]['additional files']:
-          for argument in self.toolInfo[tool]['additional files']['from input arguments']:
-
-            # Check that the command which should be used to determine the file name exists
-            # and has a value defined.
-            fileType = ''
-            command  = ''
-            filename = ''
-            try: fileType = argument['type']
-            except: er.error = True
-            if er.error:
-              er.optionAssociationError(newLine, noTab, 'type', 'additional files\' -> \'from input arguments', task)
-              er.terminate()
-
-            try: command = argument['command']
-            except: er.error = True
-            if er.error:
-              er.optionAssociationError(newLine, noTab, 'command', 'additional files\' -> \'from input arguments', task)
-              er.terminate()
-
-            try: filename = self.toolArguments[task][command]
-            except: er.error = True
-            if er.error:
-              er.missingCommand(task, tool, command)
-              er.terminate()
-              
-            # In constructing the output file name, the extension associated with the associated
-            # file name can be stripped off and a new extension can be appended if requested.
-            # Determine and enact the appropriate steps.
-            if 'remove extension' in argument:
-              if argument['remove extension'] == 'true':
-                filename = filename.rpartition('.')[0]
-            if 'add extension' in argument:
-              if argument['add extension'] == 'true':
-                try: extension = argument['output extension']
-                except: er.error = True
-                if er.error:
-                  er.optionAssociationError(newLine, noTab, 'output extension', 'additional files\' -> \'from input arguments', task)
-                  er.terminate()
-                filename += '.' + extension
-
-            # If the file is a dependency, add to the dependency string, otherwise add to the
-            # output string.
-            if fileType == 'dependency': self.dependencies[task].append(filename)
-            elif fileType == 'output': self.outputs[task].append(filename)
-            else:
-              er.unknownDependencyOrOutput(task, fileType)
-              er.terminate()
-
-      if self.toolArguments['pipeline']['--verbose']:
-        print('done.', file = sys.stdout)
-        sys.stdout.flush()
-    if self.toolArguments['pipeline']['--verbose']:
-      print(file = sys.stdout)
-      sys.stdout.flush()

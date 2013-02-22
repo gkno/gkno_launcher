@@ -14,137 +14,672 @@ import sys
 
 class pipeline:
   def __init__(self):
-    self.addedToToolInfo               = {}
-    self.deleteFiles                   = {}
-    self.information                   = {}
-    self.isPiped                       = False
-    self.isPipeline                    = False
-    self.finalOutputs                  = {}
-    self.hasMultipleRuns               = False
-    self.multipleRunsInputArguments    = []
-    self.multipleRunsListFormat        = []
-    self.multipleRunsNumberOfArguments = 0
-    self.numberOfMultipleRuns          = 0
-    self.pipelineName                  = ''
-    self.resourcePath                  = ''
-    self.streamedOutputs               = {}
-    self.taskBlocks                    = []
+    self.toolArgumentLinks       = {}
+    self.arguments               = {}
+    self.argumentInformation     = {}
+    self.constructFilenames      = {}
+    self.deleteFiles             = {}
+    self.description             = ''
+    self.instances               = {}
+    self.isPipeline              = False
+    self.linkage                 = {}
+    self.pipelineName            = ''
+    self.shortForms              = {}
+    self.taskToTool              = {}
+    self.toolsOutputtingToStream = []
+    self.workflow                = []
+
+    # Define the fields that are allowed for each argument in the linkage section of the
+    # configuration file.  The Boolean value describes if the field is required or not.
+    self.allowedLinkageFields                          = {}
+    self.allowedLinkageFields['link to this task']     = True
+    self.allowedLinkageFields['link to this argument'] = True
+    self.allowedLinkageFields['json block']            = False
+    self.allowedLinkageFields['extension']             = False
+
+    # Define the fields that are allowed for each argument in the construct filenames section
+    # of the configuration file.  The Boolean value describes if the field is required or not.
+    self.allowedConstructFields                                    = {}
+    self.allowedConstructFields['filename root']                   = True
+    self.allowedConstructFields['filename root text']              = False
+    self.allowedConstructFields['get root from task']              = False
+    self.allowedConstructFields['get root from argument']          = False
+    self.allowedConstructFields['remove input extension']          = False
+    self.allowedConstructFields['additional text from parameters'] = False
+    self.allowedConstructFields['output extension']                = False
+
+  # Check that the pipeline configuration file exists.
+  def checkPipelineExists(self, gknoHelp, pipelineFiles):
+    if self.pipelineName + '.json' not in pipelineFiles.keys():
+      if (gknoHelp.specificPipelineHelp) or (not gknoHelp.printHelp):
+        gknoHelp.specificPipelineHelp = False
+        gknoHelp.unknownPipeline      = True
+        gknoHelp.pipelineHelp         = True
+        gknoHelp.printHelp            = True
+
+      return False
+    else: return True
+
+  # Parse through the pipeline configuration file and check that all necessary fields are
+  # available and valid.  Store all of the data in data structures for later use.
+  def checkConfigurationFile(self, gknoHelp, data, pipelineFiles, availableTools, argumentInformation, verbose):
+    er     = errors()
+    length = len(self.pipelineName + 'Executing pipeline: ') + 4
+    text   = '=' * length
+
+    # Put all of the sections of the json file into a list.  As each of the allowed sections
+    # is checked, remove it from the list.  At the end of this routine, check if there are 
+    # any values left in the list.  If so, these are entries unrecognised by gkno and an error
+    # can be thrown.
+    self.jsonSections = data.keys()
+
+    # Check that the pipeline description is available.
+    self.checkDescription(data, verbose)
+
+    # Check that a workflow exists and that it is a list.
+    self.checkWorkflow(data, verbose)
+
+    # Check that there is a 'tools' section and that there is a named tool for each of the tasks.
+    self.checkTools(data, availableTools, verbose)
+
+    # If there are tools outputting to the stream, check that section is a list and that each element
+    # in the list, is present in the workflow.
+    self.checkToolsOutputtingToStream(data, verbose)
+
+    # If the construct self.pipelineNames section is included, check that it is a dictionary of key/value pairs,
+    # where all of the keys are the names of tasks.
+    self.checkConstructFilenames(data, argumentInformation, verbose)
+
+    # The linkage section describing how different tools are linked together in the pipeline is a
+    # dictionary containing tasks in the workflow as keys.  Check that these are all valid tasks.
+    if 'linkage' in data: self.checkLinkageSection(data['linkage'], argumentInformation, verbose)
+
+    # The arguments section is required and contains all the arguments allowed for the pipeline.
+    self.checkArguments(data, verbose)
+
+    # If the section 'delete files' is present.  If so, check that it is a dictionary whose keys are
+    # tasks present in the workflow.
+    if 'delete files' in data: self.checkDeleteFiles(argumentInformation, data['delete files'], verbose)
+
+    # If there are instances associated with the pipeline, ensure that this is a dictionary.
+    self.checkInstances(data, verbose)
+
+    # Check to see if the list 'jsonSections' is now empty.  If not, throw an error indicating
+    # the unknown sections.
+    if len(self.jsonSections) > 0:
+      er.unknownSectionsInPipelineConfig(True, self.jsonSections, self.pipelineFile)
+      er.terminate()
+
+  # Check that the pipeline description is available.
+  def checkDescription(self, data, verbose):
+    er    = errors()
+    Tab = 1 if verbose else 0
+
+    if 'description' not in data:
+      text = 'A textual description of the pipeline for the help messages is required information.'
+      er.missingPipelineSection(verbose, 'description', text, self.pipelineFile)
+      er.terminate()
+
+    self.description = data['description']
+    self.jsonSections.remove('description')
+
+  # Check that a workflow exists and that it is a list.
+  def checkWorkflow(self, data, verbose):
+    er = errors()
+
+    if 'workflow' not in data:
+      text = 'This provides an ordered list of unique tasks to be performed.'
+      er.missingPipelineSection(verbose, 'workflow', text, self.pipelineFile)
+      er.terminate()
+
+    if type(data['workflow']) != list:
+      er.pipelineSectionIsNotAList(verbose, 'workflow', self.pipelineFile)
+      er.terminate()
+
+    # Check that all of the tasks in the workflow have unique names.
+    tasks = []
+    for task in data['workflow']:
+      if task in tasks:
+        er.multipleTasksWithSameName(verbose, task, self.pipelineFile)
+        er.terminate()
+      tasks.append(task)
+
+    self.workflow = data['workflow']
+    self.jsonSections.remove('workflow')
+
+  # Check that there is a 'tools' section and that there is a named tool for each of the tasks.
+  def checkTools(self, data, availableTools, verbose):
+    er = errors()
+
+    if 'tools' not in data:
+      text = 'This defines which tools are associated with each task in the pipeline.'
+      er.missingPipelineSection(verbose, 'tools', text, self.pipelineFile)
+      er.terminate()
+
+    if type(data['tools']) != dict:
+      er.pipelineSectionIsNotADictionary(verbose, 'tools', self.pipelineFile)
+      er.terminate()
+
+    self.taskToTool = data['tools']
+    for task in self.taskToTool:
+      if task not in self.workflow:
+        er.taskNotInWorkflow(verbose, 'tools', task, self.pipelineFile)
+        er.terminate()
+
+      if self.taskToTool[task] not in availableTools:
+        er.taskAssociatedWithNonExistentTool(verbose, task, self.taskToTool[task], self.pipelineFile)
+        er.terminate()
+
+    self.jsonSections.remove('tools')
+
+  # If there are tools outputting to the stream, check that section is a list and that each element
+  # in the list, is present in the workflow.
+  def checkToolsOutputtingToStream(self, data, verbose):
+    er = errors()
+
+    if 'tools outputting to stream' in data:
+      if type(data['tools outputting to stream']) != list:
+        er.pipelineSectionIsNotAList(verbose, 'tools outputting to stream', self.pipelineFile)
+        er.terminate()
+
+      for task in data['tools outputting to stream']:
+        if task not in self.workflow:
+          er.taskNotInWorkflow(verbose, 'tools outputting to stream', task, self.pipelineFile)
+          er.terminate()
+
+      self.toolsOutputtingToStream = data['tools outputting to stream']
+      self.jsonSections.remove('tools outputting to stream')
+
+  # If the construct self.pipelineNames section is included, check that it is a dictionary of key/value pairs,
+  # where all of the keys are the names of tasks.
+  def checkConstructFilenames(self, data, argumentInformation, verbose):
+    er = errors()
+
+    if 'construct filenames' in data:
+
+      # Chech that the "construct filenames" section is a dictionary.
+      if type(data['construct filenames']) != dict:
+        er.pipelineSectionIsNotADictionary(verbose, 'construct filenames', self.pipelineFile)
+        er.terminate()
+
+      # Parse over each task included in the section.
+      for task in data['construct filenames']:
+
+        # Check that the task is valid.
+        if task not in self.workflow:
+          er.taskNotInWorkflow(verbose, 'construct filenames', task, self.pipelineFile)
+          er.terminate()
+
+        # Store the information about this task.
+        self.constructFilenames[task] = data['construct filenames'][task]
+      
+        # For each argument, check that the argument exists and that the necessary information is present.
+        tool = self.taskToTool[task]
+        for argument in data['construct filenames'][task]:
+
+          # Check that the argument is valid for the current task.
+          if argument not in argumentInformation[tool]:
+            er.invalidArgumentInConstruct(verbose, task, argument, self.pipelineFile)
+            er.terminate()
+
+          # Check for required fields.
+          for field in self.allowedConstructFields:
+            required = self.allowedConstructFields[field]
+            if required and field not in data['construct filenames'][task][argument]:
+              er.missingFieldInConstruct(verbose, task, argument, field, self.pipelineFile)
+              er.terminate()
+
+          # Check the contained information.
+          for field in data['construct filenames'][task][argument]:
+
+            # Check for unknown fields.
+            if field not in self.allowedConstructFields:
+              er.unknownFieldInConstruct(verbose, task, argument, field, self.allowedConstructFields, self.pipelineFile)
+              er.terminate()
+
+            # For each field, check that the data types are correct and that any additional fields required
+            # are present (for example, if "filename root" is set to "from argument", the "get root from task"
+            # and "get root from argument fields" must be present).
+            # If the field is 'filename root', check that the value is valid.  This can take one of the following:
+            #   a) from argument
+            if field == 'filename root':
+              allowedRootFields = []
+              allowedRootFields.append('from argument')
+              allowedRootFields.append('from text')
+
+              # For 'from argument',
+              if data['construct filenames'][task][argument][field] == 'from argument':
+                if 'get root from task' not in data['construct filenames'][task][argument]:
+                  text = 'get root from task'
+                  er.missingRootInformationInConstruct(verbose, task, argument, text, self.pipelineFile)
+                  er.terminate()
+                if 'get root from argument' not in data['construct filenames'][task][argument]:
+                  text = 'get root from argument'
+                  er.missingRootInformationInConstruct(verbose, task, argument, text, self.pipelineFile)
+                  er.terminate()
+                if 'remove input extension' not in data['construct filenames'][task][argument]:
+                  text = 'remove input extension'
+                  er.missingRootInformationInConstruct(verbose, task, argument, self.pipelineFile)
+                  er.terminate()
+
+                # If the necessary fields are present, check that they are valid.
+                linkedTask     = data['construct filenames'][task][argument]['get root from task']
+                linkedArgument = data['construct filenames'][task][argument]['get root from argument']
+                if linkedTask not in self.workflow:
+                  text = task + ' -> ' + argument + ' -> get root from task -> ' + linkedTask
+                  er.taskNotInWorkflow(verbose, 'construct filenames', text, self.pipelineFile)
+                  er.terminate()
+
+                linkedTool = self.taskToTool[linkedTask]
+                if linkedArgument not in argumentInformation[linkedTool]:
+                  er.invalidRootArgumentInConstruct(verbose, task, argument, linkedArgument, self.pipelineFile)
+                  er.terminate()
+
+                # Check that the remove input extension is a Boolean.
+                if type(data['construct filenames'][task][argument]['remove input extension']) != bool:
+                  value = data['construct filenames'][task][argument]['remove input extension']
+                  er.invalidRootDataTypeInConstruct(verbose, task, argument, value, self.pipelineFile)
+                  er.terminate()
+
+              # If the "filename root" field takes the value "from text", the field "filename root text" must
+              # be present and contain the text to use as the filename root.
+              elif data['construct filenames'][task][argument][field] == 'from text':
+                if 'filename root text' not in data['construct filenames'][task][argument]:
+                  er.filenameRootTextMissing(verbose, task, argument, self.pipelineFile)
+                  er.terminate()
+
+              # If the "filename root" field takes an unknown value.
+              else:
+                value = data['construct filenames'][task][argument][field]
+                er.unknownRootValue(verbose, task, argument, value, allowedRootFields, self.pipelineFile)
+                er.terminate()
+
+            # If the field 'additional text from parameters' exists, check the contents of this section.
+            elif field == 'additional text from parameters':
+              additionalText = []
+              if type(data['construct filenames'][task][argument][field]) != dict:
+                er.additionalTextInConstructNotADict(verbose, task, argument, self.pipelineFile)
+                er.terminate()
+
+              if 'order' not in data['construct filenames'][task][argument][field]:
+                er.orderMissingInAdditionalTextInConstruct(verbose, task, argument, self.pipelineFile)
+                er.terminate()
+
+              if type(data['construct filenames'][task][argument][field]['order']) != list:
+                er.additionalTextOrderInConstructNotAList(verbose, task, argument, self.pipelineFile)
+                er.terminate()
+
+              # Get the names of all the pieces of text that will be added to the filename.
+              for name in data['construct filenames'][task][argument][field]['order']: additionalText.append(name)
+
+              # Each field in the order section, must be defined with a link to an argument.  Check that they
+              # are and check the data types.
+              for additional in additionalText:
+                if additional not in data['construct filenames'][task][argument][field] and additional != 'filename root':
+                  er.missingTextDefinitionInConstruct(verbose, task, argument, additional, self.pipelineFile)
+                  er.terminate()
+
+                # If the value of additional is 'filename root', check that the accompanying value is valid.  This field
+                # can take one of the following values:
+                #   a) from argument
+                elif additional != 'filename root':
+                  if 'get parameter from task' not in data['construct filenames'][task][argument][field][additional]:
+                    text = 'get parameter from task'
+                    er.missingFieldInTextDefinitionInConstruct(verbose, task, argument, additional, text, self.pipelineFile)
+                    er.terminate()
+                  else:
+                    if data['construct filenames'][task][argument][field][additional]['get parameter from task'] not in self.workflow:
+                      text        = 'construct filenames -> ' + task + ' -> ' + argument + ' -> additional text from parameters -> ' + additional
+                      invalidTask = data['construct filenames'][task][argument][field][additional]['get parameter from task']
+                      er.taskNotInWorkflow(verbose, text, invalidTask, self.pipelineFile)
+                      er.terminate()
+                  if 'get parameter from argument' not in data['construct filenames'][task][argument][field][additional]:
+                    text = 'get parameter from argument'
+                    er.missingFieldInTextDefinitionInConstruct(verbose, task, argument, additional, text, self.pipelineFile)
+                    er.terminate()
+                  else:
+                    linkedTask     = data['construct filenames'][task][argument][field][additional]['get parameter from task']
+                    linkedArgument = data['construct filenames'][task][argument][field][additional]['get parameter from argument']
+                    linkedTool     = self.taskToTool[linkedTask]
+                    if linkedArgument not in argumentInformation[linkedTool]:
+                      er.invalidArgumentInConstructAdditional(verbose, task, argument, additional, linkedTask, linkedArgument, self.pipelineFile)
+                      er.terminate()
+
+                  # Check that the 'remove extension' field is also present and is a Boolean.
+                  if 'remove extension' not in data['construct filenames'][task][argument][field][additional]:
+                    text = 'remove extension'
+                    er.missingFieldInTextDefinitionInConstruct(verbose, task, argument, additional, text, self.pipelineFile)
+                    er.terminate()
+                  if type(data['construct filenames'][task][argument][field][additional]['remove extension']) != bool:
+                    value = data['construct filenames'][task][argument][field][additional]['remove extension']
+                    er.invalidAdditionalDataTypeInConstruct(verbose, task, argument, additional, value, self.pipelineFile)
+                    er.terminate()
+
+              # Check that no fields are defined that are not included in the order.
+              for additional in data['construct filenames'][task][argument][field]:
+                if additional not in additionalText and additional != 'order' and additional != 'separator':
+                  er.definedTextNotInOrderInConstruct(verbose, task, argument, additional, self.pipelineFile)
+                  er.terminate()
+
+      self.jsonSections.remove('construct filenames')
+
+  # Check the contents of the linkage section of the configuration file.
+  def checkLinkageSection(self, linkage, argumentInformation, verbose):
+    er = errors()
+
+    if type(linkage) != dict:
+      er.pipelineSectionIsNotADictionary(False, 'linkage', self.pipelineFile)
+      er.terminate()
+
+    for task in linkage:
+      if task not in self.workflow:
+        er.taskNotInWorkflow(verbose, 'linkage', task, self.pipelineFile)
+        er.terminate()
+
+      # Check that the argument is a valid argument for this task.  Also, check that each argument has the 
+      #'link to this task' and 'link to this argument' values set, and check that they point to real tool arguments.
+      for argument in linkage[task]:
+  
+        # Check for required fields.
+        for field in self.allowedLinkageFields:
+          required = self.allowedLinkageFields[field]
+          if required and field not in linkage[task][argument]:
+            er.missingFieldInLinkage(verbose, task, argument, field, self.pipelineFile)
+            er.terminate()
+
+        tool = self.taskToTool[task]
+
+        # If the argument is 'json parameteres', check that the 'link to this task', 'link to this
+        # argument' and 'json block' fields are present and valid.
+        if argument == 'json parameters':
+          if 'json block' not in linkage[task][argument]:
+            er.missingFieldInLinkage(verbose, task, argument, 'json block', self.pipelineFile)
+            er.terminate()
+
+          linkedTask     = linkage[task][argument]['link to this task']
+          linkedArgument = linkage[task][argument]['link to this argument']
+          if linkedTask not in self.workflow:
+            er.invalidLinkedTask(verbose, task, argument, linkedTask, self.pipelineFile)
+            er.terminate()
+          linkedTool = self.taskToTool[task]
+          if linkedArgument not in argumentInformation[linkedTool]:
+            er.invalidLinkedArgument(verbose, task, argument, linkedTask, linkedArgument, self.pipelineFile)
+            er.terminate()
+
+        elif argument not in argumentInformation[tool]:
+          er.invalidArgumentInLinkage(verbose, task, argument, self.pipelineFile)
+          er.terminate()
+
+        # Loop over the fields for this argument.  The only allowed fields are 'link to this task', 'link
+        # to this argument' and 'json block'.  If anything else is observed, terminate.
+        for field in linkage[task][argument]:
+          if field not in self.allowedLinkageFields:
+            er.unknownFieldInLinkage(verbose, task, argument, field, self.allowedLinkageFields, self.pipelineFile)
+            er.terminate()
+
+        # Check that the task and argument to which this argument is linked, exists.
+        linkedTask     = linkage[task][argument]['link to this task']
+        linkedArgument = linkage[task][argument]['link to this argument']
+        if linkedTask not in self.workflow:
+          er.invalidLinkedTask(verbose, task, argument, linkedTask, self.pipelineFile)
+          er.terminate()
+
+        linkedTool     = self.taskToTool[linkedTask]
+        if linkedArgument not in argumentInformation[linkedTool]:
+          er.invalidLinkedArgument(verbose, task, argument, linkedTask, linkedArgument, self.pipelineFile)
+          er.terminate()
+
+      self.linkage[task] = linkage[task]
+    self.jsonSections.remove('linkage')
+
+  # The arguments section is required and contains all the arguments allowed for the pipeline.
+  def checkArguments(self, data, verbose):
+    er = errors()
+
+    if 'arguments' not in data:
+      text = 'This provides details of all the allowable command line arguments including which tasks in the ' + \
+      'pipeline they are associated with.'
+      er.missingPipelineSection(verbose, 'arguments', text, self.pipelineFile)
+      er.terminate()
+
+    for argument in data['arguments']:
+      self.argumentInformation[argument] = data['arguments'][argument]
+      if 'short form argument' in self.argumentInformation[argument]:
+        shortForm                  = self.argumentInformation[argument]['short form argument']
+        self.shortForms[shortForm] = argument
+
+      # Check that the task and argument that this argument is linked to is defined.
+      if 'link to this task' not in self.argumentInformation[argument]:
+        er.pipelineArgumentMissingInformation(verbose, argument, 'link to this task', self.pipelineFile)
+        er.terminate()
+
+      if 'link to this argument' not in self.argumentInformation[argument]:
+        er.pipelineArgumentMissingInformation(verbose, argument, 'link to this argument', self.pipelineFile)
+        er.terminate()
+
+    self.jsonSections.remove('arguments')
+
+  # If the section 'delete files' is present.  If so, check that it is a dictionary whose keys are
+  # tasks present in the workflow.
+  def checkDeleteFiles(self, argumentInformation, data, verbose):
+    er       = errors()
+    required = []
+    required.append('output extension')
+    required.append('delete after task')
+
+    if type(data) != dict:
+      er.pipelineSectionIsNotADictionary(verbose, 'delete files', self.pipelineFile)
+      er.terminate()
+
+    # Check that the contents are tasks in the pipeline workflow.
+    for task in data:
+      if task not in self.workflow:
+        er.taskNotInWorkflow(verbose, 'delete files', task, self.pipelineFile)
+        er.terminate()
+
+      # Check that for each task, there are defined valid arguments for the tool as well
+      # as which task need to be completed prior to file deletion.  This task must also
+      # be valid.
+      tool                   = self.taskToTool[task]
+      self.deleteFiles[task] = []
+      for argument in data[task]:
+        if argument not in argumentInformation[tool]:
+          er.unknownArgumentInDeleteFiles(verbose, task, tool, argument, self.pipelineFile)
+          er.terminate()
+
+        # Check for unknown fields.
+        for field in data[task][argument]:
+          if field not in required:
+            er.unknownFieldInDeleteFiles(verbose, task, argument, field, self.pipelineFile)
+            er.terminate()
+
+        # Ensure the delete after task field is present.
+        if 'delete after task' not in data[task][argument]:
+          er.deleteAfterTaskMissing(verbose, task, argument, self.pipelineFile)
+          er.terminate()
+
+        # If the output extensions fiels exists, check that it is a list and then find out how
+        # many files are to be deleted.
+        if 'output extension' in data[task][argument]:
+          if type(data[task][argument]['output extension']) != list:
+            er.outputExtensionNotAListInDeleteFiles(verbose, task, argument, self.pipelineFile)
+            er.terminate()
+
+          # Now ensure that the 'delete after task' field is also a list with the same
+          # number of elements.
+
+          if type(data[task][argument]['delete after task']) != list:
+            er.deleteAfterTaskNotAList(verbose, task, argument, self.pipelineFile)
+            er.terminate()
+
+          if len(data[task][argument]['output extension']) != len(data[task][argument]['delete after task']):
+            er.listsDifferentSizeInDeleteFiles(verbose, task, argument, self.pipelineFile)
+            er.terminate()
+
+          for deleteAfterTask, extension in zip(data[task][argument]['delete after task'], data[task][argument]['output extension']):
+            if deleteAfterTask not in self.workflow:
+              text = 'delete files -> ' + task + ' -> ' + argument + ' -> delete after task'
+              er.taskNotInWorkflow(verbose, text, deleteAfterTask, self.pipelineFile)
+              er.terminate()
+
+            # Check that the extension is allowed for this tool.
+            allowedExtension = argumentInformation[tool][argument]['extension']
+            if allowedExtension == 'stub':
+              correct = False
+              for extensionValue in argumentInformation[tool][argument]['outputs']:
+                if extension == extensionValue:
+                  correct = True
+                  break
+              if not correct:
+                er.invalidExtensionInDeleteFiles(verbose, task, argument, extension, self.pipelineFile)
+                er.terminate()
+            else:
+              if allowedExtension != extension:
+                er.invalidExtensionInDeleteFiles(verbose, task, argument, extension, self.pipelineFile)
+                er.terminate()
+            self.deleteFiles[task].append((argument, deleteAfterTask, extension))
+
+        # If the 'output extension' field is not present, then there only needs to be the
+        # 'delete after task'.  This is for the case that the output argument produces a
+        # single file and so a list of output extensions is not required.
+        else:
+          deleteAfterTask = data[task][argument]['delete after task']
+          if deleteAfterTask not in self.workflow:
+            text = 'delete files -> ' + task + ' -> ' + argument + ' -> delete after task'
+            er.taskNotInWorkflow(verbose, text, deleteAfterTask, self.pipelineFile)
+            er.terminate()
+          self.deleteFiles[task].append((argument, deleteAfterTask, ''))
+          
+    self.jsonSections.remove('delete files')
+
+  # If there are instances associated with the pipeline, ensure that this is a dictionary.
+  def checkInstances(self, data, verbose):
+    er = errors()
+
+    if 'instances' not in data:
+      text = 'A section containing instance information is required.  If no instance is requested, the \'default\' instance ' + \
+      'is used (this need not set any parameters).'
+      er.missingPipelineSection(verbose, 'instances', text, self.pipelineFile)
+      er.terminate()
+    else: instances = data['instances']
+
+    if type(instances) != dict:
+      er.pipelineSectionIsNotADictionary(verbose, 'instances', self.pipelineFile)
+      er.terminate()
+
+    # Check that each instance has a unique name and contains a description.
+    for instance in instances:
+      if 'description' not in instances[instance]:
+        er.noInstanceDescription(verbose, instance, self.pipelineFile)
+        er.terminate()
+
+    self.instances = instances
+    self.jsonSections.remove('instances')
+
+  # Set up a dictionary that links the pipeline command line argument with the tool to which it points.
+  # If there is a problem with one of the arguments for a specific tool, this dictionary allows quick
+  # look up of the pipeline argument that is used to set it.
+  def setArgumentLinks(self):
+    for argument in self.argumentInformation: 
+      linkedTask = self.argumentInformation[argument]['link to this task'] 
+      if linkedTask != 'pipeline': 
+        linkedArgument = self.argumentInformation[argument]['link to this argument'] 
+        if linkedTask not in self.toolArgumentLinks: self.toolArgumentLinks[linkedTask] = {} 
+
+        # Find the short form of the argument.
+        shortForm = self.argumentInformation[argument]['short form argument'] if 'short form argument' in self.argumentInformation[argument] else ''
+        self.toolArgumentLinks[linkedTask][linkedArgument] = argument, shortForm
 
   # After the json file has been parsed into the self.information structure, add some
   # pipeline specific values.
-  def addPipelineSpecificOptions(self, tl):
-    if 'arguments' not in self.information: self.information['arguments'] = {}
+  def addPipelineSpecificOptions(self):
 
-    if '--input-path' not in self.information:
-      self.information['arguments']['--input-path']                        = {}
-      self.information['arguments']['--input-path']['description']         = 'Path for input files if not defined.  Default: current directory'
-      self.information['arguments']['--input-path']['link to this task']   = 'pipeline'
-      self.information['arguments']['--input-path']['short form argument'] = '-ip'
-      self.information['arguments']['--input-path']['type']                = 'string'
-      self.information['arguments']['--input-path']['default']             = '$(PWD)'
+    # The verbose arguments allows the user to request that information is or is not
+    # written to the screen as the pipeline runs.
+    self.argumentInformation['--verbose']                        = {}
+    self.argumentInformation['--verbose']['description']         = 'Boolean to determine if verbose information should be output.  Default: True'
+    self.argumentInformation['--verbose']['link to this task']   = 'pipeline'
+    self.argumentInformation['--verbose']['short form argument'] = '-vb'
+    self.argumentInformation['--verbose']['type']                = 'bool'
+    self.argumentInformation['--verbose']['default']             = True
+    self.shortForms['-vb']                                       = '--verbose'
+    self.arguments['--verbose']                                  = True
 
-    if '--output-path' not in self.information:
-      self.information['arguments']['--output-path']                        = {}
-      self.information['arguments']['--output-path']['description']         = 'Path for output files if not defined.  Default: current directory'
-      self.information['arguments']['--output-path']['link to this task']   = 'pipeline'
-      self.information['arguments']['--output-path']['short form argument'] = '-op'
-      self.information['arguments']['--output-path']['type']                = 'string'
-      self.information['arguments']['--output-path']['default']             = '$(PWD)'
+    self.argumentInformation['--input-path']                        = {}
+    self.argumentInformation['--input-path']['description']         = 'Path for input files if not defined.  Default: current directory'
+    self.argumentInformation['--input-path']['link to this task']   = 'pipeline'
+    self.argumentInformation['--input-path']['short form argument'] = '-ip'
+    self.argumentInformation['--input-path']['type']                = 'string'
+    self.argumentInformation['--input-path']['default']             = '$(PWD)'
+    self.shortForms['-ip']                                          = '--input-path'
+    self.arguments['--input-path']                                  = '$(PWD)'
 
-    if '--resource-path' not in self.information:
-      self.information['arguments']['--resource-path']                        = {}
-      self.information['arguments']['--resource-path']['description']         = 'Path for resource files if not defined.  Default: gkno/resources'
-      self.information['arguments']['--resource-path']['link to this task']   = 'pipeline'
-      self.information['arguments']['--resource-path']['short form argument'] = '-rp'
-      self.information['arguments']['--resource-path']['type']                = 'string'
-      self.information['arguments']['--resource-path']['default']             = '$(RESOURCES)'
+    self.argumentInformation['--output-path']                        = {}
+    self.argumentInformation['--output-path']['description']         = 'Path for output files if not defined.  Default: current directory'
+    self.argumentInformation['--output-path']['link to this task']   = 'pipeline'
+    self.argumentInformation['--output-path']['short form argument'] = '-op'
+    self.argumentInformation['--output-path']['type']                = 'string'
+    self.argumentInformation['--output-path']['default']             = '$(PWD)'
+    self.shortForms['-op']                                           = '--output-path'
+    self.arguments['--output-path']                                  = '$(PWD)'
 
-    self.information['resource path'] = '' if 'resource path' not in self.information else  self.information['resource path']
+    self.argumentInformation['--resource-path']                        = {}
+    self.argumentInformation['--resource-path']['description']         = 'Path for resource files if not defined.  Default: gkno/resources'
+    self.argumentInformation['--resource-path']['link to this task']   = 'pipeline'
+    self.argumentInformation['--resource-path']['short form argument'] = '-rp'
+    self.argumentInformation['--resource-path']['type']                = 'string'
+    self.argumentInformation['--resource-path']['default']             = ''
+    self.shortForms['-rp']                                             = '--resource-path'
+    self.arguments['--resource-path']                                  = ''
 
-    if '--execute' not in self.information:
-      self.information['arguments']['--execute']                        = {}
-      self.information['arguments']['--execute']['description']         = 'Boolean to determine if the Makefile should be executed.  Default: True'
-      self.information['arguments']['--execute']['link to this task']   = 'pipeline'
-      self.information['arguments']['--execute']['short form argument'] = '-ex'
-      self.information['arguments']['--execute']['type']                = 'bool'
-      self.information['arguments']['--execute']['default']             = True
+    self.argumentInformation['--execute']                        = {}
+    self.argumentInformation['--execute']['description']         = 'Boolean to determine if the Makefile should be executed.  Default: True'
+    self.argumentInformation['--execute']['link to this task']   = 'pipeline'
+    self.argumentInformation['--execute']['short form argument'] = '-ex'
+    self.argumentInformation['--execute']['type']                = 'bool'
+    self.argumentInformation['--execute']['default']             = True
+    self.shortForms['-ex']                                       = '--execute'
+    self.arguments['--execute']                                  = True
 
-    if '--verbose' not in self.information:
-      self.information['arguments']['--verbose']                        = {}
-      self.information['arguments']['--verbose']['description']         = 'Boolean to determine if verbose information should be output.  Default: True'
-      self.information['arguments']['--verbose']['link to this task']   = 'pipeline'
-      self.information['arguments']['--verbose']['short form argument'] = '-vb'
-      self.information['arguments']['--verbose']['type']                = 'bool'
-      self.information['arguments']['--verbose']['default']             = True
+    self.argumentInformation['--export-instance']                        = {}
+    self.argumentInformation['--export-instance']['description']         = 'Export instance information to a new configuration file of this name.'
+    self.argumentInformation['--export-instance']['link to this task']   = 'pipeline'
+    self.argumentInformation['--export-instance']['short form argument'] = '-ei'
+    self.argumentInformation['--export-instance']['type']                = 'string'
+    self.argumentInformation['--export-instance']['default']             = ''
+    self.shortForms['-ei']                                               = '--export-instance'
+    self.arguments['--export-instance']                                  = ''
 
-    if '--export-config' not in self.information:
-      self.information['arguments']['--export-config']                        = {}
-      self.information['arguments']['--export-config']['description']         = 'Export information to a new configuration file of this name.'
-      self.information['arguments']['--export-config']['link to this task']   = 'pipeline'
-      self.information['arguments']['--export-config']['short form argument'] = '-ec'
-      self.information['arguments']['--export-config']['type']                = 'string'
-      self.information['arguments']['--export-config']['default']             = ''
+    self.argumentInformation['--multiple-runs']                        = {}
+    self.argumentInformation['--multiple-runs']['description']         = 'Run the pipeline multiple times using the inputs defined in this file.'
+    self.argumentInformation['--multiple-runs']['link to this task']   = 'pipeline'
+    self.argumentInformation['--multiple-runs']['short form argument'] = '-mr'
+    self.argumentInformation['--multiple-runs']['type']                = 'string'
+    self.argumentInformation['--multiple-runs']['default']             = ''
+    self.shortForms['-mr']                                             = '--multiple-runs'
+    self.arguments['--multiple-runs']                                  = ''
 
-    if '--multiple-runs' not in self.information:
-      self.information['arguments']['--multiple-runs']                        = {}
-      self.information['arguments']['--multiple-runs']['description']         = 'Run the pipeline multiple times using the inputs defined in this file.'
-      self.information['arguments']['--multiple-runs']['link to this task']   = 'pipeline'
-      self.information['arguments']['--multiple-runs']['short form argument'] = '-mr'
-      self.information['arguments']['--multiple-runs']['type']                = 'string'
-      self.information['arguments']['--multiple-runs']['default']             = ''
+    self.argumentInformation['--task-stdout']                        = {}
+    self.argumentInformation['--task-stdout']['description']         = 'Generate a stdout and stderr for each task.'
+    self.argumentInformation['--task-stdout']['link to this task']   = 'pipeline'
+    self.argumentInformation['--task-stdout']['short form argument'] = '-ts'
+    self.argumentInformation['--task-stdout']['type']                = 'bool'
+    self.argumentInformation['--task-stdout']['default']             = False
+    self.shortForms['-ts']                                           = '--task-stdout'
+    self.arguments['--task-stdout']                                  = False
 
-    if '--task-stdout' not in self.information:
-      self.information['arguments']['--task-stdout']                        = {}
-      self.information['arguments']['--task-stdout']['description']         = 'Generate a stdout and stderr for each task.'
-      self.information['arguments']['--task-stdout']['link to this task']   = 'pipeline'
-      self.information['arguments']['--task-stdout']['short form argument'] = '-ts'
-      self.information['arguments']['--task-stdout']['type']                = 'bool'
-      self.information['arguments']['--task-stdout']['default']             = False
-
-    if '--instance' not in self.information:
-      self.information['arguments']['--instance']                        = {}
-      self.information['arguments']['--instance']['description']         = 'Generate a stdout and stderr for each task.'
-      self.information['arguments']['--instance']['link to this task']   = 'pipeline'
-      self.information['arguments']['--instance']['short form argument'] = '-is'
-      self.information['arguments']['--instance']['type']                = 'string'
-      self.information['arguments']['--instance']['default']             = ''
-
-  # Print to screen information about the selected pipeline.
-  def printPipelineInformation(self, tl, gknoHelp):
-    er = errors()
-
-    if tl.toolArguments['pipeline']['--verbose']:
-
-      # Determine the length of the longest tool name.
-      length  = 0
-      for task in self.information['workflow']:
-        if task not in self.information['tools']:
-          er.unassociatedTask(False, 0, task)
-          er.terminate()
-        tool = self.information['tools'][task]
-        if tool not in tl.toolInfo:
-          er.unknownTool(False, 0, task, tool)
-          er.terminate()
-  
-        text   = task + ' (' + tool + '):'
-        length = len(text) if len(text) > length else length
-      length += 5
-  
-      print('Workflow:', sep = '', file = sys.stdout)
-      sys.stdout.flush()
-      for task in self.information['workflow']:
-        tool        = self.information['tools'][task]
-        text        = task + ' (' + tool + '):'
-        description = tl.toolInfo[tool]['description'] if 'description' in tl.toolInfo[tool] else 'No description'
-        gknoHelp.writeFormattedText(text, description, length, 1, '')
-      print(file = sys.stdout)
+    self.argumentInformation['--instance']                        = {}
+    self.argumentInformation['--instance']['description']         = 'Generate a stdout and stderr for each task.'
+    self.argumentInformation['--instance']['link to this task']   = 'pipeline'
+    self.argumentInformation['--instance']['short form argument'] = '-is'
+    self.argumentInformation['--instance']['type']                = 'string'
+    self.argumentInformation['--instance']['default']             = ''
+    self.shortForms['-is']                                        = '--instance'
+    self.arguments['--instance']                                  = ''
 
   # Modify pipeline information to handle an individual tool.
   def setupIndividualTool(self, tool, verbose):
-    self.information['tools']       = {}
-    self.information['tools'][tool] = tool
-    self.information['workflow']    = []
-    self.information['workflow'].append(tool)
+    self.workflow.append(tool)
     text = '=' * (len(tool) + 20)
     if verbose:
       print(text, file = sys.stdout)
@@ -154,525 +689,29 @@ class pipeline:
 
     return 'tools/' + tool
 
-  # Set up the pipeline specific options.
-  def setupPipelineOptions(self, tl):
-    er             = errors()
-    linkToTask     = ''
-    linkToArgument = ''
-    newLine        = True if tl.toolArguments['pipeline']['--verbose'] else False
-    noTab          = 2 if tl.toolArguments['pipeline']['--verbose'] else 0
-    
-    if tl.toolArguments['pipeline']['--verbose']:
-      print('Setting up pipeline defaults...', end = '', file = sys.stdout)
-      sys.stdout.flush()
-
-    for argument in self.information['arguments']:
-
-      # The pipeline configuration file contains arguments for pipeline specific
-      # options, as well as some for setting the options within individual tools
-      # within the pipeline.  If the option is pipeline specific, the 'tool' value
-      # will be 'pipeline', otherwise it will point to the individual tool.  For
-      # tool commands, overwrite the current value stored.
-      if 'link to this task' not in self.information['arguments'][argument]:
-        er.optionAssociationError(newLine, noTab, 'link to this task', argument, 'pipeline')
-        er.terminate()
-      else: task = self.information['arguments'][argument]['link to this task']
-      default = ''
-      if 'default' in self.information['arguments'][argument]: default = self.information['arguments'][argument]['default']
-
-      # Set the defaults.
-      # The arguments defined in the pipeline configuration file point to an argument
-      # in one of the tools in the pipeline.  There are some pipeline specific options
-      # that are given the tool name 'pipeline'.  For all tools that are not listed as
-      # 'pipeline', check that the tool exists and that the argument that it points to
-      # is valid.
-      if (task != 'pipeline') and (task not in self.information['workflow']):
-        er.associatedToolNotInPipeline("\n\t", task, argument)
-        er.terminate()
-
-      if task != 'pipeline':
-        tool = self.information['tools'][task] if task != 'pipeline' else ''
-
-        if 'link to this argument' not in self.information['arguments'][argument]:
-          er.optionAssociationError(newLine, noTab, 'link to this argument', argument, 'pipeline')
-          er.terminate()
-        else: linkToArgument = self.information['arguments'][argument]['link to this argument']
-
-        # Check that the argument is valid.
-        if linkToArgument not in tl.toolArguments[task]:
-          er.incorrectArgumentInPipelineConfigurationFile(newLine, noTab, task, argument, linkToArgument)
-          er.terminate()
-
-        # Some arguments are allowed to take multiple values.  If this is the case, set
-        # the toolArguments object to a list and append the default value.
-        if default != '':
-          multiple = False
-          if 'allow multiple definitions' in tl.toolInfo[tool]['arguments'][linkToArgument]:
-            if tl.toolInfo[tool]['arguments'][linkToArgument]['allow multiple definitions'] == 'true': multiple = True
-
-          if multiple:
-            if len(tl.toolArguments[task][linkToArgument]) == 0: tl.toolArguments[task][linkToArgument] = []
-            tl.toolArguments[task][linkToArgument].append(default)
-          else: tl.toolArguments[task][linkToArgument] = default
-      else:
-        default = self.information['arguments'][argument]['default']
-
-        # The '--verbose' argument was set in the constructor for the command line object, so do
-        # not reset this value.
-        if argument == '--verbose': continue
-
-        if 'pipeline' not in tl.toolArguments: tl.toolArguments['pipeline'] = {}
-        tl.toolArguments['pipeline'][argument] = default
-
-    if tl.toolArguments['pipeline']['--verbose']:
-      print('done.', file = sys.stdout)
-      print(file = sys.stdout)
-      sys.stdout.flush()
-
-  # Construct filenames using the instructions in the pipeline configuration file.
-  def constructFileNameFromJson(self, tl, task, tool, argument):
-    er = errors()
-    newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
-    noTab   = 3 if tl.toolArguments['pipeline']['--verbose'] else 0
-
-    constructBlock = self.information['construct filenames'][task][argument]
-    basename       = constructBlock['filename root'] if 'filename root' in constructBlock else ''
-    linkedToolName = constructBlock['get root from task'] if 'get root from task' in constructBlock else ''
-    linkedArgument = constructBlock['get root from argument'] if 'get root from argument' in constructBlock else ''
-    removeExt      = constructBlock['remove input extension'] if 'remove input extension' in constructBlock else ''
-    additionalText = constructBlock['additional text from parameters'] if 'additional text from parameters' in constructBlock else ''
-
-    # If the basename is 'from argument', the 'tool', 'argument' and 'remove extension'
-    # variables must be set.  Take the value from the specified tool/argument, remove
-    # the extension if requested, then add the additional text if there is any to be
-    # added.  Remove the path if one exists.
-    if basename == 'from argument': basename = tl.toolArguments[linkedToolName][linkedArgument].split('/')[-1]
-    if removeExt == 'true':
-      linkedTool = self.information['tools'][linkedToolName]
-      extension = ''
-      if 'extension' in tl.toolInfo[linkedTool]['arguments'][linkedArgument]:
-        extension = tl.toolInfo[linkedTool]['arguments'][linkedArgument]['extension']
-
-      # If there is a '|' symbol in the extension, break up all the allowable extensions
-      # and check if the name ends with any of them and if so, remove the extension.
-      extensions = extension.split('|')
-      for extension in extensions:
-        if basename.endswith(extension):
-          basename = basename[0:(len(basename) - len(extension) - 1)]
-          break
-
-    # If there is additional text to add to the name, the additionalText variable will have
-    # a value.  If this is the case, a list of tool/argument pairs needs to be provided.  These
-    # values will be added to the name separated by the separator variable.
-    name = ''
-    if not additionalText != '': name = basename
-    else:
-
-      # Determine the order of the variables to add.
-      order = additionalText['order']
-
-      # Determine the separator to be used when joining the values together.  If no separator
-      # is provided, use '_'.
-      separator = additionalText['separator'] if 'separator' in additionalText else '_'
-      for text in order:
-        if text == 'filename root': name += basename
-
-        # If the text isn't 'filename root', then it refers to a variable used in the pipeline.
-        # There must exist an entry in the json file that associates the text with a tool
-        # and an argument.
-        else:
-          if text not in additionalText:
-            er.noDescriptionOfVariable("\n\t\t\t", task, argument, text)
-            er.terminate()
-          addTaskName        = additionalText[text]['get parameter from task'] if 'get parameter from task' in additionalText[text] else ''
-          addArgument        = additionalText[text]['get parameter from argument'] if 'get parameter from argument' in additionalText[text] else ''
-          addRemoveExtension = additionalText[text]['remove extension'] if 'remove extension' in additionalText[text] else ''
-          if (addTaskName == '') or (addArgument == ''):
-            er.missingVariableForFilenameConstruction("\n\t", task, argument, text)
-            er.terminate()
-
-          # Now get the variable if it exist
-          toolError     = False
-          argumentError = False
-          if addTaskName not in tl.toolArguments: toolError = True
-          elif addArgument not in tl.toolArguments[addTaskName]: argumentError = True
-
-          if toolError or argumentError:
-            er.nonExistentTaskOrArgumentInConstruction(True, "\t\t\t", task, argument, text, addTaskName, addArgument, toolError)
-            er.terminate()
-          variable = tl.toolArguments[addTaskName][addArgument]
-
-          # If the parameter being used in the output filename is itself a filename,
-          # it should contain a path.  If this is the case, remove the path from the
-          # name before using in the construction.
-          variable = variable.split('/')[-1]
-
-          # If the extension is to be removed, check that the input argument defines a file
-          # with an extension and if so, remove the extension if requested.
-          if addRemoveExtension == 'true':
-            extension = tl.toolInfo[linkedTool]['arguments'][linkedArgument]['extension'] if 'extension' in \
-            tl.toolInfo[linkedTool]['arguments'][linkedArgument] else ''
-
-            # If there is a '|' symbol in the extension, break up all the allowable extensions
-            # and check if the name ends with any of them and if so, remove the extension.
-            if extension != '': 
-              extensions = extension.split('|')
-              for extension in extensions:
-                if variable.endswith(extension):
-                  variable = variable[0:(len(variable) - len(extension) - 1)]
-                  break
-          name += separator + str(variable)
-
-    # Determine if the output file is a stub.  If not, add the extension to the output file.
-    stub = tl.toolInfo[tool]['arguments'][argument]['stub'] if 'stub' in tl.toolInfo[tool]['arguments'][argument] else ''
-    isStub = True if stub == 'true' else False
-    if not isStub:
-      if 'extension' not in tl.toolInfo[tool]['arguments'][argument]: extension = ''
-      else: extension = tl.toolInfo[tool]['arguments'][argument]['extension']
-
-      # Some tools can operate on any file (e.g. gzip) and so have the extension listed as
-      # 'no extension'.  If this is the case, check if the output extension is given in the
-      # pipeline configuration file.  If so, use this extension, if not, do not add an
-      # extension.
-      if extension == 'no extension':
-        outputExtension = constructBlock['output extension'] if 'output extension' in constructBlock else ''
-        if outputExtension != '': name += '.' + str(outputExtension)
-
-      else: name += '.' + str(extension)
-
-    # Having built the filename, set the value in the tl.toolArguments data structure.
-    tl.toolArguments[task][argument] = name
-
   # Use the 'linkage' section of the pipeline configuration file to set all
   # parameters that depend on other tools.
-  def toolLinkage(self, cl, tl, task, tool):
-    er            = errors()
-    linkArguments = {}
-    if tl.toolArguments['pipeline']['--verbose']:
-      print('          Checking linkage to other tools in the pipeline...', end = '', file = sys.stdout)
-      sys.stdout.flush()
+  def toolLinkage(self, task, tool, argumentInformation, arguments, verbose):
+    er = errors()
 
     # Work through each argument in turn and identify all of the input and output files.
     # For non-input/output files, just check for links to other tools.
-    hasLinkageInformation = True if 'linkage' in self.information else False
+    hasLinkageInformation = True if len(self.linkage.keys()) != 0 else False
     if hasLinkageInformation: 
-      taskLinkage = True if task in self.information['linkage'] else False
-
+      taskLinkage = True if task in self.linkage else False
       if taskLinkage:
 
-        # Populate the dictionary linkArguments with all of the arguments that
-        # require linking.
-        for argument in self.information['linkage'][task]:
-          linkArguments[argument] = argument
-
         # Link together parameters.
-        for argument in tl.toolArguments[task]:
-
-          # Check that the option in the configuration file is valid.
-          #if argument not in tl.toolInfo[tool]['arguments']:
-          if (argument not in tl.toolInfo[tool]['arguments']) and (argument != 'json parameters'):
-            er.invalidArgument(False, "\t\t\t", 'linkage', argument, task)
-            er.terminate()
+        for argument in self.linkage[task]:
 
           # Check if this argument is linked to any other commands.
-          argumentLinkage = True if argument in self.information['linkage'][task] else False
+          argumentLinkage = True if argument in self.linkage[task] else False
           if argumentLinkage:
-            self.checkLinkage(tl, task, tool, argument)
-            del linkArguments[argument]
-
-      if tl.toolArguments['pipeline']['--verbose']:
-        print("done.", file = sys.stdout)
-        sys.stdout.flush()
-
-    # Check the list of linked options and ensure that they have all been parsed.  Any
-    # options that have not been handled are either special cases, or an error in the
-    # configuration file.
-    for argument in linkArguments:
-      if argument == 'json parameters':
-        self.checkLinkage(tl, task, tool, argument)
-      else:
-        newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
-        pad     = "\t\t\t" if tl.toolArguments['pipeline']['--verbose'] else ''
-        er.invalidArgument(newLine, pad, 'linkage', argument, task)
-        er.terminate()
-
-  # Check to see if a tool option is linked to another tool and modify the stored
-  # value accordingly.
-  def checkLinkage(self, tl, task, tool, argument):
-    er = errors()
-    newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
-    noTab   = 3 if tl.toolArguments['pipeline']['--verbose'] else 0
-
-    targetToolName = ''
-    try: targetToolName = self.information['linkage'][task][argument]['link to this task']
-    except: er.optionAssociationError(newLine, noTab, 'link to this task', argument, tool)
-    if er.error: er.terminate()
-
-    targetArgument = ''
-    try: targetArgument = self.information['linkage'][task][argument]['link to this argument']
-    except: er.optionAssociationError(newLine, noTab, 'link to this argument', argument, tool)
-    if er.error: er.terminate()
-
-    # Check that the targetToolName and the targetOption are valid.
-    if targetToolName not in tl.toolArguments:
-      er.invalidToolName(newLine, noTab, 'linkage', targetToolName)
-      er.terminate()
-
-    if targetArgument not in tl.toolArguments[targetToolName]:
-      er.invalidArgument(newLine, noTab, 'linkage', targetArgument, targetToolName)
-      er.terminate()
-
-    # If the linkage block contains 'extension', the linked value requires this
-    # extension adding to the end of the value.
-    extension = ''
-    if 'extension' in self.information['linkage'][task][argument]:
-      tl.toolArguments[task][argument] = tl.toolArguments[targetToolName][targetArgument] + self.information['linkage'][task][argument]['extension']
-    else:
-      tl.toolArguments[task][argument] = tl.toolArguments[targetToolName][targetArgument]
-
-  # In the course of executing the pipeline, some of the intermediate files
-  # generated along the way should be deleted.  The pipeline configuration
-  # file segment 'delete files' identifies which files should be deleted and
-  # when in the pipeline they can be removed.
-  def determineFilesToDelete(self, tl):
-    er = errors()
-
-    verbose = True if tl.toolArguments['pipeline']['--verbose'] else False
-    newLine = False
-    pad     = ''
-    if verbose:
-      newLine = True
-      pad     = "\t"
-      print('Determining which intermediate files can be deleted...', end = '', file = sys.stdout)
-      sys.stdout.flush()
-
-    # Check to see if the configuration file has the 'delete files' section.
-    if 'delete files' in self.information:
-      for task in self.information['delete files']:
-
-        # Check that the task is a valid task in the pipeline.
-        if task not in self.information['tools']:
-          er.invalidToolTaskName(newLine, pad, 'delete files', True, task)
-          er.terminate()
-
-        for argument in self.information['delete files'][task]:
-
-          # Check that the argument is a valid argument for the specified task.
-          tool = self.information['tools'][task]
-          if argument not in tl.toolInfo[tool]['arguments']:
-            er.invalidArgument(newLine, pad, 'delete files', argument, task)
-            er.terminate()
-
-          # Check if the argument is a filename stub.  If so, the 'extension' argument
-          # must be provided in the configuration file listing which of the created files
-          # should be deleted.
-          isStub = False
-          if 'stub' in tl.toolInfo[tool]['arguments'][argument]:
-            if tl.toolInfo[tool]['arguments'][argument]['stub'] == 'true': isStub = True
-
-          # If the filename is a stub, there can be a number of extensions that require
-          # deleting, each of which can be deleted after a different task.  Loop over the
-          # extensions and determine what needs to be deleted and when.
-          if isStub:
-            for extension in self.information['delete files'][task][argument]:
-
-              # Check that the extension is valid.
-              if extension not in tl.toolInfo[tool]['arguments'][argument]['outputs']:
-                er.invalidStubExtension(newLine, pad, task, argument, extension)
-                er.terminate()
-
-              if 'delete after task' in self.information['delete files'][task][argument][extension]:
-                deleteAfterTask = self.information['delete files'][task][argument][extension]['delete after task']
-
-              # Check that the task after which the file is to be deleted is valid.
-              if deleteAfterTask not in self.information['tools']:
-                er.invalidToolTaskName(newLine, pad, 'delete files', True, deleteAfterTask)
-                er.terminate()
-
-              if deleteAfterTask not in self.deleteFiles: self.deleteFiles[deleteAfterTask] = {}
-              if argument not in self.deleteFiles[deleteAfterTask]: self.deleteFiles[deleteAfterTask][argument] = []
-              self.deleteFiles[deleteAfterTask][argument].append(tl.toolArguments[task][argument] + extension)
-
-          # If not a stub, then there is only a single file to deal with.
-          else:
-            if 'delete after task' in self.information['delete files'][task][argument]:
-              deleteAfterTask = self.information['delete files'][task][argument]['delete after task']
-
-            # Check that the task after which the file is to be deleted is valid.
-            if deleteAfterTask not in self.information['tools']:
-              er.invalidToolTaskName(newLine, pad, 'delete files', True, deleteAfterTask)
-              er.terminate()
-
-            if deleteAfterTask not in self.deleteFiles: self.deleteFiles[deleteAfterTask] = {}
-            if argument not in self.deleteFiles[deleteAfterTask]: self.deleteFiles[deleteAfterTask][argument] = []
-            self.deleteFiles[deleteAfterTask][argument].append(tl.toolArguments[task][argument])
-
-    if verbose:
-      print('done.', file = sys.stdout)
-      print(file = sys.stdout)
-      sys.stdout.flush()
-
-  # The list of files to be produced by the script is all of the files created
-  # by each individual task in the pipeline.  However, if some of the files
-  # are deleted along the way, the final list of files should not include these
-  # deleted files.
-  def determineFinalOutputs(self, tl):
-
-    # Put all of the files to be deleted in a dictionary.
-    deletedFiles = {}
-    for task in self.deleteFiles:
-      for argument in self.deleteFiles[task]:
-        for output in self.deleteFiles[task][argument]:
-          deletedFiles[output] = True
-
-    for task in tl.outputs:
-      if task not in self.finalOutputs: self.finalOutputs[task] = []
-      for output in tl.outputs[task]:
-        if output not in deletedFiles: self.finalOutputs[task].append(output)
-
-  # Determine if any of the tools are being piped together and check if the
-  # tools involved can use the stream for input and output.
-  def determinePiping(self, tl):
-    er           = errors()
-    addArguments = {}
-
-    if 'tools outputting to stream' in self.information:
-      if tl.toolArguments['pipeline']['--verbose']:
-        print('Checking integrity of piped tools...', end = '', file = sys.stdout)
-        sys.stdout.flush()
-      self.isPiped = True
-      for taskCounter, task in enumerate(self.information['workflow']):
-        if task in self.information['tools outputting to stream']:
-          self.streamedOutputs[task] = True
-          tool                       = self.information['tools'][task]
-          canOutputToStream          = False
-
-          # If the tool only deals with the stream for inputs and outputs, skip the
-          # following search.  There is no input or output commands as the tool is
-          # expecting to be receiving and outputting to the stream.
-          if tl.toolsDemandingOutputStream[tool]: canOutputToStream = True
-          if not canOutputToStream:
-
-            # Check if the tool allows the output to be sent to a stream.
-            for argument in tl.toolInfo[tool]['arguments']:
-              isOutput = True if tl.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
-              if isOutput:
-                if 'if output to stream' in tl.toolInfo[tool]['arguments'][argument]:
-                  if canOutputToStream:
-                    er.multipleOutputsToStream(True, "\t", task, tool)
-                    er.terminate()
-                  canOutputToStream = True
-  
-                  # If the entry in the configuration file is 'do not include', just
-                  # remove this argument from the toolArguments structure.
-                  if tl.toolInfo[tool]['arguments'][argument]['if output to stream'] == 'do not include': del(tl.toolArguments[task][argument])
-  
-                  # Otherwise, handle as appropriate.
-                  else:
-                    print('NOT YET HANDLED THIS STREAM OPTION', task, argument, file = sys.stdout)
-                    er.terminate()
-
-          # Now check that the subsequent tool can accept the stream as an input.  If
-          # this was the last task in the pipeline, fail as the output needs to pipe
-          # somewhere.
-          if (taskCounter + 1) == len(self.information['workflow']):
-            er.lastTaskOutputsToPipe(True, "\t", task)
-            er.terminate()
-
-          nextTask        = self.information['workflow'][taskCounter + 1]
-          nextTool        = self.information['tools'][nextTask]
-          canAcceptStream = False
-
-          # If the current tool outputs to the stream, we need to check that the following
-          # tool is set up to handle the stream.  This information is contained in the
-          # information for one of the input files in the next tool.  If the next tool
-          # demands the stream, then there are no input or output command line arguments as
-          # the stream is assumed and so this check is unnecessary.
-          if tl.toolsDemandingInputStream[nextTool]: canAcceptStream = True
-
-          for argument in tl.toolInfo[nextTool]['arguments']:
-            isInput = True if tl.toolInfo[nextTool]['arguments'][argument]['input'] == 'true' else False
-            if isInput:
-              if 'if input is stream' in tl.toolInfo[nextTool]['arguments'][argument]:
-                if canAcceptStream:
-                  er.multipleInputsAcceptStream(True, "\t", task, tool)
-                  er.terminate()
-                canAcceptStream = True
-
-                # If the entry in the configuration file is 'do not include', just
-                # remove this argument from the toolArguments structure.
-                if tl.toolInfo[nextTool]['arguments'][argument]['if input is stream'] == 'do not include':
-                  del(tl.toolArguments[nextTask][argument])
-
-                # If the entry is 'replace', then the argument needs to be removed and
-                # replaced with that provided.  When the Makefile is generated, the
-                # tl.toolInfo structure is interogated.  This replacement value should
-                # not be present in the structure, so a value needs to be input.
-                elif tl.toolInfo[nextTool]['arguments'][argument]['if input is stream'] == 'replace':
-                  if 'replace argument with' not in tl.toolInfo[nextTool]['arguments'][argument]:
-                    er.noReplacementFoundWhenStreaming(True, "\t", nextTask, nextTool, argument)
-                    er.terminate()
-
-                  if ('argument' not in tl.toolInfo[nextTool]['arguments'][argument]['replace argument with']) or \
-                  ('value' not in tl.toolInfo[nextTool]['arguments'][argument]['replace argument with']):
-                    er.noReplacementFoundWhenStreaming(True, "\t", nextTask, nextTool, argument)
-                    er.terminate()
-
-                  del(tl.toolArguments[nextTask][argument])
-                  replacementArgument = tl.toolInfo[nextTool]['arguments'][argument]['replace argument with']['argument']
-                  replacementValue    = tl.toolInfo[nextTool]['arguments'][argument]['replace argument with']['value']
-                  if replacementArgument not in tl.toolArguments[nextTask]:
-                    tl.toolArguments[nextTask][replacementArgument] = replacementValue
-                    if replacementArgument in tl.toolInfo[nextTool]['arguments']:
-                      er.replacementArgumentAlreadyPresent(True, "\t", nextTask, tool, replacementArgument)
-                      er.terminate()
-                    else:
-                      if nextTool not in addArguments: addArguments[nextTool] = {}
-                      addArguments[nextTool] = replacementArgument
-
-                # If the entry is neither 'do not include' or 'replace', just use this value
-                # as the value for the argument.
-                else:  
-                  tl.toolArguments[nextTask][argument] = tl.toolInfo[nextTool]['arguments'][argument]['if input is stream']
-
-          # If no instructions are provided on how to handle a streaming input, terminate.
-          if not canOutputToStream:
-            er.noOutputStreamInstructions(True, "\t", task, tool)
-            er.terminate()
-
-          if not canAcceptStream:
-            er.noInputStreamInstructions(True, "\t", nextTask, nextTool)
-            er.terminate()
-
-      # Having determined all arguments that are modified, add the necessary arguments to the
-      # tl.toolInfo structure (these weren't added before as the dictionary cannot be modified
-      # while it was being used).  Keep track of added arguments as they need to be removed
-      # once the makefile has been created, to reset the toolInfo structure back to its original
-      # form before rerunning the pipeline if multiple runs are being performed.
-      for task in addArguments:
-        tl.toolInfo[nextTool]['arguments'][replacementArgument] = 'replacement'
-        if nextTool not in self.addedToToolInfo: self.addedToToolInfo[nextTool] = []
-        self.addedToToolInfo[nextTool].append(replacementArgument)
-
-      if tl.toolArguments['pipeline']['--verbose']:
-        print('done.', file = sys.stdout)
-        print(file = sys.stdout)
-
-  # Determine the order in which to write out the tasks.
-  def determineToolWriteOrder(self):
-    taskBlock = []
-    for task in self.information['workflow']:
-
-      # Add the task to a task block.
-      taskBlock.append(task)
-
-      # If the task outputs to a file (i.e. it is not listed as outputting to a stream,
-      # the block of piped tasks is complete, so add the task to the list of task
-      # blocks and reset the block.
-      if self.isPiped: 
-        if task not in self.information['tools outputting to stream']:
-          self.taskBlocks.append(taskBlock)
-          taskBlock = []
-      else:
-        self.taskBlocks.append(taskBlock)
-        taskBlock = []
+            targetTask     = self.linkage[task][argument]['link to this task']
+            targetArgument = self.linkage[task][argument]['link to this argument']
+            if targetArgument in arguments[targetTask]: 
+              value = list(arguments[targetTask][targetArgument])
+              if 'extension' in self.linkage[task][argument]:
+                if len(value) != 0: value[0] += self.linkage[task][argument]['extension']
+            else: value = []
+            arguments[task][argument] = value

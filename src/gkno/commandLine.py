@@ -6,21 +6,17 @@ import sys
 import errors
 from errors import *
 
+import files
+from files import *
+
 class commandLine:
 
   # Constructor.
   def __init__(self, tl, admin):
-
-    # Check to see if the verbose argument is set.
-    if 'pipeline' not in tl.toolArguments: tl.toolArguments['pipeline'] = {}
-    tl.toolArguments['pipeline']['--verbose'] = True
-    for counter, argument in enumerate(sys.argv):
-      if (argument == '--verbose') or (argument == '-vb'):
-        admin.isVerbose = True
-        if counter + 1 < len(sys.argv):
-          if sys.argv[counter + 1] == 'True': 
-            tl.toolArguments['pipeline']['--verbose'] = True
-          else: tl.toolArguments['pipeline']['--verbose'] = False
+    self.arguments       = {}
+    self.argumentList    = []
+    self.linkedArguments = {}
+    self.uniqueArguments = {}
 
   # Check the first entry on the command line is valid.
   def getMode(self, io, gknoHelp, tl, pl, admin):
@@ -62,117 +58,318 @@ class commandLine:
       gknoHelp.generalHelp = True
       gknoHelp.printHelp   = True
 
+  # Parse through the command line and put all of the arguments into a list.
+  def getCommandLineArguments(self, tool, isPipeline, pipeArguments, pipeShortForms, workflow):
+    skip = False
+    for count, argument in enumerate(sys.argv[1:]):
+      if skip: skip = False
+      else: 
+
+        # Check the next argument on the command line.  If it does not begin with a '-', then this
+        # is assumed to be a value that goes with the current arguments.  Add the pair to the list
+        # of arguments as a tuple.
+        try: nextArgument = sys.argv[count + 2]
+        except: nextArgument = '-'
+
+        # The command line will include an instruction on whether to run a pipe or the name of the
+        # tool.  Ignore this argument.
+        if argument != tool and argument != 'pipe' and argument != 'run-test':
+          if argument in pipeShortForms: argument = pipeShortForms[argument]
+          if argument not in self.uniqueArguments: self.uniqueArguments[argument] = 1
+          else: self.uniqueArguments[argument] += 1
+
+        # Check if the next argument starts with a '-'.  If so, the next argument on the command line
+        # is not a value to accompany this argument, but is a new argument.  This is either because
+        # the current argument is a flag or the argument is the name of a task within the pipeline.
+        # If the argument is the name of a task in the workflow, the next entry on the command line
+        # should be the value for this argument.
+        if nextArgument.startswith('-'):
+
+          # Check if the argument is the name of a task.
+          task = ''
+          if argument.startswith('-'): task = argument[1:]
+          if argument.startswith('--'): task = argument[2:]
+
+          if task in workflow:
+            self.argumentList.append((argument, nextArgument))
+            skip = True
+          elif argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, ''))
+        else:
+          if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, nextArgument))
+          skip = True
+
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
-  def checkForHelp(self, gknoHelp, pl, admin):
-    for count, argument in enumerate(sys.argv):
-      if (argument == '--help') or (argument == '-h'):
-
-        # If there are arguments on the command line after the help command, write
-        # a warning to screen as this may be a typo.
-        if count != (len(sys.argv) - 1): gknoHelp.extraArgumentsWarning()
-
-        # Determine where the help is requested.  The request could be for general
-        # usage help, help with a tool, help with a pipeline, or help with an admin op.
-        
-        # gkno --help
-        if count == 1:
-          gknoHelp.generalHelp  = True
-          gknoHelp.printHelp    = True
-
-        # gkno pipe --help
-        # gkno <admin> --help
-        # gkno <tool> --help
-        elif count == 2:
-          if pl.isPipeline:
-            gknoHelp.pipelineHelp = True
-            gknoHelp.printHelp    = True
-          elif admin.isRequested:
-            gknoHelp.adminHelp = True
-            gknoHelp.printHelp = True
-          else:
-            gknoHelp.toolHelp   = True
-            gknoHelp.printHelp  = True
-      
-        # gkno pipe <pipe> --help
-        elif count == 3:
-          gknoHelp.specificPipelineHelp = True
-          gknoHelp.printHelp            = True
-
-    # Remove the path, 'pipe' and pipeline name from the command line if gkno is
-    # being run in pipeline mode, or the path and tool name if in tool mode, leaving
-    # just the user specified arguments.
-    if pl.isPipeline and (pl.pipelineName != 'run-test'): countMax = 4
-    else: countMax = 3
-    for i in range(1, countMax):
-      if len(sys.argv) != 0: sys.argv.pop(0)
-
-  # Check if the pipeline is going to be run multiple times.
-  def checkForMultipleRuns(self, io, pl):
+  def checkForHelp(self, gknoHelp, isPipeline, pipelineName, admin):
     er = errors()
 
-    # Get the name of the file containing a list of all of the inputs, check that
-    # the file exists and is a valid json.
-    #
-    # When iterating over the arguments in the multiple runs data structure,
-    # the command line will have to be built each time.  All of the arguments
-    # on the command line that are not in the multiple runs file need to be
-    # included on each command line, so store this information.
-    self.baseCommandLine = []
-    while(True):
-      if len(sys.argv) >= 1: argument = sys.argv.pop(0)
-      else: break
-      if (argument == '--multiple-runs') or (argument == '-mr'):
-        try: multipleName = sys.argv.pop(0)
-        except: er.missingFileForMultipleRuns(False, 0)
-        if er.error: er.terminate()
-        pl.hasMultipleRuns = True
-      else: self.baseCommandLine.append(argument)
+    # Check if '--help' or '-h' were included in the command line.  If so, determine what help
+    # was requested.  Pipeilne, tool, admin or general help.
+    helpSet    = False
+    verboseSet = False
+    for argument in sys.argv[1:]:
+      if argument == '--help' or argument == '-h': helpSet = True
+      if argument == '--verbose' or argument == '-vb': verboseSet = True
 
-    # If multiple runs are being performed, open the json file with the information
-    # for the multiple runs and populate the relevant data structures.
-    if pl.hasMultipleRuns:
+    if helpSet:
 
-      # Open the json file.
-      inputData = io.getJsonData(multipleName)
+      # If '--help' is the only argument on the command line, there are only two unique arguments:
+      # the path and '--help'.  This case calls for general help.
+      if len(sys.argv) == 2:
+        gknoHelp.generalHelp  = True
+        gknoHelp.printHelp    = True
+      else:
+
+        # If a pipeline is being run, check if help is required on general pipelines, or on a specific
+        # pipeline.
+        if isPipeline:
+          if pipelineName == '--help' or pipelineName == '-h':
+            gknoHelp.pipelineHelp = True
+            gknoHelp.printHelp    = True
+          else:
+            gknoHelp.specificPipelineHelp = True
+            gknoHelp.printHelp            = True
   
-      # Populate a data structure with the information from the json file.
-      # First the format of the data list is defined.
-      if 'format of data list' not in inputData:
-        er.missingJsonFormatForMultipleRuns(True, '', 'format of data list')
+        # Help with admin.
+        elif admin.isRequested:
+          gknoHelp.adminHelp = True
+          gknoHelp.printHelp = True
+  
+        # If pipeline or admin help wasn't requested, then tool help is required.
+        else:
+          gknoHelp.toolHelp   = True
+          gknoHelp.printHelp  = True
+
+    # Check if the verbose argument was included.
+    verbose = True
+    if verboseSet:
+      value = ''
+      for count, argument in enumerate(sys.argv[1:]):
+        if argument == '--verbose' or argument == '-vb':
+          try: value = sys.argv[count + 2]
+          except: value = ''
+          break
+      if value == 'false' or value == 'False': verbose = False
+      elif value == 'true' or value == 'True': admin.isVerbose = True
+      else:
+        er.incorrectBooleanValue(False, '', 'pipeline', argument, '', '', '', value)
+        er.terminate()
+      
+    return verbose
+
+  # Parse through all of the commands stored in the argumentsList and check that they are all valid.
+  # If they are, put them in a new structure that groups all of the arguments with their respective
+  # task.  This structure is returned.
+  def assignArgumentsToTasks(self, tool, shortForms, isPipeline, pipelineArguments, pipeArguments, pipeShortForms, workflow, verbose):
+    er   = errors()
+    task = tool if not isPipeline else ''
+
+    # Parse through the list of arguments supplied on the command line and determine which task in
+    # the pipeline they belong to.  Modify the argumentList to include the task as well as the
+    # argument and value.  This routine does not check that the arguments are valid or correctly
+    # formed: those checks are performed in the parseCommandLine routine.
+    for argument, value in self.argumentList:
+      argumentName = ''
+      if argument in pipeArguments or argument in pipeShortForms:
+        argumentName = pipeShortForms[argument] if argument in pipeShortForms else argument
+        taskLink     = pipeArguments[argumentName]['link to this task']
+        argumentLink = pipeArguments[argumentName]['link to this argument'] if 'link to this argument' in pipeArguments[argumentName] else 'pipeline'
+
+        # Do not add 'pipeline' arguments to the new structure.
+        if argumentLink != 'pipeline':
+          if taskLink not in self.linkedArguments: self.linkedArguments[taskLink] = []
+          self.linkedArguments[taskLink].append(('pipeline', argumentName, argumentLink, value))
+
+        # Add pipeline arguments to their own structure.
+        else:
+          shortForm = pipeArguments[argumentName]['short form argument']
+          dataType = pipeArguments[argumentName]['type']
+          value = self.checkDataType(task, 'pipeline', argumentName, shortForm, '', '', value, dataType, verbose)
+          pipelineArguments[argumentName] = value
+
+      # If a pipeline is being run, the name of a task in the workflow is an allowed command line
+      # argument.  If this is the case, there may be multiple arguments supplied for that specific
+      # task, so place all of these in the modifiedList.
+      elif isPipeline:
+        if argument.startswith('-'): task = argument[1:]
+        if argument.startswith('--'): task = argument[2:]
+        if task in workflow:
+          taskArguments = value.split(' ')
+          while True:
+
+            # Get the first entry in the list.  Terminate the loop if there is nothing left in the list.
+            try: taskArgument = taskArguments.pop(0)
+            except: break
+
+            # Get the next value in the list if one exists.
+            try: nextTaskArgument = taskArguments[0]
+            except: nextTaskArgument = '-'
+
+            if nextTaskArgument.startswith('-'):
+              if task not in self.linkedArguments: self.linkedArguments[task] = []
+              self.linkedArguments[task].append(('pipeline task', taskArgument, taskArgument, ''))
+            else:
+              if task not in self.linkedArguments: self.linkedArguments[task] = []
+              self.linkedArguments[task].append(('pipeline task', taskArgument, taskArgument, nextTaskArgument))
+              taskArguments.pop(0)
+
+        # If gkno is being run in the pipe mode, the allowed options (pipeline argument or pipeline task)
+        # have also been covered.  Any other command line arguments are unrecognised.
+        else:
+          er.unknownArgument(verbose, argument)
+          er.terminate()
+
+      # If a single tool is being run, the argument must be for this tool (again, checks on the
+      # validity of the argument are checked later).
+      elif not isPipeline:
+        argumentName = shortForms[task][argument] if argument in shortForms[task] else argument
+        if task not in self.linkedArguments: self.linkedArguments[task] = []
+        self.linkedArguments[task].append(('tool', argumentName, argumentName, value))
+
+      # If gkno is being run as a tool, the only allowed options (a general pipeline argument such
+      # as --verbose, or a tool argument) have been covered.  If gkno is being run in the pipe mode,
+      # the allowed options (pipeline argument or pipeline task) have also been covered.  Any other
+      # command line arguments are unrecognised.
+      else:
+        er.unknownArgument(verbose, argument)
+        er.terminate()
+
+  # All of the arguments on the command line have been added to the linkedArguments structure.  In
+  # this structure, each task in the pipeline has all of the arguments associated with it stored
+  # with their given values along with the argument in the form understood by the tool the task points
+  # to.  Now parse through all of these and check that the values supplied are valid.
+  def parseCommandLine(self, tool, arguments, shortForms, isPipeline, workflow, pipeArguments, pipeShortForms, taskToTool, verbose):
+    er = errors()
+
+    # Initialise the self.arguments structure.  This will hold all of the commands ready for building
+    # command lines in the final scripts.
+    if isPipeline:
+      for task in workflow: self.arguments[task] = {}
+    else:
+      task                 = tool
+      taskToTool[task]     = task
+      self.arguments[task] = {}
+
+    # Parse through all of the supplied arguments and values, task by task.
+    for task in self.linkedArguments:
+
+      # Get the name of the tool that the argument is for.  Note that in a pipeline, the workflow
+      # is a list of unique tasks.  Each task is associated with a tool.
+      tool = taskToTool[task]
+
+      # Parse through all of the arguments for this task.
+      for argumentType, pipeArgument, argument, value in self.linkedArguments[task]:
+
+        # Check that the argument is valid for the tool it is intended.
+        if argument not in arguments[tool]:
+          er.unknownArgument(verbose, argument)
+          er.terminate()
+
+        # Get the expected data type associated with the argument.
+        dataType = arguments[tool][argument]['type']
+
+        # Get the short form of the argument.
+        pipeShortForm = ''
+        shortForm     = ''
+        if argumentType == 'pipeline': pipeShortForm = pipeArguments[pipeArgument]['short form argument']
+        shortForm = arguments[tool][argument]['short form argument'] if 'short form argument' in arguments[tool][argument] else ''
+
+        # Check that a value was supplied for the argument if it is not a flag.  If there is an
+        # error, determine if the argument was defined as a pipeline argument, or as a direct
+        # argument for the tool.  The error message needs to reflect the argument inputted by the
+        # user.
+        if dataType != 'flag' and value == '':
+          er.missingArgumentValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, dataType)
+          er.terminate()
+
+        # If the argument is a flag and it was supplied with an argument, terminate.
+        if dataType == 'flag' and value != '':
+          er.flagGivenValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value)
+          er.terminate()
+
+        # If the argument is not a flag, check that the data type given is consistent with expectation.
+        if dataType != 'flag':
+          value = self.checkDataType(task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType, verbose)
+
+          # Check if this command line argument has already been seen.  Some arguments can have multiple
+          # values and so can appear on the command line multiple times (for example the --bam command in
+          # freebayes can be set multiple times to allow multiple BAM files to be read in).  If this is
+          # allowed, the argument definition should include the 'allow multiple definitions' in its 
+          # information.
+          if argument in self.arguments[task]:
+            if argument in arguments[tool]:
+              if 'allow multiple definitions' not in arguments[tool][argument]:
+                er.multipleDefinitionsForSameArgument(verbose, task, argument, shortForm)
+                er.terminate()
+              else: self.arguments[task][argument].append(value)
+            else: exit('haven\'t handled yet, command line: 312')
+          else:
+            self.arguments[task][argument] = []
+            self.arguments[task][argument].append(value)
+
+        # If the argument is a flag, mark this flag as set.
+        else:
+          if argument in self.arguments[task]:
+            er.multipleDefinitionsForFlag(verbose, task, argument, shortForm)
+            er.terminate()
+          else:
+            self.arguments[task][argument] = []
+            self.arguments[task][argument].append('set')
+
+  # Check that the argument has the correct data type.
+  def checkDataType(self, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType, verbose):
+    er = errors()
+
+    # If the argument expects a Boolean, check that the given value is either 'true', 'True', 'false' or
+    # 'False'.
+    if dataType == 'bool':
+  
+      # Ensure that a valid argument has been provided.
+      if (value == 'true') or (value == 'True'): value = True
+      elif (value == 'false') or (value == 'False'): value = False
+      else:
+        er.incorrectBooleanValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value)
         er.terminate()
   
-      if 'data list' not in inputData:
-        er.missingJsonFormatForMultipleRuns(True, '', 'data list')
-        er.terminate()
-  
-      for argument in inputData['format of data list']: pl.multipleRunsListFormat.append(argument)
-      pl.multipleRunsInputArguments = inputData['data list']
-  
-      # Check the number of input arguments in the list is consistent with the
-      # format.  For example, if there are n entries in the format list, then
-      # there must be a multiple of m x n, entries in the inputArguments list,
-      # where m is the number of runs to be performed.
-      pl.multipleRunsNumberOfArguments = len(pl.multipleRunsListFormat)
-      numberOfInputArguments           = len(pl.multipleRunsInputArguments)
-  
-      if numberOfInputArguments % pl.multipleRunsNumberOfArguments != 0:
-        er.incorrectNumberOfEntriesInMultipleJson(True, '')
-        er.terminate()
-  
-      pl.numberOfMultipleRuns          = numberOfInputArguments / pl.multipleRunsNumberOfArguments
+    # If the argument demands a string, no checks are required.
+    elif dataType == 'string': pass
 
-  # Build the command line using the information in the multiple runs data structure.
-  def buildCommandLineMultipleRuns(self, pl):
-    commandLine = []
-    for argument in self.baseCommandLine: commandLine.append(argument)
-    for count in range(0, pl.multipleRunsNumberOfArguments):
-      argument = pl.multipleRunsListFormat[count]
-      value    = pl.multipleRunsInputArguments.pop(0)
-      commandLine.append(argument)
-      commandLine.append(value)
+    # If the argument demands an integer, check that the supplied value is an integer.
+    elif (dataType == 'integer'):
+      try: value = int(value)
+      except: er.incorrectDataType(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType)
+      if er.error: er.terminate()
 
-    return commandLine
+    # If the argument demands a floating point...
+    elif dataType == 'float':
+      try: value = float(value)
+      except: er.incorrectDataType(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType)
+      if er.error: er.terminate()
+
+    return value
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # Parse the command line in tool mode.  Here all of the arguments are associated
   # with the specified tool or the pipeline.  Check to see that there are no
@@ -183,7 +380,6 @@ class commandLine:
     modifiedTool = ''
     verbose      = True if verbose and (tl.toolArguments['pipeline']['--verbose']) else False
     newLine      = True if verbose else False
-    noTab        = 1 if verbose else 0
     if verbose:
       print('Parsing the command line...', end = '', file = sys.stdout)
       sys.stdout.flush()
@@ -194,74 +390,74 @@ class commandLine:
       isPipelineArgument = False
       isToolArgument     = False
 
-      # Check if the argument is a pipeline argument (long or short form).
-      if argument in pl.information['arguments']:
-        isPipelineArgument = True
-      else:
-        for pipelineArgument in pl.information['arguments']:
-          if 'short form argument' in pl.information['arguments'][pipelineArgument]:
-            shortFormArgument = pl.information['arguments'][pipelineArgument]['short form argument']
-            if argument == shortFormArgument:
-              isPipelineArgument = True
-              argument           = pipelineArgument
+#      # Check if the argument is a pipeline argument (long or short form).
+#      if argument in pl.information['arguments']:
+#        isPipelineArgument = True
+#      else:
+#        for pipelineArgument in pl.information['arguments']:
+#          if 'short form argument' in pl.information['arguments'][pipelineArgument]:
+#            shortFormArgument = pl.information['arguments'][pipelineArgument]['short form argument']
+#            if argument == shortFormArgument:
+#              isPipelineArgument = True
+#              argument           = pipelineArgument
 
       # Check if the argument is a tool argument (long or short form).
-      if argument in tl.toolArguments[task]:
-        isToolArgument = True
-      else:
-        for toolArgument in tl.toolArguments[task]:
-          if 'short form argument' in tl.toolInfo[tool]['arguments'][toolArgument]:
-            shortFormArgument = tl.toolInfo[tool]['arguments'][toolArgument]['short form argument']
-          if argument == shortFormArgument:
-            isToolArgument = True
-            argument       = toolArgument
+#      if argument in tl.toolArguments[task]:
+#        isToolArgument = True
+#      else:
+#        for toolArgument in tl.toolArguments[task]:
+#          if 'short form argument' in tl.toolInfo[tool]['arguments'][toolArgument]:
+#            shortFormArgument = tl.toolInfo[tool]['arguments'][toolArgument]['short form argument']
+#          if argument == shortFormArgument:
+#            isToolArgument = True
+#            argument       = toolArgument
 
       # Check that there is no conflict between the tool and the pipeline arguments.  If
       # a tool argument is the same as a pipeline argument, gkno cannot distinguish between
       # them and will fail.
-      if isToolArgument: modifiedTool = task
-      if isPipelineArgument: modifiedTool = 'pipeline'
-      if isToolArgument and isPipelineArgument:
-        print("FAIL")
-        exit(1)
+#      if isToolArgument: modifiedTool = task
+#      if isPipelineArgument: modifiedTool = 'pipeline'
+#      if isToolArgument and isPipelineArgument:
+#        print("FAIL")
+#        exit(1)
 
       # If the argument is neither a tool argument or a pipeline argument, then fail with
       # the tool usage information along with the additional message explaining which
       # argument is unknown.
-      if not isToolArgument and not isPipelineArgument:
-        print(file = sys.stdout)
-        gknoHelp.toolUsage(tl, tool)
-        er.unknownToolArgument("\n", modifiedTool, argument)
-        exit(1)
+#      if not isToolArgument and not isPipelineArgument:
+#        print(file = sys.stdout)
+#        gknoHelp.toolUsage(tl, tool)
+#        er.unknownToolArgument("\n", modifiedTool, argument)
+#        exit(1)
 
       # If the next argument does not begin with a '-', assume that it is the value associated
       # with the current argument.
-      isLastArgument = True
-      try:
-        nextArgument   = commandLine[0]
-        isLastArgument = False
-      except: nextArgument = ''
+#      isLastArgument = True
+#      try:
+#        nextArgument   = commandLine[0]
+#        isLastArgument = False
+#      except: nextArgument = ''
 
       # Get the expected data type for this command line argument.
-      if not isPipelineArgument:
-        dataType = tl.toolInfo[tool]['arguments'][argument]['type'] if 'type' in tl.toolInfo[tool]['arguments'][argument] else ''
-      else:
-        dataType = pl.information['arguments'][argument]['type'] if 'type' in pl.information['arguments'][argument] else ''
+#      if not isPipelineArgument:
+#        dataType = tl.toolInfo[tool]['arguments'][argument]['type'] if 'type' in tl.toolInfo[tool]['arguments'][argument] else ''
+#      else:
+#        dataType = pl.information['arguments'][argument]['type'] if 'type' in pl.information['arguments'][argument] else ''
 
       # If the next argument begins with a '-', e.g. it is the next argument, or this is the
       # last argument on the command line and the expected data type is not 'flag', then data
       # is missing and gkno needs to terminate with an error.
-      if (dataType != 'flag') and (nextArgument.startswith('-') or isLastArgument):
-        er.expectedValueForArgument(newLine, noTab, task, argument, dataType, '')
-        er.terminate()
+      #if (dataType != 'flag') and (nextArgument.startswith('-') or isLastArgument):
+      #  er.expectedValueForArgument(newLine, task, argument, dataType, '')
+      #  er.terminate()
 
       if not nextArgument.startswith('-') and not isLastArgument:
 
         # If the data type for this argument is 'flag', then there is an error since a value
         # was given.
-        if dataType == 'flag':
-          er.expectedValueForArgument(newLine, noTab, modifiedTool, argument, dataType, nextArgument)
-          er.terminate()
+        #if dataType == 'flag':
+        #  er.expectedValueForArgument(newLine, modifiedTool, argument, dataType, nextArgument)
+        #  er.terminate()
 
         # Some tools allow the same argument to be set multiple times.  For example, bamtools
         # allows the inclusion of any number of input bam files by repeated use of the -in
@@ -281,7 +477,7 @@ class commandLine:
             if nextArgument == 'True': tl.toolArguments[modifiedTool][argument] = True
             elif nextArgument == 'False': tl.toolArguments[modifiedTool][argument] = False
             else:
-              er.expectedValueForArgument(newLine, noTab, modifiedTool, argument, dataType, nextArgument)
+              er.expectedValueForArgument(newLine, modifiedTool, argument, dataType, nextArgument)
               er.terminate()
           else: tl.toolArguments[modifiedTool][argument] = nextArgument
         commandLine.pop(0)
@@ -291,11 +487,6 @@ class commandLine:
       # to set.
       else:
         tl.toolArguments[modifiedTool][argument] = 'set'
-
-    if verbose:
-      print('done.', file = sys.stdout)
-      print(file = sys.stdout)
-      sys.stdout.flush()
 
   # Parse the command line in pipeline mode.  Here arguments are either pipeline
   # arguments or the name of a constituent tool.  If the argument is the name of
@@ -307,7 +498,6 @@ class commandLine:
     er                   = errors()
     verbose              = True if tl.toolArguments['pipeline']['--verbose'] else False
     newLine              = True if verbose else False
-    noTab                = 2 if verbose else 0
 
     if verbose:
       print('Parsing the command line...', end = '', file = sys.stdout)
@@ -416,315 +606,10 @@ class commandLine:
         # If this is the last argument and the argument is not a flag then there is an
         # error.  A value must be set.
         elif (dataType != 'flag') and (isLastArgument or (nextArgument.startswith('-'))):
-          er.expectedValueForArgument(newLine, noTab, linkToTask, argument, dataType, nextArgument)
+          er.expectedValueForArgument(newLine, linkToTask, argument, dataType, nextArgument)
           er.terminate()
 
     if verbose:
       if not toolsWrittenToScreen: print('done.', file = sys.stdout)
       print(file = sys.stdout)
       sys.stdout.flush()
-
-  # Check if a different instance of the pipeline was requested and if so, set the parameters.
-  def checkInstance(self, tl, pl):
-    er       = errors()
-    newLine  = True if tl.toolArguments['pipeline']['--verbose'] else False
-    noTab    = 1 if tl.toolArguments['pipeline']['--verbose'] else 0
-    instance = tl.toolArguments['pipeline']['--instance']
-
-    if tl.toolArguments['pipeline']['--verbose']:
-      print('Setting parameters for requested instance: \'', instance, '\'...', sep = '', end = '', file = sys.stdout)
-      sys.stdout.flush()
-
-    # Check if the requested instance is valid.
-    instances = []
-    instances = pl.information['instances'].keys() if 'instances' in pl.information else ''
-    if instance not in instances:
-      er.invalidPipelineInstance(newLine, noTab, instance, instances)
-      er.terminate()
-
-    # Get the parameters for this instance.
-    for argument in pl.information['instances'][instance]:
-      if argument == 'description': description = argument
-      else:
-
-        # Check that this is a valid argument.
-        if argument not in pl.information['arguments']:
-          er.invalidArgumentInInstance(newLine, noTab, instance, argument)
-          er.terminate()
-
-        # Get the task and argument that this links to within the pipeline.
-        linkToTask     = pl.information['arguments'][argument]['link to this task']
-        linkToArgument = pl.information['arguments'][argument]['link to this argument']
-
-        # Check if this argument allows multiple values.
-        linkToTool = pl.information['tools'][linkToTask] if linkToTask in pl.information['tools'] else ''
-        value      = pl.information['instances'][instance][argument]
-        if 'allow multiple definitions' in tl.toolInfo[linkToTool]['arguments'][linkToArgument]:
-          tl.toolArguments[linkToTask][linkToArgument] = []
-          if isinstance(value, list):
-            for entry in value: tl.toolArguments[linkToTask][linkToArgument].append(entry)
-          else: tl.toolArguments[linkToTask][linkToArgument].append(value)
-        else:
-          tl.toolArguments[linkToTask][linkToArgument] = pl.information['instances'][instance][argument]
-
-    if tl.toolArguments['pipeline']['--verbose']:
-      print('done.', file = sys.stdout)
-      print(file = sys.stdout)
-      sys.stdout.flush()
-
-  # Check to see if the input file has a path or not.  If not, determine if the
-  # file is a resource file or not and set the path to the resources path if
-  # it is a resource file, otherwise set it to the input path.
-  def setPaths(self, tl, pl, task, tool):
-    if tl.toolArguments['pipeline']['--verbose']:
-      print('          Checking file paths...', end = '', file = sys.stdout)
-      sys.stdout.flush()
-
-    # Loop over all the tool arguments and check if the argument is for an input or output
-    # file.
-    for argument in tl.toolArguments[task]:
-
-      # If the value is blank, prior to constructing the Makefiles, each
-      # argument is checked and if the argument is not set and is required, gkno 
-      # will catch the omission.
-      if (tl.toolArguments[task][argument] == '') or (argument == 'json parameters'): continue
-
-      # Check if an input, output or resource file.
-      isInput    = True if tl.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
-      isOutput   = True if tl.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
-      isResource = True if tl.toolInfo[tool]['arguments'][argument]['resource'] == 'true' else False
-
-      if isInput or isOutput:
-
-        # Check if there is a list of filenames, rather than a single value.
-        isFileList = True if isinstance(tl.toolArguments[task][argument], list) else False
-
-        # Check the paths and the extension.
-        if isFileList:
-          fileList = []
-          for filename in tl.toolArguments[task][argument]:
-            intermediateFilename = self.setFile(tl, filename, isInput, isOutput, isResource)
-            finalFilename        = self.checkExtension(tl, task, tool, argument, isOutput, intermediateFilename)
-            fileList.append(finalFilename)
-          tl.toolArguments[task][argument] = fileList
-        else:
-          intermediateFilename = self.setFile(tl, tl.toolArguments[task][argument], isInput, isOutput, isResource)
-          finalFilename        = self.checkExtension(tl, task, tool, argument, isOutput, intermediateFilename)
-          tl.toolArguments[task][argument] = finalFilename
-
-    if tl.toolArguments['pipeline']['--verbose']:
-      print('done.', file = sys.stdout)
-      sys.stdout.flush()
-
-  # Provided the filename, check if resource, input or output and set the file accordingly.
-  def setFile(self, tl, filename, isInput, isOutput, isResource):
-
-    # Check if the file already contains a path (e.g. already contains the
-    # '/' character.
-    filePath = ''
-    if '/' not in filename:
-      if isResource: filePath = tl.toolArguments['pipeline']['--resource-path'] + '/' + filename
-      elif isInput:  filePath = tl.toolArguments['pipeline']['--input-path']    + '/' + filename
-      elif isOutput: filePath = tl.toolArguments['pipeline']['--output-path']   + '/' + filename
-
-    # If the file path is given, ensure that the full path is given. For example,
-    # if './file' is specified, modify the './' to the full path of the current
-    # directory.  If the path specified is a parameter and as such begins with '$(',
-    # do not modify the path.
-    else:
-      if not filename.startswith('$('):
-        givenPath = filename.split('/')
-        filename  = givenPath.pop()
-        givenPath = '/'.join(givenPath)
-        filePath  = os.path.abspath(givenPath) + '/' + filename
-      else: filePath = filename
-
-    return filePath
-
-  # Check the filename extension.  If the filename is not a stub and the
-  # name soesn't end with the expected extension, throw an error.
-  def checkExtension(self, tl, task, tool, argument, isOutput, filename):
-    er      = errors()
-    correct = False
-    newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
-    noTab   = 3 if tl.toolArguments['pipeline']['--verbose'] else 0
-
-    # First check if the filename is a stub.
-    isStub = False
-    if 'stub' in tl.toolInfo[tool]['arguments'][argument]: isStub = True if tl.toolInfo[tool]['arguments'][argument]['stub'] == 'true' else False
-
-    # Only find the extension and check the files if the filename isn't a stub.
-    if not isStub:
-
-      # The extension could be a list of allowable extensions separated by pipes.
-      # Split the extension on the pipes and check the files extension against
-      # all the allowed extensions.
-
-      if 'extension' in tl.toolInfo[tool]['arguments'][argument]:
-        extensions = tl.toolInfo[tool]['arguments'][argument]['extension'].split('|')
-
-        # If the extension is listed as null, do not check the extension as it is
-        # permitted to be anything.
-        if (len(extensions) == 1) and (extensions[0] == 'no extension'): next
-        else:
-          for extension in extensions:
-            extension = '.' + extension
-            if filename.endswith(extension):
-              correct = True
-              break
-
-          # If all the extensions have been checked and the files extension did not
-          # match any of them, throw an error.
-          if not correct and isOutput:
-            filename += '.' + extensions[0]
-          elif not correct:
-            er.fileExtensionError(newLine, noTab, argument, filename, tl.toolInfo[tool]['arguments'][argument]['extension'])
-            er.terminate()
-      else:
-        er.missingFieldForTool(newLine, noTab, tool, argument, 'extension', '')
-        er.terminate()
-
-    return filename
-
-  # Loop over the tools and check that all required information has been set.
-  def checkParameters(self, tl, pl, gknoHelp, task, tool, checkRequired):
-    er      = errors()
-    newLine = True if tl.toolArguments['pipeline']['--verbose'] else False
-    noTab   = 3 if tl.toolArguments['pipeline']['--verbose'] else 0
-
-    if tl.toolArguments['pipeline']['--verbose']:
-      print('          Checking all required information is set and valid...', end = '', file = sys.stdout)
-      sys.stdout.flush()
-    for argument in tl.toolArguments[task]:
-      if argument == 'json parameters': continue
-      isRequired = True if tl.toolInfo[tool]['arguments'][argument]['required'] == 'true' else False
-
-      # Check if the option has a value.  Non-required elements may remain unset and
-      # this is allowed.
-      isArgumentSet = True if tl.toolArguments[task][argument] != '' else False
-        
-      # If the argument is an input file (not from the stream) or an output file,
-      # check that it does not contain the ':' character as this is a special
-      # character in the Makefile.  If it does, replace the ':' with a '_'.
-      isInput  = True if tl.toolInfo[tool]['arguments'][argument]['input'] == 'true' else False
-      isOutput = True if tl.toolInfo[tool]['arguments'][argument]['output'] == 'true' else False
-      if isInput or isOutput:
-        if ':' in tl.toolArguments[task][argument]: tl.toolArguments[task][argument] = tl.toolArguments[task][argument].replace(':', '_')
-
-      # If the value is required and no value has been provided, terminate.
-      if isRequired and checkRequired and not isArgumentSet:
-
-        # Check if the argument is an input file and if so, if the input is coming from
-        # the stream.  If so, this does not need to be set.
-        inputIsStream = False
-        if isInput:
-          previousTask = ''
-          for currentTask in pl.information['workflow']:
-            if currentTask == task: break
-            else: previousTask = currentTask
-          if 'tools outputting to stream' in pl.information:
-            if previousTask in pl.information['tools outputting to stream']: inputIsStream = True
-
-        # Find the short form of the argument if one exists.
-        shortForm = tl.toolInfo[tool]['arguments'][argument]['short form argument'] if 'short form argument' in \
-        tl.toolInfo[tool]['arguments'][argument] else ''
-
-        # If the input to task is not a stream and the input is not set,
-        # terminate with an error.
-        if not inputIsStream:
-          er.missingRequiredValue(newLine, noTab, task, tool, argument, shortForm, tl, pl)
-          er.terminate()
-
-        # If the input to this task is a stream, check if this particular argument has
-        # instructions on how to handle the stream.  If it doesn't have any, then this
-        # input still needs to be set.
-        else:
-          ignoreInput = True if 'if input is stream' in tl.toolInfo[tool]['arguments'][argument] else False
-          if not ignoreInput:
-            er.missingRequiredValue(newLine, noTab, task, tool, argument, shortForm, tl, pl)
-            er.terminate()
-
-      # If the value is set, check that the data type is correct.
-      elif isArgumentSet:
-        default = self.checkDataType(tl, pl, task, tool, argument)
-
-    if tl.toolArguments['pipeline']['--verbose']:
-      print('done.', file = sys.stdout)
-      sys.stdout.flush()
-
-  # Check that the argument has the correct data type.
-  def checkDataType(self, tl, pl, task, tool, argument):
-    er       = errors()
-    value    = tl.toolArguments[task][argument]
-    dataType = tl.toolInfo[tool]['arguments'][argument]['type']
-    newLine  = True if tl.toolArguments['pipeline']['--verbose'] else False
-    noTab    = 3 if tl.toolArguments['pipeline']['--verbose'] else 0
-
-    # For some command line arguments, multiple entries are permitted and the 'value' can
-    # be a list.  If so, check the data type of each member of the list.
-    isList = False
-    if isinstance(value, list):
-      valueList = value
-      isList    = True
-    else:
-      valueList = []
-      valueList.append(value)
-
-    # Loop over the list
-    for listValue in valueList:
-
-      # If the argument is a flag, check that the value either doesn't exist or begins
-      # with a dash as no value should be supplied with the flag.
-      if dataType == 'flag':
-        if listValue.startswith('-'):
-          er.assignedValueToFlag(tool, argument)
-          er.terminate()
-  
-        # Flip the flags setting from set to unset or vice versa.
-        if listValue == 'set': listValue = 'unset'
-        elif listValue == 'unset': listValue = 'set'
-        else: listValue = 'set'
-  
-      # If the argument expects a Boolean.
-      elif dataType == 'bool':
-  
-        # Ensure that a valid argument has been provided.
-        if (listValue != 'True') and (listValue != 'False'):
-          er.incorrectDataType(newLine, noTab, tool, argument, listValue, dataType)
-          er.terminate()
-        elif listValue == True: listValue = True
-        elif listValue == False: listValue = False
-  
-      # If the argument demands a string, no checks are required.
-      elif dataType == 'string':
-        if (listValue == '') or (listValue.startswith('-')):
-          er.incorrectDataType(newLine, noTab, tool, argument, listValue, dataType)
-          er.terminate()
-  
-      # If the argument demands an integer, check that the supplied value is an integer.
-      elif dataType == 'integer':
-        if (listValue == '') or (listValue.startswith('-')):
-          er.incorrectDataType(newLine, noTab, tool, argument, listValue, dataType)
-          er.terminate()
-  
-        # Try to convert the string from the command line into an integer.  If this
-        # fails, throw an error.
-        try: listValue = int(listValue)
-        except: er.incorrectDataType(newLine, noTab, tool, argument, listValue, 'integer')
-        if er.error: er.terminate()
-      elif dataType == 'float':
-        if (listValue == '') or (listValue.startswith('-')):
-          er.incorrectDataType(newLine, noTab, tool, argument, listValue, dataType)
-          er.terminate()
-  
-        # Try to convert the string from the command line into a float.  If this
-        # fails, throw an error.
-        try: listValue = float(listValue)
-        except: er.incorrectDataType(newLine, noTab, tool, argument, listValue, 'floating point')
-        if er.error: er.terminate()
-
-    # If the value was not a list, it was converted to a list for checking.  Return to the
-    # original single value.
-    if not isList: value = valueList[0]
-
-    return value

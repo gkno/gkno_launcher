@@ -23,7 +23,8 @@
   "construct filenames" : {
     "compress-vcf" : {
       "--out" : {
-        "filename root" : "short-variants",
+        "filename root" : "from text",
+        "filename root text" : "short-variants",
         "additional text from parameters" : {
           "order" : [
             "filename root",
@@ -31,7 +32,8 @@
           ],
           "region" : {
             "get parameter from task" : "filter-bam",
-            "get parameter from argument" : "-region"
+            "get parameter from argument" : "-region",
+            "remove extension" : false
           }
         },
         "output extension" : "vcf.gz"
@@ -53,6 +55,12 @@
       "--fasta-reference" : {
         "link to this task" : "realign-gaps",
         "link to this argument" : "--fasta-reference"
+      }
+    },
+    "compress-vcf" : {
+      "--in" : {
+        "link to this task" : "variant-call",
+        "link to this argument" : "--vcf"
       }
     }
   },
@@ -187,6 +195,8 @@
     },
     "tutorial" : {
       "description" : "Tutorial instance uses lenient parameters so that variants are discovered with the simulated data.",
+      "--bam" : "$(RESOURCES)/tutorial/current/simulated_reads.bam",
+      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
       "--min-alternate-count" : "1",
       "--min-alternate-qsum" : "20"
     }
