@@ -335,12 +335,12 @@ class commandLine:
     elif (dataType == 'integer'):
       try: value = int(value)
       except: self.errors.incorrectDataType(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType)
-      if self.errors.error: self.errors.terminate()
+      if self.errors.hasError: self.errors.terminate()
 
     # If the argument demands a floating point...
     elif dataType == 'float':
       try: value = float(value)
       except: self.errors.incorrectDataType(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType)
-      if self.errors.error: self.errors.terminate()
+      if self.errors.hasError: self.errors.terminate()
 
     return value
