@@ -15,6 +15,7 @@ class commandLine:
   def __init__(self, tl, admin):
     self.arguments       = {}
     self.argumentList    = []
+    self.errors          = errors()
     self.linkedArguments = {}
     self.uniqueArguments = {}
 
@@ -45,7 +46,7 @@ class commandLine:
         pl.pipelineName = 'run-test'
 
       # If any admin operation was requested, set requested mode.
-      # (We'll parse for add'l args later.)
+      # (We'll parse for add'l args latself.errors.)
       elif argument in admin.allModes:
         admin.isRequested = True
         admin.mode = argument
@@ -101,7 +102,6 @@ class commandLine:
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
   def checkForHelp(self, gknoHelp, isPipeline, pipelineName, admin):
-    er = errors()
 
     # Check if '--help' or '-h' were included in the command line.  If so, determine what help
     # was requested.  Pipeilne, tool, admin or general help.
@@ -152,8 +152,8 @@ class commandLine:
       if value == 'false' or value == 'False': verbose = False
       elif value == 'true' or value == 'True': admin.isVerbose = True
       else:
-        er.incorrectBooleanValue(False, '', 'pipeline', argument, '', '', '', value)
-        er.terminate()
+        self.errors.incorrectBooleanValue(False, '', 'pipeline', argument, '', '', '', value)
+        self.errors.terminate()
       
     return verbose
 
@@ -161,7 +161,6 @@ class commandLine:
   # If they are, put them in a new structure that groups all of the arguments with their respective
   # task.  This structure is returned.
   def assignArgumentsToTasks(self, tool, shortForms, isPipeline, pipelineArguments, pipeArguments, pipeShortForms, workflow, verbose):
-    er   = errors()
     task = tool if not isPipeline else ''
 
     # Parse through the list of arguments supplied on the command line and determine which task in
@@ -216,8 +215,8 @@ class commandLine:
         # If gkno is being run in the pipe mode, the allowed options (pipeline argument or pipeline task)
         # have also been covered.  Any other command line arguments are unrecognised.
         else:
-          er.unknownArgument(verbose, argument)
-          er.terminate()
+          self.errors.unknownArgument(verbose, argument)
+          self.errors.terminate()
 
       # If a single tool is being run, the argument must be for this tool (again, checks on the
       # validity of the argument are checked later).
@@ -231,15 +230,14 @@ class commandLine:
       # the allowed options (pipeline argument or pipeline task) have also been covered.  Any other
       # command line arguments are unrecognised.
       else:
-        er.unknownArgument(verbose, argument)
-        er.terminate()
+        self.errors.unknownArgument(verbose, argument)
+        self.errors.terminate()
 
   # All of the arguments on the command line have been added to the linkedArguments structure.  In
   # this structure, each task in the pipeline has all of the arguments associated with it stored
   # with their given values along with the argument in the form understood by the tool the task points
   # to.  Now parse through all of these and check that the values supplied are valid.
   def parseCommandLine(self, tool, arguments, shortForms, isPipeline, workflow, pipeArguments, pipeShortForms, taskToTool, verbose):
-    er = errors()
 
     # Initialise the self.arguments structure.  This will hold all of the commands ready for building
     # command lines in the final scripts.
@@ -262,8 +260,8 @@ class commandLine:
 
         # Check that the argument is valid for the tool it is intended.
         if argument not in arguments[tool]:
-          er.unknownArgument(verbose, argument)
-          er.terminate()
+          self.errors.unknownArgument(verbose, argument)
+          self.errors.terminate()
 
         # Get the expected data type associated with the argument.
         dataType = arguments[tool][argument]['type']
@@ -277,15 +275,15 @@ class commandLine:
         # Check that a value was supplied for the argument if it is not a flag.  If there is an
         # error, determine if the argument was defined as a pipeline argument, or as a direct
         # argument for the tool.  The error message needs to reflect the argument inputted by the
-        # user.
+        # usself.errors.
         if dataType != 'flag' and value == '':
-          er.missingArgumentValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, dataType)
-          er.terminate()
+          self.errors.missingArgumentValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, dataType)
+          self.errors.terminate()
 
         # If the argument is a flag and it was supplied with an argument, terminate.
         if dataType == 'flag' and value != '':
-          er.flagGivenValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value)
-          er.terminate()
+          self.errors.flagGivenValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value)
+          self.errors.terminate()
 
         # If the argument is not a flag, check that the data type given is consistent with expectation.
         if dataType != 'flag':
@@ -299,8 +297,8 @@ class commandLine:
           if argument in self.arguments[task]:
             if argument in arguments[tool]:
               if 'allow multiple definitions' not in arguments[tool][argument]:
-                er.multipleDefinitionsForSameArgument(verbose, task, argument, shortForm)
-                er.terminate()
+                self.errors.multipleDefinitionsForSameArgument(verbose, task, argument, shortForm)
+                self.errors.terminate()
               else: self.arguments[task][argument].append(value)
             else: exit('haven\'t handled yet, command line: 312')
           else:
@@ -310,15 +308,14 @@ class commandLine:
         # If the argument is a flag, mark this flag as set.
         else:
           if argument in self.arguments[task]:
-            er.multipleDefinitionsForFlag(verbose, task, argument, shortForm)
-            er.terminate()
+            self.errors.multipleDefinitionsForFlag(verbose, task, argument, shortForm)
+            self.errors.terminate()
           else:
             self.arguments[task][argument] = []
             self.arguments[task][argument].append('set')
 
   # Check that the argument has the correct data type.
   def checkDataType(self, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType, verbose):
-    er = errors()
 
     # If the argument expects a Boolean, check that the given value is either 'true', 'True', 'false' or
     # 'False'.
@@ -328,22 +325,22 @@ class commandLine:
       if (value == 'true') or (value == 'True'): value = True
       elif (value == 'false') or (value == 'False'): value = False
       else:
-        er.incorrectBooleanValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value)
-        er.terminate()
+        self.errors.incorrectBooleanValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value)
+        self.errors.terminate()
   
     # If the argument demands a string, no checks are required.
     elif dataType == 'string': pass
 
-    # If the argument demands an integer, check that the supplied value is an integer.
+    # If the argument demands an integer, check that the supplied value is an integself.errors.
     elif (dataType == 'integer'):
       try: value = int(value)
-      except: er.incorrectDataType(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType)
-      if er.error: er.terminate()
+      except: self.errors.incorrectDataType(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType)
+      if self.errors.error: self.errors.terminate()
 
     # If the argument demands a floating point...
     elif dataType == 'float':
       try: value = float(value)
-      except: er.incorrectDataType(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType)
-      if er.error: er.terminate()
+      except: self.errors.incorrectDataType(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType)
+      if self.errors.error: self.errors.terminate()
 
     return value

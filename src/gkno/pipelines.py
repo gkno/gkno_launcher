@@ -14,6 +14,7 @@ import sys
 
 class pipeline:
   def __init__(self):
+    self.errors                  = errors()
     self.toolArgumentLinks       = {}
     self.arguments               = {}
     self.argumentInformation     = {}
@@ -63,7 +64,6 @@ class pipeline:
   # Parse through the pipeline configuration file and check that all necessary fields are
   # available and valid.  Store all of the data in data structures for later use.
   def checkConfigurationFile(self, gknoHelp, data, pipelineFiles, availableTools, argumentInformation, verbose):
-    er     = errors()
     length = len(self.pipelineName + 'Executing pipeline: ') + 4
     text   = '=' * length
 
@@ -107,41 +107,38 @@ class pipeline:
     # Check to see if the list 'jsonSections' is now empty.  If not, throw an error indicating
     # the unknown sections.
     if len(self.jsonSections) > 0:
-      er.unknownSectionsInPipelineConfig(True, self.jsonSections, self.pipelineFile)
-      er.terminate()
+      self.errors.unknownSectionsInPipelineConfig(True, self.jsonSections, self.pipelineFile)
+      self.errors.terminate()
 
   # Check that the pipeline description is available.
   def checkDescription(self, data, verbose):
-    er    = errors()
     Tab = 1 if verbose else 0
 
     if 'description' not in data:
       text = 'A textual description of the pipeline for the help messages is required information.'
-      er.missingPipelineSection(verbose, 'description', text, self.pipelineFile)
-      er.terminate()
+      self.errors.missingPipelineSection(verbose, 'description', text, self.pipelineFile)
+      self.errors.terminate()
 
     self.description = data['description']
     self.jsonSections.remove('description')
 
   # Check that a workflow exists and that it is a list.
   def checkWorkflow(self, data, verbose):
-    er = errors()
-
     if 'workflow' not in data:
       text = 'This provides an ordered list of unique tasks to be performed.'
-      er.missingPipelineSection(verbose, 'workflow', text, self.pipelineFile)
-      er.terminate()
+      self.errors.missingPipelineSection(verbose, 'workflow', text, self.pipelineFile)
+      self.errors.terminate()
 
     if type(data['workflow']) != list:
-      er.pipelineSectionIsNotAList(verbose, 'workflow', self.pipelineFile)
-      er.terminate()
+      self.errors.pipelineSectionIsNotAList(verbose, 'workflow', self.pipelineFile)
+      self.errors.terminate()
 
     # Check that all of the tasks in the workflow have unique names.
     tasks = []
     for task in data['workflow']:
       if task in tasks:
-        er.multipleTasksWithSameName(verbose, task, self.pipelineFile)
-        er.terminate()
+        self.errors.multipleTasksWithSameName(verbose, task, self.pipelineFile)
+        self.errors.terminate()
       tasks.append(task)
 
     self.workflow = data['workflow']
@@ -149,43 +146,39 @@ class pipeline:
 
   # Check that there is a 'tools' section and that there is a named tool for each of the tasks.
   def checkTools(self, data, availableTools, verbose):
-    er = errors()
-
     if 'tools' not in data:
       text = 'This defines which tools are associated with each task in the pipeline.'
-      er.missingPipelineSection(verbose, 'tools', text, self.pipelineFile)
-      er.terminate()
+      self.errors.missingPipelineSection(verbose, 'tools', text, self.pipelineFile)
+      self.errors.terminate()
 
     if type(data['tools']) != dict:
-      er.pipelineSectionIsNotADictionary(verbose, 'tools', self.pipelineFile)
-      er.terminate()
+      self.errors.pipelineSectionIsNotADictionary(verbose, 'tools', self.pipelineFile)
+      self.errors.terminate()
 
     self.taskToTool = data['tools']
     for task in self.taskToTool:
       if task not in self.workflow:
-        er.taskNotInWorkflow(verbose, 'tools', task, self.pipelineFile)
-        er.terminate()
+        self.errors.taskNotInWorkflow(verbose, 'tools', task, self.pipelineFile)
+        self.errors.terminate()
 
       if self.taskToTool[task] not in availableTools:
-        er.taskAssociatedWithNonExistentTool(verbose, task, self.taskToTool[task], self.pipelineFile)
-        er.terminate()
+        self.errors.taskAssociatedWithNonExistentTool(verbose, task, self.taskToTool[task], self.pipelineFile)
+        self.errors.terminate()
 
     self.jsonSections.remove('tools')
 
   # If there are tools outputting to the stream, check that section is a list and that each element
   # in the list, is present in the workflow.
   def checkToolsOutputtingToStream(self, data, verbose):
-    er = errors()
-
     if 'tools outputting to stream' in data:
       if type(data['tools outputting to stream']) != list:
-        er.pipelineSectionIsNotAList(verbose, 'tools outputting to stream', self.pipelineFile)
-        er.terminate()
+        self.errors.pipelineSectionIsNotAList(verbose, 'tools outputting to stream', self.pipelineFile)
+        self.errors.terminate()
 
       for task in data['tools outputting to stream']:
         if task not in self.workflow:
-          er.taskNotInWorkflow(verbose, 'tools outputting to stream', task, self.pipelineFile)
-          er.terminate()
+          self.errors.taskNotInWorkflow(verbose, 'tools outputting to stream', task, self.pipelineFile)
+          self.errors.terminate()
 
       self.toolsOutputtingToStream = data['tools outputting to stream']
       self.jsonSections.remove('tools outputting to stream')
@@ -193,22 +186,20 @@ class pipeline:
   # If the construct self.pipelineNames section is included, check that it is a dictionary of key/value pairs,
   # where all of the keys are the names of tasks.
   def checkConstructFilenames(self, data, argumentInformation, verbose):
-    er = errors()
-
     if 'construct filenames' in data:
 
       # Chech that the "construct filenames" section is a dictionary.
       if type(data['construct filenames']) != dict:
-        er.pipelineSectionIsNotADictionary(verbose, 'construct filenames', self.pipelineFile)
-        er.terminate()
+        self.errors.pipelineSectionIsNotADictionary(verbose, 'construct filenames', self.pipelineFile)
+        self.errors.terminate()
 
       # Parse over each task included in the section.
       for task in data['construct filenames']:
 
         # Check that the task is valid.
         if task not in self.workflow:
-          er.taskNotInWorkflow(verbose, 'construct filenames', task, self.pipelineFile)
-          er.terminate()
+          self.errors.taskNotInWorkflow(verbose, 'construct filenames', task, self.pipelineFile)
+          self.errors.terminate()
 
         # Store the information about this task.
         self.constructFilenames[task] = data['construct filenames'][task]
@@ -219,23 +210,23 @@ class pipeline:
 
           # Check that the argument is valid for the current task.
           if argument not in argumentInformation[tool]:
-            er.invalidArgumentInConstruct(verbose, task, argument, self.pipelineFile)
-            er.terminate()
+            self.errors.invalidArgumentInConstruct(verbose, task, argument, self.pipelineFile)
+            self.errors.terminate()
 
           # Check for required fields.
           for field in self.allowedConstructFields:
             required = self.allowedConstructFields[field]
             if required and field not in data['construct filenames'][task][argument]:
-              er.missingFieldInConstruct(verbose, task, argument, field, self.pipelineFile)
-              er.terminate()
+              self.errors.missingFieldInConstruct(verbose, task, argument, field, self.pipelineFile)
+              self.errors.terminate()
 
           # Check the contained information.
           for field in data['construct filenames'][task][argument]:
 
             # Check for unknown fields.
             if field not in self.allowedConstructFields:
-              er.unknownFieldInConstruct(verbose, task, argument, field, self.allowedConstructFields, self.pipelineFile)
-              er.terminate()
+              self.errors.unknownFieldInConstruct(verbose, task, argument, field, self.allowedConstructFields, self.pipelineFile)
+              self.errors.terminate()
 
             # For each field, check that the data types are correct and that any additional fields required
             # are present (for example, if "filename root" is set to "from argument", the "get root from task"
@@ -251,63 +242,63 @@ class pipeline:
               if data['construct filenames'][task][argument][field] == 'from argument':
                 if 'get root from task' not in data['construct filenames'][task][argument]:
                   text = 'get root from task'
-                  er.missingRootInformationInConstruct(verbose, task, argument, text, self.pipelineFile)
-                  er.terminate()
+                  self.errors.missingRootInformationInConstruct(verbose, task, argument, text, self.pipelineFile)
+                  self.errors.terminate()
                 if 'get root from argument' not in data['construct filenames'][task][argument]:
                   text = 'get root from argument'
-                  er.missingRootInformationInConstruct(verbose, task, argument, text, self.pipelineFile)
-                  er.terminate()
+                  self.errors.missingRootInformationInConstruct(verbose, task, argument, text, self.pipelineFile)
+                  self.errors.terminate()
                 if 'remove input extension' not in data['construct filenames'][task][argument]:
                   text = 'remove input extension'
-                  er.missingRootInformationInConstruct(verbose, task, argument, self.pipelineFile)
-                  er.terminate()
+                  self.errors.missingRootInformationInConstruct(verbose, task, argument, self.pipelineFile)
+                  self.errors.terminate()
 
                 # If the necessary fields are present, check that they are valid.
                 linkedTask     = data['construct filenames'][task][argument]['get root from task']
                 linkedArgument = data['construct filenames'][task][argument]['get root from argument']
                 if linkedTask not in self.workflow:
                   text = task + ' -> ' + argument + ' -> get root from task -> ' + linkedTask
-                  er.taskNotInWorkflow(verbose, 'construct filenames', text, self.pipelineFile)
-                  er.terminate()
+                  self.errors.taskNotInWorkflow(verbose, 'construct filenames', text, self.pipelineFile)
+                  self.errors.terminate()
 
                 linkedTool = self.taskToTool[linkedTask]
                 if linkedArgument not in argumentInformation[linkedTool]:
-                  er.invalidRootArgumentInConstruct(verbose, task, argument, linkedArgument, self.pipelineFile)
-                  er.terminate()
+                  self.errors.invalidRootArgumentInConstruct(verbose, task, argument, linkedArgument, self.pipelineFile)
+                  self.errors.terminate()
 
                 # Check that the remove input extension is a Boolean.
                 if type(data['construct filenames'][task][argument]['remove input extension']) != bool:
                   value = data['construct filenames'][task][argument]['remove input extension']
-                  er.invalidRootDataTypeInConstruct(verbose, task, argument, value, self.pipelineFile)
-                  er.terminate()
+                  self.errors.invalidRootDataTypeInConstruct(verbose, task, argument, value, self.pipelineFile)
+                  self.errors.terminate()
 
               # If the "filename root" field takes the value "from text", the field "filename root text" must
               # be present and contain the text to use as the filename root.
               elif data['construct filenames'][task][argument][field] == 'from text':
                 if 'filename root text' not in data['construct filenames'][task][argument]:
-                  er.filenameRootTextMissing(verbose, task, argument, self.pipelineFile)
-                  er.terminate()
+                  self.errors.filenameRootTextMissing(verbose, task, argument, self.pipelineFile)
+                  self.errors.terminate()
 
               # If the "filename root" field takes an unknown value.
               else:
                 value = data['construct filenames'][task][argument][field]
-                er.unknownRootValue(verbose, task, argument, value, allowedRootFields, self.pipelineFile)
-                er.terminate()
+                self.errors.unknownRootValue(verbose, task, argument, value, allowedRootFields, self.pipelineFile)
+                self.errors.terminate()
 
             # If the field 'additional text from parameters' exists, check the contents of this section.
             elif field == 'additional text from parameters':
               additionalText = []
               if type(data['construct filenames'][task][argument][field]) != dict:
-                er.additionalTextInConstructNotADict(verbose, task, argument, self.pipelineFile)
-                er.terminate()
+                self.errors.additionalTextInConstructNotADict(verbose, task, argument, self.pipelineFile)
+                self.errors.terminate()
 
               if 'order' not in data['construct filenames'][task][argument][field]:
-                er.orderMissingInAdditionalTextInConstruct(verbose, task, argument, self.pipelineFile)
-                er.terminate()
+                self.errors.orderMissingInAdditionalTextInConstruct(verbose, task, argument, self.pipelineFile)
+                self.errors.terminate()
 
               if type(data['construct filenames'][task][argument][field]['order']) != list:
-                er.additionalTextOrderInConstructNotAList(verbose, task, argument, self.pipelineFile)
-                er.terminate()
+                self.errors.additionalTextOrderInConstructNotAList(verbose, task, argument, self.pipelineFile)
+                self.errors.terminate()
 
               # Get the names of all the pieces of text that will be added to the filename.
               for name in data['construct filenames'][task][argument][field]['order']: additionalText.append(name)
@@ -316,8 +307,8 @@ class pipeline:
               # are and check the data types.
               for additional in additionalText:
                 if additional not in data['construct filenames'][task][argument][field] and additional != 'filename root':
-                  er.missingTextDefinitionInConstruct(verbose, task, argument, additional, self.pipelineFile)
-                  er.terminate()
+                  self.errors.missingTextDefinitionInConstruct(verbose, task, argument, additional, self.pipelineFile)
+                  self.errors.terminate()
 
                 # If the value of additional is 'filename root', check that the accompanying value is valid.  This field
                 # can take one of the following values:
@@ -325,56 +316,54 @@ class pipeline:
                 elif additional != 'filename root':
                   if 'get parameter from task' not in data['construct filenames'][task][argument][field][additional]:
                     text = 'get parameter from task'
-                    er.missingFieldInTextDefinitionInConstruct(verbose, task, argument, additional, text, self.pipelineFile)
-                    er.terminate()
+                    self.errors.missingFieldInTextDefinitionInConstruct(verbose, task, argument, additional, text, self.pipelineFile)
+                    self.errors.terminate()
                   else:
                     if data['construct filenames'][task][argument][field][additional]['get parameter from task'] not in self.workflow:
                       text        = 'construct filenames -> ' + task + ' -> ' + argument + ' -> additional text from parameters -> ' + additional
                       invalidTask = data['construct filenames'][task][argument][field][additional]['get parameter from task']
-                      er.taskNotInWorkflow(verbose, text, invalidTask, self.pipelineFile)
-                      er.terminate()
+                      self.errors.taskNotInWorkflow(verbose, text, invalidTask, self.pipelineFile)
+                      self.errors.terminate()
                   if 'get parameter from argument' not in data['construct filenames'][task][argument][field][additional]:
                     text = 'get parameter from argument'
-                    er.missingFieldInTextDefinitionInConstruct(verbose, task, argument, additional, text, self.pipelineFile)
-                    er.terminate()
+                    self.errors.missingFieldInTextDefinitionInConstruct(verbose, task, argument, additional, text, self.pipelineFile)
+                    self.errors.terminate()
                   else:
                     linkedTask     = data['construct filenames'][task][argument][field][additional]['get parameter from task']
                     linkedArgument = data['construct filenames'][task][argument][field][additional]['get parameter from argument']
                     linkedTool     = self.taskToTool[linkedTask]
                     if linkedArgument not in argumentInformation[linkedTool]:
-                      er.invalidArgumentInConstructAdditional(verbose, task, argument, additional, linkedTask, linkedArgument, self.pipelineFile)
-                      er.terminate()
+                      self.errors.invalidArgumentInConstructAdditional(verbose, task, argument, additional, linkedTask, linkedArgument, self.pipelineFile)
+                      self.errors.terminate()
 
                   # Check that the 'remove extension' field is also present and is a Boolean.
                   if 'remove extension' not in data['construct filenames'][task][argument][field][additional]:
                     text = 'remove extension'
-                    er.missingFieldInTextDefinitionInConstruct(verbose, task, argument, additional, text, self.pipelineFile)
-                    er.terminate()
+                    self.errors.missingFieldInTextDefinitionInConstruct(verbose, task, argument, additional, text, self.pipelineFile)
+                    self.errors.terminate()
                   if type(data['construct filenames'][task][argument][field][additional]['remove extension']) != bool:
                     value = data['construct filenames'][task][argument][field][additional]['remove extension']
-                    er.invalidAdditionalDataTypeInConstruct(verbose, task, argument, additional, value, self.pipelineFile)
-                    er.terminate()
+                    self.errors.invalidAdditionalDataTypeInConstruct(verbose, task, argument, additional, value, self.pipelineFile)
+                    self.errors.terminate()
 
-              # Check that no fields are defined that are not included in the order.
+              # Check that no fields are defined that are not included in the ordself.errors.
               for additional in data['construct filenames'][task][argument][field]:
                 if additional not in additionalText and additional != 'order' and additional != 'separator':
-                  er.definedTextNotInOrderInConstruct(verbose, task, argument, additional, self.pipelineFile)
-                  er.terminate()
+                  self.errors.definedTextNotInOrderInConstruct(verbose, task, argument, additional, self.pipelineFile)
+                  self.errors.terminate()
 
       self.jsonSections.remove('construct filenames')
 
   # Check the contents of the linkage section of the configuration file.
   def checkLinkageSection(self, linkage, argumentInformation, verbose):
-    er = errors()
-
     if type(linkage) != dict:
-      er.pipelineSectionIsNotADictionary(False, 'linkage', self.pipelineFile)
-      er.terminate()
+      self.errors.pipelineSectionIsNotADictionary(False, 'linkage', self.pipelineFile)
+      self.errors.terminate()
 
     for task in linkage:
       if task not in self.workflow:
-        er.taskNotInWorkflow(verbose, 'linkage', task, self.pipelineFile)
-        er.terminate()
+        self.errors.taskNotInWorkflow(verbose, 'linkage', task, self.pipelineFile)
+        self.errors.terminate()
 
       # Check that the argument is a valid argument for this task.  Also, check that each argument has the 
       #'link to this task' and 'link to this argument' values set, and check that they point to real tool arguments.
@@ -384,8 +373,8 @@ class pipeline:
         for field in self.allowedLinkageFields:
           required = self.allowedLinkageFields[field]
           if required and field not in linkage[task][argument]:
-            er.missingFieldInLinkage(verbose, task, argument, field, self.pipelineFile)
-            er.terminate()
+            self.errors.missingFieldInLinkage(verbose, task, argument, field, self.pipelineFile)
+            self.errors.terminate()
 
         tool = self.taskToTool[task]
 
@@ -393,54 +382,52 @@ class pipeline:
         # argument' and 'json block' fields are present and valid.
         if argument == 'json parameters':
           if 'json block' not in linkage[task][argument]:
-            er.missingFieldInLinkage(verbose, task, argument, 'json block', self.pipelineFile)
-            er.terminate()
+            self.errors.missingFieldInLinkage(verbose, task, argument, 'json block', self.pipelineFile)
+            self.errors.terminate()
 
           linkedTask     = linkage[task][argument]['link to this task']
           linkedArgument = linkage[task][argument]['link to this argument']
           if linkedTask not in self.workflow:
-            er.invalidLinkedTask(verbose, task, argument, linkedTask, self.pipelineFile)
-            er.terminate()
+            self.errors.invalidLinkedTask(verbose, task, argument, linkedTask, self.pipelineFile)
+            self.errors.terminate()
           linkedTool = self.taskToTool[task]
           if linkedArgument not in argumentInformation[linkedTool]:
-            er.invalidLinkedArgument(verbose, task, argument, linkedTask, linkedArgument, self.pipelineFile)
-            er.terminate()
+            self.errors.invalidLinkedArgument(verbose, task, argument, linkedTask, linkedArgument, self.pipelineFile)
+            self.errors.terminate()
 
         elif argument not in argumentInformation[tool]:
-          er.invalidArgumentInLinkage(verbose, task, argument, self.pipelineFile)
-          er.terminate()
+          self.errors.invalidArgumentInLinkage(verbose, task, argument, self.pipelineFile)
+          self.errors.terminate()
 
         # Loop over the fields for this argument.  The only allowed fields are 'link to this task', 'link
         # to this argument' and 'json block'.  If anything else is observed, terminate.
         for field in linkage[task][argument]:
           if field not in self.allowedLinkageFields:
-            er.unknownFieldInLinkage(verbose, task, argument, field, self.allowedLinkageFields, self.pipelineFile)
-            er.terminate()
+            self.errors.unknownFieldInLinkage(verbose, task, argument, field, self.allowedLinkageFields, self.pipelineFile)
+            self.errors.terminate()
 
         # Check that the task and argument to which this argument is linked, exists.
         linkedTask     = linkage[task][argument]['link to this task']
         linkedArgument = linkage[task][argument]['link to this argument']
         if linkedTask not in self.workflow:
-          er.invalidLinkedTask(verbose, task, argument, linkedTask, self.pipelineFile)
-          er.terminate()
+          self.errors.invalidLinkedTask(verbose, task, argument, linkedTask, self.pipelineFile)
+          self.errors.terminate()
 
         linkedTool     = self.taskToTool[linkedTask]
         if linkedArgument not in argumentInformation[linkedTool]:
-          er.invalidLinkedArgument(verbose, task, argument, linkedTask, linkedArgument, self.pipelineFile)
-          er.terminate()
+          self.errors.invalidLinkedArgument(verbose, task, argument, linkedTask, linkedArgument, self.pipelineFile)
+          self.errors.terminate()
 
       self.linkage[task] = linkage[task]
     self.jsonSections.remove('linkage')
 
   # The arguments section is required and contains all the arguments allowed for the pipeline.
   def checkArguments(self, data, verbose):
-    er = errors()
-
     if 'arguments' not in data:
       text = 'This provides details of all the allowable command line arguments including which tasks in the ' + \
       'pipeline they are associated with.'
-      er.missingPipelineSection(verbose, 'arguments', text, self.pipelineFile)
-      er.terminate()
+      self.errors.missingPipelineSection(verbose, 'arguments', text, self.pipelineFile)
+      self.errors.terminate()
 
     for argument in data['arguments']:
       self.argumentInformation[argument] = data['arguments'][argument]
@@ -450,32 +437,31 @@ class pipeline:
 
       # Check that the task and argument that this argument is linked to is defined.
       if 'link to this task' not in self.argumentInformation[argument]:
-        er.pipelineArgumentMissingInformation(verbose, argument, 'link to this task', self.pipelineFile)
-        er.terminate()
+        self.errors.pipelineArgumentMissingInformation(verbose, argument, 'link to this task', self.pipelineFile)
+        self.errors.terminate()
 
       if 'link to this argument' not in self.argumentInformation[argument]:
-        er.pipelineArgumentMissingInformation(verbose, argument, 'link to this argument', self.pipelineFile)
-        er.terminate()
+        self.errors.pipelineArgumentMissingInformation(verbose, argument, 'link to this argument', self.pipelineFile)
+        self.errors.terminate()
 
     self.jsonSections.remove('arguments')
 
   # If the section 'delete files' is present.  If so, check that it is a dictionary whose keys are
   # tasks present in the workflow.
   def checkDeleteFiles(self, argumentInformation, data, verbose):
-    er       = errors()
     required = []
     required.append('output extension')
     required.append('delete after task')
 
     if type(data) != dict:
-      er.pipelineSectionIsNotADictionary(verbose, 'delete files', self.pipelineFile)
-      er.terminate()
+      self.errors.pipelineSectionIsNotADictionary(verbose, 'delete files', self.pipelineFile)
+      self.errors.terminate()
 
     # Check that the contents are tasks in the pipeline workflow.
     for task in data:
       if task not in self.workflow:
-        er.taskNotInWorkflow(verbose, 'delete files', task, self.pipelineFile)
-        er.terminate()
+        self.errors.taskNotInWorkflow(verbose, 'delete files', task, self.pipelineFile)
+        self.errors.terminate()
 
       # Check that for each task, there are defined valid arguments for the tool as well
       # as which task need to be completed prior to file deletion.  This task must also
@@ -484,43 +470,43 @@ class pipeline:
       self.deleteFiles[task] = []
       for argument in data[task]:
         if argument not in argumentInformation[tool]:
-          er.unknownArgumentInDeleteFiles(verbose, task, tool, argument, self.pipelineFile)
-          er.terminate()
+          self.errors.unknownArgumentInDeleteFiles(verbose, task, tool, argument, self.pipelineFile)
+          self.errors.terminate()
 
         # Check for unknown fields.
         for field in data[task][argument]:
           if field not in required:
-            er.unknownFieldInDeleteFiles(verbose, task, argument, field, self.pipelineFile)
-            er.terminate()
+            self.errors.unknownFieldInDeleteFiles(verbose, task, argument, field, self.pipelineFile)
+            self.errors.terminate()
 
         # Ensure the delete after task field is present.
         if 'delete after task' not in data[task][argument]:
-          er.deleteAfterTaskMissing(verbose, task, argument, self.pipelineFile)
-          er.terminate()
+          self.errors.deleteAfterTaskMissing(verbose, task, argument, self.pipelineFile)
+          self.errors.terminate()
 
         # If the output extensions fiels exists, check that it is a list and then find out how
         # many files are to be deleted.
         if 'output extension' in data[task][argument]:
           if type(data[task][argument]['output extension']) != list:
-            er.outputExtensionNotAListInDeleteFiles(verbose, task, argument, self.pipelineFile)
-            er.terminate()
+            self.errors.outputExtensionNotAListInDeleteFiles(verbose, task, argument, self.pipelineFile)
+            self.errors.terminate()
 
           # Now ensure that the 'delete after task' field is also a list with the same
           # number of elements.
 
           if type(data[task][argument]['delete after task']) != list:
-            er.deleteAfterTaskNotAList(verbose, task, argument, self.pipelineFile)
-            er.terminate()
+            self.errors.deleteAfterTaskNotAList(verbose, task, argument, self.pipelineFile)
+            self.errors.terminate()
 
           if len(data[task][argument]['output extension']) != len(data[task][argument]['delete after task']):
-            er.listsDifferentSizeInDeleteFiles(verbose, task, argument, self.pipelineFile)
-            er.terminate()
+            self.errors.listsDifferentSizeInDeleteFiles(verbose, task, argument, self.pipelineFile)
+            self.errors.terminate()
 
           for deleteAfterTask, extension in zip(data[task][argument]['delete after task'], data[task][argument]['output extension']):
             if deleteAfterTask not in self.workflow:
               text = 'delete files -> ' + task + ' -> ' + argument + ' -> delete after task'
-              er.taskNotInWorkflow(verbose, text, deleteAfterTask, self.pipelineFile)
-              er.terminate()
+              self.errors.taskNotInWorkflow(verbose, text, deleteAfterTask, self.pipelineFile)
+              self.errors.terminate()
 
             # Check that the extension is allowed for this tool.
             allowedExtension = argumentInformation[tool][argument]['extension']
@@ -531,12 +517,12 @@ class pipeline:
                   correct = True
                   break
               if not correct:
-                er.invalidExtensionInDeleteFiles(verbose, task, argument, extension, self.pipelineFile)
-                er.terminate()
+                self.errors.invalidExtensionInDeleteFiles(verbose, task, argument, extension, self.pipelineFile)
+                self.errors.terminate()
             else:
               if allowedExtension != extension:
-                er.invalidExtensionInDeleteFiles(verbose, task, argument, extension, self.pipelineFile)
-                er.terminate()
+                self.errors.invalidExtensionInDeleteFiles(verbose, task, argument, extension, self.pipelineFile)
+                self.errors.terminate()
             self.deleteFiles[task].append((argument, deleteAfterTask, extension))
 
         # If the 'output extension' field is not present, then there only needs to be the
@@ -546,32 +532,30 @@ class pipeline:
           deleteAfterTask = data[task][argument]['delete after task']
           if deleteAfterTask not in self.workflow:
             text = 'delete files -> ' + task + ' -> ' + argument + ' -> delete after task'
-            er.taskNotInWorkflow(verbose, text, deleteAfterTask, self.pipelineFile)
-            er.terminate()
+            self.errors.taskNotInWorkflow(verbose, text, deleteAfterTask, self.pipelineFile)
+            self.errors.terminate()
           self.deleteFiles[task].append((argument, deleteAfterTask, ''))
           
     self.jsonSections.remove('delete files')
 
   # If there are instances associated with the pipeline, ensure that this is a dictionary.
   def checkInstances(self, data, verbose):
-    er = errors()
-
     if 'instances' not in data:
       text = 'A section containing instance information is required.  If no instance is requested, the \'default\' instance ' + \
       'is used (this need not set any parameters).'
-      er.missingPipelineSection(verbose, 'instances', text, self.pipelineFile)
-      er.terminate()
+      self.errors.missingPipelineSection(verbose, 'instances', text, self.pipelineFile)
+      self.errors.terminate()
     else: instances = data['instances']
 
     if type(instances) != dict:
-      er.pipelineSectionIsNotADictionary(verbose, 'instances', self.pipelineFile)
-      er.terminate()
+      self.errors.pipelineSectionIsNotADictionary(verbose, 'instances', self.pipelineFile)
+      self.errors.terminate()
 
     # Check that each instance has a unique name and contains a description.
     for instance in instances:
       if 'description' not in instances[instance]:
-        er.noInstanceDescription(verbose, instance, self.pipelineFile)
-        er.terminate()
+        self.errors.noInstanceDescription(verbose, instance, self.pipelineFile)
+        self.errors.terminate()
 
     self.instances = instances
     self.jsonSections.remove('instances')
@@ -692,7 +676,6 @@ class pipeline:
   # Use the 'linkage' section of the pipeline configuration file to set all
   # parameters that depend on other tools.
   def toolLinkage(self, task, tool, argumentInformation, arguments, verbose):
-    er = errors()
 
     # Work through each argument in turn and identify all of the input and output files.
     # For non-input/output files, just check for links to other tools.

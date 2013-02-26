@@ -11,6 +11,7 @@ class tools:
 
   # Initialise the tools class.
   def __init__(self):
+    self.errors = errors()
 
     # Set up a list of top level fields that must be present for all tools.
     self.requiredFields = []
@@ -56,12 +57,11 @@ class tools:
   # the file is allowed.  The allowed values for the configuration file are defined in the
   # initialisation of the tools object.
   def checkToolConfigurationFile(self, data, filename, verbose):
-    er = errors()
 
     # Ensure that the configuration file contains tools.
     if 'tools' not in data:
-      er.missingToolsBlockInConfig(False, filename)
-      er.terminate()
+      self.errors.missingToolsBlockInConfig(False, filename)
+      self.errors.terminate()
 
     # Loop over all of the tools contained in the configuration file.
     for tool in data['tools']:
@@ -96,8 +96,8 @@ class tools:
         # If the field is anything other than those objects listed above, this is an
         # unrecognised field and gkno will terminate citing problems with the configuration file.
         else:
-          er.undefinedFieldInConfig(False, filename, tool, field)
-          er.terminate()
+          self.errors.undefinedFieldInConfig(False, filename, tool, field)
+          self.errors.terminate()
 
       # Now check the argument order field, if this was present.
       if hasArgumentOrder: self.checkArgumentOrder(tool, data['tools'][tool]['argument order'], filename)
@@ -110,85 +110,77 @@ class tools:
         if field not in self.observedFields: missingVariables.append(field)
 
       if len(missingVariables) > 0:
-        er.missingRequiredFieldInConfig(False, filename, tool, missingVariables)
-        er.terminate()
+        self.errors.missingRequiredFieldInConfig(False, filename, tool, missingVariables)
+        self.errors.terminate()
 
   # Check the validity of the configuration file block by block.  Start with the description.
   def checkDescription(self, tool, description, filename):
-    er            = errors()
     givenType     = type(description)
     if givenType != str:
-      er.differentDataTypeInConfig(False, filename, tool, 'description', givenType, str)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'description', givenType, str)
+      self.errors.terminate()
     self.observedFields['description'] = True
     self.descriptions[tool]            = description
 
   # ...executable...
   def checkExecutable(self, tool, executable, filename):
-    er            = errors()
     givenType     = type(executable)
     if givenType != str:
-      er.differentDataTypeInConfig(False, filename, tool, 'executable', givenType, str)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'executable', givenType, str)
+      self.errors.terminate()
     self.observedFields['executable'] = True
     self.executables[tool]            = executable
 
   # ...help...
   def checkHelp(self, tool, helpMessage, filename):
-    er            = errors()
     givenType     = type(helpMessage)
     if givenType != str:
-      er.differentDataTypeInConfig(False, filename, tool, 'help', givenType, str)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'help', givenType, str)
+      self.errors.terminate()
     self.observedFields['help'] = True
 
   # ...path...
   def checkPath(self, tool, path, filename):
-    er            = errors()
     givenType     = type(path)
     if givenType != str:
-      er.differentDataTypeInConfig(False, filename, tool, 'path', givenType, str)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'path', givenType, str)
+      self.errors.terminate()
     self.observedFields['path'] = True
     self.paths[tool]            = path
 
   # ...precommand...
   def checkPrecommand(self, tool, precommand, filename):
-    er            = errors()
     givenType     = type(precommand)
     if givenType != str:
-      er.differentDataTypeInConfig(False, filename, tool, 'precommand', givenType, str)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'precommand', givenType, str)
+      self.errors.terminate()
     self.observedFields['precommand'] = True
     self.precommands[tool]            = precommand
 
-  # ...modifier...
+  # ...modifiself.errors...
   def checkModifier(self, tool, modifier, filename):
-    er            = errors()
     givenType     = type(modifier)
     if givenType != str:
-      er.differentDataTypeInConfig(False, filename, tool, 'modifier', givenType, str)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'modifier', givenType, str)
+      self.errors.terminate()
     self.observedFields['modifier'] = True
     self.modifiers[tool]            = modifier
 
-  # ...argument delimiter...
+  # ...argument delimitself.errors...
   def checkArgumentDelimiter(self, tool, delimiter, filename):
-    er            = errors()
     givenType     = type(delimiter)
     if givenType != str:
-      er.differentDataTypeInConfig(False, filename, tool, 'delimiter', givenType, str)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'delimiter', givenType, str)
+      self.errors.terminate()
     self.observedFields['argument delimiter'] = True
     self.argumentDelimiters[tool]             = delimiter
 
   # ...arguments...
   def checkArguments(self, tool, arguments, filename):
-    er            = errors()
     givenType     = type(arguments)
     if givenType != dict:
-      er.differentDataTypeInConfig(False, filename, tool, 'arguments', givenType, dict)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'arguments', givenType, dict)
+      self.errors.terminate()
 
     # Now parse through all of the arguments and check the contents of each entry in the
     # arguments field.  Any string is allowed as an argument, but each argument must contain
@@ -197,8 +189,8 @@ class tools:
     for argument in arguments:
       givenType     = type(arguments[argument])
       if givenType != dict:
-        er.differentDataTypeInConfig(False, filename, tool, 'arguments -> ' + str(argument), givenType, dict)
-        er.terminate()
+        self.errors.differentDataTypeInConfig(False, filename, tool, 'arguments -> ' + str(argument), givenType, dict)
+        self.errors.terminate()
 
       # Parse through all entries for this argument.
       self.observedArgumentFields = {}
@@ -228,8 +220,8 @@ class tools:
 
         # If the field is unknown, terminate.
         else:
-          er.undefinedFieldInConfig(False, filename, tool, 'arguments -> ' + str(argument) + ' -> ' + str(field))
-          er.terminate()
+          self.errors.undefinedFieldInConfig(False, filename, tool, 'arguments -> ' + str(argument) + ' -> ' + str(field))
+          self.errors.terminate()
 
       # Now check that all of the required fields for this argument were present.
       missingVariables = []
@@ -237,8 +229,8 @@ class tools:
         if field not in self.observedArgumentFields: missingVariables.append('arguments -> ' + argument + ' -> ' + field)
 
       if len(missingVariables) > 0:
-        er.missingRequiredFieldInConfig(False, filename, tool, missingVariables)
-        er.terminate()
+        self.errors.missingRequiredFieldInConfig(False, filename, tool, missingVariables)
+        self.errors.terminate()
 
     # Update the self.argumentInformation structure to include the arguments for this tool.
     self.argumentInformation[tool] = arguments
@@ -246,62 +238,57 @@ class tools:
 
   # ...hide tool...
   def checkHideTool(self, tool, hiddenTool, filename):
-    er            = errors()
     givenType     = type(hiddenTool)
     if givenType != bool:
-      er.differentDataTypeInConfig(False, filename, tool, 'hidden tools', givenType, bool)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'hidden tools', givenType, bool)
+      self.errors.terminate()
     self.observedFields['hide tool'] = True
     self.hiddenTools[tool] = hiddenTool
 
-  # ...argument order...
+  # ...argument ordself.errors...
   def checkArgumentOrder(self, tool, argumentOrder, filename):
-    er            = errors()
     givenType     = type(argumentOrder)
     if givenType != list:
-      er.differentDataTypeInConfig(False, filename, tool, 'argument order', givenType, list)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'argument order', givenType, list)
+      self.errors.terminate()
 
     # Parse through the contents of the list and ensure that the list is a complete list of all
     # the arguments for this tool and no more.
     for argument in argumentOrder:
       if argument not in self.argumentInformation[tool]:
-        er.unknownArgumentInArgumentOrder(False, filename, tool, argument)
-        er.terminate()
+        self.errors.unknownArgumentInArgumentOrder(False, filename, tool, argument)
+        self.errors.terminate()
 
     # Then parse through the arguments for the tools and ensure that the argument order list
     # is exhaustive.
     for argument in self.argumentInformation[tool]:
       if argument not in argumentOrder:
-        er.argumentMissingFromArgumentOrder(False, filename, tool, argument)
-        er.terminate()
+        self.errors.argumentMissingFromArgumentOrder(False, filename, tool, argument)
+        self.errors.terminate()
 
     self.argumentOrder[tool]              = argumentOrder
     self.observedFields['argument order'] = True
 
   # ...output is stream...
   def checkOutputStream(self, tool, outputStream, filename):
-    er            = errors()
     givenType     = type(outputStream)
     if givenType != bool:
-      er.differentDataTypeInConfig(False, filename, tool, 'output is stream', givenType, bool)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'output is stream', givenType, bool)
+      self.errors.terminate()
     self.observedFields['output is stream'] = True
     self.toolsDemandingOutputStream[tool] = outputStream
 
   # ...input is stream...
   def checkInputStream(self, tool, inputStream, filename):
-    er            = errors()
     givenType     = type(inputStream)
     if givenType != bool:
-      er.differentDataTypeInConfig(False, filename, tool, 'input is stream', givenType, bool)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'input is stream', givenType, bool)
+      self.errors.terminate()
     self.observedFields['input is stream'] = True
     self.toolsDemandingInputStream[tool] = inputStream
 
   # ...additional files...
   def checkAdditionalFiles(self, tool, arguments, filename):
-    er       = errors()
     required = []
     required.append('type')
     required.append('link to this argument')
@@ -318,15 +305,15 @@ class tools:
       if field == 'from input arguments':
 
         if type(arguments[field]) != list:
-          er.differentDataTypeInConfig(False, filename, tool, field, type(arguments[field]), list)
-          er.terminate()
+          self.errors.differentDataTypeInConfig(False, filename, tool, field, type(arguments[field]), list)
+          self.errors.terminate()
 
         # Check that the field is a list and that the list contents are dictionaries and that their
         # contents are as expected.
         for entry in arguments[field]:
           if type(entry) != dict:
-            er.differentDataTypeInConfig(False, filename, tool, field + ' -> ' + entry, type(entry), dict)
-            er.terminate()
+            self.errors.differentDataTypeInConfig(False, filename, tool, field + ' -> ' + entry, type(entry), dict)
+            self.errors.terminate()
 
           # Check the contents of each of the dictionaries.
           for information in entry:
@@ -334,186 +321,179 @@ class tools:
             # The 'type' field can take the values "output" or "dependency".
             if information == 'type':
               if entry[information] != 'output' and entry[information] != 'dependency':
-                er.typeInAdditionalFieldsError(False, filename, tool, entry[information])
-                er.terminate()
+                self.errors.typeInAdditionalFieldsError(False, filename, tool, entry[information])
+                self.errors.terminate()
 
             # The "link to his argument field must link to an argument for this tool.
             elif information == 'link to this argument':
               if entry[information] not in self.argumentInformation[tool]:
-                er.unknownArgumentInAdditionalFiles(False, filename, tool, entry[information])
-                er.terminate()
+                self.errors.unknownArgumentInAdditionalFiles(False, filename, tool, entry[information])
+                self.errors.terminate()
 
             # Check that the remove/add extension field is a Boolean.
             elif information == 'remove extension':
               if type(entry[information]) != bool:
-                er.incorrectBooleanInAdditionalFiles(False, filename, tool, information, entry[information])
-                er.terminate()
+                self.errors.incorrectBooleanInAdditionalFiles(False, filename, tool, information, entry[information])
+                self.errors.terminate()
 
             elif information == 'add extension':
               if type(entry[information]) != bool:
-                er.incorrectBooleanInAdditionalFiles(False, filename, tool, information, entry[information])
-                er.terminate()
+                self.errors.incorrectBooleanInAdditionalFiles(False, filename, tool, information, entry[information])
+                self.errors.terminate()
 
             elif information == 'output extension': pass
 
             # Check that the stub field is a Boolean.
             elif information == 'stub':
               if type(entry[information]) != bool:
-                er.incorrectBooleanInAdditionalFiles(False, filename, tool, information, entry[information])
-                er.terminate()
+                self.errors.incorrectBooleanInAdditionalFiles(False, filename, tool, information, entry[information])
+                self.errors.terminate()
 
             else:
-              er.unknownFieldInAdditionalFilesDictionary(False, filename, tool, information)
-              er.terminate()
+              self.errors.unknownFieldInAdditionalFilesDictionary(False, filename, tool, information)
+              self.errors.terminate()
           
 
           # Check that all of the required fields are present.
           for information in required:
             if information not in entry:
-              er.missingFieldInAdditionalFiles(False, filename, tool, information, required)
-              er.terminate()
+              self.errors.missingFieldInAdditionalFiles(False, filename, tool, information, required)
+              self.errors.terminate()
 
       # If the field is not known.
       else:
-        er.unknownFieldInAdditionalFiles(False, filename, tool, field)
-        er.terminate()
+        self.errors.unknownFieldInAdditionalFiles(False, filename, tool, field)
+        self.errors.terminate()
 
     self.additionalFiles[tool]              = arguments
     self.observedFields['additional files'] = True
 
   # ...instances...
   def checkInstances(self, tool, instances, filename):
-    er            = errors()
     givenType     = type(instances)
     if givenType != dict:
-      er.differentDataTypeInConfig(False, filename, tool, 'instances', givenType, dict)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'instances', givenType, dict)
+      self.errors.terminate()
     self.observedFields['instances'] = True
     for instance in instances: self.instances[instance] = instances[instance]
 
   # If the field for an argument is expected to be of a specific type, check that it is.
   def checkGeneralField(self, tool, value, text, expectedType, filename):
-    er            = errors()
     givenType     = type(value)
     if givenType != expectedType:
-      er.differentDataTypeInConfig(False, filename, tool, text, givenType, expectedType)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, text, givenType, expectedType)
+      self.errors.terminate()
     self.observedArgumentFields[text] = True
 
   def checkRepeatArgument(self, tool, arguments, argument, field, expectedType, filename):
-    er            = errors()
     value         = arguments[argument][field]
     givenType     = type(value)
     if givenType != expectedType:
-      er.differentDataTypeInConfig(False, filename, tool, field, givenType, expectedType)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, field, givenType, expectedType)
+      self.errors.terminate()
 
     # Now check that the value is an argument for this tool.
     if value not in arguments:
       text = 'arguments -> ' + argument + ' -> ' + field
-      er.invalidArgumentInRepeat(False, filename, tool, argument, text, value)
-      er.terminate()
+      self.errors.invalidArgumentInRepeat(False, filename, tool, argument, text, value)
+      self.errors.terminate()
     self.observedArgumentFields[field] = True
 
   # If the argument input is the stream, there are a number of ways that gkno can be instructed
   # to modify the command line.  Check that the value given is valid and that any further information
   # required is present.
   def checkArgumentInputStream(self, tool, arguments, argument, field, value, filename):
-    er = errors()
     if value == 'do not include': self.checkGeneralField(tool, value, field, str, filename)
     elif value == 'replace':
       if 'replace argument with' not in arguments:
-        er.replaceArgumentMissing(False, filename, tool, field)
-        er.terminate()
+        self.errors.replaceArgumentMissing(False, filename, tool, field)
+        self.errors.terminate()
 
       # If the "replace argument with" field is present, check that it is a dictionary containing an alternative
       # argument and value to use.
       givenType = type(arguments['replace argument with'])
       text = 'arguments -> ' + argument + ' -> replace argument with'
       if givenType != dict:
-        er.differentDataTypeInConfig(False, filename, tool, text, givenType, dict)
-        er.terminate()
+        self.errors.differentDataTypeInConfig(False, filename, tool, text, givenType, dict)
+        self.errors.terminate()
 
       # Check the contents.
       if 'argument' not in arguments['replace argument with']:
-        er.missingFieldInReplace(False, filename, tool, text, 'argument')
-        er.terminate()
+        self.errors.missingFieldInReplace(False, filename, tool, text, 'argument')
+        self.errors.terminate()
       if 'value' not in arguments['replace argument with']:
-        er.missingFieldInReplace(False, filename, tool, text, 'value')
-        er.terminate()
+        self.errors.missingFieldInReplace(False, filename, tool, text, 'value')
+        self.errors.terminate()
 
       # and finally check that the "argument" and "value" fields are strings.
       givenType = type(arguments['replace argument with']['argument'])
       if givenType != str:
-        er.differentDataTypeInConfig(False, filename, tool, text + ' -> argument', givenType, str)
-        er.terminate()
+        self.errors.differentDataTypeInConfig(False, filename, tool, text + ' -> argument', givenType, str)
+        self.errors.terminate()
 
       givenType = type(arguments['replace argument with']['value'])
       if givenType != str:
-        er.differentDataTypeInConfig(False, filename, tool, text + ' -> value', givenType, str)
-        er.terminate()
+        self.errors.differentDataTypeInConfig(False, filename, tool, text + ' -> value', givenType, str)
+        self.errors.terminate()
 
     # If the value is unknown to gkno, terminate.
     else:
       text = 'arguments -> ' + argument + ' -> if input is stream' + ' -> ' + value
-      er.undefinedFieldInConfig(False, filename, tool, text)
-      er.terminate()
+      self.errors.undefinedFieldInConfig(False, filename, tool, text)
+      self.errors.terminate()
 
   # If the argument contains the 'outputs' field, this needs to be a list of outputs outputted by
   # the tool.  Check that is is a list of strings.
   def checkArgumentOutputs(self, tool, argument, value, filename):
-    er = errors()
 
     # First check that the value for the 'outputs' argument is a list.
     givenType = type(value)
     text      = 'arguments -> ' + argument + ' -> outputs'
     if givenType != list:
-      er.differentDataTypeInConfig(False, filename, tool, text, givenType, list)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, text, givenType, list)
+      self.errors.terminate()
 
     # Now check that the list contains strings only.
     for field in value:
       givenType = type(field)
       text      = 'arguments -> ' + argument + ' -> outputs'
       if givenType != str:
-        er.differentDataTypeInConfig(False, filename, tool, text, givenType, str)
-        er.terminate()
+        self.errors.differentDataTypeInConfig(False, filename, tool, text, givenType, str)
+        self.errors.terminate()
 
   # If the 'stub' field is present, ensure that the value is a Boolean and that the outputs field is
   # also present.
   def checkArgumentStub(self, tool, arguments, argument, value, filename):
-    er = errors()
 
     # First check that the value is a Boolean.
     givenType = type(value)
     if givenType != bool:
       text = 'arguments -> ' + argument + ' -> stub'
-      er.differentDataTypeInConfig(False, filename, tool, text, givenType, bool)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, text, givenType, bool)
+      self.errors.terminate()
 
     # ...then check that the 'outputs' field is also present.  It's contents are checked elsewhere
     # if it is present, so only its presence is checked for here.
     if 'outputs' not in arguments:
       text = 'arguments -> ' + argument + ' -> outputs'
-      er.missingOutputsForStub(False, filename, tool, argument, text)
-      er.terminate()
+      self.errors.missingOutputsForStub(False, filename, tool, argument, text)
+      self.errors.terminate()
 
   # If the 'input is list' field is present, ensure that the accompanying value is a 
   # Boolean and that the "apply by repeating this argument" is also present.
   def checkInputList(self, tool, argument, arguments, field, filename):
-    er            = errors()
     value         = arguments[field]
     givenType     = type(value)
     if givenType != bool:
-      er.differentDataTypeInConfig(False, filename, tool, 'list of input files', givenType, bool)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, tool, 'list of input files', givenType, bool)
+      self.errors.terminate()
     self.observedArgumentFields['list of input files'] = True
 
     # Check that the "apply by repeating this argument" is also present.
     if value and 'apply by repeating this argument' not in arguments:
       text = 'arguments -> ' + argument + ' -> apply by repeating this argument'
-      er.missingArgumentToRepeat(False, filename, tool, argument, text)
-      er.terminate()
+      self.errors.missingArgumentToRepeat(False, filename, tool, argument, text)
+      self.errors.terminate()
 
   # Parse through the allowed arguments for each tool and check if they have a short form
   # equivalent.  If so, add them to the shortForms dictionary.
@@ -536,8 +516,6 @@ class tools:
   # Loop over all of the allowed arguments for each tool and build up the arguments structure
   # containing all of the defaults from the configuration file.
   def getDefaults(self, workflow, tools, arguments, shortForms, verbose):
-    er = errors()
-
     for task in workflow:
       tool = tools[task]
       self.arguments[task] = {}
@@ -561,20 +539,20 @@ class tools:
               if (value == 'true') or (value == 'True'): value = True
               elif (value == 'false') or (value == 'False'): value = False
               else:
-                er.incorrectDefaultBooleanValue(verbose, task, argument, shortForm, value)
-                er.terminate()
+                self.errors.incorrectDefaultBooleanValue(verbose, task, argument, shortForm, value)
+                self.errors.terminate()
           
             # If the argument demands a string, no checks are required.
             elif dataType == 'string': pass
           
-            # If the argument demands an integer, check that the supplied value is an integer.
+            # If the argument demands an integer, check that the supplied value is an integself.errors.
             elif (dataType == 'integer'):
               try: value = int(value)
-              except: er.incorrectDefaultDataType(verbose, task, argument, shortForm, value, 'integer')
-              if er.error: er.terminate()
+              except: self.errors.incorrectDefaultDataType(verbose, task, argument, shortForm, value, 'integer')
+              if self.errors.error: self.errors.terminate()
           
             # If the argument demands a floating point...
             elif dataType == 'float':
               try: value = float(value)
-              except: er.incorrectDefaultDataType(verbose, task, argument, shortForm, value, 'float')
-              if er.error: er.terminate()
+              except: self.errors.incorrectDefaultDataType(verbose, task, argument, shortForm, value, 'float')
+              if self.errors.error: self.errors.terminate()

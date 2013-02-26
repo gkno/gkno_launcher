@@ -823,6 +823,10 @@ class adminUtils:
     hasReleaseArg = False
     releaseName   = ""  
 
+    # The command line begins with [gkno mode], so begin by popping these off the front.
+    commandLine.pop(0)
+    commandLine.pop(0)
+
     # If any args provided 
     if len(commandLine) > 0:
       
