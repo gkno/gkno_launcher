@@ -537,11 +537,11 @@ class adminUtils:
     shutil.rmtree(self.resourcesPath + resourceName + "/" + releaseName)
     
     # Remove release from settings
-    self.settings["resources"][resourceName]["releases"].remove(releaseName)
+    self.userSettings["resources"][resourceName]["releases"].remove(releaseName)
 
     # If this was the last release for an organism, remove its entry for settings
-    if len(self.settings["resources"][resourceName]["releases"]) == 0:
-      self.settings["resources"].remove(resourceName)
+    if len(self.userSettings["resources"][resourceName]["releases"]) == 0:
+      self.userSettings["resources"].remove(resourceName)
 
     # Return success (any possible failures here?)
     return True

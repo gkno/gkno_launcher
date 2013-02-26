@@ -31,6 +31,9 @@ class GknoTool(object):
     # Default output destinations
     self.out = sys.stdout
     self.err = sys.stderr
+    
+    # Build platform attribute to be used to determine if linux, Mac, etc.
+    self.BLD_PLATFORM = ""
 
   # Define the build (e.g. compile) steps needed for the tool. 
   # Returns True/False for success/failure.
@@ -79,15 +82,23 @@ class GknoTool(object):
   # Uses the output destinations (stdout/stderr) set by earlier external caller
   # Converts command exit status to True/False (under assumption of common practice that exit status of 0 is success)
   def runCommand(self, command):
-    status = subprocess.call(command.split(), stdout=self.out, stderr=self.err)
+    my_env = os.environ
+    my_env["BLD_PLATFORM"] = self.BLD_PLATFORM
+    p = subprocess.Popen(command.split(), env=my_env, stdout=self.out, stderr=self.err)
+    p.wait()
+    status = p.returncode
     return status == 0
 
   # Similar to our runCommand() method, except the command is executed through the shell
   # Uses the output destinations (stdout/stderr) set by earlier external caller
   # Converts command exit status to True/False (under assumption of common practice that exit status of 0 is success)
   def runShellCommand(self, command):
-    status = subprocess.call(command.split(), stdout=self.out, stderr=self.err, shell=True)
-    return status == 0
+     my_env = os.environ
+     my_env["BLD_PLATFORM"] = self.BLD_PLATFORM
+     p = subprocess.Popen(command.split(), env=my_env, stdout=self.out, stderr=self.err, shell=True)
+     p.wait()
+     status = p.returncode
+     return status == 0
 
   # Creates directory if it doesn't already exist
   def ensureMakeDir(self, directory, mode=0777):
@@ -191,8 +202,7 @@ class Mosaik(GknoTool):
   # $ make -j N
   def doBuild(self):
     os.chdir("src")
-    if not self.doPlatformExports(): 
-      return False
+    self.doPlatformExports()
     if not self.makeClean():
       return False
     return self.make()
@@ -208,13 +218,12 @@ class Mosaik(GknoTool):
 
   # Mosaik has some platform-specific export commands
   def doPlatformExports(self):
+    pl='linux'
     if sys.platform == 'darwin':
       pl='macosx'
       if sys.maxsize > 2**32:
-        pl = 'macosx64'
-      return self.runShellCommand("export BLD_PLATFORM="+pl)
-    else:
-      return True
+        pl='macosx64'
+    self.BLD_PLATFORM = pl
 
 # ogap
 class Ogap(GknoTool):
@@ -334,6 +343,7 @@ class VcfLib(GknoTool):
 ##############################################################
 # Add any new built-in gkno tools to the list below.
 ##############################################################
+
 
 List = [ 
         BamTools(),
