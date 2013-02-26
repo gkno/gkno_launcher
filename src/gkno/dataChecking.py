@@ -75,10 +75,10 @@ def checkInputLists(argumentInformation, workflow, taskToTool, arguments, verbos
         if data == '':
           er.noInputFileList(verbose, filename)
           er.terminate()
-        if 'filename list' not in data: er.error = True
+        if 'filename list' not in data: er.hasError = True
         else:
-          if not isinstance(data['filename list'], list): er.error = True
-        if er.error:
+          if not isinstance(data['filename list'], list): er.hasError = True
+        if er.hasError:
           er.malformedFilenameList(verbose, filename, task, tool, argument)
           er.terminate()
 

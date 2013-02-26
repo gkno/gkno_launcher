@@ -47,19 +47,19 @@ class files:
 
     # Check that the file exists.
     try: jsonData = open(filename)
-    except: er.error = True
-    if er.error and fail:
+    except: er.hasError = True
+    if er.hasError and fail:
       er.missingFile(True, filename)
       er.terminate()
 
-    if not er.error:
+    if not er.hasError:
       try: inputData = json.load(jsonData)
       except:
-        er.error = True
+        er.hasError = True
         exc_type, exc_value, exc_traceback = sys.exc_info()
 
       # If the json file has a problem, terminate the script with an error.
-      if er.error:
+      if er.hasError:
         er.jsonOpenError(True, exc_value, filename)
         er.terminate()
 
