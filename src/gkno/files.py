@@ -64,16 +64,3 @@ class files:
         er.terminate()
 
     return inputData
-
-  # Write information to stdout for each task block.
-  def writeInformationToScreen(self, tl, pl, taskBlock):
-    if tl.toolArguments['pipeline']['--verbose']:
-      if len(taskBlock) == 1:
-        tool = pl.information['tools'][taskBlock[0]]
-        print("\t", taskBlock[0], " (", tool, ")...", sep = '', file = sys.stdout)
-      else:
-        print("\tpiped set of tasks:", sep = '', file = sys.stdout)
-        for task in taskBlock:
-          tool = pl.information['tools'][task]
-          print("\t\t", task, " (", tool, ")...", sep = '', file = sys.stdout)
-      sys.stdout.flush()

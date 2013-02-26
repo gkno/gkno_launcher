@@ -48,16 +48,9 @@ class tools:
     self.precommands                = {}
     self.shortForms                 = {}
     self.hiddenTools                = {}
+    self.tool                       = ''
     self.toolsDemandingInputStream  = {}
     self.toolsDemandingOutputStream = {}
-
-    #TODO Remove these when the new system is implemented.
-    self.dependencies               = {}
-    self.originalToolArguments      = {}
-    self.outputs                    = {}
-    self.tool                       = ''
-    self.toolInfo                   = {}
-    self.toolArguments              = {}
 
   # Given JSON data from a tool configuration file, check that everything contained within.
   # the file is allowed.  The allowed values for the configuration file are defined in the
@@ -585,48 +578,3 @@ class tools:
               try: value = float(value)
               except: er.incorrectDefaultDataType(verbose, task, argument, shortForm, value, 'float')
               if er.error: er.terminate()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  # Reset the tl.toolArguments structure.
-  def resetDataStructures(self, pl):
-    self.toolArguments = {}
-    for task in self.originalToolArguments:
-      if task not in self.toolArguments: self.toolArguments[task] = {}
-      for argument in self.originalToolArguments[task]:
-        if argument not in self.toolArguments[task]: self.toolArguments[task][argument] = {}
-        self.toolArguments[task][argument] = self.originalToolArguments[task][argument]
-
-    # Also reset the toolInfo structure.  If tools were streamed together, some
-    # additional options have been added to toolInfo, but the added options were
-    # tracked in the pl.addedToToolInfo structure.
-    #TODO pl.addedToToolInfo has been modified to make.addedInformation.
-    for task in pl.addedToToolInfo:
-      for argument in pl.addedToToolInfo[task]:
-        if argument in self.toolInfo[task]['arguments']: del(self.toolInfo[task]['arguments'][argument])
-
-    # Reset other data structures.
-    self.dependencies  = {}
-    self.outputs       = {}
-    pl.deleteFiles     = {}
-    pl.finalOutputs    = {}
-    pl.streamedOutputs = {}
-    pl.taskBlocks      = []

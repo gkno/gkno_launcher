@@ -366,6 +366,32 @@ class errors:
   # Pipeline configuration file errors
   ####################################
 
+  # The pipeline workflow must consist of a set of ordered, uniquely named tasks.  The workflow
+  # for the pipeline in question contains at least one non-uniquely named task.
+  def multipleTasksWithSameName(self, newLine, task, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Malformed pipeline configuration file: ' + filename
+    self.text.append(text)
+    text = "The pipeline workflow is an ordered list of tasks to perform.  Each of the tasks must be uniquely named, however, the task '" + task + \
+    "' appears multiple times.  Please check and repair the configuration file."
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
+  # If an unrecognised section appears in the pipeline configuration file, terminate.
+  def unknownSectionsInPipelineConfig(self, newLine, sections, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Malformed pipeline configuration file: ' + filename
+    self.text.append(text)
+    text = 'The configuration file contains the following sections that are unrecognised by gkno:'
+    self.text.append(text)
+    for section in sections: self.text.append("\t'" + section + "'")
+    self.text.append('\t')
+    text = 'Please check and repair the configuration file.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
   # If a dictionary was expected, but a different type obesrved, terminate.
   def pipelineSectionIsNotADict(self, newLine, sectionName, filename):
     if newLine: print(file=sys.stderr)
@@ -787,70 +813,12 @@ class errors:
   # Command line errors
   #####################
 
-  #################
-  # Instance errors
-  #################
-
-  # If the instance information for a Boolean value is not as expected, terminate.
-  def incorrectBooleanValueInInstance(self, newLine, name, argument, shortForm, value):
+  # An unknown argument appears on the command line.
+  def unknownArgument(self, newLine, argument):
     if newLine: print(file=sys.stderr)
-    text = 'Error with argument (from instance): ' + argument
-    if shortForm != '': text += ' (' + shortForm + ')'
+    text = 'Unknown command line argument: ' + argument
     self.text.append(text)
-    text = "The argument '" + argument + "', set as part of the instance '" + name + "', expects a Boolean as input.  gkno will accept " + \
-    "the values: 'true', 'True', 'false' or 'False'.  The value '" + value + "' is not accepted.  Please check the instance " + \
-    'information in the configuration file (or instance file) and rectify any errors.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  # If the data type in the instance is not as expected, terminate.
-  def incorrectDataTypeInInstance(self, newLine, name, task, argument, shortForm, value, dataType):
-    if newLine: print(file=sys.stderr)
-    text = 'Incorrect data type for command line argument (in instance): ' + argument
-    if shortForm != '': text += ' (' + shortForm + ')'
-    self.text.append(text)
-    text = "The command line argument '" + argument + "', set as part of the instance '" + name + "', was specified for task '" + task + \
-    "' and it expects a value of type '" + dataType + "'.  The given value (" + value + ') is not of this type.  Please check and rectify ' + \
-    'the given command line.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  # If a flag was given an invalid value in an instance, terminate.
-  def flagGivenInvalidValueInstance(self, newLine, argument, shortForm, value):
-    if newLine: print(file=sys.stderr)
-    text = 'Unrecognised flag for (instance) argument: ' + argument
-    if shortForm != '': text += ' (' + shortForm + ')'
-    self.text.append(text)
-    text = 'If a flag argument is included in an instance, the value supplied with it must be either "set" or "unset" to instruct gkno ' + \
-    "whether to include the argument on the command line or not.  The argument '" + argument + "' is a flag, but was supplied with the " + \
-    "value '" + str(value) + "'.  Please check the entry for this argument in the instance section of the configuration file (or the separate " + \
-    'instance configuration file).'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  # If there is an additional instances file and it contains no instance information, terminate.
-  def instancesFileHasNoInstances(self, newLine, filename):
-    if newLine: print(file=sys.stderr)
-    text = 'Error with file: ' + filename
-    self.text.append(text)
-    text = 'The instances file \'' + filename + '\' should only contain information about instances for the tool/pipeline with which ' + \
-    'it is associated.  This file does not contain the \'instances\' block required.  Please check this instances file for errors.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  # If an instance description in an additional instance file has the same name as an instance in the
-  # configuration file, terminate.
-  def instanceNameAlreadyExists(self, newLine, instance, filename):
-    if newLine: print(file=sys.stderr)
-    text = 'Multiple instance definitions with name: ' + instance
-    self.text.append(text)
-    text = 'The instances file \'' + filename + '\' contains an instance with the name \'' + instance + '\', however, an instance of this ' + \
-    'name is already present in the configuration file.  Please ensure that all of the instances defined for a specific tool/pipeline have ' + \
-    'unique names (only modify entries in the instances file if possible).'
+    text = "The argument '" + argument + "' is not associated with the tool or pipeline being executed.  Please check and repair the command line."
     self.text.append(text)
     self.writeFormattedText()
     self.error = True
@@ -921,6 +889,136 @@ class errors:
     self.writeFormattedText()
     self.error = True
 
+  # The data list must contain a multiple of the number of entries in the format of data list section.
+  # gkno will read the expected format and then for each run, read the values for each value specified
+  # in this list.  If there isn't an integral multiple, the values for each run are not given correctly,
+  # so terminate.
+  def incorrectNumberOfEntriesInMultipleJson(self, newLine, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Malformed multiple runs input file: ' + filename
+    self.text.append(text)
+    text = 'The number of entries in the "data list" must be a multiple of the number of entries in the "format of data list".  For each ' + \
+    'makefile generated, the command line arguments defined in the "format of data list" will be set with a value taken from the "data list" ' + \
+    'section.  This means that the "data list" section is an ordered list of each argument in the format list repeated for the number ' + \
+    'of runs required.  Please ensure that the multiple runs file is correctly built.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
+  # A required section is missing from the multiple runs file.
+  def missingSectionMultipleRunsFile(self, newLine, filename, section):
+    if newLine: print(file=sys.stderr)
+    text = 'Malformed multiple runs input file: ' + filename
+    self.text.append(text)
+    text = 'The multiple-runs input file must contain two sections.  The first section is titled "format of data list" and is a list ' + \
+    'of the command line arguments for which data appears in the second section.  The second section is titled "data list" and contains ' + \
+    "the data.  The provided file is missing the '" + section + "' section.  Please check and repair the multiple runs file."
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
+  #################
+  # Instance errors
+  #################
+
+  # The requested information doesn't exist.
+  def noInstanceInformation(self, newLine, path, name, instance):
+    if newLine: print(file=sys.stderr)
+    text = 'No information for requested instance: ' + instance
+    self.text.append(text)
+    text = 'Instance information cannot be found.  An instance of the given name must be present in the configuration file (' + path + name + \
+    '.json) or in the separate instance file (' + name + '_instances.json) in the same directory.  The requested instance (' + instance + \
+    ') is not present in either of these files.  If the instance is being created, modify the external instances file to contain this instance.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
+  # Each instance must include a description.
+  def noInstanceDescription(self, newLine, instance, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Malformed pipeline configuration file: ' + filename
+    self.text.append(text)
+    text = "The instance '" + instance + "' does not contain a description as required.  Please check and repair the configuration file."
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
+  # Only one instance can be selected to avoid conflict between set parameters.
+  def multipleInstances(self, newLine):
+    if newLine: print(file=sys.stderr)
+    text = 'Multiple instances requested.'
+    self.text.append(text)
+    text = 'Instances can be used to set certain parameters for the tool/pipeline.  Only one instance can be requested, however.  Multiple ' + \
+    'instances have been requested on the command line.  Please check the command line for repetition of the --instance (-is) command and ' + \
+    'ensure that it appears only once (or not at all).'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
+  # If the instance information for a Boolean value is not as expected, terminate.
+  def incorrectBooleanValueInInstance(self, newLine, name, argument, shortForm, value):
+    if newLine: print(file=sys.stderr)
+    text = 'Error with argument (from instance): ' + argument
+    if shortForm != '': text += ' (' + shortForm + ')'
+    self.text.append(text)
+    text = "The argument '" + argument + "', set as part of the instance '" + name + "', expects a Boolean as input.  gkno will accept " + \
+    "the values: 'true', 'True', 'false' or 'False'.  The value '" + value + "' is not accepted.  Please check the instance " + \
+    'information in the configuration file (or instance file) and rectify any errors.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
+  # If the data type in the instance is not as expected, terminate.
+  def incorrectDataTypeInInstance(self, newLine, name, task, argument, shortForm, value, dataType):
+    if newLine: print(file=sys.stderr)
+    text = 'Incorrect data type for command line argument (in instance): ' + argument
+    if shortForm != '': text += ' (' + shortForm + ')'
+    self.text.append(text)
+    text = "The command line argument '" + argument + "', set as part of the instance '" + name + "', was specified for task '" + task + \
+    "' and it expects a value of type '" + dataType + "'.  The given value (" + value + ') is not of this type.  Please check and rectify ' + \
+    'the given command line.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
+  # If a flag was given an invalid value in an instance, terminate.
+  def flagGivenInvalidValueInstance(self, newLine, argument, shortForm, value):
+    if newLine: print(file=sys.stderr)
+    text = 'Unrecognised flag for (instance) argument: ' + argument
+    if shortForm != '': text += ' (' + shortForm + ')'
+    self.text.append(text)
+    text = 'If a flag argument is included in an instance, the value supplied with it must be either "set" or "unset" to instruct gkno ' + \
+    "whether to include the argument on the command line or not.  The argument '" + argument + "' is a flag, but was supplied with the " + \
+    "value '" + str(value) + "'.  Please check the entry for this argument in the instance section of the configuration file (or the separate " + \
+    'instance configuration file).'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
+  # If there is an additional instances file and it contains no instance information, terminate.
+  def instancesFileHasNoInstances(self, newLine, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Error with file: ' + filename
+    self.text.append(text)
+    text = 'The instances file \'' + filename + '\' should only contain information about instances for the tool/pipeline with which ' + \
+    'it is associated.  This file does not contain the \'instances\' block required.  Please check this instances file for errors.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
+  # If an instance description in an additional instance file has the same name as an instance in the
+  # configuration file, terminate.
+  def instanceNameAlreadyExists(self, newLine, instance, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Multiple instance definitions with name: ' + instance
+    self.text.append(text)
+    text = 'The instances file \'' + filename + '\' contains an instance with the name \'' + instance + '\', however, an instance of this ' + \
+    'name is already present in the configuration file.  Please ensure that all of the instances defined for a specific tool/pipeline have ' + \
+    'unique names (only modify entries in the instances file if possible).'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
   ###################################
   # Errors with exporting an instance
   ###################################
@@ -955,6 +1053,29 @@ class errors:
     self.text.append(text)
     text = 'The --export-instance (-ei) command line argument sets the name of the instance to be output.  The requested name \'' + name + \
     '\' is already defined, either in the configuration file or the instances file.  Please select a different name for the outputted instance.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
+  # An unrecognised argument appears in the instance file.
+  def unknownArgumentInInstance(self, newLine, name, argument):
+    if newLine: print(file=sys.stderr)
+    text = 'Unknown command line argument (from instance): ' + argument
+    self.text.append(text)
+    text = "The argument '" + argument + "', present in the instance '" + name + "' is not associated with the tool or any tools in the " + \
+    'pipeline (if a pipeline is being executed).  Please check the instance information in the configuration file and repair.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.error = True
+
+  # The instance contains information that is invalid.  Specifically, a supplied command line argument
+  # does not fit with the tool requested.
+  def invalidArgumentInInstance(self, newLine, instance, argument):
+    if newLine: print(file=sys.stderr)
+    text = 'Invalid argument in instance: ' + instance
+    self.text.append(text)
+    text = "The argument '" + argument + "' appears in the list of arguments for instance '" + instance + "' but this is not " + \
+    'a valid argument for this tool/pipeline.  Please check the instance arguments in the configuration file.'
     self.text.append(text)
     self.writeFormattedText()
     self.error = True
@@ -1095,199 +1216,7 @@ class errors:
     self.writeFormattedText()
     self.error = True
 
-  ################
-  # Terminate gkno
-  ################
-
-  def terminate(self):
-    print(file=sys.stderr)
-    print('================================================================================================', file=sys.stderr)
-    print('  TERMINATED: Errors found in running gkno.  See specific error messages above for resolution.', file=sys.stderr)
-    print('================================================================================================', file=sys.stderr)
-    exit(1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  def invalidToolName(self, newLine, value, tool):
-    self.text = []
-    if newLine: print(file=sys.stderr)
-    text = "Invalid tool name '" + tool + "' in the '" + value + "' section of the pipeline configuration file."
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  def invalidArgument(self, newLine, value, argument, tool):
-    self.text = []
-    if newLine: print(file=sys.stderr)
-    text = 'Invalid argument (' + argument + ") in the '" + value + "' section of the pipeline configuration file for tool '" + tool + "'."
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  def optionAssociationError(self, newLine, message, argument, filename):
-    if newLine: print(file=sys.stderr)
-    text = "Error in 'arguments' section of pipeline configuration file: " + filename + '.json'
-    self.text.append(text)
-    text = "The required field '" + message + "' is missing for argument '" + argument + "'."
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  def incorrectArgumentInPipelineConfigurationFile(self, newLine, tool, argument, linkedArgument, filename):
-    if newLine: print(file=sys.stderr)
-    text = "Error in 'arguments' section of pipeline configuration file: " + filename + '.json'
-    self.text.append(text)
-    text = "The argument '" + argument + "' is linked to the argument '" + linkedArgument + "' associated with the tool '" + tool + \
-    "'. The argument is not valid for this tool.  Please check the pipeline configuration file."
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  def noArgumentsProvided(self, newLine, filename, tool, field):
-    if newLine: print(file=sys.stderr)
-    text = 'Malformed configuration file: ' + filename
-    self.text.append(text)
-    if ',' in field: field = field.replace(',', ' -> ')
-    text = "The configuration file contains the list '" + field + "' for tool '" + tool + "'.  This list can only contain arguments defined for " + \
-    'the tool, but no arguments were provided in the configuration file for this tool. Please check the configuration file and remove/repair ' + \
-    'invalid fields.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  def unknownSectionsInPipelineConfig(self, newLine, sections, filename):
-    if newLine: print(file=sys.stderr)
-    text = 'Malformed pipeline configuration file: ' + filename
-    self.text.append(text)
-    text = 'The configuration file contains the following sections that are unrecognised by gkno:'
-    self.text.append(text)
-    for section in sections: self.text.append("\t'" + section + "'")
-    self.text.append('\t')
-    text = 'Please check and repair the configuration file.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  def multipleTasksWithSameName(self, newLine, task, filename):
-    if newLine: print(file=sys.stderr)
-    text = 'Malformed pipeline configuration file: ' + filename
-    self.text.append(text)
-    text = "The pipeline workflow is an ordered list of tasks to perform.  Each of the tasks must be uniquely named, however, the task '" + task + \
-    "' appears multiple times.  Please check and repair the configuration file."
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  def noInstanceDescription(self, newLine, instance, filename):
-    if newLine: print(file=sys.stderr)
-    text = 'Malformed pipeline configuration file: ' + filename
-    self.text.append(text)
-    text = "The instance '" + instance + "' does not contain a description as required.  Please check and repair the configuration file."
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  def unknownArgument(self, newLine, argument):
-    if newLine: print(file=sys.stderr)
-    text = 'Unknown command line argument: ' + argument
-    self.text.append(text)
-    text = "The argument '" + argument + "' is not associated with the tool or pipeline being executed.  Please check and repair the command line."
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  def toolPipelineConflict(self, newLine, tool, argument):
-    if newLine: print(file=sys.stderr)
-    text = 'Command line argument conflict: ' + argument
-    self.text.append(text)
-    text = "The argument '" + argument + "' is both an argument for the tool (" + tool + ') and is also a pipeline argument.  While gkno is ' + \
-    'being run in tool mode, there are still some pipeline arguments available (for example, --verbose or --execute).  Conflicts of this ' + \
-    'nature are not permitted.  Please check configuration files for the tools/pipelines being executed and resolve the conflicts.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  def missingArgumentValue(self, newLine, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, dataType):
-    if newLine: print(file=sys.stderr)
-    if argumentType == 'tool' or argumentType == 'pipeline':
-      a  = argument if argumentType == 'tool' else pipeArgument
-      sf = shortForm if argumentType == 'tool' else pipeShortForm
-      text = 'Missing value for argument: ' + a
-      if sf != '': text += ' (' + sf + ')'
-      self.text.append(text)
-      text = "The argument '" + a + "' expects a value of type '" + dataType + "', but no value was provided.  Please check the command line."
-      self.text.append(text)
-    elif argumentType == 'pipeline task':
-      text = 'Missing value for argument: ' + argument
-      if shortForm != '': text += ' (' + shortForm + ')'
-      self.text.append(text)
-      text = "The argument '" + argument + "' was specified for task '" + task + "' and it expects a value of type '" + dataType + \
-      "', but no value was provided.  Please check the command line."
-      self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
-  def flagGivenValue(self, newLine, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value):
-    if newLine: print(file=sys.stderr)
-    if argumentType == 'tool' or argumentType == 'pipeline':
-      a  = argument if argumentType == 'tool' else pipeArgument
-      sf = shortForm if argumentType == 'tool' else pipeShortForm
-      text = 'Value given to flag: ' + a
-      if sf != '': text += ' (' + sf + ')'
-      self.text.append(text)
-      text = "The argument '" + a + "' is a flag and doesn't expect a value to be supplied.  The value '" + value + "' was provided on the " + \
-      "command line.  Please check the given command line."
-      self.text.append(text)
-    elif argumentType == 'pipeline task':
-      text = 'Value given to flag: ' + argument
-      if shortForm != '': text += ' (' + shortForm + ')'
-      self.text.append(text)
-      text = "The argument '" + argument + "' was specified for task '" + task + "'.  This argument is a flag and doesn't expect a value to " + \
-      "be supplied.  The value '" + value + "' was provided on the command line.  Please check the given command line."
-      self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
-
+  # The given value for a parameter is of an unexpected type.
   def incorrectDataType(self, newLine, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType):
     if newLine: print(file=sys.stderr)
     if argumentType == 'tool' or argumentType == 'pipeline':
@@ -1309,6 +1238,8 @@ class errors:
     self.writeFormattedText()
     self.error = True
 
+  # A command line argument appears on the command line multiple times.  Each argument can only be
+  # set once to avoid confilct between requested parameters.
   def multipleDefinitionsForSameArgument(self, newLine, task, argument, shortForm):
     if newLine: print(file=sys.stderr)
     text = 'Multiple definitions for command line argument: ' + argument
@@ -1322,6 +1253,7 @@ class errors:
     self.writeFormattedText()
     self.error = True
 
+  # A flag is defined multiple times.
   def multipleDefinitionsForFlag(self, newLine, task, argument, shortForm):
     if newLine: print(file=sys.stderr)
     text = 'Multiple definitions for command line argument: ' + argument
@@ -1333,67 +1265,140 @@ class errors:
     self.writeFormattedText()
     self.error = True
 
-  def multipleInstances(self, newLine, ):
+  # Non-flag arguments require a value to be set.
+  def missingArgumentValue(self, newLine, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, dataType):
     if newLine: print(file=sys.stderr)
-    text = 'Multiple instances requested.'
-    self.text.append(text)
-    text = 'Instances can be used to set certain parameters for the tool/pipeline.  Only one instance can be requested, however.  Multiple ' + \
-    'instances have been requested on the command line.  Please check the command line for repetition of the --instance (-is) command and ' + \
-    'ensure that it appears only once (or not at all).'
-    self.text.append(text)
+    if argumentType == 'tool' or argumentType == 'pipeline':
+      a  = argument if argumentType == 'tool' else pipeArgument
+      sf = shortForm if argumentType == 'tool' else pipeShortForm
+      text = 'Missing value for argument: ' + a
+      if sf != '': text += ' (' + sf + ')'
+      self.text.append(text)
+      text = "The argument '" + a + "' expects a value of type '" + dataType + "', but no value was provided.  Please check the command line."
+      self.text.append(text)
+    elif argumentType == 'pipeline task':
+      text = 'Missing value for argument: ' + argument
+      if shortForm != '': text += ' (' + shortForm + ')'
+      self.text.append(text)
+      text = "The argument '" + argument + "' was specified for task '" + task + "' and it expects a value of type '" + dataType + \
+      "', but no value was provided.  Please check the command line."
+      self.text.append(text)
     self.writeFormattedText()
     self.error = True
 
-  def noInstanceInformation(self, newLine, path, name, instance):
+  # Flags should not be accompanies be a value.
+  def flagGivenValue(self, newLine, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value):
     if newLine: print(file=sys.stderr)
-    text = 'No information for requested instance: ' + instance
-    self.text.append(text)
-    text = 'Instance information cannot be found.  An instance of the given name must be present in the configuration file (' + path + name + \
-    '.json) or in the separate instance file (' + name + '_instances.json) in the same directory.  The requested instance (' + instance + \
-    ') is not present in either of these files.  If the instance is being created, modify the external instances file to contain this instance.'
-    self.text.append(text)
+    if argumentType == 'tool' or argumentType == 'pipeline':
+      a  = argument if argumentType == 'tool' else pipeArgument
+      sf = shortForm if argumentType == 'tool' else pipeShortForm
+      text = 'Value given to flag: ' + a
+      if sf != '': text += ' (' + sf + ')'
+      self.text.append(text)
+      text = "The argument '" + a + "' is a flag and doesn't expect a value to be supplied.  The value '" + value + "' was provided on the " + \
+      "command line.  Please check the given command line."
+      self.text.append(text)
+    elif argumentType == 'pipeline task':
+      text = 'Value given to flag: ' + argument
+      if shortForm != '': text += ' (' + shortForm + ')'
+      self.text.append(text)
+      text = "The argument '" + argument + "' was specified for task '" + task + "'.  This argument is a flag and doesn't expect a value to " + \
+      "be supplied.  The value '" + value + "' was provided on the command line.  Please check the given command line."
+      self.text.append(text)
     self.writeFormattedText()
     self.error = True
 
-  def invalidArgumentInInstance(self, newLine, instance, argument):
-    if newLine: print(file=sys.stderr)
-    text = 'Invalid argument in instance: ' + instance
-    self.text.append(text)
-    text = "The argument '" + argument + "' appears in the list of arguments for instance '" + instance + "' but this is not " + \
-    'a valid argument for this tool/pipeline.  Please check the instance arguments in the configuration file.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
+  #####################
+  # Admin mode errors
+  #####################
+  
+  def attemptingRemoveUnknownResource(self, resourceName, dest=sys.stderr):
+    print("WARNING: Resource '" + resourceName + "' was not removed because it is unknown", file=dest)
 
-  def unknownArgumentInInstance(self, newLine, name, argument):
-    if newLine: print(file=sys.stderr)
-    text = 'Unknown command line argument (from instance): ' + argument
-    self.text.append(text)
-    text = "The argument '" + argument + "', present in the instance '" + name + "' is not associated with the tool or any tools in the " + \
-    'pipeline (if a pipeline is being executed).  Please check the instance information in the configuration file and repair.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
+  def extractTarballFailed(self, filename, dest=sys.stderr):
+    print("ERROR: Could not extract contents of"+filename, file=dest)
 
-  def missingSectionMultipleRunsFile(self, newLine, filename, section):
-    if newLine: print(file=sys.stderr)
-    text = 'Malformed multiple runs input file: ' + filename
-    self.text.append(text)
-    text = 'The multiple-runs input file must contain two sections.  The first section is titled "format of data list" and is a list ' + \
-    'of the command line arguments for which data appears in the second section.  The second section is titled "data list" and contains ' + \
-    "the data.  The provided file is missing the '" + section + "' section.  Please check and repair the multiple runs file."
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
+  def gitSubmoduleUpdateFailed(self, dest=sys.stderr):
+    print("ERROR: See logs/submodule_update.* files for more details.", file=dest)
 
-  def incorrectNumberOfEntriesInMultipleJson(self, newLine, filename):
-    if newLine: print(file=sys.stderr)
-    text = 'Malformed multiple runs input file: ' + filename
-    self.text.append(text)
-    text = 'The number of entries in the "data list" must be a multiple of the number of entries in the "format of data list".  For each ' + \
-    'makefile generated, the command line arguments defined in the "format of data list" will be set with a value taken from the "data list" ' + \
-    'section.  This means that the "data list" section is an ordered list of each argument in the format list repeated for the number ' + \
-    'of runs required.  Please ensure that the multiple runs file is correctly built.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.error = True
+  def gitUpdateFailed(self, dest=sys.stderr):
+    print("ERROR: See logs/gkno_update.* files for more details.", file=dest)
+
+  def gknoAlreadyBuilt(self):
+    print("Already built.", file=sys.stdout)
+
+  def gknoNotBuilt(self, dest=sys.stderr):
+    print("ERROR: 'gkno build' must be run before performing this operation", file=dest)
+
+  def invalidResourceArgs(self, mode, dest=sys.stderr):
+    print("ERROR: Invalid arguments or order used. Type 'gkno", mode, "--help' for a usage example.", file=dest)
+    
+  def noCurrentReleaseAvailable(self, resourceName, dest=sys.stderr):
+    print("ERROR: Resource: " + resourceName + " has no release marked as 'current'. Cannot fetch.", file=dest)
+
+  def noReleaseUrlFound(self, resourceName, releaseName, dest=sys.stderr):
+    print("ERROR: Could not fetch files for resource: "+resourceName+", release: "+releaseName+" - URL not found", file=dest)
+
+  def requestedUnknownResource(self, resourceName, dest=sys.stderr):
+    print("ERROR: Requested resource '" + resourceName + "' is not recognized", file=dest)
+
+  def resourceAlreadyAdded(self, resourceName, dest=sys.stderr):
+    print("WARNING: Requested resource '" + resourceName + "' has already been added to gkno", file=dest)
+
+  def resourceFetchFailed(self, resourceName, dest=sys.stderr):
+    print("ERROR:  See logs/build_"+resourceName+".* files for more details.", file=dest)
+  
+  def toolBuildFailed(self, toolName, dest=sys.stderr):
+    print("ERROR: See logs/build_"+toolName+".* files for more details.", file=dest)
+
+  def toolUpdateFailed(self, toolName, dest=sys.stderr):
+    print("ERROR: See logs/update_"+toolName+".* files for more details.", file=dest)
+
+  def urlRetrieveFailed(self, url, dest=sys.stderr):
+    print("ERROR: Could not retrieve file at "+url, file=dest)
+    
+  def dependencyCheckFailed(self, missing, unknown, incompatible, dest=sys.stderr):
+    if len(missing) > 0:
+      print("    Missing:", file=dest)
+      for dep in missing:
+        print("        ",dep.name, sep="", file=dest)
+      print("", file=dest)
+    if len(incompatible) > 0:
+      print("    Not up-to-date:", file=dest)
+      for dep in incompatible:
+        print("        ", dep.name, 
+              "    minimum version: ", dep.minimumVersion, 
+              "    found version: "  , dep.currentVersion, sep="", file=dest)
+      print("", file=dest)
+    if len(missing) > 0 or len(incompatible) > 0:
+      print("", file=dest)
+      print("gkno (and its components) require a few 3rd-party utilities", file=dest)
+      print("to either build or run properly.  To obtain/update the utilities ", file=dest)
+      print("listed above, check your system's package manager or search the ", file=dest)
+      print("web for download instructions.", file=dest)
+      print("", file=dest)
+
+    # ODD CASE
+    if len(unknown) > 0:
+      print("----------------------------------------", file=dest)
+      print("The following utilities have version numbers that could not be ", file=dest)
+      print("determined by gkno:", file=dest)
+      for dep in unknown:
+        print("        ",dep.name, sep="", file=dest)
+      print("", file=dest)
+      print("This indicates a likely bug or as-yet-unseen oddity.", file=dest)
+      print("Please contact the gkno development team to report this issue.  Thanks.", file=dest)
+      print("", file=dest)
+      print("----------------------------------------", file=dest)
+      print("", file=dest)
+
+  ################
+  # Terminate gkno
+  ################
+
+  def terminate(self):
+    print(file=sys.stderr)
+    print('================================================================================================', file=sys.stderr)
+    print('  TERMINATED: Errors found in running gkno.  See specific error messages above for resolution.', file=sys.stderr)
+    print('================================================================================================', file=sys.stderr)
+    exit(2)

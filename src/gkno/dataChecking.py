@@ -299,24 +299,6 @@ def constructFilenameFromInput(task, tool, argumentInformation, arguments, outpu
   # blank.  If so, terminate gkno as the output filename cannot be determined.
   if len(arguments[task][inputArgument]) == 0: return
 
-    # Find the pipeline argument that goes with the task argument.
-    #foundArgument = False
-    #shortform     = ''
-    #print('can\'t construct.  from input', task, outputFile)
-    #er.terminate()
-#    for pipelineArgument in pl.information['arguments']:
-#      linkToTask     = pl.information['arguments'][pipelineArgument]['link to this task']
-#      if linkToTask != 'pipeline':
-#        linkToArgument = pl.information['arguments'][pipelineArgument]['link to this argument']
-#        if (linkToTask == task) and (linkToArgument == argument):
-#          if 'short form argument' in pl.information['arguments'][pipelineArgument]:
-#            shortform = pl.information['arguments'][pipelineArgument]['short form argument']
-#          foundArgument = True
-#          break
-#    if not foundArgument: pipelineArgument = ''
-#    er.noInputFilenameForFilenameConstruction(newLine, task, tool, outputFile, argument, pipelineArgument, shortform, tl)
-#    er.terminate()
-
   # If the output filename is to be generated from an input file, but there are
   # multiple files, use the first file in the list for generating the output
   # filename.
@@ -496,10 +478,6 @@ def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipe
           er.missingRequiredValue(verbose, task, argument, shortForm, isPipeline, pipelineArgument, pipelineShortForm)
           er.terminate()
 
-    # If the value is set, check that the data type is correct.
-    #elif isArgumentSet:
-#      default = self.checkDataType(tl, pl, task, tool, argument)
-
 # Determine which files are required for each tool to run.  For each tool, these files
 # are stored in a list and are used to define the dependencies in the Makefile.
 def determineDependencies(argumentInformation, workflow, taskToTool, toolsOutputtingToStream, arguments):
@@ -625,9 +603,6 @@ def determineFilesToDelete(arguments, deleteFiles, verbose):
   er     = errors()
   output = {}
 
-  #for task in arguments:
-  #  for argument in arguments[task]: print(task, argument, arguments[task][argument])
-  #exit(0)
   # Check to see if the configuration file has the 'delete files' section.
   if len(deleteFiles) != 0:
     for task in deleteFiles:

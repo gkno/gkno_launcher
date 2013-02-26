@@ -157,15 +157,3 @@ class multipleRuns:
       for argument in self.allArguments[task]:
         self.arguments[task][argument] = []
         self.arguments[task][argument].append(self.allArguments[task][argument].pop(0))
-
-  # Build the command line using the information in the multiple runs data structure.
-  def buildCommandLineMultipleRuns(self, pl):
-    commandLine = []
-#    for argument in self.baseCommandLine: commandLine.append(argument)
-#    for count in range(0, pl.multipleRunsNumberOfArguments):
-#      argument = pl.multipleRunsListFormat[count]
-#      value    = pl.multipleRunsInputArguments.pop(0)
-#      commandLine.append(argument)
-#      commandLine.append(value)
-
-#    return commandLine

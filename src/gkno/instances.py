@@ -69,7 +69,7 @@ class instances:
 
       # If multiple instances have been requested, fail.
       if uniqueArguments['--instance'] != 1:
-        er.multipleInstances(verbose, 0)
+        er.multipleInstances(verbose)
         er.terminate()
   
       # Find the name of the requested instance and check that it is valid.
