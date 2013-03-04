@@ -116,7 +116,7 @@ class tools:
   # Check the validity of the configuration file block by block.  Start with the description.
   def checkDescription(self, tool, description, filename):
     givenType     = type(description)
-    if givenType != str:
+    if not isinstance(description, basestring):
       self.errors.differentDataTypeInConfig(False, filename, tool, 'description', givenType, str)
       self.errors.terminate()
     self.observedFields['description'] = True
@@ -125,7 +125,7 @@ class tools:
   # ...executable...
   def checkExecutable(self, tool, executable, filename):
     givenType     = type(executable)
-    if givenType != str:
+    if not isinstance(executable, basestring):
       self.errors.differentDataTypeInConfig(False, filename, tool, 'executable', givenType, str)
       self.errors.terminate()
     self.observedFields['executable'] = True
@@ -134,7 +134,7 @@ class tools:
   # ...help...
   def checkHelp(self, tool, helpMessage, filename):
     givenType     = type(helpMessage)
-    if givenType != str:
+    if not isinstance(helpMessage, basestring):
       self.errors.differentDataTypeInConfig(False, filename, tool, 'help', givenType, str)
       self.errors.terminate()
     self.observedFields['help'] = True
@@ -142,7 +142,7 @@ class tools:
   # ...path...
   def checkPath(self, tool, path, filename):
     givenType     = type(path)
-    if givenType != str:
+    if not isinstance(path, basestring):
       self.errors.differentDataTypeInConfig(False, filename, tool, 'path', givenType, str)
       self.errors.terminate()
     self.observedFields['path'] = True
@@ -151,7 +151,7 @@ class tools:
   # ...precommand...
   def checkPrecommand(self, tool, precommand, filename):
     givenType     = type(precommand)
-    if givenType != str:
+    if not isinstance(precommand, basestring):
       self.errors.differentDataTypeInConfig(False, filename, tool, 'precommand', givenType, str)
       self.errors.terminate()
     self.observedFields['precommand'] = True
@@ -160,7 +160,7 @@ class tools:
   # ...modifiself.errors...
   def checkModifier(self, tool, modifier, filename):
     givenType     = type(modifier)
-    if givenType != str:
+    if not isinstance(modifier, basestring):
       self.errors.differentDataTypeInConfig(False, filename, tool, 'modifier', givenType, str)
       self.errors.terminate()
     self.observedFields['modifier'] = True
@@ -169,7 +169,7 @@ class tools:
   # ...argument delimitself.errors...
   def checkArgumentDelimiter(self, tool, delimiter, filename):
     givenType     = type(delimiter)
-    if givenType != str:
+    if not isinstance(delimiter, basestring):
       self.errors.differentDataTypeInConfig(False, filename, tool, 'delimiter', givenType, str)
       self.errors.terminate()
     self.observedFields['argument delimiter'] = True
@@ -352,7 +352,7 @@ class tools:
             else:
               self.errors.unknownFieldInAdditionalFilesDictionary(False, filename, tool, information)
               self.errors.terminate()
-          
+
 
           # Check that all of the required fields are present.
           for information in required:
@@ -380,7 +380,8 @@ class tools:
   # If the field for an argument is expected to be of a specific type, check that it is.
   def checkGeneralField(self, tool, value, text, expectedType, filename):
     givenType     = type(value)
-    if givenType != expectedType:
+    if (givenType != expectedType and
+        (givenType == str and not isinstance(value, basestring))):
       self.errors.differentDataTypeInConfig(False, filename, tool, text, givenType, expectedType)
       self.errors.terminate()
     self.observedArgumentFields[text] = True
@@ -388,7 +389,8 @@ class tools:
   def checkRepeatArgument(self, tool, arguments, argument, field, expectedType, filename):
     value         = arguments[argument][field]
     givenType     = type(value)
-    if givenType != expectedType:
+    if (givenType != expectedType and
+        (givenType == str and not isinstance(value, basestring))):
       self.errors.differentDataTypeInConfig(False, filename, tool, field, givenType, expectedType)
       self.errors.terminate()
 
@@ -427,12 +429,12 @@ class tools:
 
       # and finally check that the "argument" and "value" fields are strings.
       givenType = type(arguments['replace argument with']['argument'])
-      if givenType != str:
+      if not isinstance(arguments['replace argument with']['argument'], basestring):
         self.errors.differentDataTypeInConfig(False, filename, tool, text + ' -> argument', givenType, str)
         self.errors.terminate()
 
       givenType = type(arguments['replace argument with']['value'])
-      if givenType != str:
+      if not isinstance(arguments['replace argument with']['value'], basestring):
         self.errors.differentDataTypeInConfig(False, filename, tool, text + ' -> value', givenType, str)
         self.errors.terminate()
 
@@ -457,7 +459,7 @@ class tools:
     for field in value:
       givenType = type(field)
       text      = 'arguments -> ' + argument + ' -> outputs'
-      if givenType != str:
+      if not isinstance(field, basestring):
         self.errors.differentDataTypeInConfig(False, filename, tool, text, givenType, str)
         self.errors.terminate()
 
@@ -479,7 +481,7 @@ class tools:
       self.errors.missingOutputsForStub(False, filename, tool, argument, text)
       self.errors.terminate()
 
-  # If the 'input is list' field is present, ensure that the accompanying value is a 
+  # If the 'input is list' field is present, ensure that the accompanying value is a
   # Boolean and that the "apply by repeating this argument" is also present.
   def checkInputList(self, tool, argument, arguments, field, filename):
     value         = arguments[field]
@@ -541,16 +543,16 @@ class tools:
               else:
                 self.errors.incorrectDefaultBooleanValue(verbose, task, argument, shortForm, value)
                 self.errors.terminate()
-          
+
             # If the argument demands a string, no checks are required.
             elif dataType == 'string': pass
-          
+
             # If the argument demands an integer, check that the supplied value is an integself.errors.
             elif (dataType == 'integer'):
               try: value = int(value)
               except: self.errors.incorrectDefaultDataType(verbose, task, argument, shortForm, value, 'integer')
               if self.errors.hasError: self.errors.terminate()
-          
+
             # If the argument demands a floating point...
             elif dataType == 'float':
               try: value = float(value)
