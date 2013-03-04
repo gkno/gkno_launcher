@@ -1,6 +1,5 @@
 {
   "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
-  "resource path" : "tutorial/current",
   "workflow" : [
     "build-reference",
     "build-jump-database",
@@ -49,7 +48,7 @@
         "filename root" : "from argument",
         "get root from task" : "build-reference",
         "get root from argument" : "-fr",
-        "remove input extension" : "true"
+        "remove input extension" : true
       }
     },
     "build-jump-database" : {
@@ -57,7 +56,7 @@
         "filename root" : "from argument",
         "get root from task" : "build-reference",
         "get root from argument" : "-fr",
-        "remove input extension" : "true",
+        "remove input extension" : true,
         "additional text from parameters" : {
           "order" : [
             "filename root",
@@ -65,7 +64,8 @@
           ],
           "hash-size" : {
             "get parameter from task" : "build-jump-database",
-            "get parameter from argument" : "-hs"
+            "get parameter from argument" : "-hs",
+            "remove extension" : true
           }
         }
       }
@@ -127,6 +127,14 @@
       "-j" : {
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-jmp"
+      },
+      "-annse" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-annse"
+      },
+      "-annpe" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-annpe"
       },
       "json parameters" : {
         "link to this task" : "generate-mosaik-parameters",
@@ -211,6 +219,10 @@
       "--reference-fasta" : {
         "link to this task" : "build-reference",
         "link to this argument" : "-fr"
+      },
+      "--in" : {
+        "link to this task" : "filter-bam",
+        "link to this argument" : "-out"
       }
     },
     "variant-call" : {
@@ -286,6 +298,20 @@
       "link to this argument" : "-st",
       "type" : "string"
     },
+    "--ann-se" : {
+      "description" : "Neural network file for Mosaik mapping quality scores (single end).",
+      "short form argument" : "-as",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-annse",
+      "type" : "string"
+    },
+    "--ann-pe" : {
+      "description" : "Neural network file for Mosaik mapping quality scores (paired end).",
+      "short form argument" : "-ap",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-annpe",
+      "type" : "string"
+    },
     "--median-fragment-length" : {
       "short form argument" : "-mfl",
       "link to this task" : "build-read-archive",
@@ -314,12 +340,14 @@
     },
     "align" : {
       "-out" : {
-        ".bam" : {
-          "delete after task" : "sort-primary-bam"
-        },
-        ".multiple.bam" : {
-          "delete after task" : "sort-multiple-bam"
-        }
+        "output extension" : [
+          ".bam",
+          ".multiple.bam"
+        ],
+        "delete after task" : [
+          "sort-primary-bam",
+          "sort-multiple-bam"
+        ]
       }
     },
     "sort-primary-bam" : {
@@ -331,6 +359,21 @@
       "--out" : {
         "delete after task" : "mark-duplicates"
       }
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "The default instance requires the user to input all parameters and files."
+    },
+    "tutorial" : {
+      "description" : "The tutorial instance uses files from the tutorial resources.",
+      "--hash-size" : "10",
+      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--fastq" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq",
+      "--fastq2" : "$(RESOURCES)/tutorial/current/simulated_reads_2.fq",
+      "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
+      "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
+      "--knownSites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf"
     }
   }
 }
