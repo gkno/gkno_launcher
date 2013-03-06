@@ -254,7 +254,8 @@ def constructFilename(task, tool, argument, constructFilenames, arguments, argum
         # If the parameter being used in the output filename is itself a filename,
         # it should contain a path.  If this is the case, remove the path from the
         # name before using in the construction.
-        value = value.split('/')[-1]
+        try: value = value.split('/')[-1]
+        except: continue
 
         # If the extension is to be removed, check that the input argument defines a file
         # with an extension and if so, remove the extension if requested.
