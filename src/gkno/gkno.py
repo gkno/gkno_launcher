@@ -25,6 +25,9 @@ from helpClass import *
 import instances
 from instances import *
 
+import internalLoop
+from internalLoop import *
+
 import makefileData
 from makefileData import *
 
@@ -77,6 +80,9 @@ def main():
 
   # Generate a class for handling instances.
   ins = instances()
+
+  # Generate a class for handling internal loops.
+  iLoop = internalLoop()
 
   # Generate a class for storing details for use in the makefile.
   make = makefileData()
@@ -205,6 +211,13 @@ def main():
     writeParseCommandLineArguments()
   cl.parseCommandLine(tl.tool, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.argumentInformation, pl.shortForms, pl.taskToTool, verbose)
   if verbose: writeDone()
+
+  # If this is a pipeline and internal loops are permitted, check if the user has requested use of
+  # the internal loop.  If so, check that the supplied file exists and read in the information.
+  if pl.isPipeline and pl.hasInternalLoop:
+    iLoop.checkLoopFile(pl.arguments)
+    if iLoop.usingInternalLoop:
+      iLoop.checkInformation(pl.argumentInformation, pl.shortForms, pl.internalLoopTasks, verbose)
 
   # Check if an instance was selected.  If so, read the specific instance parameters.
   if verbose: writeCheckingInstanceInformation()

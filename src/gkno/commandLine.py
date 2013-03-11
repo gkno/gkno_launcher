@@ -182,8 +182,8 @@ class commandLine:
         # Add pipeline arguments to their own structure.
         else:
           shortForm = pipeArguments[argumentName]['short form argument']
-          dataType = pipeArguments[argumentName]['type']
-          value = self.checkDataType(task, 'pipeline', argumentName, shortForm, '', '', value, dataType, verbose)
+          dataType  = pipeArguments[argumentName]['type']
+          value     = self.checkDataType(task, 'pipeline', argumentName, shortForm, '', '', value, dataType, verbose)
           pipelineArguments[argumentName] = value
 
       # If a pipeline is being run, the name of a task in the workflow is an allowed command line
@@ -328,8 +328,11 @@ class commandLine:
         self.errors.incorrectBooleanValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value)
         self.errors.terminate()
   
-    # If the argument demands a string, no checks are required.
-    elif dataType == 'string': pass
+    # If the argument demands a string, check that a value is provided.
+    elif dataType == 'string':
+      if value == '':
+        self.errors.missingArgumentValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, dataType)
+        self.errors.terminate()
 
     # If the argument demands an integer, check that the supplied value is an integself.errors.
     elif (dataType == 'integer'):
@@ -342,5 +345,11 @@ class commandLine:
       try: value = float(value)
       except: self.errors.incorrectDataType(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType)
       if self.errors.hasError: self.errors.terminate()
+
+    # If a value was provided to a flag...
+    elif dataType == 'flag':
+      if value != '':
+        self.errors.flagGivenValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value)
+        self.errors.terminate()
 
     return value

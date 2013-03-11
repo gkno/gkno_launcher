@@ -1311,6 +1311,69 @@ class errors:
     self.writeFormattedText()
     self.hasError = True
 
+  ######################
+  # Internal loop errors
+  ######################
+
+  # If an unrecognised section appears in the file, terminate.
+  def missingSectionsInternalLoop(self, newLine, section, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Malformed internal loop file: ' + filename
+    self.text.append(text)
+    text = 'The file does not contain the required section \'' + section + '\'.  Please check and repair the file.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
+  # If an argument in the internal loop file is for a task outside of the internal loop, fail.
+  def argumentForTaskOutsideInternalLoop(self, newLine, argument, shortForm, linkedTask, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Error with the internal loop file: ' + filename
+    self.text.append(text)
+    text = 'The \'arguments\' section of the file contains a list of arguments that are set in the \'values\' section.  These arguments must ' + \
+    'link to tasks within the internal loop (see the pipeline configuration file for these tasks), but the argument \'' + argument
+    if shortForm != '': text += ' (' + shortForm + ')'
+    text += '\' links ' + \
+    'to the task \'' + linkedTask + '\' which is not in the loop.  Please correct the internal loop file.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
+  # If an argument in the internal loop file is unknown, fail.
+  def unknownArgumentInternalLoop(self, newLine, argument, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Error with the internal loop file: ' + filename
+    self.text.append(text)
+    text = 'The \'arguments\' section of the file contains a list of arguments that are set in the \'values\' section.  The argument \'' + \
+    argument + '\' is unknown.  Please correct the internal loop file.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
+  # If one of the blocks of values has a different number of values as arguments supplied, fail.
+  def incorrectNumberOfValuesInInternalLoopFile(self, newLine, blockID, noValues, noArguments, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Error with the internal loop file: ' + filename
+    self.text.append(text)
+    text = 'The \'values\' section of the file should be blocks of values, each with an ID.  There must be the same number of entries in each ' + \
+    'of these blocks of values as there are arguments in the \'arguments\' section.  The block of values with ID \'' + str(blockID) + '\' has ' + \
+    str(noValues) + ' entries, but ' + str(noArguments) + ' are expected.  Please check the internal loop file and fix any errors.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
+  # If the data type is wrong, terminate.
+  def incorrectDataTypeinInternalLoop(self, newLine, blockID, argument, value, dataType, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Error with the internal loop file: ' + filename
+    self.text.append(text)
+    text = 'The value \'' + value + '\' appearing in the \'values\' section in block \'' + str(blockID) + '\' is associated with the argument \'' + \
+    argument + '\'.  This argument expects a value of type \'' + dataType + '\' but the supplied value is not of this type.  Please check the ' + \
+    'internal loop file and fix any errors.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
   #####################
   # Admin mode errors
   #####################

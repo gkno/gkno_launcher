@@ -21,7 +21,9 @@ class pipeline:
     self.constructFilenames      = {}
     self.deleteFiles             = {}
     self.description             = ''
+    self.hasInternalLoop         = False
     self.instances               = {}
+    self.internalLoopTasks       = []
     self.isPipeline              = False
     self.linkage                 = {}
     self.pipelineName            = ''
@@ -78,6 +80,10 @@ class pipeline:
 
     # Check that a workflow exists and that it is a list.
     self.checkWorkflow(data, verbose)
+
+    # If an internal loop is defined for the pipeline, perform the necessary checks to ensure
+    # that everything is valid and consistent.
+    internalLoopTasks = self.checkInternalLoop(data, availableTools, verbose)
 
     # Check that there is a 'tools' section and that there is a named tool for each of the tasks.
     self.checkTools(data, availableTools, verbose)
@@ -143,6 +149,26 @@ class pipeline:
 
     self.workflow = data['workflow']
     self.jsonSections.remove('workflow')
+
+  # TODO Check that all aspects of the internal loop are checked.
+  # Check that the internal loop information is valid.
+  def checkInternalLoop(self, data, availableTools, verbose):
+    if 'internal loop' in data:
+
+      # First ensure that the 'internal loop' definition is a list and all of the tasks contained
+      # in the list are defined in the workflow.
+      if not isinstance(data['internal loop'], list):
+        self.errors.pipelineSectionIsNotAList(verbose, 'internal loop', self.pipelineFile)
+        self.errors.terminate()
+
+      for task in data['internal loop']:
+        if task not in self.workflow:
+          self.errors.taskNotInWorkflow(verbose, 'internal loop', task, self.pipelineFile)
+          self.errors.terminate()
+
+      self.hasInternalLoop   = True
+      self.internalLoopTasks = data['internal loop']
+      self.jsonSections.remove('internal loop')
 
   # Check that there is a 'tools' section and that there is a named tool for each of the tasks.
   def checkTools(self, data, availableTools, verbose):
@@ -642,6 +668,15 @@ class pipeline:
     self.argumentInformation['--multiple-runs']['default']             = ''
     self.shortForms['-mr']                                             = '--multiple-runs'
     self.arguments['--multiple-runs']                                  = ''
+
+    self.argumentInformation['--internal-loop']                        = {}
+    self.argumentInformation['--internal-loop']['description']         = 'Loop over a subsection of the pipeline.'
+    self.argumentInformation['--internal-loop']['link to this task']   = 'pipeline'
+    self.argumentInformation['--internal-loop']['short form argument'] = '-il'
+    self.argumentInformation['--internal-loop']['type']                = 'string'
+    self.argumentInformation['--internal-loop']['default']             = ''
+    self.shortForms['-il']                                             = '--internal-loop'
+    self.arguments['--internal-loop']                                  = ''
 
     self.argumentInformation['--task-stdout']                        = {}
     self.argumentInformation['--task-stdout']['description']         = 'Generate a stdout and stderr for each task.'

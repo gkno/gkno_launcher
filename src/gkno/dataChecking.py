@@ -40,8 +40,7 @@ def checkDataType(expectedType, value):
 
   # If the data type is unknown.
   else:
-    print('error with data type')
-    er.terminate()
+    success = False
 
   return success
 
@@ -255,7 +254,7 @@ def constructFilename(task, tool, argument, constructFilenames, arguments, argum
         # it should contain a path.  If this is the case, remove the path from the
         # name before using in the construction.
         try: value = value.split('/')[-1]
-        except: continue
+        except: pass
 
         # If the extension is to be removed, check that the input argument defines a file
         # with an extension and if so, remove the extension if requested.
