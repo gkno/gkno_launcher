@@ -424,58 +424,44 @@ def checkExtension(argumentInformation, shortForms, links, task, tool, argument,
 def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipeline, workflow, toolsOutputtingToStream, links, checkRequired, verbose):
   er = errors()
 
-  for argument in arguments[task]:
-    if argument == 'json parameters': continue
-
-    # Check if the argument has been given a value.
-    isArgumentSet = False if len(arguments[task][argument]) == 0 else True
-
-    # If the argument is an input file (not from the stream) or an output file,
-    # check that it does not contain the ':' character as this is a special
-    # character in the Makefile.  If it does, replace the ':' with a '_'.
-    isInput  = argumentInformation[tool][argument]['input']
-    isOutput = argumentInformation[tool][argument]['output']
-    if isInput or isOutput:
-      modifiedList = []
-      for value in arguments[task][argument]:
-        if ':' in value: modifiedList.append(value.replace(':', '_'))
-        else: modifiedList.append(value)
-      arguments[task][argument] = deepcopy(modifiedList)
-
-    # If the value is required and no value has been provided, terminate.
-    if checkRequired and not isArgumentSet:
-
-      # Check if the argument is an input file and if so, if the input is coming from
-      # the stream.  If so, this does not need to be set.
-      inputIsStream = False
-      if isInput:
-        previousTask = ''
-        for currentTask in workflow:
-          if currentTask == task: break
-          else: previousTask = currentTask
-        if previousTask in toolsOutputtingToStream: inputIsStream = True
-
-      # Find the short form of the argument if one exists.
-      shortForm = argumentInformation[tool][argument]['short form argument'] if 'short form argument' in argumentInformation[tool][argument] else ''
-
-      # If the input to task is not a stream and the input is not set,
-      # terminate with an error.
-      if not inputIsStream:
-        pipelineArgument  = ''
-        pipelineShortForm = ''
-        if task in links:
-          if argument in links[task]:
-            pipelineArgument  = links[task][argument][0]
-            pipelineShortForm = links[task][argument][1]
-        er.missingRequiredValue(verbose, task, argument, shortForm, isPipeline, pipelineArgument, pipelineShortForm)
-        er.terminate()
-
-      # If the input to this task is a stream, check if this particular argument has
-      # instructions on how to handle the stream.  If it doesn't have any, then this
-      # input still needs to be set.
-      else:
-        ignoreInput = True if 'input is stream' in argumentInformation[tool][argument] else False
-        if not ignoreInput:
+  for counter, iteration in enumerate(arguments[task]):
+    for argument in iteration:
+      if argument == 'json parameters': continue
+  
+      # Check if the argument has been given a value.
+      isArgumentSet = False if len(arguments[task][counter][argument]) == 0 else True
+  
+      # If the argument is an input file (not from the stream) or an output file,
+      # check that it does not contain the ':' character as this is a special
+      # character in the Makefile.  If it does, replace the ':' with a '_'.
+      isInput  = argumentInformation[tool][argument]['input']
+      isOutput = argumentInformation[tool][argument]['output']
+      if isInput or isOutput:
+        modifiedList = []
+        for value in arguments[task][counter][argument]:
+          if ':' in value: modifiedList.append(value.replace(':', '_'))
+          else: modifiedList.append(value)
+        arguments[task][counter][argument] = deepcopy(modifiedList)
+  
+      # If the value is required and no value has been provided, terminate.
+      if checkRequired and not isArgumentSet:
+  
+        # Check if the argument is an input file and if so, if the input is coming from
+        # the stream.  If so, this does not need to be set.
+        inputIsStream = False
+        if isInput:
+          previousTask = ''
+          for currentTask in workflow:
+            if currentTask == task: break
+            else: previousTask = currentTask
+          if previousTask in toolsOutputtingToStream: inputIsStream = True
+  
+        # Find the short form of the argument if one exists.
+        shortForm = argumentInformation[tool][argument]['short form argument'] if 'short form argument' in argumentInformation[tool][argument] else ''
+  
+        # If the input to task is not a stream and the input is not set,
+        # terminate with an error.
+        if not inputIsStream:
           pipelineArgument  = ''
           pipelineShortForm = ''
           if task in links:
@@ -484,6 +470,21 @@ def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipe
               pipelineShortForm = links[task][argument][1]
           er.missingRequiredValue(verbose, task, argument, shortForm, isPipeline, pipelineArgument, pipelineShortForm)
           er.terminate()
+  
+        # If the input to this task is a stream, check if this particular argument has
+        # instructions on how to handle the stream.  If it doesn't have any, then this
+        # input still needs to be set.
+        else:
+          ignoreInput = True if 'input is stream' in argumentInformation[tool][argument] else False
+          if not ignoreInput:
+            pipelineArgument  = ''
+            pipelineShortForm = ''
+            if task in links:
+              if argument in links[task]:
+                pipelineArgument  = links[task][argument][0]
+                pipelineShortForm = links[task][argument][1]
+            er.missingRequiredValue(verbose, task, argument, shortForm, isPipeline, pipelineArgument, pipelineShortForm)
+            er.terminate()
 
 # Determine which files are required for each tool to run.  For each tool, these files
 # are stored in a list and are used to define the dependencies in the Makefile.

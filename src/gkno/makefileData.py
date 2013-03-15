@@ -163,18 +163,10 @@ class makefileData:
       if task not in iTasks:
         arguments[task].append(self.arguments[task])
       else:
+        for counter in range(0, numberOfIterations): arguments[task].append(deepcopy(self.arguments[task]))
 
-        # Ensure that the size of the finalArguments structure for the task has the same number of
-        # elements as there are iterations in the loop.
-        tempStructure = {}
-        if task in iArguments:
-          for argument in iArguments[task]: tempStructure[argument] = []
-        if task in self.arguments:
-          for argument in self.arguments[task]:
-            if argument not in tempStructure: tempStructure[argument] = []
-        for counter in range(0, numberOfIterations): arguments[task].append(deepcopy(tempStructure))
-
-        # Now populate the finalArguments structure with the provided values in the internal loop file.
+        # Now that the arguments structure has all of the parameters from the internal arguments, include
+        # all of the arguments from the internal loop file.
         if task in iArguments:
           for argument in iArguments[task]:
             for counter, iteration in enumerate(iArguments[task][argument]):
