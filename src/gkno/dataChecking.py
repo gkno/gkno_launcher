@@ -330,27 +330,28 @@ def setPaths(task, tool, argumentInformation, shortForms, pipelineArgumentInform
 
   # Loop over all the tool arguments and check if the argument is for an input or output
   # file.
-  for argument in arguments[task]:
+  for counter, iteration in enumerate(arguments[task]):
+    for argument in iteration:
 
-    # If the value is blank, prior to constructing the Makefiles, each
-    # argument is checked and if the argument is not set and is required, gkno 
-    # will catch the omission.
-    if (len(arguments[task][argument]) == 0) or (argument == 'json parameters'): continue
-
-    # Check if an input, output or resource file.
-    isInput    = argumentInformation[tool][argument]['input']
-    isOutput   = argumentInformation[tool][argument]['output']
-    isResource = argumentInformation[tool][argument]['resource']
-
-    if isInput or isOutput:
-
-      # Check the paths and the extension.
-      files = []
-      for filename in arguments[task][argument]:
-        intermediateFilename = setFile(pipelineArgumentInformation, pipelineArguments, arguments, filename, isInput, isOutput, isResource)
-        finalFilename        = checkExtension(argumentInformation, shortForms, links, task, tool, argument, isOutput, intermediateFilename, verbose)
-        files.append(finalFilename)
-      arguments[task][argument] = files
+      # If the value is blank, prior to constructing the Makefiles, each
+      # argument is checked and if the argument is not set and is required, gkno 
+      # will catch the omission.
+      if (len(iteration[argument]) == 0) or (argument == 'json parameters'): continue
+  
+      # Check if an input, output or resource file.
+      isInput    = argumentInformation[tool][argument]['input']
+      isOutput   = argumentInformation[tool][argument]['output']
+      isResource = argumentInformation[tool][argument]['resource']
+  
+      if isInput or isOutput:
+  
+        # Check the paths and the extension.
+        files = []
+        for filename in iteration[argument]:
+          intermediateFilename = setFile(pipelineArgumentInformation, pipelineArguments, arguments, filename, isInput, isOutput, isResource)
+          finalFilename        = checkExtension(argumentInformation, shortForms, links, task, tool, argument, isOutput, intermediateFilename, verbose)
+          files.append(finalFilename)
+        arguments[task][counter][argument] = deepcopy(files)
 
 # Provided the filename, check if resource, input or output and set the file accordingly.
 def setFile(pipelineArgumentInformation, pipelineArguments, arguments, filename, isInput, isOutput, isResource):

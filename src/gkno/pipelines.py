@@ -744,15 +744,14 @@ class pipeline:
               targetValue = []
               if targetTask in arguments:
                 for iteration in arguments[targetTask]: targetValue.append(iteration[targetArgument])
-                  #for value in iteration[targetArgument]: targetValue.append(value)
               else:
                 for counter in range(0, numberOfIterations): targetValue.append([])
 
             # If an extension needs to be added to the values, add it here.
             if 'extension' in self.linkage[task][argument]:
               if len(targetValue) != 0:
-                for iteration in targetValue:
-                  for value in iteration: value += self.linkage[task][argument]['extension']
+                for counterA, iteration in enumerate(targetValue):
+                  for counterB, value in enumerate(iteration): targetValue[counterA][counterB] += self.linkage[task][argument]['extension']
 
             # Now update the arguments to include the linked arguments.  There are four possible cases:
             # 1. Both the task in question and the targetTask are not in the internal loop,
