@@ -144,7 +144,7 @@ def main():
       if success:
         if verbose: checkPipelineConfigurationFile(pl.pipelineFile)
         pipelineData    = io.getJsonData(pl.pipelineFile, True)
-        pl.checkConfigurationFile(gknoHelp, pipelineData, io.jsonPipelineFiles, tl.availableTools, tl.argumentInformation, verbose)
+        iLoop.tasks     = pl.checkConfigurationFile(gknoHelp, pipelineData, io.jsonPipelineFiles, tl.availableTools, tl.argumentInformation, verbose)
         pipelineData    = '' # Clear the data structure as it is no longer necessary.
         pl.setArgumentLinks()
         if verbose: writeDone()
@@ -217,7 +217,7 @@ def main():
   if pl.isPipeline and pl.hasInternalLoop:
     iLoop.checkLoopFile(pl.arguments)
     if iLoop.usingInternalLoop:
-      iLoop.checkInformation(pl.argumentInformation, pl.shortForms, pl.internalLoopTasks, verbose)
+      iLoop.checkInformation(pl.argumentInformation, pl.shortForms, verbose)
 
   # Check if an instance was selected.  If so, read the specific instance parameters.
   if verbose: writeCheckingInstanceInformation()
@@ -304,7 +304,9 @@ def main():
     if mr.hasMultipleRuns:
       mr.getArguments()
       make.getMultipleArguments(tl.argumentInformation, pl.workflow, pl.taskToTool, mr.arguments)
+
     make.arguments = checkInputLists(tl.argumentInformation, pl.workflow, pl.taskToTool, make.arguments, verbose) # dataChecking.py
+    make.prepareForInternalLoop(iLoop.tasks, iLoop.arguments, iLoop.numberOfIterations)
 
     # Loop over each of the tools in turn and set all of the parameters.  Each
     # task in turn may depend on parameters/outputs of previous tasks and so
@@ -315,8 +317,8 @@ def main():
       # Check all of the options for each tool and determine if the values are
       # linked to any other tool.  If so, set the values as necessary.
       if pl.isPipeline:
-        pl.toolLinkage(task, tool, tl.argumentInformation[tool], make.arguments, verbose)
-  
+        pl.toolLinkage(task, tool, tl.argumentInformation[tool], make.arguments, iLoop.tasks, iLoop.numberOfIterations, verbose)
+
         # Check all input and output files.  If there are instructions on how to construct
         # filenames, construct them.
         constructFilenames(task, tool, make.arguments, tl.argumentInformation, pl.constructFilenames, pl.toolArgumentLinks, pl.taskToTool, verbose)
@@ -326,10 +328,19 @@ def main():
       # file and use the --input-path, --output-path and --resource-path values
       # respectively.
 
-      setPaths(task, tool, tl.argumentInformation, tl.shortForms, pl.argumentInformation, pl.arguments, pl.toolArgumentLinks, make.arguments, verbose)
+      #setPaths(task, tool, tl.argumentInformation, tl.shortForms, pl.argumentInformation, pl.arguments, pl.toolArgumentLinks, make.arguments, verbose)
   
       # Check that all required files and parameters have been set.
-      checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.toolsOutputtingToStream, pl.toolArgumentLinks, True, verbose)
+      #checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.toolsOutputtingToStream, pl.toolArgumentLinks, True, verbose)
+
+    print('\n\n')
+    for task in pl.workflow:
+      print(task)
+      for counter, iteration in enumerate(make.arguments[task]):
+        print('\tIteration: ', counter)
+        for argument in iteration:
+          print('\t\t', task, argument, iteration[argument])
+    exit(0)
 
     # Determine each tools dependencies for building the makefile.
     make.dependencies, make.outputs = determineDependencies(tl.argumentInformation, pl.workflow, pl.taskToTool, pl.toolsOutputtingToStream, make.arguments)

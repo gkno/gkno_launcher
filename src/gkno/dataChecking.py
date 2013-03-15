@@ -105,85 +105,91 @@ def checkInputLists(argumentInformation, workflow, taskToTool, arguments, verbos
 def constructFilenames(task, tool, arguments, argumentInformation, constructFilenames, links, taskToTool, verbose):
   er = errors()
 
-  # First identify the input and output files and how their names should be constructed.
-  filenameConstructor = ''
-  inputFiles          = []
-  outputFiles         = {}
-  for argument in arguments[task]:
-    if argument != 'json parameters':
-      isInput  = argumentInformation[tool][argument]['input']
-      isOutput = argumentInformation[tool][argument]['output']
+  # Each task has a set of arguments depending on whether the task is involved in an internal loop
+  # and the number of loops over the task need to be performed.  When constructing the filenames,
+  # consider each set of argument in turn.
+  for counter, iteration in enumerate(arguments[task]):
 
-      # If this is an input file, check to see if it is to be used for building filenames.
-      if isInput:
-        inputFiles.append(argument)
-        if 'use for filenames' in argumentInformation[tool][argument]:
-          if argumentInformation[tool][argument]['use for filenames']:
+    # First identify the input and output files and how their names should be constructed.
+    filenameConstructor = ''
+    inputFiles          = []
+    outputFiles         = {}
+
+    for argument in iteration:
+      if argument != 'json parameters':
+        isInput  = argumentInformation[tool][argument]['input']
+        isOutput = argumentInformation[tool][argument]['output']
+
+        # If this is an input file, check to see if it is to be used for building filenames.
+        if isInput:
+          inputFiles.append(argument)
+          if 'use for filenames' in argumentInformation[tool][argument]:
+            if argumentInformation[tool][argument]['use for filenames']:
   
-            # If there was an input file previous designated as the file to use for
-            # constructing output filenames for this tool, gkno cannot determine which
-            # file to use and so terminates.
-            if filenameConstructor != '':
-              er.multipleFilenameConstructors(verbose, task, tool, argument, filenameConstructor)
-              er.terminate()
-            else: filenameConstructor = argument
+              # If there was an input file previous designated as the file to use for
+              # constructing output filenames for this tool, gkno cannot determine which
+              # file to use and so terminates.
+              if filenameConstructor != '':
+                er.multipleFilenameConstructors(verbose, task, tool, argument, filenameConstructor)
+                er.terminate()
+              else: filenameConstructor = argument
 
-      # If the argument is an output, check to see if it has already been defined.  If
-      # not, store this as a filename to be constructed.
-      if isOutput:
-        if len(arguments[task][argument]) == 0:
+        # If the argument is an output, check to see if it has already been defined.  If
+        # not, store this as a filename to be constructed.
+        if isOutput:
+          if len(arguments[task][counter][argument]) == 0:
   
-          # For pipelines, check if the 'construct filenames' block exists and describes
-          # how to build this filename.
-          if task in constructFilenames:
-            for constructArgument in constructFilenames[task]:
-              if constructArgument == argument: outputFiles[argument] = 'construct'
-              break
+            # For pipelines, check if the 'construct filenames' block exists and describes
+            # how to build this filename.
+            if task in constructFilenames:
+              for constructArgument in constructFilenames[task]:
+                if constructArgument == argument: outputFiles[argument] = 'construct'
+                break
 
-          # If the argument to be built has no instructions on how to construct the filename.
-          if argument not in outputFiles:
+            # If the argument to be built has no instructions on how to construct the filename.
+            if argument not in outputFiles:
   
-            # If the configuration file specifically states not to construct the filename from
-            # the input file, terminate as the user needs to input the output filename.  Otherwise
-            # use the input file.
-            if 'do not construct filename from input' in argumentInformation[tool][argument]:
-              shortForm = argumentInformation[tool][argument]['short form argument'] if 'short form argument' in \
-              argumentInformation[tool][argument] else ''
-              if task in links:
-                pipelineArgument = ''
-                if argument in links[task]:
-                  pipelineArgument  = links[task][argument][0]
-                  pipelineShortForm = links[task][argument][1]
-              er.missingFilenameNotToBeConstructed(verbose, task, tool, argument, shortForm, pipelineArgument, pipelineShortForm)
-              er.terminate()
-            else: outputFiles[argument] = 'from input'
+              # If the configuration file specifically states not to construct the filename from
+              # the input file, terminate as the user needs to input the output filename.  Otherwise
+              # use the input file.
+              if 'do not construct filename from input' in argumentInformation[tool][argument]:
+                shortForm = argumentInformation[tool][argument]['short form argument'] if 'short form argument' in \
+                argumentInformation[tool][argument] else ''
+                if task in links:
+                  pipelineArgument = ''
+                  if argument in links[task]:
+                    pipelineArgument  = links[task][argument][0]
+                    pipelineShortForm = links[task][argument][1]
+                er.missingFilenameNotToBeConstructed(verbose, task, tool, argument, shortForm, pipelineArgument, pipelineShortForm)
+                er.terminate()
+              else: outputFiles[argument] = 'from input'
   
-  # Now all of the output files have been identified and the method of filename generation
-  # determined, build the filenames.
-  for outputFile in outputFiles:
+    # Now all of the output files have been identified and the method of filename generation
+    # determined, build the filenames.
+    for outputFile in outputFiles:
 
-    # If to be constructed using information from the configuration file, construct.
-    if outputFiles[outputFile] == 'construct':
-      constructFilename(task, tool, outputFile, constructFilenames, arguments, argumentInformation, taskToTool, verbose)
+      # If to be constructed using information from the configuration file, construct.
+      if outputFiles[outputFile] == 'construct':
+        constructFilename(task, tool, counter, outputFile, constructFilenames, arguments, argumentInformation, taskToTool, verbose)
 
-    elif outputFiles[outputFile] == 'from input':
+      elif outputFiles[outputFile] == 'from input':
 
-      # If the output filename is to be generated using an input file from this task and there
-      # are no input files designated as to be used for generating the filename, check what
-      # input files there are.  If there is only one input for this task, use this file to
-      # generate the filenames.  If there are multiple or no input file arguments, terminate.
-      if filenameConstructor == '':
-        if len(inputFiles) == 1:
-          constructFilenameFromInput(task, tool, argumentInformation, arguments, outputFile, inputFiles[0], verbose)
-        #else:
-        #  er.unknownFilenameConstructor(verbose, task, tool, outputFile)
-        #  er.terminate()
+        # If the output filename is to be generated using an input file from this task and there
+        # are no input files designated as to be used for generating the filename, check what
+        # input files there are.  If there is only one input for this task, use this file to
+        # generate the filenames.  If there are multiple or no input file arguments, terminate.
+        if filenameConstructor == '':
+          if len(inputFiles) == 1:
+            constructFilenameFromInput(task, tool, counter, argumentInformation, arguments, outputFile, inputFiles[0], verbose)
+          #else:
+          #  er.unknownFilenameConstructor(verbose, task, tool, outputFile)
+          #  er.terminate()
 
-      else:
-        constructFilenameFromInput(task, tool, argumentInformation, arguments, outputFile, filenameConstructor, verbose)
+        else:
+          constructFilenameFromInput(task, tool, counter, argumentInformation, arguments, outputFile, filenameConstructor, verbose)
 
 # Construct filenames using the instructions in the pipeline configuration file.
-def constructFilename(task, tool, argument, constructFilenames, arguments, argumentInformation, taskToTool, verbose):
+def constructFilename(task, tool, iteration, argument, constructFilenames, arguments, argumentInformation, taskToTool, verbose):
   er           = errors()
   basename     = ''
   construction = ''
@@ -205,11 +211,11 @@ def constructFilename(task, tool, argument, constructFilenames, arguments, argum
     # If the argument for the linked task is unset, the filename cannot be constructed, so return from
     # the routine without having constructed the new filename.  The unset filenames will be caught later
     # and gkno terminated if they were required.
-    if len(arguments[linkedTask][linkedArgument]) != 1:
+    if len(arguments[linkedTask][iteration][linkedArgument]) != 1:
       return
 
     # If the linked argument is set (and has only one name), construct the new filename.
-    construction = arguments[linkedTask][linkedArgument][0].split('/')[-1]
+    construction = arguments[linkedTask][iteration][linkedArgument][0].split('/')[-1]
     if removeExtension:
       linkedTool = taskToTool[linkedTask]
       extension  = argumentInformation[linkedTool][linkedArgument]['extension']
@@ -248,7 +254,7 @@ def constructFilename(task, tool, argument, constructFilenames, arguments, argum
 
         # Now get the variable if it exists.
         value = ''
-        if additionalArgument in arguments[additionalTask]: value = arguments[additionalTask][additionalArgument][0]
+        if additionalArgument in arguments[additionalTask][iteration]: value = arguments[additionalTask][iteration][additionalArgument][0]
 
         # If the parameter being used in the output filename is itself a filename,
         # it should contain a path.  If this is the case, remove the path from the
@@ -287,22 +293,22 @@ def constructFilename(task, tool, argument, constructFilenames, arguments, argum
     else: construction += '.' + str(extension)
 
   # Having built the filename, set the value in the tl.toolArguments data structure.
-  arguments[task][argument].append(construction)
+  arguments[task][iteration][argument].append(construction)
 
 # If the output filename is to be constructed from an input filename, take the
 # requested input filename, remove the extension and replace with the required
 # extension for this output file.
-def constructFilenameFromInput(task, tool, argumentInformation, arguments, outputFile, inputArgument, verbose):
+def constructFilenameFromInput(task, tool, iteration, argumentInformation, arguments, outputFile, inputArgument, verbose):
   er = errors()
   
   # Check if the input file that is to be used for constructing the output filename is
   # blank.  If so, terminate gkno as the output filename cannot be determined.
-  if len(arguments[task][inputArgument]) == 0: return
+  if len(arguments[task][iteration][inputArgument]) == 0: return
 
   # If the output filename is to be generated from an input file, but there are
   # multiple files, use the first file in the list for generating the output
   # filename.
-  inputFile      = arguments[task][inputArgument][0].split('/')[-1]
+  inputFile      = arguments[task][iteration][inputArgument][0].split('/')[-1]
   inputExtension = ''
   for extension in argumentInformation[tool][inputArgument]['extension'].split('|'):
     if inputFile.endswith(extension):
@@ -314,8 +320,8 @@ def constructFilenameFromInput(task, tool, argumentInformation, arguments, outpu
 
   # Add the output extension unless the output is a stub.
   isStub = argumentInformation[tool][outputFile]['stub'] if 'stub' in argumentInformation[tool][outputFile] else False
-  if isStub: arguments[task][outputFile].append(inputFile)
-  else: arguments[task][outputFile].append(inputFile + '.' + argumentInformation[tool][outputFile]['extension'].split('|')[0])
+  if isStub: arguments[task][iteration][outputFile].append(inputFile)
+  else: arguments[task][iteration][outputFile].append(inputFile + '.' + argumentInformation[tool][outputFile]['extension'].split('|')[0])
 
 # Check to see if the input file has a path or not.  If not, determine if the
 # file is a resource file or not and set the path to the resources path if

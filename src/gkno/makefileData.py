@@ -1,6 +1,7 @@
 #!/bin/bash/python
 
 from __future__ import print_function
+from copy import deepcopy
 
 import errors
 from errors import *
@@ -14,6 +15,7 @@ class makefileData:
     self.arguments              = {}
     self.coreArguments          = {}
     self.dependencies           = {}
+    self.finalArguments         = {}
     self.hasPipes               = False
     self.outputs                = {}
     self.taskBlocks             = []
@@ -148,6 +150,38 @@ class makefileData:
       if hasMultipleRuns: self.outputID = str(self.filename.split('.')[0]) + '_' + str(self.id)
       else: self.outputID = str(self.filename.split('.')[0])
       self.redirect = '>' if taskBlock == self.taskBlocks[0] else '>>'
+
+  # The arguments structure needs to be modified, so that each task has a list of arguments.  If
+  # there is an internal loop, each task can have multiple sets of parameters to define multiple
+  # runs of a task within the same Makefile.  This structure will allow each iteration of the task
+  # to be held in the same place.  For tasks outside of the loop, the list should only contain one
+  # set of parameters.
+  def prepareForInternalLoop(self, iTasks, iArguments, numberOfIterations):
+    arguments = {}
+    for task in self.arguments:
+      arguments[task] = []
+      if task not in iTasks:
+        arguments[task].append(self.arguments[task])
+      else:
+
+        # Ensure that the size of the finalArguments structure for the task has the same number of
+        # elements as there are iterations in the loop.
+        tempStructure = {}
+        if task in iArguments:
+          for argument in iArguments[task]: tempStructure[argument] = []
+        if task in self.arguments:
+          for argument in self.arguments[task]:
+            if argument not in tempStructure: tempStructure[argument] = []
+        for counter in range(0, numberOfIterations): arguments[task].append(deepcopy(tempStructure))
+
+        # Now populate the finalArguments structure with the provided values in the internal loop file.
+        if task in iArguments:
+          for argument in iArguments[task]:
+            for counter, iteration in enumerate(iArguments[task][argument]):
+              arguments[task][counter][argument] = deepcopy(iArguments[task][argument][iteration])
+
+    # Now set the self.arguments structure to the newly created finalArguments structure.
+    self.arguments = deepcopy(arguments)
 
   # Loop over each of the tasks in the task block and generate the command line.
   def generateCommand(self, argumentInformation, delimiters, precommands, executables, modifiers, argumentOrder, taskToTool, linkage, taskBlock, verbose):

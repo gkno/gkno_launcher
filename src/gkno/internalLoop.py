@@ -16,11 +16,14 @@ class internalLoop:
 
   # Constructor.
   def __init__(self):
-    self.arguments         = {}
-    self.argumentList      = []
-    self.data              = []
-    self.errors            = errors()
-    self.usingInternalLoop = False
+    self.arguments          = {}
+    self.argumentList       = []
+    self.data               = []
+    self.errors             = errors()
+    self.ID                 = 0
+    self.numberOfIterations = 0
+    self.tasks              = []
+    self.usingInternalLoop  = False
 
   # Check for existence of the requested file.
   def checkLoopFile(self, arguments):
@@ -32,7 +35,7 @@ class internalLoop:
 
   # Check that the information contained in the internal loop information file is
   # valid and store in the 'information' structure.
-  def checkInformation(self, argumentInformation, shortForms, tasks, verbose):
+  def checkInformation(self, argumentInformation, shortForms, verbose):
 
     # First check that there is a list of command line arguments that will be applied in
     # each iteration of the loop and a section containing the values for each iteration.
@@ -55,7 +58,7 @@ class internalLoop:
     for argument in self.argumentList:
       if argument in argumentInformation:
         linkedTask = argumentInformation[argument]['link to this task']
-        if linkedTask not in tasks:
+        if linkedTask not in self.tasks:
           self.errors.argumentForTaskOutsideInternalLoop(verbose, argument, argumentInformation[argument]['short form argument'], linkedTask, self.filename)
           self.errors.terminate()
       else:
@@ -84,3 +87,6 @@ class internalLoop:
         if linkedArgument not in self.arguments[linkedTask]: self.arguments[linkedTask][linkedArgument] = {}
         if blockID not in self.arguments[linkedTask][linkedArgument]: self.arguments[linkedTask][linkedArgument][blockID] = []
         self.arguments[linkedTask][linkedArgument][blockID].append(value)
+
+    # Store the number of iterations in the internal loop.
+    self.numberOfIterations = len(self.data['values'])
