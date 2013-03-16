@@ -721,7 +721,8 @@ def determinePiping(arguments, argumentInformation, toolsDemandingInputStream, t
 
                 # If the entry in the configuration file is 'do not include', just
                 # remove this argument from the toolArguments structure.
-                if argumentInformation[tool][argument]['if output to stream'] == 'do not include': del(arguments[task][argument])
+                if argumentInformation[tool][argument]['if output to stream'] == 'do not include':
+                  for iterationCounter, value in enumerate(arguments[task]): del(arguments[task][iterationCounter][argument])
 
                 # Otherwise, handle as appropriate.
                 else:
@@ -756,32 +757,35 @@ def determinePiping(arguments, argumentInformation, toolsDemandingInputStream, t
               canAcceptStream = True
 
               # If the entry in the configuration file is 'do not include', just
-              # remove this argument from the toolArguments structure.
-              if argumentInformation[nextTool][argument]['if input is stream'] == 'do not include': del(arguments[nextTask][argument])
+              # remove this argument from the arguments structure.
+              if argumentInformation[nextTool][argument]['if input is stream'] == 'do not include':
+                for iterationCounter, value in enumerate(arguments[nextTask]): del(arguments[nextTask][iterationCounter][argument])
 
               # If the entry is 'replace', then the argument needs to be removed and
               # replaced with that provided.  When the Makefile is generated, the
               # tl.toolInfo structure is interogated.  This replacement value should
               # not be present in the structure, so a value needs to be input.
               elif argumentInformation[nextTool][argument]['if input is stream'] == 'replace':
-                del(arguments[nextTask][argument])
+                for iterationCounter, value in enumerate(arguments[nextTask]): del(arguments[nextTask][iterationCounter][argument])
                 replacementArgument = argumentInformation[nextTool][argument]['replace argument with']['argument']
                 replacementValue    = argumentInformation[nextTool][argument]['replace argument with']['value']
-                if replacementArgument not in arguments[nextTask]:
-                  arguments[nextTask][replacementArgument] = []
-                  arguments[nextTask][replacementArgument].append(replacementValue)
-                  if replacementArgument in argumentInformation[nextTool]:
-                    er.replacementArgumentAlreadyPresent(True, "\t", nextTask, tool, replacementArgument)
-                    er.terminate()
-                  else:
-                    if nextTool not in addArguments: addArguments[nextTool] = {}
-                    addArguments[nextTool] = replacementArgument
+                for iterationCounter, value in enumerate(arguments[nextTask]):
+                  if replacementArgument not in arguments[nextTask][iterationCounter]:
+                    arguments[nextTask][iterationCounter][replacementArgument] = []
+                    arguments[nextTask][iterationCounter][replacementArgument].append(replacementValue)
+                    if replacementArgument in argumentInformation[nextTool]:
+                      er.replacementArgumentAlreadyPresent(True, "\t", nextTask, tool, replacementArgument)
+                      er.terminate()
+                    else:
+                      if nextTool not in addArguments: addArguments[nextTool] = {}
+                      addArguments[nextTool] = replacementArgument
 
               # If the entry is neither 'do not include' or 'replace', just use this value
               # as the value for the argument.
               else:
-                arguments[nextTask][argument] = []
-                arguments[nextTask][argument].append(argumentInformation[nextTool][argument]['if input is stream'])
+                for iterationCounter, value in enumerate(arguments[nextTask]):
+                  arguments[nextTask][iterationCounter][argument] = []
+                  arguments[nextTask][iterationCounter][argument].append(argumentInformation[nextTool][argument]['if input is stream'])
 
         # If no instructions are provided on how to handle a streaming input, terminate.
         if not canOutputToStream:
