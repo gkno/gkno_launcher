@@ -499,58 +499,61 @@ def determineDependencies(argumentInformation, workflow, taskToTool, toolsOutput
     dependencies[task] = []
     outputs[task]      = []
 
-    for argument in arguments[task]:
-      if argument == 'json parameters':
-        value      = arguments[task][argument][0]
-        dependencies[task].append(value)
-      else:
-
-        # Check if the file is an input or an output file, or is listed as a dependent
-        # file.  If it is an output, the file should be added to the string containing
-        # all outputs from this tool.  If it is an input or dependent file, this will
-        # be added to the string containing all files required for this tool to run.
-        isInput     = argumentInformation[tool][argument]['input']
-        isOutput    = argumentInformation[tool][argument]['output']
-        isResource  = argumentInformation[tool][argument]['resource']
-        isDependent = argumentInformation[tool][argument]['dependent']
-        isFlag      = True if argumentInformation[tool][argument]['type'] == 'flag' else False
-
-        # Determine if the input and output from this task are the stream.  If so, the
-        # dependencies and outputs structures do not need to be updated to include these
-        # arguments
-        outputToStream = True if task in toolsOutputtingToStream else False
-        inputIsStream  = True if (previousTask != '') and (previousTask in toolsOutputtingToStream) else False
-
-        if isInput or isDependent or isOutput or isResource:
-
-          # If the input/output file is defined, check that the extension is as expected.
-          value = arguments[task][argument][0]
-
-          # If this file needs to be added to one of the string, check to see if it is a stub
-          # or not.  If so, all of the files associated with the stub need to be added to the
-          # string.
-          isStub = argumentInformation[tool][argument]['stub'] if 'stub' in argumentInformation[tool][argument] else False
-
-          # If this is a stub, create the string containing all of the files.
-          if isStub:
-
-            # Do not add the output to the self.outputs structure if the task is outputting
-            # to the stream.  Only add these values if it has been defined (i.e. value is not
-            # and empty string).
-            if value != '':
-              for name in argumentInformation[tool][argument]['outputs']:
+    for counter, iteration in enumerate(arguments[task]):
+      dependencies[task].append([])
+      outputs[task].append([])
+      for argument in iteration:
+        if argument == 'json parameters':
+          value      = iteration[argument][0]
+          dependencies[task][counter].append(value)
+        else:
+  
+          # Check if the file is an input or an output file, or is listed as a dependent
+          # file.  If it is an output, the file should be added to the string containing
+          # all outputs from this tool.  If it is an input or dependent file, this will
+          # be added to the string containing all files required for this tool to run.
+          isInput     = argumentInformation[tool][argument]['input']
+          isOutput    = argumentInformation[tool][argument]['output']
+          isResource  = argumentInformation[tool][argument]['resource']
+          isDependent = argumentInformation[tool][argument]['dependent']
+          isFlag      = True if argumentInformation[tool][argument]['type'] == 'flag' else False
+  
+          # Determine if the input and output from this task are the stream.  If so, the
+          # dependencies and outputs structures do not need to be updated to include these
+          # arguments
+          outputToStream = True if task in toolsOutputtingToStream else False
+          inputIsStream  = True if (previousTask != '') and (previousTask in toolsOutputtingToStream) else False
+  
+          if isInput or isDependent or isOutput or isResource:
+  
+            # If the input/output file is defined, check that the extension is as expected.
+            value = arguments[task][counter][argument][0]
+  
+            # If this file needs to be added to one of the string, check to see if it is a stub
+            # or not.  If so, all of the files associated with the stub need to be added to the
+            # string.
+            isStub = argumentInformation[tool][argument]['stub'] if 'stub' in argumentInformation[tool][argument] else False
+  
+            # If this is a stub, create the string containing all of the files.
+            if isStub:
+  
+              # Do not add the output to the self.outputs structure if the task is outputting
+              # to the stream.  Only add these values if it has been defined (i.e. value is not
+              # and empty string).
+              if value != '':
+                for name in argumentInformation[tool][argument]['outputs']:
+                  if isOutput:
+                    if not outputToStream: outputs[task][counter].append(value + name)
+                  elif isInput:
+                    if not inputIsStream: dependencies[task][counter].append(value + name)
+  
+            # If the filename is not a stub, just include the value.
+            else:
+              if (value != '') and not isFlag:
                 if isOutput:
-                  if not outputToStream: outputs[task].append(value + name)
+                  if not outputToStream: outputs[task][counter].append(value)
                 elif isInput:
-                  if not inputIsStream: dependencies[task].append(value + name)
-
-          # If the filename is not a stub, just include the value.
-          else:
-            if (value != '') and not isFlag:
-              if isOutput:
-                if not outputToStream: outputs[task].append(value)
-              elif isInput:
-               if not inputIsStream: dependencies[task].append(value)
+                 if not inputIsStream: dependencies[task][counter].append(value)
 
     # Update the previous task and previous tool to be the task and tool just evaluated.
     previousTask = task
@@ -588,26 +591,30 @@ def determineAdditionalFiles(additionalFiles, workflow, taskToTool, arguments, d
           # and has a value defined.
           fileType = field['type']
           argument = field['link to this argument']
-          filename = arguments[task][argument][0]
 
-          # In constructing the output file name, the extension associated with the associated
-          # file name can be stripped off and a new extension can be appended if requested.
-          # Determine and enact the appropriate steps.
-          if field['remove extension']: filename = filename.rpartition('.')[0]
-          if field['add extension']:
-            extension = field['output extension']
-            filename += '.' + extension
+          # Loop over all the values for this argument (if there is an internal loop, there
+          # could be multiple values for this).
+          for counter, iteration in enumerate(arguments[task]):
+            filename = iteration[argument][0]
 
-          # If the file is a dependency, add to the dependency string, otherwise add to the
-          # output string.
-          if fileType == 'dependency': dependencies[task].append(filename)
-          elif fileType == 'output': outputs[task].append(filename)
+            # In constructing the output file name, the extension associated with the associated
+            # file name can be stripped off and a new extension can be appended if requested.
+            # Determine and enact the appropriate steps.
+            if field['remove extension']: filename = filename.rpartition('.')[0]
+            if field['add extension']:
+              extension = field['output extension']
+              filename += '.' + extension
+
+            # If the file is a dependency, add to the dependency string, otherwise add to the
+            # output string.
+            if fileType == 'dependency': dependencies[task][counter].append(filename)
+            elif fileType == 'output': outputs[task][counter].append(filename)
 
 # In the course of executing the pipeline, some of the intermediate files
 # generated along the way should be deleted.  The pipeline configuration
 # file segment 'delete files' identifies which files should be deleted and
 # when in the pipeline they can be removed.
-def determineFilesToDelete(arguments, deleteFiles, verbose):
+def determineFilesToDelete(arguments, deleteFiles, iTasks, numberOfIterations, verbose):
   er     = errors()
   output = {}
 
@@ -618,11 +625,42 @@ def determineFilesToDelete(arguments, deleteFiles, verbose):
         argument        = information[0]
         deleteAfterTask = information[1]
         extension       = information[2]
+        if deleteAfterTask not in output: output[deleteAfterTask] = []
 
-        if deleteAfterTask not in output: output[deleteAfterTask] = {}
-        if argument not in output[deleteAfterTask]: output[deleteAfterTask][argument] = []
-        for value in arguments[task][argument]:
-          output[deleteAfterTask][argument].append(value + extension)
+        # Check if task and/or the deleteAfterTask appear in the tasks in the internal loop.
+        # Depending on the result handle them appropriately.
+        #
+        # If both tasks appear in the internal loop, then loop over the sets of contained
+        # parameters and add the files to delete to the output structure in a straight
+        # mapping.
+        if task in iTasks and deleteAfterTask in iTasks:
+          for counter in range(0, numberOfIterations):
+            if counter not in output[deleteAfterTask]: output[deleteAfterTask].append([])
+            for value in arguments[task][counter][argument]: output[deleteAfterTask][counter].append(value)
+
+        # If task appears in the internal loop, but deleteAfterTask does not, there are (potentially)
+        # multiple iterations of task and the defined outputs from each of these are to be deleted
+        # after the single iteration of the task defined by deleteAfterTask.
+        elif task in iTasks and deleteAfterTask not in iTasks:
+          if len(output[deleteAfterTask]) == 0: output[deleteAfterTask].append([])
+          for value in arguments[task][counter][argument]: output[deleteAfterTask][0].append(value)
+
+        # If task is not in the internal loop, but deleteAfterTask is, terminate the script with an
+        # error.  In this case, there can be multiple iterations of the task defined by deleteAfterTask
+        # to be run.  After completion of this task, the defined output from task can be deleted, but
+        # since these jobs will be running in parallel, gkno cannot guarantee that the file being
+        # deleted has been used in all of the parallel tasks that may need it.  If the outputs from task
+        # are to be deleted, they should be deleted after a task not appearing in the internal loop.
+        elif task not in iTasks and deleteAfterTask in iTasks:
+          er.deleteFileInLoop(verbose, task, deleteAfterTask)
+          er.terminate()
+
+        # Finally, if neither task or deleteAfterTask appear in iTasks, then both of them fall outside
+        # of any internal loops and so have only one iteration of parameters.  This can be treated in
+        # the same way as if they were both in iTasks.
+        elif task not in iTasks and deleteAfterTask not in iTasks:
+          if len(output[deleteAfterTask]) == 0: output[deleteAfterTask].append([])
+          for value in arguments[task][0][argument]: output[deleteAfterTask][0].append(value)
 
   return output
 

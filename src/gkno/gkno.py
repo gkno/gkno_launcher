@@ -331,16 +331,7 @@ def main():
       setPaths(task, tool, tl.argumentInformation, tl.shortForms, pl.argumentInformation, pl.arguments, pl.toolArgumentLinks, make.arguments, verbose)
   
       # Check that all required files and parameters have been set.
-      #checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.toolsOutputtingToStream, pl.toolArgumentLinks, True, verbose)
-
-    print('\n\n')
-    for task in pl.workflow:
-      print(task)
-      for counter, iteration in enumerate(make.arguments[task]):
-        print('\tIteration: ', counter)
-        for argument in iteration:
-          print('\t\t', task, argument, iteration[argument])
-    exit(0)
+      checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.toolsOutputtingToStream, pl.toolArgumentLinks, True, verbose)
 
     # Determine each tools dependencies for building the makefile.
     make.dependencies, make.outputs = determineDependencies(tl.argumentInformation, pl.workflow, pl.taskToTool, pl.toolsOutputtingToStream, make.arguments)
@@ -359,7 +350,7 @@ def main():
     # generated along the way should be deleted.  The pipeline configuration
     # file segment 'delete files' identifies which files should be deleted and
     # when in the pipeline they can be removed.
-    make.deleteFiles = determineFilesToDelete(make.arguments, pl.deleteFiles, verbose)
+    make.deleteFiles = determineFilesToDelete(make.arguments, pl.deleteFiles, iLoop.tasks, iLoop.numberOfIterations, verbose)
   
     # The list of files to be produced by the script is all of the files created
     # by each individual task in the pipeline.  However, if some of the files
