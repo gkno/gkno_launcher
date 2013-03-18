@@ -852,6 +852,8 @@ def getTaskBlockOutputsAndDependencies(taskBlocks, outputs, dependencies):
       # this block.  These should all be omitted as they are internal to the stream.
       tempOutputs      = {}
       tempDependencies = {}
+      print("WORK FROM HERE")
+      exit(0)
       for task in taskBlock:
         for output in outputs[task]:
           if isinstance(output, list):
@@ -877,4 +879,5 @@ def getTaskBlockOutputsAndDependencies(taskBlocks, outputs, dependencies):
         if tempDependencies[dependent]: tempList.append(dependent)
       dependenciesList.append(tempList)
 
+  for a in outputsList: print(a)
   return outputsList, dependenciesList

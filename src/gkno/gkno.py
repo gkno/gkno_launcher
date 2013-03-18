@@ -378,7 +378,7 @@ def main():
     make.setIntermediateFiles(pl.workflow, pl.taskToTool)
 
     # Determine the outputs and dependencies for each block of tasks.
-    make.taskBlockOutputs, make.taskBlockDependencies = getTaskBlockOutputsAndDependencies(make.taskBlocks, make.outputs, make.dependencies)
+    mak.taskBlockOutputs, make.taskBlockDependencies = getTaskBlockOutputsAndDependencies(make.taskBlocks, make.outputs, make.dependencies)
     make.writeAllOutputs()
     determineFinalOutputs(make.deleteFiles, make.outputs)
 

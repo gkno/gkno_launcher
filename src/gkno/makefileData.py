@@ -112,8 +112,8 @@ class makefileData:
     if len(self.deleteFiles) != 0:
       print('.INTERMEDIATE:', end = '', file = self.makeFilehandle)
       for task in self.deleteFiles:
-        for argument in self.deleteFiles[task]:
-          for fileToDelete in self.deleteFiles[task][argument]:
+        for iteration in self.deleteFiles[task]:
+          for fileToDelete in iteration:
             print(fileToDelete, end = ' ', file = self.makeFilehandle)
       print(file = self.makeFilehandle)
 
