@@ -672,19 +672,19 @@ def determineFinalOutputs(deleteFiles, outputs):
 
   # Put all of the files to be deleted in a dictionary.
   deletedFiles = {}
-  finalOutputs = {}
   for task in deleteFiles:
-    for argument in deleteFiles[task]:
-      for output in deleteFiles[task][argument]:
+    for internalLoopIteration in deleteFiles[task]:
+      for output in internalLoopIteration:
         deletedFiles[output] = True
 
+  finalOutputs = {}
   for task in outputs:
     if task not in finalOutputs: finalOutputs[task] = []
-    for output in outputs[task]:
-      if output not in deletedFiles: finalOutputs[task].append(output)
+    for internalLoopIteration in outputs[task]:
+      for output in internalLoopIteration:
+        if output not in deletedFiles: finalOutputs[task].append(output)
 
-  outputs = {}
-  outputs = finalOutputs
+  outputs = deepcopy(finalOutputs)
 
 # Determine if any of the tools are being piped together and check if the
 # tools involved can use the stream for input and output.
@@ -852,8 +852,6 @@ def getTaskBlockOutputsAndDependencies(taskBlocks, outputs, dependencies):
       # this block.  These should all be omitted as they are internal to the stream.
       tempOutputs      = {}
       tempDependencies = {}
-      print("WORK FROM HERE")
-      exit(0)
       for task in taskBlock:
         for output in outputs[task]:
           if isinstance(output, list):
@@ -879,5 +877,4 @@ def getTaskBlockOutputsAndDependencies(taskBlocks, outputs, dependencies):
         if tempDependencies[dependent]: tempList.append(dependent)
       dependenciesList.append(tempList)
 
-  for a in outputsList: print(a)
   return outputsList, dependenciesList

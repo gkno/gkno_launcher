@@ -124,12 +124,14 @@ class makefileData:
 
     allOutputs = []
     for outputBlock in reversed(self.taskBlockOutputs):
-      for output in outputBlock:
-        allOutputs.append(output)
+      for inputLoopIteration in outputBlock:
+        for output in inputLoopIteration:
+          allOutputs.append(output)
 
     for task in self.outputs:
-      for output in self.outputs[task]:
-        if output in allOutputs: print(output, end = ' ', file = self.makeFilehandle)
+      for inputLoopIteration in self.outputs[task]:
+        for output in inputLoopIteration:
+          if output in allOutputs: print(output, end = ' ', file = self.makeFilehandle)
 
     print(file = self.makeFilehandle)
     print(file = self.makeFilehandle)
