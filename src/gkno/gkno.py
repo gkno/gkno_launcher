@@ -378,19 +378,26 @@ def main():
     make.setIntermediateFiles(pl.workflow, pl.taskToTool)
 
     # Determine the outputs and dependencies for each block of tasks.
-    make.taskBlockOutputs, make.taskBlockDependencies = getTaskBlockOutputsAndDependencies(make.taskBlocks, make.outputs, make.dependencies)
+    make.taskBlockOutputs, make.taskBlockDependencies = getTaskBlockOutputsAndDependencies(make.taskBlocks, make.outputs, make.dependencies, iLoop.tasks, iLoop.numberOfIterations)
     make.writeAllOutputs()
     determineFinalOutputs(make.deleteFiles, make.outputs)
 
     # Loop over all of the task blocks in the pipeline.
     for tasks, outputs, dependencies in zip(reversed(make.taskBlocks), reversed(make.taskBlockOutputs), reversed(make.taskBlockDependencies)):
-      make.writeInitialInformation(pl.taskToTool, tasks)
-      make.getExecutablePath(tl.paths, pl.taskToTool, tasks)
-      make.writeOutputsToMakefile(outputs)
-      make.writeDependenciesToMakefile(dependencies)
-      make.checkStdout(tasks, pl.arguments['--task-stdout'], mr.hasMultipleRuns)
-      make.generateCommand(tl.argumentInformation, tl.argumentDelimiters, tl.precommands, tl.executables, tl.modifiers, tl.argumentOrder, pl.taskToTool, pl.linkage, tasks, verbose)
-      make.addFileDeletion(tasks)
+
+      # For this taskBlock, determine if the tasks are included in an internal loop.  If
+      # so, loop over the internal loop parameter sets, generating a command for each of
+      # them.
+      if tasks[0] in iLoop.tasks: iterations = iLoop.numberOfIterations
+      else: iterations = 1
+      for counter in range(0, iterations):
+        make.writeInitialInformation(pl.taskToTool, tasks, counter)
+        make.getExecutablePath(tl.paths, pl.taskToTool, tasks, counter)
+        make.writeOutputsToMakefile(outputs[counter], counter)
+      #make.writeDependenciesToMakefile(dependencies)
+      #make.checkStdout(tasks, pl.arguments['--task-stdout'], mr.hasMultipleRuns)
+      #make.generateCommand(tl.argumentInformation, tl.argumentDelimiters, tl.precommands, tl.executables, tl.modifiers, tl.argumentOrder, pl.taskToTool, pl.linkage, tasks, verbose)
+      #make.addFileDeletion(tasks)
       print(file = make.makeFilehandle)
     make.closeMakefile()
 
@@ -402,6 +409,7 @@ def main():
     # Terminate the loop when all the required Makefiles have been produced.
     if make.id == mr.numberDataSets: break
 
+  exit(0)
   # Having established the mode of operation and checked that the command lines are
   # valid etc., ping the website to log use of gkno.
   if verbose: writeTracking(phoneHomeID)

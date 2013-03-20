@@ -834,7 +834,7 @@ def determineToolWriteOrder(workflow, toolsOutputtingToStream, hasPipes):
 # and dependencies are just those of the tool.  If the block is a set of
 # linked tasks, we need only the outputs and dependent files that are not
 # linked between the tools.
-def getTaskBlockOutputsAndDependencies(taskBlocks, outputs, dependencies):
+def getTaskBlockOutputsAndDependencies(taskBlocks, outputs, dependencies, iTasks, numberOfIterations):
   outputsList      = []
   dependenciesList = []
 
@@ -846,35 +846,44 @@ def getTaskBlockOutputsAndDependencies(taskBlocks, outputs, dependencies):
       outputsList.append(outputs[taskBlock[0]])
       dependenciesList.append(dependencies[taskBlock[0]])
     else:
+
+      # Determine if the set of piped tasks are also in an internal loop and so, how
+      # many parameter iterations there are.
+      if taskBlock[0] not in iTasks: numberOfIterations = 1
       
       # Generate a list of all outputs and all dependencies, then check if any of the
       # outputs from any task in this block appear as dependencies for other tasks in
       # this block.  These should all be omitted as they are internal to the stream.
-      tempOutputs      = {}
-      tempDependencies = {}
+      tempOutputs      = []
+      tempDependencies = []
       for task in taskBlock:
-        for output in outputs[task]:
-          if isinstance(output, list):
-            for outputList in output: tempOutputs[outputList] = True
-          else:
-            tempOutputs[output] = True
-        for dependent in dependencies[task]:
-          if isinstance(dependent, list):
-            for dependentList in dependent: tempDependencies[dependentList] = True
-          else:
-            tempDependencies[dependent] = True
+        for counter, internalLoopIteration in enumerate(outputs[task]):
+          tempOutputs.append({})
+          for output in internalLoopIteration: tempOutputs[counter][output] = True
 
-      for dependent in tempDependencies:
-        if dependent in tempOutputs:
-          tempOutputs[dependent]      = False
-          tempDependencies[dependent] = False
+        for counter, internalLoopIteration in enumerate(dependencies[task]):
+          tempDependencies.append({})
+          for dependent in internalLoopIteration: tempDependencies[counter][dependent] = True
+
+      # Check if dependency is an output in the streamed tasks.
+      for counter, internalLoopIteration in enumerate(tempDependencies):
+        for dependent in internalLoopIteration:
+          if dependent in tempOutputs[counter]:
+            tempOutputs[counter][dependent]      = False
+            tempDependencies[counter][dependent] = False
+
       tempList = []
-      for output in tempOutputs:
-        if tempOutputs[output]: tempList.append(output)
+      for counter in range(0, numberOfIterations):
+        tempList.append([])
+        for output in tempOutputs[counter]:
+          if tempOutputs[counter][output]: tempList[counter].append(output)
       outputsList.append(tempList)
+
       tempList = []
-      for dependent in tempDependencies:
-        if tempDependencies[dependent]: tempList.append(dependent)
+      for counter in range(0, numberOfIterations):
+        tempList.append([])
+        for dependent in tempDependencies[counter]:
+          if tempDependencies[counter][dependent]: tempList[counter].append(dependent)
       dependenciesList.append(tempList)
 
   return outputsList, dependenciesList

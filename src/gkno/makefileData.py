@@ -338,44 +338,46 @@ class makefileData:
     print("\t@echo -e \"completed successfully.\"", sep = '', file = self.makeFilehandle)
 
   # Write initial information to the Makefile.
-  def writeInitialInformation(self, taskToTool, taskBlock):
-    if len(taskBlock) > 1:
-      print('### Command line information for the following set of piped tools:', sep = '', file = self.makeFilehandle)
-      for task in taskBlock:
+  def writeInitialInformation(self, taskToTool, taskBlock, iLoopIteration):
+    if iLoopIteration == 0:
+      if len(taskBlock) > 1:
+        print('### Command line information for the following set of piped tools:', sep = '', file = self.makeFilehandle)
+        for task in taskBlock:
+          tool = taskToTool[task]
+          print('###    ', task, ' (', tool, ')', sep = '', file = self.makeFilehandle)
+      else:
+        task = taskBlock[0]
         tool = taskToTool[task]
-        print('###    ', task, ' (', tool, ')', sep = '', file = self.makeFilehandle)
-    else:
-      task = taskBlock[0]
-      tool = taskToTool[task]
-      print('### Command line information for ', task, ' (', tool, ')', sep = '', file = self.makeFilehandle)
+        print('### Command line information for ', task, ' (', tool, ')', sep = '', file = self.makeFilehandle)
 
   # Get the path of the executable.
-  def getExecutablePath(self, paths, taskToTool, taskBlock):
+  def getExecutablePath(self, paths, taskToTool, taskBlock, iLoopIteration):
     er       = errors()
     self.pathList = []
 
-    for task in taskBlock:
-      tool = taskToTool[task]
-      path = paths[tool]
-
-      # Only print out the path if it isn't defined as 'null'.  Unix commands will
-      # be defined as 'null' as they do not need to include a path, for example.
-      pathVariable = ''
-      if path != 'no path':
-        pathVariable = (tool.replace(" ", "_")  + '_PATH').upper()
-        print(pathVariable, "=$(TOOL_BIN)/", path, sep = "" , file = self.makeFilehandle)
-
-      self.pathList.append(pathVariable)
+    if iLoopIteration == 0:
+      for task in taskBlock:
+        tool = taskToTool[task]
+        path = paths[tool]
+  
+        # Only print out the path if it isn't defined as 'null'.  Unix commands will
+        # be defined as 'null' as they do not need to include a path, for example.
+        pathVariable = ''
+        if path != 'no path':
+          pathVariable = (tool.replace(" ", "_")  + '_PATH').upper()
+          print(pathVariable, "=$(TOOL_BIN)/", path, sep = "" , file = self.makeFilehandle)
+  
+        self.pathList.append(pathVariable)
 
   # Write the outputs for the task block to the Makefile. 
-  def writeOutputsToMakefile(self, outputBlock): 
+  def writeOutputsToMakefile(self, outputBlock, iLoopIteration): 
  
     #TODO Handle phony targets
     # Check if the target is a phony target.  If so, define the phony target. 
     if len(outputBlock) == 0: 
       print('NO OUTPUTS: NOT HANDLED PHONY') 
       exit(1) 
-    else: 
+    else:
       for counter, output in enumerate(outputBlock): 
         endOfLine = ' ' if ( (counter + 1) < len(outputBlock)) else ': ' 
         print(output, end = endOfLine, file = self.makeFilehandle) 
