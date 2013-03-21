@@ -308,6 +308,13 @@ def main():
     make.arguments = checkInputLists(tl.argumentInformation, pl.workflow, pl.taskToTool, make.arguments, verbose) # dataChecking.py
     make.prepareForInternalLoop(iLoop.tasks, iLoop.arguments, iLoop.numberOfIterations)
 
+    # Some of the variables use the value MAKEFILE_ID in their names.  This is often used in
+    # the names of temporary files etc and is intended to ensure that if multiple scripts are
+    # generated, these values are all different in each script.  If there are parameters in the
+    # internal loop that use this value, then they need to be modified to include the iteration
+    # number to ensure that the values are still unique.
+    if iLoop.usingInternalLoop: checkMakefileID(make.arguments, iLoop.tasks, iLoop.numberOfIterations)
+
     # Loop over each of the tools in turn and set all of the parameters.  Each
     # task in turn may depend on parameters/outputs of previous tasks and so
     # handling in each task in the order it appears in the pipeline is necessary.
@@ -393,11 +400,11 @@ def main():
       for counter in range(0, iterations):
         make.writeInitialInformation(pl.taskToTool, tasks, counter)
         make.getExecutablePath(tl.paths, pl.taskToTool, tasks, counter)
-        make.writeOutputsToMakefile(outputs[counter], counter)
-      #make.writeDependenciesToMakefile(dependencies)
-      #make.checkStdout(tasks, pl.arguments['--task-stdout'], mr.hasMultipleRuns)
-      #make.generateCommand(tl.argumentInformation, tl.argumentDelimiters, tl.precommands, tl.executables, tl.modifiers, tl.argumentOrder, pl.taskToTool, pl.linkage, tasks, verbose)
-      #make.addFileDeletion(tasks)
+        make.writeOutputsToMakefile(outputs[counter])
+        make.writeDependenciesToMakefile(dependencies[counter])
+        make.checkStdout(tasks, pl.arguments['--task-stdout'], mr.hasMultipleRuns)
+        make.generateCommand(tl.argumentInformation, tl.argumentDelimiters, tl.precommands, tl.executables, tl.modifiers, tl.argumentOrder, pl.taskToTool, pl.linkage, tasks, verbose, counter)
+        make.addFileDeletion(tasks, counter)
       print(file = make.makeFilehandle)
     make.closeMakefile()
 

@@ -96,6 +96,25 @@ def checkInputLists(argumentInformation, workflow, taskToTool, arguments, verbos
 
   return modifiedArguments
 
+# Some of the variables use the value MAKEFILE_ID in their names.  This is often used in
+# the names of temporary files etc and is intended to ensure that if multiple scripts are
+# generated, these values are all different in each script.  If there are parameters in the
+# internal loop that use this value, then they need to be modified to include the iteration
+# number to ensure that the values are still unique.
+def checkMakefileID(arguments, iTasks, numberOfIterations):
+  for task in arguments:
+
+    # Determine if this task is in an internal loop.  If so, loop over each iteration and
+    # check if any of the argument values contain 'MAKEFILE_ID'.
+    if task in iTasks:
+      for iterationCounter, iterationArguments in enumerate(arguments[task]):
+        for argument in iterationArguments:
+          for argumentCounter, value in enumerate(iterationArguments[argument]):
+            if 'MAKEFILE_ID' in value:
+              tempString  = arguments[task][iterationCounter][argument][argumentCounter]
+              replacement = 'MAKEFILE_ID)_' + str(iterationCounter + 1)
+              arguments[task][iterationCounter][argument][argumentCounter] = tempString.replace('MAKEFILE_ID)', replacement)
+
 # For each tool, find the output files.  If these haven't already been given a
 # value, then a value needs to be assigned.  First check if there is a 'construct
 # filenames' block in the json file with instructions on how to build the filename
@@ -527,33 +546,33 @@ def determineDependencies(argumentInformation, workflow, taskToTool, toolsOutput
           if isInput or isDependent or isOutput or isResource:
   
             # If the input/output file is defined, check that the extension is as expected.
-            value = arguments[task][counter][argument][0]
+            for value in arguments[task][counter][argument]:
   
-            # If this file needs to be added to one of the string, check to see if it is a stub
-            # or not.  If so, all of the files associated with the stub need to be added to the
-            # string.
-            isStub = argumentInformation[tool][argument]['stub'] if 'stub' in argumentInformation[tool][argument] else False
-  
-            # If this is a stub, create the string containing all of the files.
-            if isStub:
-  
-              # Do not add the output to the self.outputs structure if the task is outputting
-              # to the stream.  Only add these values if it has been defined (i.e. value is not
-              # and empty string).
-              if value != '':
-                for name in argumentInformation[tool][argument]['outputs']:
+              # If this file needs to be added to one of the string, check to see if it is a stub
+              # or not.  If so, all of the files associated with the stub need to be added to the
+              # string.
+              isStub = argumentInformation[tool][argument]['stub'] if 'stub' in argumentInformation[tool][argument] else False
+    
+              # If this is a stub, create the string containing all of the files.
+              if isStub:
+    
+                # Do not add the output to the self.outputs structure if the task is outputting
+                # to the stream.  Only add these values if it has been defined (i.e. value is not
+                # and empty string).
+                if value != '':
+                  for name in argumentInformation[tool][argument]['outputs']:
+                    if isOutput:
+                      if not outputToStream: outputs[task][counter].append(value + name)
+                    elif isInput:
+                      if not inputIsStream: dependencies[task][counter].append(value + name)
+    
+              # If the filename is not a stub, just include the value.
+              else:
+                if (value != '') and not isFlag:
                   if isOutput:
-                    if not outputToStream: outputs[task][counter].append(value + name)
+                    if not outputToStream: outputs[task][counter].append(value)
                   elif isInput:
-                    if not inputIsStream: dependencies[task][counter].append(value + name)
-  
-            # If the filename is not a stub, just include the value.
-            else:
-              if (value != '') and not isFlag:
-                if isOutput:
-                  if not outputToStream: outputs[task][counter].append(value)
-                elif isInput:
-                 if not inputIsStream: dependencies[task][counter].append(value)
+                   if not inputIsStream: dependencies[task][counter].append(value)
 
     # Update the previous task and previous tool to be the task and tool just evaluated.
     previousTask = task

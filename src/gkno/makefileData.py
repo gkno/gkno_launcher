@@ -178,15 +178,18 @@ class makefileData:
     self.arguments = deepcopy(arguments)
 
   # Loop over each of the tasks in the task block and generate the command line.
-  def generateCommand(self, argumentInformation, delimiters, precommands, executables, modifiers, argumentOrder, taskToTool, linkage, taskBlock, verbose):
-    er           = errors()
-    useStdout    = False
-    lineStart    = "\t"
-    firstCommand = True
+  def generateCommand(self, argumentInformation, delimiters, precommands, executables, modifiers, argumentOrder, taskToTool, linkage, taskBlock, verbose, internalLoopCounter):
+    er                 = errors()
+    useStdout          = False
+    lineStart          = "\t"
+    firstCommand       = True
+    numberOfIterations = len(self.arguments[taskBlock[0]])
     for task, path in zip(taskBlock, self.pathList):
       if firstCommand:
         if len(taskBlock) == 1:
-          print("\t@echo -e \"Executing task: ", taskBlock[-1], '...\\c"', sep = '', file = self.makeFilehandle)
+          print("\t@echo -e \"Executing task: ", taskBlock[-1], sep = '', end = '', file = self.makeFilehandle)
+          if numberOfIterations > 1: print(' (Iteration: ', internalLoopCounter + 1, ')...\\c"', sep = '', file = self.makeFilehandle)
+          else: print('...\\c"', sep = '', file = self.makeFilehandle)
         else:
           print("\t@echo -e \"Executing piped tasks (", taskBlock[0], ' --> ', taskBlock[-1], ')...\\c"', sep = '', file = self.makeFilehandle)
       tool      = taskToTool[task]
@@ -216,10 +219,10 @@ class makefileData:
       toolArgumentOrder = []
       if tool in argumentOrder:
         for argument in argumentOrder[tool]:
-          if argument in self.arguments[task]:
-            if self.arguments[task][argument] != '': toolArgumentOrder.append(argument)
+          if argument in self.arguments[task][internalLoopCounter]:
+            if self.arguments[task][internalLoopCounter][argument] != '': toolArgumentOrder.append(argument)
       else:
-        for argument in self.arguments[task]: toolArgumentOrder.append(argument)
+        for argument in self.arguments[task][internalLoopCounter]: toolArgumentOrder.append(argument)
 
 #FIXME CHECK ON THIS SECTION
 #      argumentDict  = {}
@@ -271,7 +274,6 @@ class makefileData:
         isReplace = False
         if tool in self.addedInformation:
           if argument in self.addedInformation[tool]: isReplace = True
-            #if argumentInformation[tool][argument] == 'replacement': isReplace = True
 
         if argument == 'json parameters':
   
@@ -280,7 +282,7 @@ class makefileData:
           # the block in the json file from which to extract parameters.
           jsonBlock = linkage[task]['json parameters']['json block']
           print(" \\\n\t`python $(GKNO_PATH)/getParameters.py ", end = '', file = self.makeFilehandle)
-          print(self.arguments[task][argument][0], ' ', jsonBlock, '`', sep = '', end = '', file = self.makeFilehandle)
+          print(self.arguments[task][internalLoopCounter][argument][0], ' ', jsonBlock, '`', sep = '', end = '', file = self.makeFilehandle)
 
         # If the argument is a replacement to handle a stream, do not interrogate the
         # tl.toolInfo structure as it doesn't contain the required values (the other
@@ -288,9 +290,9 @@ class makefileData:
         elif isReplace:
 
           # If the line is blank, do not print to file.
-          if not ((argument == '') and (self.arguments[task][argument] == '')):
-            if self.arguments[task][argument][0] == 'no value': print(" \\\n\t", argument, sep = '', end = '', file = self.makeFilehandle)
-            else: print(" \\\n\t", argument, delimiter, self.arguments[task][argument][0], sep = '', end = '', file = self.makeFilehandle)
+          if not ((argument == '') and (self.arguments[task][internalLoopCounter][argument] == '')):
+            if self.arguments[task][internalLoopCounter][argument][0] == 'no value': print(" \\\n\t", argument, sep = '', end = '', file = self.makeFilehandle)
+            else: print(" \\\n\t", argument, delimiter, self.arguments[task][internalLoopCounter][argument][0], sep = '', end = '', file = self.makeFilehandle)
         else:
   
           # Some tools do not require a --argument or -argument in front of each value,
@@ -314,14 +316,14 @@ class makefileData:
           # If the command is a flag, check if the value is 'set' or 'unset'.  If 'set',
           # write out the command.
           if isFlag:
-            if self.arguments[task][argument][0] == 'set': print(" \\\n\t", argument, sep = '', end = '', file = self.makeFilehandle)
+            if self.arguments[task][internalLoopCounter][argument][0] == 'set': print(" \\\n\t", argument, sep = '', end = '', file = self.makeFilehandle)
           else:
   
             # Some command lines allow multiple options to be set and the command line can
             # therefore be repeated multiple times.  If the defined value is a list, this
             # is the case and the command should be written out once for each value in the
             # list.
-            for value in self.arguments[task][argument]:
+            for value in self.arguments[task][internalLoopCounter][argument]:
               if hideArgument: print(" \\\n\t", value, sep = '', end = '', file = self.makeFilehandle)
               elif writeNothing: pass
               elif useStdout: print(" \\\n\t> ", value, sep = '', end = '', file = self.makeFilehandle)
@@ -349,13 +351,14 @@ class makefileData:
         task = taskBlock[0]
         tool = taskToTool[task]
         print('### Command line information for ', task, ' (', tool, ')', sep = '', file = self.makeFilehandle)
+    else: print(file = self.makeFilehandle)
 
   # Get the path of the executable.
   def getExecutablePath(self, paths, taskToTool, taskBlock, iLoopIteration):
-    er       = errors()
-    self.pathList = []
+    er = errors()
 
     if iLoopIteration == 0:
+      self.pathList = []
       for task in taskBlock:
         tool = taskToTool[task]
         path = paths[tool]
@@ -370,7 +373,7 @@ class makefileData:
         self.pathList.append(pathVariable)
 
   # Write the outputs for the task block to the Makefile. 
-  def writeOutputsToMakefile(self, outputBlock, iLoopIteration): 
+  def writeOutputsToMakefile(self, outputBlock): 
  
     #TODO Handle phony targets
     # Check if the target is a phony target.  If so, define the phony target. 
@@ -402,10 +405,9 @@ class makefileData:
 
   # If any intermediate files are marked as to be deleted after this task, put in the
   # command to delete them.
-  def addFileDeletion(self, tasks):
+  def addFileDeletion(self, tasks, iLoopIteration):
     for task in tasks:
       if task in self.deleteFiles:
         print(file = self.makeFilehandle)
-        for argument in self.deleteFiles[task]:
-          for fileToDelete in self.deleteFiles[task][argument]:
-            print("\t@rm -f ", fileToDelete, sep = '', file = self.makeFilehandle)
+        for fileToDelete in self.deleteFiles[task][iLoopIteration]:
+          print("\t@rm -f ", fileToDelete, sep = '', file = self.makeFilehandle)
