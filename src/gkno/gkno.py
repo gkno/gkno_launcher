@@ -336,7 +336,7 @@ def main():
       # respectively.
 
       setPaths(task, tool, tl.argumentInformation, tl.shortForms, pl.argumentInformation, pl.arguments, pl.toolArgumentLinks, make.arguments, verbose)
-  
+
       # Check that all required files and parameters have been set.
       checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.toolsOutputtingToStream, pl.toolArgumentLinks, True, verbose)
 
@@ -416,7 +416,6 @@ def main():
     # Terminate the loop when all the required Makefiles have been produced.
     if make.id == mr.numberDataSets: break
 
-  exit(0)
   # Having established the mode of operation and checked that the command lines are
   # valid etc., ping the website to log use of gkno.
   if verbose: writeTracking(phoneHomeID)

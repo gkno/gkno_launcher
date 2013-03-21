@@ -735,7 +735,7 @@ class pipeline:
             # For tasks that are not part of the internal loop (i.e. they are only run once),
             # set up linkage.
             if targetTask not in iTasks:
-              if targetArgument in arguments[targetTask][0]: targetValue = arguments[targetTask][0][targetArgument]
+              if targetArgument in arguments[targetTask][0]: targetValue = deepcopy(arguments[targetTask][0][targetArgument])
               else: targetValue = []
 
             # If the task is in the internal loop, this task will have multiple iterations with different
@@ -743,7 +743,7 @@ class pipeline:
             else:
               targetValue = []
               if targetTask in arguments:
-                for iteration in arguments[targetTask]: targetValue.append(iteration[targetArgument])
+                for iteration in arguments[targetTask]: targetValue.append(deepcopy(iteration[targetArgument]))
               else:
                 for counter in range(0, numberOfIterations): targetValue.append([])
 
@@ -751,7 +751,7 @@ class pipeline:
             if 'extension' in self.linkage[task][argument]:
               if len(targetValue) != 0:
                 for counterA, iteration in enumerate(targetValue):
-                  for counterB, value in enumerate(iteration): targetValue[counterA][counterB] += self.linkage[task][argument]['extension']
+                  for counterB, value in enumerate(iteration): targetValue[counterA][counterB] += deepcopy(self.linkage[task][argument]['extension'])
 
             # Now update the arguments to include the linked arguments.  There are four possible cases:
             # 1. Both the task in question and the targetTask are not in the internal loop,
