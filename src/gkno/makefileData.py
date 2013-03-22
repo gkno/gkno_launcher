@@ -381,9 +381,15 @@ class makefileData:
       print('NO OUTPUTS: NOT HANDLED PHONY') 
       exit(1) 
     else:
-      for counter, output in enumerate(outputBlock): 
-        endOfLine = ' ' if ( (counter + 1) < len(outputBlock)) else ': ' 
-        print(output, end = endOfLine, file = self.makeFilehandle) 
+
+      # Determine how many output files there are.  If there are multiple output files, 
+      # do not include them all on the same line.  If parallel execution of the makefile
+      # is being used, this could lead to multiple instances of the same task being run.
+      # Instead, Just add the first of the output files to the command line.  The remaining
+      # output files are handled after the recipe has been written.  The remaining files are
+      # listed as output files dependent on this first output file.
+      self.primaryOutput = outputBlock.pop(0)
+      print(self.primaryOutput, sep = '', end = ': ', file = self.makeFilehandle)
 
   # Write the dependencies for the task block to the Makefile.
   def writeDependenciesToMakefile(self, dependencyBlock):
@@ -399,9 +405,30 @@ class makefileData:
       else:
         print(output, end = endOfLine, file = self.makeFilehandle)
 
-  # Close the Makefile.
-  def closeMakefile(self):
-    self.makeFilehandle.close()
+  def handleAdditionalOutputs(self, outputs, dependencies):
+    if len(outputs) != 0:
+      print(file = self.makeFilehandle)
+      for counter, output in enumerate(outputs):
+        print(output, end = '', file = self.makeFilehandle)
+        if counter + 1 == len(outputs): print(':', end = '', file = self.makeFilehandle)
+        print(' ', end = '', file = self.makeFilehandle)
+
+      # In order to avoid triggering multiple instances of the same task, these additional
+      # output files need to include the primaryOutput as a dependent as well as all files
+      # on which the primary output depends.  So, write the primaryOutput (i.e. the one 
+      # that was used in the recipe) and all the files on which this depends as dependent.
+      print(self.primaryOutput, end = '', file = self.makeFilehandle)
+      if len(dependencies) != 0:
+        for dependent in dependencies: print(' ', dependent, sep = '', end = '', file = self.makeFilehandle)
+      print(file = self.makeFilehandle)
+  
+      # Now write the recipe to check if these files need regenerating.
+      print("\t@if test -f $@; then \\", file = self.makeFilehandle)
+      print("\t  touch $@; \\", file = self.makeFilehandle)
+      print("\telse \\", file = self.makeFilehandle)
+      print("\t  rm -f ", self.primaryOutput, "; \\", sep = '', file = self.makeFilehandle)
+      print("\t  $(MAKE) -f ", self.filename, ' ', self.primaryOutput, '; \\', sep = '', file = self.makeFilehandle)
+      print("\tfi", file = self.makeFilehandle)
 
   # If any intermediate files are marked as to be deleted after this task, put in the
   # command to delete them.
@@ -411,3 +438,7 @@ class makefileData:
         print(file = self.makeFilehandle)
         for fileToDelete in self.deleteFiles[task][iLoopIteration]:
           print("\t@rm -f ", fileToDelete, sep = '', file = self.makeFilehandle)
+
+  # Close the Makefile.
+  def closeMakefile(self):
+    self.makeFilehandle.close()
