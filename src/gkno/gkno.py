@@ -404,8 +404,8 @@ def main():
         make.writeDependenciesToMakefile(dependencies[counter])
         make.checkStdout(tasks, pl.arguments['--task-stdout'], mr.hasMultipleRuns)
         make.generateCommand(tl.argumentInformation, tl.argumentDelimiters, tl.precommands, tl.executables, tl.modifiers, tl.argumentOrder, pl.taskToTool, pl.linkage, tasks, verbose, counter)
-        make.handleAdditionalOutputs(outputs[counter], dependencies[counter])
         make.addFileDeletion(tasks, counter)
+        make.handleAdditionalOutputs(outputs[counter], dependencies[counter])
       print(file = make.makeFilehandle)
     make.closeMakefile()
 

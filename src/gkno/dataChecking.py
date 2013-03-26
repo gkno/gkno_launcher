@@ -655,14 +655,18 @@ def determineFilesToDelete(arguments, deleteFiles, iTasks, numberOfIterations, v
         if task in iTasks and deleteAfterTask in iTasks:
           for counter in range(0, numberOfIterations):
             if counter not in output[deleteAfterTask]: output[deleteAfterTask].append([])
-            for value in arguments[task][counter][argument]: output[deleteAfterTask][counter].append(value)
+            for value in arguments[task][counter][argument]: 
+              if extension != '': value += extension
+              output[deleteAfterTask][counter].append(value)
 
         # If task appears in the internal loop, but deleteAfterTask does not, there are (potentially)
         # multiple iterations of task and the defined outputs from each of these are to be deleted
         # after the single iteration of the task defined by deleteAfterTask.
         elif task in iTasks and deleteAfterTask not in iTasks:
           if len(output[deleteAfterTask]) == 0: output[deleteAfterTask].append([])
-          for value in arguments[task][counter][argument]: output[deleteAfterTask][0].append(value)
+          for value in arguments[task][counter][argument]:
+            if extension != '': value += extension
+            output[deleteAfterTask][0].append(value)
 
         # If task is not in the internal loop, but deleteAfterTask is, terminate the script with an
         # error.  In this case, there can be multiple iterations of the task defined by deleteAfterTask
@@ -679,7 +683,9 @@ def determineFilesToDelete(arguments, deleteFiles, iTasks, numberOfIterations, v
         # the same way as if they were both in iTasks.
         elif task not in iTasks and deleteAfterTask not in iTasks:
           if len(output[deleteAfterTask]) == 0: output[deleteAfterTask].append([])
-          for value in arguments[task][0][argument]: output[deleteAfterTask][0].append(value)
+          for value in arguments[task][0][argument]:
+            if extension != '': value += extension
+            output[deleteAfterTask][0].append(value)
 
   return output
 
