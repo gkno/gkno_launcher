@@ -682,6 +682,16 @@ class pipeline:
     self.shortForms['-il']                                             = '--internal-loop'
     self.arguments['--internal-loop']                                  = ''
 
+    self.argumentInformation['--number-jobs']                        = {}
+    self.argumentInformation['--number-jobs']['description']         = 'The number of parallel jobs to be used (only valid in conjunction with ' + \
+    'the --internal-loop option).'
+    self.argumentInformation['--number-jobs']['link to this task']   = 'pipeline'
+    self.argumentInformation['--number-jobs']['short form argument'] = '-nj'
+    self.argumentInformation['--number-jobs']['type']                = 'integer'
+    self.argumentInformation['--number-jobs']['default']             = '1'
+    self.shortForms['-nj']                                             = '--number-jobs'
+    self.arguments['--number-jobs']                                  = ''
+
     self.argumentInformation['--task-stdout']                        = {}
     self.argumentInformation['--task-stdout']['description']         = 'Generate a stdout and stderr for each task.'
     self.argumentInformation['--task-stdout']['link to this task']   = 'pipeline'

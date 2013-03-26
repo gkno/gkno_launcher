@@ -429,7 +429,11 @@ def main():
   if pl.arguments['--execute']:
     for makefile in make.filenames:
       if verbose: writeExecuting(makefile)
-      execute = 'make --file ' + makefile
+
+      # Check if the '--number-jobs' option is set.  If so, request this number of jobs.
+      if pl.arguments['--number-jobs'] != '': execute = 'make -j ' + str(pl.arguments['--number-jobs'])
+      else: execute = 'make'
+      execute += ' --file ' + makefile
       success = subprocess.call(execute.split())
       if verbose: writeComplete(success)
 
