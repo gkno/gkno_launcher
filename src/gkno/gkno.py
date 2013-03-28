@@ -216,8 +216,9 @@ def main():
   # the internal loop.  If so, check that the supplied file exists and read in the information.
   if pl.isPipeline and pl.hasInternalLoop:
     iLoop.checkLoopFile(pl.arguments)
-    if iLoop.usingInternalLoop:
-      iLoop.checkInformation(pl.argumentInformation, pl.shortForms, verbose)
+    if iLoop.usingInternalLoop: iLoop.checkInformation(pl.argumentInformation, pl.shortForms, verbose)
+    else: iLoop.numberOfIterations = 1
+  else: iLoop.numberOfIterations = 1
 
   # Check if an instance was selected.  If so, read the specific instance parameters.
   if verbose: writeCheckingInstanceInformation()
@@ -324,7 +325,7 @@ def main():
       # Check all of the options for each tool and determine if the values are
       # linked to any other tool.  If so, set the values as necessary.
       if pl.isPipeline:
-        pl.toolLinkage(task, tool, tl.argumentInformation[tool], make.arguments, iLoop.tasks, iLoop.numberOfIterations, verbose)
+        pl.toolLinkage(task, tool, tl.argumentInformation[tool], make.arguments, iLoop.usingInternalLoop, iLoop.tasks, iLoop.numberOfIterations, verbose)
 
         # Check all input and output files.  If there are instructions on how to construct
         # filenames, construct them.
@@ -395,9 +396,7 @@ def main():
       # For this taskBlock, determine if the tasks are included in an internal loop.  If
       # so, loop over the internal loop parameter sets, generating a command for each of
       # them.
-      if tasks[0] in iLoop.tasks: iterations = iLoop.numberOfIterations
-      else: iterations = 1
-      for counter in range(0, iterations):
+      for counter in range(0, iLoop.numberOfIterations):
         make.writeInitialInformation(pl.taskToTool, tasks, counter)
         make.getExecutablePath(tl.paths, pl.taskToTool, tasks, counter)
         make.writeOutputsToMakefile(outputs[counter])

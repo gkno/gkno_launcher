@@ -165,7 +165,9 @@ class makefileData:
       if task not in iTasks:
         arguments[task].append(self.arguments[task])
       else:
-        for counter in range(0, numberOfIterations): arguments[task].append(deepcopy(self.arguments[task]))
+        if numberOfIterations == 0: arguments[task].append(deepcopy(self.arguments[task]))
+        else:
+          for counter in range(0, numberOfIterations): arguments[task].append(deepcopy(self.arguments[task]))
 
         # Now that the arguments structure has all of the parameters from the internal arguments, include
         # all of the arguments from the internal loop file.

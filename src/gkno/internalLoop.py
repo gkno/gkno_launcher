@@ -90,3 +90,4 @@ class internalLoop:
 
     # Store the number of iterations in the internal loop.
     self.numberOfIterations = len(self.data['values'])
+    if self.numberOfIterations == 0: self.numberOfIterations = 1
