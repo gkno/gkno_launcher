@@ -1,0 +1,13 @@
+{
+  "instances": {
+    "bob": {
+      "--fasta-reference": "/d1/data/pipeline_resources/references/human_reference.b37.including_decoys/includingMoblist/human_reference_v37_decoys_moblist.fa", 
+      "--vcf": "bob", 
+      "description": "User specified instance", 
+      "--bam": [
+        "a.bam",
+        "b.bam"
+      ]
+    }
+  }
+}

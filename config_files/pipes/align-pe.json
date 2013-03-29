@@ -218,6 +218,20 @@
       "short form argument" : "-rf",
       "type" : "string"
     },
+    "--special-references" : {
+      "description" : "Specifies the prefixes of 'special' reference sequences.",
+      "link to this task" : "align",
+      "link to this argument" : "-sref",
+      "short form argument" : "-sr",
+      "type" : "string"
+    },
+    "--special-reference-hashes" : {
+      "description" : "Specifies the maximum number of hashes for the special reference sequences.",
+      "link to this task" : "align",
+      "link to this argument" : "-srefn",
+      "short form argument" : "-srh",
+      "type" : "integer"
+    },
     "--known-sites" : {
       "description" : "A database of known polymorphic sites to skip over in the recalibration algorithm.",
       "link to this task" : "count-covariates",

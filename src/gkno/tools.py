@@ -31,7 +31,6 @@ class tools:
     self.requiredArgumentFields.append('input')
     self.requiredArgumentFields.append('output')
     self.requiredArgumentFields.append('required')
-    self.requiredArgumentFields.append('resource')
     self.requiredArgumentFields.append('type')
 
     # Setup some structures to hold information on each of the tools.
@@ -211,7 +210,6 @@ class tools:
         elif field == 'output': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
         elif field == 'outputs': self.checkArgumentOutputs(tool, argument, arguments[argument][field], filename)
         elif field == 'required': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
-        elif field == 'resource': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
         elif field == 'replace argument with': pass
         elif field == 'short form argument': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
         elif field == 'stub': self.checkArgumentStub(tool, arguments[argument], argument, arguments[argument][field], filename)

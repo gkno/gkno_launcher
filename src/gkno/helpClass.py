@@ -302,11 +302,21 @@ class helpClass:
     self.writeFormattedText('', description, 0, 2, '')
     print(file = sys.stdout)
 
+    # Write out the pipeline workflow.
+    print('     Workflow:', file = sys.stdout)
+    length = 0
+    for task in pl.workflow: length = len(task) if (len(task) > length) else length
+    length += 4
+    for task in pl.workflow:
+      tool        = pl.taskToTool[task]
+      description = tl.descriptions[tool]
+      self.writeFormattedText(task + ":", description, length, 2, '')
+    print(file = sys.stdout)
+
     # If this pipeline has different instances, print them to screen.
     if len(pl.instances) > 0:
       print('     Instances:', file = sys.stdout)
       length = 0
-      #for instance in pl.information['instances']: length = len(instance) if len(instance) > length else length
       for instance in pl.instances: length = len(instance) if len(instance) > length else length
       length += 4
 

@@ -332,8 +332,8 @@ def main():
         constructFilenames(task, tool, make.arguments, tl.argumentInformation, pl.constructFilenames, pl.toolArgumentLinks, pl.taskToTool, verbose)
   
       # For all files, check that a path has been given.  If a path is set, leave the file
-      # as is.  If no path has been set, check if the file is an input, output or resource
-      # file and use the --input-path, --output-path and --resource-path values
+      # as is.  If no path has been set, check if the file is an input or output
+      # file and use the --input-path and --output-path values
       # respectively.
 
       setPaths(task, tool, tl.argumentInformation, tl.shortForms, pl.argumentInformation, pl.arguments, pl.toolArgumentLinks, make.arguments, verbose)
@@ -382,7 +382,7 @@ def main():
     make.taskBlocks = determineToolWriteOrder(pl.workflow, pl.toolsOutputtingToStream, make.hasPipes)
   
     # Generate scripts to run the selected pipeline.
-    make.openMakefile(sourcePath, pl.isPipeline, pl.arguments['--resource-path'])
+    make.openMakefile(sourcePath, pl.isPipeline)
     make.setIntermediateFiles(pl.workflow, pl.taskToTool)
 
     # Determine the outputs and dependencies for each block of tasks.

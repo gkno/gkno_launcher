@@ -342,9 +342,8 @@ def constructFilenameFromInput(task, tool, iteration, argumentInformation, argum
   if isStub: arguments[task][iteration][outputFile].append(inputFile)
   else: arguments[task][iteration][outputFile].append(inputFile + '.' + argumentInformation[tool][outputFile]['extension'].split('|')[0])
 
-# Check to see if the input file has a path or not.  If not, determine if the
-# file is a resource file or not and set the path to the resources path if
-# it is a resource file, otherwise set it to the input path.
+# Check to see if the input file has a path or not.  If not, set it to the
+# input or the output path.
 def setPaths(task, tool, argumentInformation, shortForms, pipelineArgumentInformation, pipelineArguments, links, arguments, verbose):
 
   # Loop over all the tool arguments and check if the argument is for an input or output
@@ -357,30 +356,28 @@ def setPaths(task, tool, argumentInformation, shortForms, pipelineArgumentInform
       # will catch the omission.
       if (len(arguments[task][counter][argument]) == 0) or (argument == 'json parameters'): continue
   
-      # Check if an input, output or resource file.
+      # Check if an input or an output file.
       isInput    = argumentInformation[tool][argument]['input']
       isOutput   = argumentInformation[tool][argument]['output']
-      isResource = argumentInformation[tool][argument]['resource']
   
       if isInput or isOutput:
   
         # Check the paths and the extension.
         files = []
         for filename in arguments[task][counter][argument]:
-          intermediateFilename = setFile(pipelineArgumentInformation, pipelineArguments, arguments, filename, isInput, isOutput, isResource)
+          intermediateFilename = setFile(pipelineArgumentInformation, pipelineArguments, arguments, filename, isInput, isOutput)
           finalFilename        = checkExtension(argumentInformation, shortForms, links, task, tool, argument, isOutput, intermediateFilename, verbose)
           files.append(finalFilename)
         arguments[task][counter][argument] = deepcopy(files)
 
-# Provided the filename, check if resource, input or output and set the file accordingly.
-def setFile(pipelineArgumentInformation, pipelineArguments, arguments, filename, isInput, isOutput, isResource):
+# Provided the filename, check if input or output and set the file accordingly.
+def setFile(pipelineArgumentInformation, pipelineArguments, arguments, filename, isInput, isOutput):
 
   # Check if the file already contains a path (e.g. already contains the
   # '/' character.
   filePath = ''
   if '/' not in filename:
-    if isResource: filePath = pipelineArguments['--resource-path'] + '/' + filename
-    elif isInput:  filePath = pipelineArguments['--input-path']    + '/' + filename
+    if isInput:  filePath = pipelineArguments['--input-path']    + '/' + filename
     elif isOutput: filePath = pipelineArguments['--output-path']   + '/' + filename
 
   # If the file path is given, ensure that the full path is given. For example,
@@ -533,7 +530,6 @@ def determineDependencies(argumentInformation, workflow, taskToTool, toolsOutput
           # be added to the string containing all files required for this tool to run.
           isInput     = argumentInformation[tool][argument]['input']
           isOutput    = argumentInformation[tool][argument]['output']
-          isResource  = argumentInformation[tool][argument]['resource']
           isDependent = argumentInformation[tool][argument]['dependent']
           isFlag      = True if argumentInformation[tool][argument]['type'] == 'flag' else False
   
@@ -543,7 +539,7 @@ def determineDependencies(argumentInformation, workflow, taskToTool, toolsOutput
           outputToStream = True if task in toolsOutputtingToStream else False
           inputIsStream  = True if (previousTask != '') and (previousTask in toolsOutputtingToStream) else False
   
-          if isInput or isDependent or isOutput or isResource:
+          if isInput or isDependent or isOutput:
   
             # If the input/output file is defined, check that the extension is as expected.
             for value in arguments[task][counter][argument]:

@@ -26,7 +26,6 @@
           "input" : true,
           "output" : false,
           "required" : true,
-          "resource" : false,
           "dependent" : true,
           "type" : "string",
           "extension" : "vcf.gz",

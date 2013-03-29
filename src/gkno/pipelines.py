@@ -638,15 +638,6 @@ class pipeline:
     self.shortForms['-op']                                           = '--output-path'
     self.arguments['--output-path']                                  = '$(PWD)'
 
-    self.argumentInformation['--resource-path']                        = {}
-    self.argumentInformation['--resource-path']['description']         = 'Path for resource files if not defined.  Default: gkno/resources'
-    self.argumentInformation['--resource-path']['link to this task']   = 'pipeline'
-    self.argumentInformation['--resource-path']['short form argument'] = '-rp'
-    self.argumentInformation['--resource-path']['type']                = 'string'
-    self.argumentInformation['--resource-path']['default']             = ''
-    self.shortForms['-rp']                                             = '--resource-path'
-    self.arguments['--resource-path']                                  = ''
-
     self.argumentInformation['--execute']                        = {}
     self.argumentInformation['--execute']['description']         = 'Boolean to determine if the Makefile should be executed.  Default: True'
     self.argumentInformation['--execute']['link to this task']   = 'pipeline'

@@ -83,7 +83,7 @@ class makefileData:
             self.coreArguments[task][argument] = []
 
   # Open the makefile and write the initial information to the file.
-  def openMakefile(self, sourcePath, isPipeline, resourcePath):
+  def openMakefile(self, sourcePath, isPipeline):
 
     # Open a script file.
     self.makeFilehandle = open(self.filenames[self.id - 1], 'w')
@@ -93,8 +93,6 @@ class makefileData:
     print(file = self.makeFilehandle)
     print('GKNO_PATH=', sourcePath, "/src/gkno", sep = '', file = self.makeFilehandle)
     print('TOOL_BIN=', sourcePath, "/tools", sep = '', file = self.makeFilehandle)
-    if resourcePath == '': resourcePath = sourcePath + '/resources'
-    print('RESOURCES=', resourcePath, sep = '', file = self.makeFilehandle)
     print('MAKEFILE_ID=', self.filename.split('/')[-1].split('.')[0], sep = '', file = self.makeFilehandle)
     print(file = self.makeFilehandle)
     print('.DELETE_ON_ERROR:', file = self.makeFilehandle)
