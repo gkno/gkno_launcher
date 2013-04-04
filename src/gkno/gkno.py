@@ -47,8 +47,8 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.51"
-__date__ = "March 2013"
+__version__ = "0.53"
+__date__ = "April 2013"
 
 def main():
 
@@ -281,10 +281,12 @@ def main():
       er.terminate()
 
     # Define the json export object, initialise and then check that the given filename is unique.
+    make.arguments = deepcopy(make.coreArguments)
+    make.prepareForInternalLoop(iLoop.tasks, iLoop.arguments, iLoop.numberOfIterations)
     ei = exportInstance()
     if pl.isPipeline: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, pl.instances, verbose)
     else: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, tl.instances, verbose)
-    ei.getData(gknoHelp, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.taskToTool, pl.argumentInformation, pl.arguments, pl.toolsOutputtingToStream, pl.toolArgumentLinks, make.coreArguments, verbose)
+    ei.getData(gknoHelp, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.taskToTool, pl.argumentInformation, pl.arguments, pl.toolsOutputtingToStream, pl.toolArgumentLinks, make.arguments, verbose)
     if pl.isPipeline: ei.writeNewConfigurationFile(sourcePath, 'pipes', ins.externalInstances, pl.instances, cl.linkedArguments)
     else: ei.writeNewConfigurationFile(sourcePath, 'tools', ins.externalInstances, tl.instances, cl.linkedArguments)
 
@@ -435,6 +437,12 @@ def main():
       execute += ' --file ' + makefile
       success = subprocess.call(execute.split())
       if verbose: writeComplete(success)
+
+  # If the makefile was succesfully run, finish gkno with the exit condition of 0.
+  # If the makefile failed to run, finish with the exit condition 3.  A failure
+  # prior to execution of the makefile uses the exit condition 2.
+  if success == 0: exit(0)
+  else: exit(3)
 
 if __name__ == "__main__":
   main()

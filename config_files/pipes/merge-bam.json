@@ -82,10 +82,20 @@
     "default" : {
       "description" : "Default instance requires user to input all input filenames."
     },
+    "test" : {
+      "description" : "Test instance for the test harness.",
+      "--bam" : [
+        "$(RESOURCES)/tutorial/current/simulated_reads.bam",
+        "$(RESOURCES)/tutorial/current/simulated_reads_set2.bam"
+      ],
+      "--out" : "$(PWD)/simulated_reads"
+    },
     "tutorial" : {
       "description" : "Tutorial instance uses files in the 'current' tutorial resources.",
-      "--bam" : "$(RESOURCES)/tutorial/current/simulated_reads.bam",
-      "--bam" : "$(RESOURCES)/tutorial/current/simulated_reads_set2.bam",
+      "--bam" : [
+        "$(RESOURCES)/tutorial/current/simulated_reads.bam",
+        "$(RESOURCES)/tutorial/current/simulated_reads_set2.bam"
+      ],
       "--out" : "$(PWD)/simulated_reads"
     }
   }

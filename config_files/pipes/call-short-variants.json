@@ -184,6 +184,20 @@
     "default" : {
       "description" : "The default parameters for short-variant calling.  Assumed low coverage data for a large population."
     },
+    "test" : {
+      "description" : "Test instance for the test harness.",
+      "--bam" : "$(RESOURCES)/tutorial/current/simulated_reads.bam",
+      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--min-alternate-count" : "1",
+      "--min-alternate-qsum" : "20"
+    },
+    "tutorial" : {
+      "description" : "Tutorial instance uses lenient parameters so that variants are discovered with the simulated data.",
+      "--bam" : "$(RESOURCES)/tutorial/current/simulated_reads.bam",
+      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--min-alternate-count" : "1",
+      "--min-alternate-qsum" : "20"
+    },
     "human" : {
       "description" : "The human instance will call on the autosome only using segments of DNA of 1Mbp in length.",
       "--fasta" : "$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"
@@ -192,13 +206,6 @@
       "description" : "The human instance will call on the autosome only using segments of DNA of 1Mbp in length.",
       "--fasta" : "$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa",
       "--min-alternate-count" : "5"
-    },
-    "tutorial" : {
-      "description" : "Tutorial instance uses lenient parameters so that variants are discovered with the simulated data.",
-      "--bam" : "$(RESOURCES)/tutorial/current/simulated_reads.bam",
-      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
-      "--min-alternate-count" : "1",
-      "--min-alternate-qsum" : "20"
     }
   }
 }

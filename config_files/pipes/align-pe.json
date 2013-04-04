@@ -268,6 +268,18 @@
     "default" : {
       "description" : "Default instance requires user to input all input filenames."
     },
+    "test" : {
+      "description" : "Test instance for the test harness.",
+      "--mosaik-jump-database" : "$(RESOURCES)/tutorial/current/test_genome_10",
+      "--mosaik-reference" : "$(RESOURCES)/tutorial/current/test_genome.dat",
+      "--fastq" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq",
+      "--fastq2" : "$(RESOURCES)/tutorial/current/simulated_reads_2.fq",
+      "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
+      "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
+      "--known-sites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf",
+      "--reference-fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--hash-size" : "10"
+    },
     "human" : {
       "description" : "Human instance uses the human reference from the resources.  It is assumed that the Mosaik reference files have been created in the current working directory.",
       "--mosaik-jump-database" : "$(PWD)/human_reference_v37_decoys_moblist_15",

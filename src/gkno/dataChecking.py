@@ -810,11 +810,11 @@ def determinePiping(arguments, argumentInformation, toolsDemandingInputStream, t
 
         # If no instructions are provided on how to handle a streaming input, terminate.
         if not canOutputToStream:
-          er.noOutputStreamInstructions(True, "\t", task, tool)
+          er.noOutputStreamInstructions(True, task, tool)
           er.terminate()
 
         if not canAcceptStream:
-          er.noInputStreamInstructions(True, "\t", nextTask, nextTool)
+          er.noInputStreamInstructions(True, nextTask, nextTool)
           er.terminate()
 
     # Having determined all arguments that are modified, add the necessary arguments to the

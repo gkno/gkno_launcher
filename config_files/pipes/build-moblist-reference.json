@@ -1,5 +1,5 @@
 {
-  "description" : "Concatenate reference fasta files and enerate Mosaik reference and jump database.",
+  "description" : "Concatenate reference fasta files and generate Mosaik reference and jump database.",
   "workflow" : [
     "merge-fasta",
     "index-fasta",
@@ -86,13 +86,14 @@
     "default" : {
       "description" : "Default instance requires user to input all input filenames."
     },
-    "human" : {
-      "description" : "Human instance builds the reference using the 'current' human resources.",
+    "test" : {
+      "description" : "Test instance for the test harness.",
       "--fasta" : [
-        "$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa",
-        "$(RESOURCES)/homo_sapiens/current/mobile_element_sequences.fa"
+        "$(RESOURCES)/tutorial/current/test_genome.fa",
+        "$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"
       ],
-      "--out" : "human_reference_v37_decoys_moblist.fa"
+      "--hash-size" : "10",
+      "--out" : "test_genome_moblist.fa"
     },
     "tutorial" : {
       "description" : "Tutorial instance builds the reference using the 'current' tutorial resources.",
@@ -100,7 +101,16 @@
         "$(RESOURCES)/tutorial/current/test_genome.fa",
         "$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"
       ],
+      "--hash-size" : "10",
       "--out" : "test_genome_moblist.fa"
+    },
+    "human" : {
+      "description" : "Human instance builds the reference using the 'current' human resources.",
+      "--fasta" : [
+        "$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa",
+        "$(RESOURCES)/homo_sapiens/current/mobile_element_sequences.fa"
+      ],
+      "--out" : "human_reference_v37_decoys_moblist.fa"
     }
   }
 }

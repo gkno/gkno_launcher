@@ -1311,6 +1311,32 @@ class errors:
     self.writeFormattedText()
     self.hasError = True
 
+  # If a tool is instructed to accept a stream as input, but instructions are not included in the
+  # configuration file, terminate.
+  def noInputStreamInstructions(self, newLine, task, tool):
+    if newLine: print(file=sys.stderr)
+    text = 'Insufficient information for handling streaming tools.'
+    self.text.append(text)
+    text = 'The task \'' + task + '\' which uses the tool \'' + tool  + '\' accepts a stream as input as part of this pipeline.  However, ' + \
+    'no instructions appear in the configuration file for this tool on how to deal with an input stream.  Please modify the tool configuration ' + \
+    'file to allow accepting an input stream, or modify the pipeline configuration file to remove the streamed input.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
+  # If a tool is instructed to output to stream, but instructions are not included in the
+  # configuration file, terminate.
+  def noOutputStreamInstructions(self, newLine, task, tool):
+    if newLine: print(file=sys.stderr)
+    text = 'Insufficient information for handling streaming tools.'
+    self.text.append(text)
+    text = 'The task \'' + task + '\' using tool \'' + tool + '\' is instructed to output to a stream, however, the configuration file for ' + \
+    'this tool provides no instructions on outputting to a stream.  Please modify the tool configuration ' + \
+    'file to allow accepting an input stream, or modify the pipeline configuration file to remove the streamed input.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
   ######################
   # Internal loop errors
   ######################

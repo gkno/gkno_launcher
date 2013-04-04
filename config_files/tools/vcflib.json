@@ -117,6 +117,48 @@
           "description" : "Default instance requires the users input for all files."
         }
       }
+    },
+
+    "vcflib-sort" : {
+      "description" : "Sort a vcf file.",
+      "path" : "vcflib",
+      "executable" : "vcfsort",
+      "hide tool" : false,
+      "help" : "--help|-h",
+      "arguments" : {
+        "--in" : {
+          "description" : "The input vcf file.",
+          "short form argument" : "-i",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "dependent" : false,
+          "extension" : "vcf|vcf.gz",
+          "if input is stream" : "do not include",
+          "type" : "string"
+        },
+        "--out" : {
+          "description" : "The output sorted VCF file.",
+          "short form argument" : "-o",
+          "output" : true,
+          "input" : false,
+          "required" : true,
+          "dependent" : false,
+          "type" : "string",
+          "extension" : "sorted.vcf",
+          "if output to stream" : "do not include",
+          "modify argument name on command line" : "stdout"
+        }
+      },
+      "argument order" : [
+        "--in",
+        "--out"
+      ],
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
+        }
+      }
     }
   }
 }

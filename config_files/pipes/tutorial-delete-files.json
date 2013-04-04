@@ -1,6 +1,5 @@
 {
   "description" : "Simple tutorial pipeline to demonstrate how to delete intermediate files.",
-  "resource path" : "tutorial/current",
   "workflow" : [
     "build-reference",
     "build-jump-database",
@@ -25,7 +24,7 @@
         "filename root" : "from argument",
         "get root from task" : "build-reference",
         "get root from argument" : "-fr",
-        "remove input extension" : "true",
+        "remove input extension" : true,
         "additional text from parameters" : {
           "order" : [
             "filename root",
@@ -33,7 +32,8 @@
           ],
           "hash-size" : {
             "get parameter from task" : "build-jump-database",
-            "get parameter from argument" : "-hs"
+            "get parameter from argument" : "-hs",
+            "remove extension" : true
           }
         }
       }
@@ -96,6 +96,14 @@
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-jmp"
       },
+      "-annse" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-annse"
+      },
+      "-annpe" : {
+        "link to this task" : "generate-mosaik-parameters",
+        "link to this argument" : "-annpe"
+      },
       "json parameters" : {
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-out",
@@ -127,50 +135,56 @@
       "link to this task" : "build-reference",
       "link to this argument" : "-fr",
       "short form argument" : "-f",
-      "type" : "string",
-      "default" : "test_genome.fa"
+      "type" : "string"
     },
     "--hash-size" : {
       "description" : "hash-size",
       "link to this task" : "build-jump-database",
       "link to this argument" : "-hs",
       "type" : "integer",
-      "short form argument" : "-hs",
-      "default" : "10"
+      "short form argument" : "-hs"
     },
     "--fastq" : {
       "short form argument" : "-q",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq1",
       "description" : "The input fastq file (first mate)",
-      "type" : "string",
-      "user entry required" : "true",
-      "default" : "$(RESOURCES)/simulated_reads_1.fq"
+      "type" : "string"
     },
     "--fastq2" : {
       "short form argument" : "-q2",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq2",
       "description" : "The input fastq file (second mate)",
-      "type" : "string",
-      "user entry required" : "true",
-      "default" : "$(RESOURCES)/simulated_reads_2.fq"
+      "type" : "string"
     },
     "--mosaik-reference" : {
       "short form argument" : "-r",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-ref",
       "description" : "Mosaik reference archive",
-      "type" : "string",
-      "default" : "$(RESOURCES)/test_genome.dat"
+      "type" : "string"
     },
     "--mosaik-jump-database" : {
       "short form argument" : "-j",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-jmp",
       "description" : "Stub for Mosaik jump table files",
-      "type" : "string",
-      "default" : "$(RESOURCES)/test_genome_15"
+      "type" : "string"
+    },
+    "--ann-se" : {
+      "description" : "Neural network file for Mosaik mapping quality scores (single end).",
+      "short form argument" : "-as",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-annse",
+      "type" : "string"
+    },
+    "--ann-pe" : {
+      "description" : "Neural network file for Mosaik mapping quality scores (paired end).",
+      "short form argument" : "-ap",
+      "link to this task" : "generate-mosaik-parameters",
+      "link to this argument" : "-annpe",
+      "type" : "string"
     },
     "--batch-size" : {
       "short form argument" : "-b",
@@ -184,8 +198,7 @@
       "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-st",
-      "type" : "string",
-      "default" : "illumina"
+      "type" : "string"
     },
     "--median-fragment-length" : {
       "short form argument" : "-mfl",
@@ -204,10 +217,28 @@
     },
     "align" : {
       "-out" : {
-        ".bam" : {
-          "delete after task" : "sort-primary-bam"
-        }
+        "output extension" : [
+          ".bam"
+        ],
+        "delete after task" : [
+          "sort-primary-bam"
+        ]
       }
+    }
+  },
+
+  "instances" : {
+    "default" : {
+      "description" : "The default instance sets the parameters for the tutorial.",
+      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--hash-size" : "10",
+      "--fastq" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq",
+      "--fastq2" : "$(RESOURCES)/tutorial/current/simulated_reads_2.fq",
+      "--mosaik-reference" : "$(RESOURCES)/tutorial/current/test_genome.dat",
+      "--mosaik-jump-database" : "$(RESOURCES)/tutorial/current/test_genome_10",
+      "--sequencing-technology" : "illumina",
+      "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
+      "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann"
     }
   }
 }

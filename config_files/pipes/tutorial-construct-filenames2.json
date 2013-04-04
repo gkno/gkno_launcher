@@ -1,6 +1,5 @@
 {
   "description" : "Generate Mosaik reference and jump database.",
-  "resource path" : "tutorial/current",
   "workflow" : [
     "build-reference",
     "build-jump-database"
@@ -15,7 +14,7 @@
         "filename root" : "from argument",
         "get root from task" : "build-reference",
         "get root from argument" : "-fr",
-        "remove input extension" : "true",
+        "remove input extension" : true,
         "additional text from parameters" : {
           "order" : [
             "filename root",
@@ -24,12 +23,13 @@
           ],
           "hash-size" : {
             "get parameter from task" : "build-jump-database",
-            "get parameter from argument" : "-hs"
+            "get parameter from argument" : "-hs",
+            "remove extension" : true
           },
           "extra-name" : {
             "get parameter from task" : "build-reference",
             "get parameter from argument" : "-fr",
-            "remove extension" : "true"
+            "remove extension" : true
           }
         }
       }
@@ -48,16 +48,21 @@
       "link to this task" : "build-reference",
       "link to this argument" : "-fr",
       "short form argument" : "-f",
-      "type" : "string",
-      "default" : "test_genome.fa"
+      "type" : "string"
     },
     "--hash-size" : {
       "description" : "hash-size",
       "link to this task" : "build-jump-database",
       "link to this argument" : "-hs",
       "type" : "integer",
-      "short form argument" : "-hs",
-      "default" : "10"
+      "short form argument" : "-hs"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "The default instance sets the parameters for the tutorial.",
+      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--hash-size" : "10"
     }
   }
 }

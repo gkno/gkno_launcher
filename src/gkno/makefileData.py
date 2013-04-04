@@ -93,6 +93,7 @@ class makefileData:
     print(file = self.makeFilehandle)
     print('GKNO_PATH=', sourcePath, "/src/gkno", sep = '', file = self.makeFilehandle)
     print('TOOL_BIN=', sourcePath, "/tools", sep = '', file = self.makeFilehandle)
+    print('RESOURCES=', sourcePath + '/resources', sep = '', file = self.makeFilehandle)
     print('MAKEFILE_ID=', self.filename.split('/')[-1].split('.')[0], sep = '', file = self.makeFilehandle)
     print(file = self.makeFilehandle)
     print('.DELETE_ON_ERROR:', file = self.makeFilehandle)

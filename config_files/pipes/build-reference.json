@@ -56,6 +56,11 @@
     "default" : {
       "description" : "Default instance requires user to input all input filenames."
     },
+    "test" : {
+      "description" : "Test instance for the test harness.",
+      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--hash-size" : "10"
+    },
     "human" : {
       "description" : "Human instance builds the reference using the 'current' human resources.",
       "--fasta" : "$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"

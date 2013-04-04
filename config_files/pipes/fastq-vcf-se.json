@@ -45,7 +45,7 @@
         "filename root" : "from argument",
         "get root from task" : "build-reference",
         "get root from argument" : "-fr",
-        "remove input extension" : "true"
+        "remove input extension" : true
       }
     },
     "build-jump-database" : {
@@ -53,7 +53,7 @@
         "filename root" : "from argument",
         "get root from task" : "build-reference",
         "get root from argument" : "-fr",
-        "remove input extension" : "true",
+        "remove input extension" : true,
         "additional text from parameters" : {
           "order" : [
             "filename root",
@@ -61,7 +61,8 @@
           ],
           "hash-size" : {
             "get parameter from task" : "build-jump-database",
-            "get parameter from argument" : "-hs"
+            "get parameter from argument" : "-hs",
+            "remove extension" : true
           }
         }
       }
@@ -266,12 +267,14 @@
     },
     "align" : {
       "-out" : {
-        ".bam" : {
-          "delete after task" : "sort-primary-bam"
-        },
-        ".multiple.bam" : {
-          "delete after task" : "sort-multiple-bam"
-        }
+        "output extension" : [
+          ".bam",
+          ".multiple.bam"
+        ],
+        "delete after task" : [
+          "sort-primary-bam",
+          "sort-multiple-bam"
+        ]
       }
     },
     "sort-primary-bam" : {
@@ -284,6 +287,16 @@
   "instances" : {
     "default" : {
       "description" : "The default instance requires the user to input all parameters and files."
+    },
+    "test" : {
+      "description" : "Test instance for the test harness.",
+      "--hash-size" : "10",
+      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--fastq" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq",
+      "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
+      "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
+      "--knownSites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf",
+      "--sequencing-technology" : "illumina"
     },
     "tutorial" : {
       "description" : "The tutorial instance uses files from the tutorial resources.",

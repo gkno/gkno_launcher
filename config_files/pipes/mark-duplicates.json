@@ -25,6 +25,10 @@
   "instances" : {
     "default" : {
       "description" : "The default operation requires the user to set all parameters."
+    },
+    "test" : {
+      "description" : "Test instance for the test harness.",
+      "--bam" : "$(RESOURCES)/tutorial/current/simulated_reads.bam"
     }
   }
 }

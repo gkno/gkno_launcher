@@ -3,14 +3,14 @@
   "workflow" : [
     "build-reference",
     "build-jump-database",
+    "index-fasta",
+    "create-sequence-dictionary",
     "generate-mosaik-parameters",
     "build-read-archive",
     "align",
     "sort-primary-bam",
     "sort-multiple-bam",
     "index-primary-bam",
-    "index-fasta",
-    "create-sequence-dictionary",
     "count-covariates",
     "recalibrate-bq",
     "mark-duplicates",
@@ -19,17 +19,28 @@
     "left-align-indels",
     "variant-call"
   ],
+  "internal loop" : [
+    "generate-mosaik-parameters",
+    "build-read-archive",
+    "align",
+    "sort-primary-bam",
+    "sort-multiple-bam",
+    "index-primary-bam",
+    "count-covariates",
+    "recalibrate-bq",
+    "mark-duplicates"
+  ],
   "tools" : {
     "build-reference" : "mosaik-build-reference",
     "build-jump-database" : "mosaik-jump",
+    "index-fasta" : "samtools-index-fasta",
+    "create-sequence-dictionary" : "picard-create-sequence-dictionary",
     "generate-mosaik-parameters" : "premo",
     "build-read-archive" : "mosaik-build-fastq",
     "align" : "mosaik-aligner",
     "sort-primary-bam" : "bamtools-sort",
     "sort-multiple-bam" : "bamtools-sort",
     "index-primary-bam" : "bamtools-index",
-    "index-fasta" : "samtools-index-fasta",
-    "create-sequence-dictionary" : "picard-create-sequence-dictionary",
     "count-covariates" : "gatk-count-covariates",
     "recalibrate-bq" : "gatk-recalibrate-bq",
     "mark-duplicates" : "picard-mark-duplicates",
@@ -59,7 +70,6 @@
         "get root from argument" : "-fr",
         "remove input extension" : true,
         "additional text from parameters" : {
-          "separator" : ".",
           "order" : [
             "filename root",
             "hash-size"
@@ -78,6 +88,18 @@
       "-ia" : {
         "link to this task" : "build-reference",
         "link to this argument" : "-oa"
+      }
+    },
+    "index-fasta" : {
+      "--in" : {
+        "link to this task" : "build-reference",
+        "link to this argument" : "-fr"
+      }
+    },
+    "create-sequence-dictionary" : {
+      "REFERENCE" : {
+        "link to this task" : "index-fasta",
+        "link to this argument" : "--in"
       }
     },
     "generate-mosaik-parameters" : {
@@ -167,18 +189,6 @@
       "-in" : {
         "link to this task" : "sort-primary-bam",
         "link to this argument" : "-out"
-      }
-    },
-    "index-fasta" : {
-      "--in" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-fr"
-      }
-    },
-    "create-sequence-dictionary" : {
-      "REFERENCE" : {
-        "link to this task" : "index-fasta",
-        "link to this argument" : "--in"
       }
     },
     "count-covariates" : {
@@ -284,8 +294,7 @@
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-jmp",
       "description" : "Stub for Mosaik jump table files",
-      "type" : "string",
-      "default" : "$(RESOURCES)/test_genome_15"
+      "type" : "string"
     },
     "--batch-size" : {
       "short form argument" : "-b",
@@ -329,7 +338,7 @@
       "short form argument" : "-o",
       "type" : "string"
     },
-    "--knownSites" : {
+    "--known-sites" : {
       "description" : "A database of known polymorphic sites to skip over in the recalibration algorithm.",
       "link to this task" : "count-covariates",
       "link to this argument" : "-knownSites",
@@ -371,6 +380,16 @@
     "default" : {
       "description" : "The default instance requires the user to input all parameters and files."
     },
+    "test" : {
+      "description" : "Test instance for the test harness.",
+      "--hash-size" : "10",
+      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--fastq" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq",
+      "--fastq2" : "$(RESOURCES)/tutorial/current/simulated_reads_2.fq",
+      "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
+      "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
+      "--known-sites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf"
+    },
     "tutorial" : {
       "description" : "The tutorial instance uses files from the tutorial resources.",
       "--hash-size" : "10",
@@ -379,7 +398,7 @@
       "--fastq2" : "$(RESOURCES)/tutorial/current/simulated_reads_2.fq",
       "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
       "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
-      "--knownSites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf"
+      "--known-sites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf"
     }
   }
 }
