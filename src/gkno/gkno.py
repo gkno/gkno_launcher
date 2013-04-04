@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.53"
+__version__ = "0.54"
 __date__ = "April 2013"
 
 def main():
@@ -398,7 +398,7 @@ def main():
       # For this taskBlock, determine if the tasks are included in an internal loop.  If
       # so, loop over the internal loop parameter sets, generating a command for each of
       # them.
-      for counter in range(0, iLoop.numberOfIterations):
+      for counter in range(0, len(outputs)):
         make.writeInitialInformation(pl.taskToTool, tasks, counter)
         make.getExecutablePath(tl.paths, pl.taskToTool, tasks, counter)
         make.writeOutputsToMakefile(outputs[counter])

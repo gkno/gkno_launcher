@@ -175,7 +175,8 @@ def constructFilenames(task, tool, arguments, argumentInformation, constructFile
                 shortForm = argumentInformation[tool][argument]['short form argument'] if 'short form argument' in \
                 argumentInformation[tool][argument] else ''
                 if task in links:
-                  pipelineArgument = ''
+                  pipelineArgument  = ''
+                  pipelineShortForm = ''
                   if argument in links[task]:
                     pipelineArgument  = links[task][argument][0]
                     pipelineShortForm = links[task][argument][1]
