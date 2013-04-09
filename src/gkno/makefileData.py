@@ -17,6 +17,7 @@ class makefileData:
     self.dependencies           = {}
     self.finalArguments         = {}
     self.hasPipes               = False
+    self.intermediateFiles      = []
     self.outputs                = {}
     self.taskBlocks             = []
     self.taskBlocksOutputs      = []
@@ -111,9 +112,15 @@ class makefileData:
     if len(self.deleteFiles) != 0:
       print('.INTERMEDIATE:', end = '', file = self.makeFilehandle)
       for task in self.deleteFiles:
-        for iteration in self.deleteFiles[task]:
-          for fileToDelete in iteration:
+        for counter, iteration in enumerate(self.deleteFiles[task]):
+          for fileToDelete in self.deleteFiles[task][counter]:
             print(fileToDelete, end = ' ', file = self.makeFilehandle)
+
+            # Put all of the intermediate files in a list.  This will be used to
+            # ensure that the intermediate files are not included in the list of
+            # output files.
+            self.intermediateFiles.append(fileToDelete)
+
       print(file = self.makeFilehandle)
 
   # Write out all of the output files generated.
@@ -130,7 +137,7 @@ class makefileData:
     for task in self.outputs:
       for inputLoopIteration in self.outputs[task]:
         for output in inputLoopIteration:
-          if output in allOutputs: print(output, end = ' ', file = self.makeFilehandle)
+          if output in allOutputs and output not in self.intermediateFiles: print(output, end = ' ', file = self.makeFilehandle)
 
     print(file = self.makeFilehandle)
     print(file = self.makeFilehandle)

@@ -26,10 +26,15 @@ class internalLoop:
     self.usingInternalLoop  = False
 
   # Check for existence of the requested file.
-  def checkLoopFile(self, arguments):
+  def checkLoopFile(self, resourcePath, arguments):
     self.filename = arguments['--internal-loop']
     if self.filename != '':
-      io                     = files()
+      io = files()
+
+      # The filename path can contain the term '$(RESOURCES)' in keeping with the style
+      # used in the makefile.  Before attempting to open a file containing this address, 
+      # it must be converted into a real location.
+      if self.filename.startswith('$(RESOURCES)'): self.filename = self.filename.replace('$(RESOURCES)', resourcePath)
       self.data              = io.getJsonData(self.filename, True)
       self.usingInternalLoop = True
 

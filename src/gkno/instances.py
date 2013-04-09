@@ -97,7 +97,7 @@ class instances:
 
   # If the instance is for a pipeline, all of the commands appearing in the instance will be pipeline commands.
   # These need to be converted to command line arguments for the individual tools.
-  def convertPipeArgumentsToToolArguments(self, arguments, shortForms, verbose):
+  def convertPipeArgumentsToToolArguments(self, arguments, shortForms, pipelineArguments, verbose):
     er        = errors()
     shortForm = ''
     value     = ''
@@ -117,13 +117,16 @@ class instances:
           er.terminate()
 
         # Determine the tool and argument to which the pipeline argument points.
-        tool         = arguments[argument]['link to this task']
-        toolArgument = arguments[argument]['link to this argument']
-        if tool not in self.arguments: self.arguments[tool] = {}
-        if toolArgument not in self.arguments[tool]: self.arguments[tool][toolArgument] = []
-        if type(value) == list:
-          for entry in value: self.arguments[tool][toolArgument].append(entry)
-        else: self.arguments[tool][toolArgument].append(value)
+        tool = arguments[argument]['link to this task']
+        if tool == 'pipeline':
+          pipelineArguments[argument] = value
+        else:
+          toolArgument = arguments[argument]['link to this argument']
+          if tool not in self.arguments: self.arguments[tool] = {}
+          if toolArgument not in self.arguments[tool]: self.arguments[tool][toolArgument] = []
+          if type(value) == list:
+            for entry in value: self.arguments[tool][toolArgument].append(entry)
+          else: self.arguments[tool][toolArgument].append(value)
 
   # If the instance is for a tool, set the self.arguments structure in the same format as the other
   # arguments structures.

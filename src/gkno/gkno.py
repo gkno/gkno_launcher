@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.54"
+__version__ = "0.55"
 __date__ = "April 2013"
 
 def main():
@@ -212,26 +212,26 @@ def main():
   cl.parseCommandLine(tl.tool, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.argumentInformation, pl.shortForms, pl.taskToTool, verbose)
   if verbose: writeDone()
 
-  # If this is a pipeline and internal loops are permitted, check if the user has requested use of
-  # the internal loop.  If so, check that the supplied file exists and read in the information.
-  if pl.isPipeline and pl.hasInternalLoop:
-    iLoop.checkLoopFile(pl.arguments)
-    if iLoop.usingInternalLoop: iLoop.checkInformation(pl.argumentInformation, pl.shortForms, verbose)
-    else: iLoop.numberOfIterations = 1
-  else: iLoop.numberOfIterations = 1
-
   # Check if an instance was selected.  If so, read the specific instance parameters.
   if verbose: writeCheckingInstanceInformation()
   ins.getInstanceName(cl.uniqueArguments, cl.argumentList, verbose)
 
   if pl.isPipeline:
     ins.getInstanceArguments(sourcePath + '/config_files/pipes/', pl.pipelineName, pl.instances, verbose)
-    ins.convertPipeArgumentsToToolArguments(pl.argumentInformation, pl.shortForms, verbose)
+    ins.convertPipeArgumentsToToolArguments(pl.argumentInformation, pl.shortForms, pl.arguments, verbose)
   else:
     ins.getInstanceArguments(sourcePath + '/config_files/tools/', tl.tool, tl.instances, verbose)
     ins.setToolArguments(tl.tool, verbose)
   ins.checkInstanceArguments(pl.taskToTool, tl.argumentInformation, tl.shortForms, verbose)
   if verbose: writeDone()
+
+  # If this is a pipeline and internal loops are permitted, check if the user has requested use of
+  # the internal loop.  If so, check that the supplied file exists and read in the information.
+  if pl.isPipeline and pl.hasInternalLoop:
+    iLoop.checkLoopFile(sourcePath + '/resources', pl.arguments)
+    if iLoop.usingInternalLoop: iLoop.checkInformation(pl.argumentInformation, pl.shortForms, verbose)
+    else: iLoop.numberOfIterations = 1
+  else: iLoop.numberOfIterations = 1
 
   # If the pipeline is going to be run multiple times for a different set of input
   # files, the '--multiple-runs (-mr)' argument can be set.  If this is set, the
