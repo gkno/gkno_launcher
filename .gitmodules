@@ -34,3 +34,6 @@
 [submodule "tools/tabix"]
 	path = tools/tabix
 	url = git://github.com/gkno/tabix.git
+[submodule "tools/Tangram"]
+	path = tools/Tangram
+	url = git://github.com/gkno/Tangram.git
