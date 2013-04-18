@@ -724,6 +724,20 @@ class errors:
     self.writeFormattedText()
     self.hasError = True
 
+  # If the linkage section contains a list for the linkedTask or linkedArgument field and the
+  # associated linkedTask/linkedArgument is not a list, fail.
+  def linkedTaskArgumentIsNotAList(self, newLine, task, argument, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Inconsistent lists in linkage section of pipeline configuration file: ' + filename
+    self.text.append(text)
+    text = 'The linkage section for task \'' + task + '\', argument \'' + argument + '\' contains a list for either the linked task or the ' + \
+    'linked argument, but not both.  The \'link to this task\' and the \'link to this argument\' sections can be a list, but if either is, then ' + \
+    'both must be.  The linked task list would contain the tasks from which to link an argument and the linked argument list would be the ' + \
+    'arguments from each of the tasks (in the same order).  Please check and repair the pipeline configuration file.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
   # If an unknown field appears in the "delete files" section, terminate.
   def unknownFieldInDeleteFiles(self, newLine, task, argument, field, filename):
     if newLine: print(file=sys.stderr)

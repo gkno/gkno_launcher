@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.55"
+__version__ = "0.56"
 __date__ = "April 2013"
 
 def main():
@@ -427,6 +427,7 @@ def main():
     writeBlankLine()
 
   # Execute the generated script unless the execute flag has been unset.
+  success = 0
   if pl.arguments['--execute']:
     for makefile in make.filenames:
       if verbose: writeExecuting(makefile)

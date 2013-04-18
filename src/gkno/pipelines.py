@@ -418,6 +418,7 @@ class pipeline:
 
           linkedTask     = linkage[task][argument]['link to this task']
           linkedArgument = linkage[task][argument]['link to this argument']
+
           if linkedTask not in self.workflow:
             self.errors.invalidLinkedTask(verbose, task, argument, linkedTask, self.pipelineFile)
             self.errors.terminate()
@@ -440,14 +441,50 @@ class pipeline:
         # Check that the task and argument to which this argument is linked, exists.
         linkedTask     = linkage[task][argument]['link to this task']
         linkedArgument = linkage[task][argument]['link to this argument']
-        if linkedTask not in self.workflow:
-          self.errors.invalidLinkedTask(verbose, task, argument, linkedTask, self.pipelineFile)
+
+        # Linked arguments can take more than one value.  In this case, the linkedTask and linkedArgument
+        # may be lists.  If the linkedTask is a list, the linkedArgument must also be a list.  Store the
+        # values and then check that they are valid.
+        #
+        # First deal with the case that 'link to this task' is a list, but the 'link to this argument' is not.
+        linkedTaskList     = []
+        linkedArgumentList = []
+        if isinstance(linkedTask, list) and not isinstance(linkedArgument, list):
+          self.errors.linkedTaskArgumentIsNotAList(verbose, task, argument, self.pipelineFile)
           self.errors.terminate()
 
-        linkedTool     = self.taskToTool[linkedTask]
-        if linkedArgument not in argumentInformation[linkedTool]:
-          self.errors.invalidLinkedArgument(verbose, task, argument, linkedTask, linkedArgument, self.pipelineFile)
+        # Then deal with the case that 'link to this argument' is a list, but the 'link to this task' is not.
+        elif isinstance(linkedArgument, list) and not isinstance(linkedTask, list):
+          self.errors.linkedTaskArgumentIsNotAList(verbose, task, argument, self.pipelineFile)
           self.errors.terminate()
+
+        # Next if both are lists,
+        elif isinstance(linkedTask, list):
+          if len(linkedTask) != len(linkedArgument):
+            self.errors.linkedTaskArgumentIsNotAList(verbose, task, argument, self.pipelineFile)
+            self.errors.terminate()
+
+          for counter, value in enumerate(linkedTask):
+            linkedTaskList.append(linkedTask[counter])
+            linkedArgumentList.append(linkedArgument[counter])
+
+        # And finally, if neither are lists.
+        else:
+          linkedTaskList.append(linkedTask)
+          linkedArgumentList.append(linkedArgument)
+
+        # Now check that all the values are valid.
+        for counter, value in enumerate(linkedTaskList):
+          linkedTask     = linkedTaskList[counter]
+          linkedArgument = linkedArgumentList[counter]
+          if linkedTask not in self.workflow:
+            self.errors.invalidLinkedTask(verbose, task, argument, linkedTask, self.pipelineFile)
+            self.errors.terminate()
+
+          linkedTool     = self.taskToTool[linkedTask]
+          if linkedArgument not in argumentInformation[linkedTool]:
+            self.errors.invalidLinkedArgument(verbose, task, argument, linkedTask, linkedArgument, self.pipelineFile)
+            self.errors.terminate()
 
       self.linkage[task] = linkage[task]
     self.jsonSections.remove('linkage')
@@ -734,29 +771,53 @@ class pipeline:
             targetTask     = self.linkage[task][argument]['link to this task']
             targetArgument = self.linkage[task][argument]['link to this argument']
 
-            # For tasks that are not part of the internal loop (i.e. they are only run once),
-            # set up linkage.
-            if targetTask not in iTasks or not usingInternalLoop:
-              targetValue = []
-              if targetArgument in arguments[targetTask][0]: targetValue.append(deepcopy(arguments[targetTask][0][targetArgument]))
-              else: targetValue.append([])
-
-            # If the task is in the internal loop, this task will have multiple iterations with different
-            # input files that can be run in parallel.
+            # Define the list self.values.  This is a list containing lists of values that will be used
+            # to set the arguments structure (also a list of lists of values).  If the task is not in an
+            # internal loop, the list contains a single list of values, otherwise is contains the number
+            # of iterations of the internal loop.  Set this structure up.
+            self.values = []
+            if task not in iTasks: self.values.append([])
             else:
-              targetValue = []
-              if targetTask in arguments:
-                for iteration in arguments[targetTask]:
-                  targetValue.append(deepcopy(iteration[targetArgument]))
-              else:
-                for counter in range(0, numberOfIterations): targetValue.append([])
+              for counter in range(0, numberOfIterations): self.values.append([])
+
+            # Check if targetTask is a list.  It is possible that the linkage for this task/argument
+            # points to multiple different target values.
+            if not isinstance(targetTask, list):
+              targetTask     = [targetTask]
+              targetArgument = [targetArgument]
+
+            for currentTargetTask, currentTargetArgument in zip(targetTask, targetArgument):
+
+              # Neither the task or the targetTask are in the internal loop and so the arguments structure will
+              # have a single list of values that are written to a sinlge list.
+              if (task not in iTasks and currentTargetTask not in iTasks) or not usingInternalLoop:
+                for value in arguments[currentTargetTask][0][currentTargetArgument]: self.values[0].append(value)
+
+              # If the targetTask is in the internal loop and the task isn't, the values from each iteration of
+              # the targetTask are written to the zeroth iteration of the task (since it isn't in the internal loop).
+              elif task not in iTasks and currentTargetTask in iTasks:
+                for counter, iteration in enumerate(arguments[currentTargetTask]):
+                  for value in arguments[currentTargetTask][counter][currentTargetArgument]: self.values[0].append(value)
+
+              # If the task is in the internal loop, but the targetTask isn't, each iteration of the task takes the
+              # values from the zeroth iteration of the targetTask.
+              elif task in iTasks and currentTargetTask not in iTasks:
+                for counter in range(0, numberOfIterations):
+                  for value in arguments[currentTargetTask][0][currentTargetArgument]: self.values[counter].append(value)
+
+              # If both the task and the targetTask are in the internal loop, the values from the ith iteration of
+              # the targetTask are supplied to the ith iteration of the task.
+              elif task in iTasks and currentTargetTask in iTasks:
+                for counter, iteration in enumerate(arguments[currentTargetTask]):
+                  for value in arguments[currentTargetTask][counter][currentTargetArgument]: self.values[counter].append(value)
 
             # If an extension needs to be added to the values, add it here.
             if 'extension' in self.linkage[task][argument]:
-              if len(targetValue) != 0:
-                for counterA, iteration in enumerate(targetValue):
-                  for counterB, value in enumerate(iteration): targetValue[counterA][counterB] += deepcopy(self.linkage[task][argument]['extension'])
+              if len(self.values) != 0:
+                for counterA, iteration in enumerate(self.values):
+                  for counterB, value in enumerate(iteration): self.values[counterA][counterB] += deepcopy(self.linkage[task][argument]['extension'])
 
+            for counter, values in enumerate(self.values): arguments[task][counter][argument] = deepcopy(self.values[counter])
             # Now update the arguments to include the linked arguments.  There are four possible cases:
             # 1. Both the task in question and the targetTask are not in the internal loop,
             # 2. They both are,
@@ -767,28 +828,45 @@ class pipeline:
             #
             # If neither of the tasks are in the internal loop, there is only one set of parameters
             # associated with each task, so the zeroth iteration can be used for both.
-            if (task not in iTasks and targetTask not in iTasks) or not usingInternalLoop:
-              arguments[task][0][argument] = deepcopy(targetValue[0])
+#            if (task not in iTasks and targetTask not in iTasks) or not usingInternalLoop:
+#              arguments[task][0][argument] = deepcopy(self.values[0])
+#      
+#            # If both tasks are in the internal loop, then both have n sets of parameters for the
+#            # n interation in the internal loop.  This means that the nth value in the targetTask
+#            # argument can be mapped to the nth value in the current task.
+#            elif task in iTasks and targetTask in iTasks:
+#              for counter in range(0, numberOfIterations): arguments[task][counter][argument] = deepcopy(self.values[counter])
+#      
+#            # If the task is in the internal loop, but the targetTask isn't, then this means that all
+#            # of the n iterations of parameters for this task take the same value from the target.  This
+#            # means that the zeroth iteration of the target can be mapped to all n iterations for the
+#            # task.
+#            elif task in iTasks and targetTask not in iTasks:
+#              for counter in range(0, numberOfIterations): arguments[task][counter][argument] = deepcopy(self.values[0])
+#      
+#            # Finally, if the task is not in the internal loop, but the targetTask is, then this is the
+#            # first task occuring outside of the internal loop.  If this task is linked to a targetTask
+#            # within the loop, then it is taking the outputs from all n iterations of the targetTask.
+#            # This means that the argument being populated must be capable of receiving multiple
+#            # values.  This is checked and if so, the argument is populated with all of the outputs from
+#            # the n iterations of the targetTask.
+#            elif task not in iTasks and targetTask in iTasks:
+#              for counter in range(0, numberOfIterations):
+#                for value in self.values[counter]: arguments[task][0][argument].append(value)
 
-            # If both tasks are in the internal loop, then both have n sets of parameters for the
-            # n interation in the internal loop.  This means that the nth value in the targetTask
-            # argument can be mapped to the nth value in the current task.
-            elif task in iTasks and targetTask in iTasks:
-              for counter in range(0, numberOfIterations): arguments[task][counter][argument] = deepcopy(targetValue[counter])
-
-            # If the task is in the internal loop, but the targetTask isn't, then this means that all
-            # of the n iterations of parameters for this task take the same value from the target.  This
-            # means that the zeroth iteration of the target can be mapped to all n iterations for the
-            # task.
-            elif task in iTasks and targetTask not in iTasks:
-              for counter in range(0, numberOfIterations): arguments[task][counter][argument] = deepcopy(targetValue[0])
-
-            # Finally, if the task is not in the internal loop, but the targetTask is, then this is the
-            # first task occuring outside of the internal loop.  If this task is linked to a targetTask
-            # within the loop, then it is taking the outputs from all n iterations of the targetTask.
-            # This means that the argument being populated must be capable of receiving multiple
-            # values.  This is checked and if so, the argument is populated with all of the outputs from
-            # the n iterations of the targetTask.
-            elif task not in iTasks and targetTask in iTasks:
-              for counter in range(0, numberOfIterations):
-                for value in targetValue[counter]: arguments[task][0][argument].append(value)
+    # For tasks that are not part of the internal loop (i.e. they are only run once),
+    # set up linkage.
+#    if targetTask not in iTasks or not usingInternalLoop:
+#      if targetArgument in arguments[targetTask][0]:
+#        self.values.append([])
+#        for value in arguments[targetTask][0][targetArgument]: self.values[0].append(value)
+#        #values.append(deepcopy(arguments[targetTask][0][targetArgument]))
+#  
+#    # If the task is in the internal loop, this task will have multiple iterations with different
+#    # input files that can be run in parallel.
+#    else:
+#      if targetTask in arguments:
+#        for iteration in arguments[targetTask]:
+#          values.append(deepcopy(iteration[targetArgument]))
+#      else:
+#        for counter in range(0, numberOfIterations): values.append([])
