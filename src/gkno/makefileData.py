@@ -362,7 +362,7 @@ class makefileData:
     else: print(file = self.makeFilehandle)
 
   # Get the path of the executable.
-  def getExecutablePath(self, paths, taskToTool, taskBlock, iLoopIteration):
+  def getExecutablePath(self, sourcePath, paths, taskToTool, taskBlock, iLoopIteration):
     er = errors()
 
     if iLoopIteration == 0:

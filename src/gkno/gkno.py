@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.57"
+__version__ = "0.58"
 __date__ = "April 2013"
 
 def main():
@@ -400,7 +400,7 @@ def main():
       # them.
       for counter in range(0, len(outputs)):
         make.writeInitialInformation(pl.taskToTool, tasks, counter)
-        make.getExecutablePath(tl.paths, pl.taskToTool, tasks, counter)
+        make.getExecutablePath(sourcePath, tl.paths, pl.taskToTool, tasks, counter)
         make.writeOutputsToMakefile(outputs[counter])
         make.writeDependenciesToMakefile(dependencies[counter])
         make.checkStdout(tasks, pl.arguments['--task-stdout'], mr.hasMultipleRuns)
@@ -417,6 +417,9 @@ def main():
 
     # Terminate the loop when all the required Makefiles have been produced.
     if make.id == mr.numberDataSets: break
+
+  # Check that all of the executable files exist.
+  checkExecutables(sourcePath, tl.paths, tl.executables, pl.workflow, pl.taskToTool, verbose)
 
   # Having established the mode of operation and checked that the command lines are
   # valid etc., ping the website to log use of gkno.

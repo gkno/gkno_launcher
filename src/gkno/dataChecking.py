@@ -909,3 +909,26 @@ def getTaskBlockOutputsAndDependencies(taskBlocks, outputs, dependencies, iTasks
       dependenciesList.append(tempList)
 
   return outputsList, dependenciesList
+
+# Check that all of the executables required exist.
+def checkExecutables(sourcePath, paths, executables, workflow, taskToTool, verbose):
+  er                    = errors()
+  executablesList       = []
+  missingExecutableList = []
+  for task in workflow:
+    tool = taskToTool[task]
+    if paths[tool] != 'no path':
+      executable = sourcePath + '/tools/' + paths[tool] + '/' + executables[tool]
+      if executable not in executablesList: executablesList.append(executable)
+
+  # Having identified all of the unique programmes, check that they exist.
+  for executable in executablesList:
+    try:
+      with open(executable): pass
+    except IOError:
+      missingExecutableList.append(executable)
+
+  # If there are any executable files that don't exist, print them out and fail.
+  if len(missingExecutableList) != 0:
+    er.missingExecutables(verbose, missingExecutableList)
+    er.terminate()

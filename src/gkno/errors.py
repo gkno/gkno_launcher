@@ -1351,6 +1351,18 @@ class errors:
     self.writeFormattedText()
     self.hasError = True
 
+  # If there are any missing executables, terminate.
+  def missingExecutables(self, newLine, missingExecutableList):
+    if newLine: print(file=sys.stderr)
+    text = 'Missing executable files'
+    self.text.append(text)
+    text = 'The following executable files are not available, but are required:'
+    self.text.append(text)
+    self.text.append('\t')
+    for executable in missingExecutableList: self.text.append(executable)
+    self.writeFormattedText()
+    self.hasError = True
+
   ######################
   # Internal loop errors
   ######################
