@@ -37,3 +37,9 @@
 [submodule "tools/Tangram"]
 	path = tools/Tangram
 	url = git://github.com/gkno/Tangram.git
+[submodule "tools/bamUtil"]
+	path = tools/bamUtil
+	url = git://github.com/gkno/bamUtil.git
+[submodule "tools/libStatGen"]
+	path = tools/libStatGen
+	url = git://github.com/gkno/libStatGen.git
