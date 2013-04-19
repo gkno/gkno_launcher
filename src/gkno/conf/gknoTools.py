@@ -340,6 +340,23 @@ class VcfLib(GknoTool):
   def doUpdate(self):
     return self.make()
 
+# Tangram
+class Tangram(GknoTool):
+  def __init__(self):
+    super(Tangram, self).__init__()
+    self.name       = "tangram"
+    self.installDir = "tangram"
+
+  # $ make -j N  
+  def doBuild(self):    
+#    if not self.makeClean():
+#      return False
+    return self.doUpdate()
+
+  # $ make -j N
+  def doUpdate(self):
+    return self.make()
+
 ##############################################################
 # Add any new built-in gkno tools to the list below.
 ##############################################################
@@ -355,6 +372,7 @@ List = [
         Premo(),
         SamTools(),
         Tabix(),
-        VcfLib()
+        VcfLib(),
+        Tangram()
        ]
 
