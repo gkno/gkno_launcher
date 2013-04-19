@@ -323,12 +323,12 @@ class Tabix(GknoTool):
   def doUpdate(self):
     return self.make()
 
-# vcflib
-class VcfLib(GknoTool):
+# Tangram
+class Tangram(GknoTool):
   def __init__(self):
-    super(VcfLib, self).__init__()
-    self.name       = "vcflib"
-    self.installDir = "vcflib"
+    super(Tangram, self).__init__()
+    self.name       = "tangram"
+    self.installDir = "Tangram/src"
 
   # $ make -j N  
   def doBuild(self):    
@@ -340,12 +340,12 @@ class VcfLib(GknoTool):
   def doUpdate(self):
     return self.make()
 
-# Tangram
-class Tangram(GknoTool):
+# vcflib
+class VcfLib(GknoTool):
   def __init__(self):
-    super(Tangram, self).__init__()
-    self.name       = "tangram"
-    self.installDir = "tangram"
+    super(VcfLib, self).__init__()
+    self.name       = "vcflib"
+    self.installDir = "vcflib"
 
   # $ make -j N  
   def doBuild(self):    
@@ -372,7 +372,7 @@ List = [
         Premo(),
         SamTools(),
         Tabix(),
-        VcfLib(),
-        Tangram()
+        Tangram(),
+        VcfLib()
        ]
 
