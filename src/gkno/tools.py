@@ -373,7 +373,8 @@ class tools:
       self.errors.differentDataTypeInConfig(False, filename, tool, 'instances', givenType, dict)
       self.errors.terminate()
     self.observedFields['instances'] = True
-    for instance in instances: self.instances[instance] = instances[instance]
+    self.instances[tool]             = {}
+    for instance in instances: self.instances[tool][instance] = instances[instance]
 
   # If the field for an argument is expected to be of a specific type, check that it is.
   def checkGeneralField(self, tool, value, text, expectedType, filename):

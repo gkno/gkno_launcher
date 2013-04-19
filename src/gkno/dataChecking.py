@@ -378,8 +378,8 @@ def setFile(pipelineArgumentInformation, pipelineArguments, arguments, filename,
   # '/' character.
   filePath = ''
   if '/' not in filename:
-    if isInput:  filePath = pipelineArguments['--input-path']    + '/' + filename
-    elif isOutput: filePath = pipelineArguments['--output-path']   + '/' + filename
+    if isInput:  filePath = pipelineArguments['--input-path'] + '/' + filename
+    elif isOutput: filePath = pipelineArguments['--output-path'] + '/' + filename
 
   # If the file path is given, ensure that the full path is given. For example,
   # if './file' is specified, modify the './' to the full path of the current

@@ -179,15 +179,15 @@ class helpClass:
     sys.stdout.flush()
 
     # If this pipeline has different instances, print them to screen.
-    if len(tl.instances) > 0:
+    if len(tl.instances[tool]) > 0:
       print('     Instances:', file = sys.stdout)
       length = 0
-      for instance in tl.instances: length = len(instance) if len(instance) > length else length
+      for instance in tl.instances[tool]: length = len(instance) if len(instance) > length else length
       length += 4
 
-      sortedInstances = sorted(tl.instances)
+      sortedInstances = sorted(tl.instances[tool])
       for instance in sortedInstances:
-        description = tl.instances[instance]['description']
+        description = tl.instances[tool][instance]['description']
         self.writeFormattedText(instance + ":", description, length, 2, '')
       print(file = sys.stdout)
 

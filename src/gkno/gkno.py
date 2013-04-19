@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.56"
+__version__ = "0.57"
 __date__ = "April 2013"
 
 def main():
@@ -166,7 +166,7 @@ def main():
     if len(instanceData) != 0: ins.checkInstanceInformation(instanceData, pl.instances, pl.pipelineName + '_instances.json')
   else:
     instanceData = ins.checkInstanceFile(sourcePath, 'tools', tl.tool, io.jsonToolInstances)
-    if len(instanceData) != 0: ins.checkInstanceInformation(instanceData, tl.instances, tl.tool + '_instances.json')
+    if len(instanceData) != 0: ins.checkInstanceInformation(instanceData, tl.instances[tl.tool], tl.tool + '_instances.json')
 
   # Parse the command line and put all of the arguments into a list.
   if verbose: gettingCommandLineArguments()
@@ -220,7 +220,7 @@ def main():
     ins.getInstanceArguments(sourcePath + '/config_files/pipes/', pl.pipelineName, pl.instances, verbose)
     ins.convertPipeArgumentsToToolArguments(pl.argumentInformation, pl.shortForms, pl.arguments, verbose)
   else:
-    ins.getInstanceArguments(sourcePath + '/config_files/tools/', tl.tool, tl.instances, verbose)
+    ins.getInstanceArguments(sourcePath + '/config_files/tools/', tl.tool, tl.instances[tl.tool], verbose)
     ins.setToolArguments(tl.tool, verbose)
   ins.checkInstanceArguments(pl.taskToTool, tl.argumentInformation, tl.shortForms, verbose)
   if verbose: writeDone()
@@ -285,10 +285,10 @@ def main():
     make.prepareForInternalLoop(iLoop.tasks, iLoop.arguments, iLoop.numberOfIterations)
     ei = exportInstance()
     if pl.isPipeline: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, pl.instances, verbose)
-    else: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, tl.instances, verbose)
+    else: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, tl.instances[tl.tool], verbose)
     ei.getData(gknoHelp, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.taskToTool, pl.argumentInformation, pl.arguments, pl.toolsOutputtingToStream, pl.toolArgumentLinks, make.arguments, verbose)
     if pl.isPipeline: ei.writeNewConfigurationFile(sourcePath, 'pipes', ins.externalInstances, pl.instances, cl.linkedArguments)
-    else: ei.writeNewConfigurationFile(sourcePath, 'tools', ins.externalInstances, tl.instances, cl.linkedArguments)
+    else: ei.writeNewConfigurationFile(sourcePath, 'tools', ins.externalInstances, tl.instances[tl.tool], cl.linkedArguments)
 
     # After the configuration file has been exported, terminate the script.  No
     # Makefile is generated and nothing is executed.
