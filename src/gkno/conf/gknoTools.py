@@ -189,6 +189,23 @@ class Gatk(GknoTool):
   def doUpdate(self):
     return self.ant()
 
+# libStatGen
+class LibStatGen(GknoTool):
+  def __init__(self):
+    super(LibStatGen, self).__init__()
+    self.name       = "libStatGen"
+    self.installDir = "libStatGen"
+
+  # $ make -j N  
+  def doBuild(self):    
+#    if not self.makeClean():
+#      return False
+    return self.doUpdate()
+
+  # $ make -j N
+  def doUpdate(self):
+    return self.make()
+
 # mosaik
 class Mosaik(GknoTool):
   def __init__(self):
@@ -366,6 +383,7 @@ List = [
         BamTools(),
         Freebayes(),
         Gatk(),
+        LibStatGen(),
         Mosaik(),
         Ogap(),
         Picard(),
