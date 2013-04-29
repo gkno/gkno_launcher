@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.62"
+__version__ = "0.64"
 __date__ = "April 2013"
 
 def main():
@@ -344,7 +344,7 @@ def main():
       checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.toolsOutputtingToStream, pl.toolArgumentLinks, True, verbose)
 
     # Determine each tools dependencies for building the makefile.
-    make.dependencies, make.outputs = determineDependencies(tl.argumentInformation, pl.workflow, pl.taskToTool, pl.toolsOutputtingToStream, make.arguments)
+    make.dependencies, make.outputs = determineDependencies(tl.argumentInformation, tl.generatedFiles, pl.workflow, pl.taskToTool, pl.toolsOutputtingToStream, make.arguments)
   
     # There may be files that are required by the tool to run (e.g. files to
     # appear in the dependency list) that are not listed in the input arguments.

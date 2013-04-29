@@ -63,12 +63,14 @@
   },
   "arguments" : {
     "--fasta" : {
+      "description" : "Reference fasta file{s}.",
       "short form argument" : "-f",
       "link to this task" : "merge-fasta",
       "link to this argument" : "--in",
       "type" : "string"
     },
     "--out" : {
+      "description" : "The output fasta reference including the moblist.",
       "short form argument" : "-o",
       "link to this task" : "merge-fasta",
       "link to this argument" : "--out",

@@ -3,7 +3,7 @@
     "tangram-index" : {
       "description" : "Create an indexed reference file including the mobile elements",
       "path" : "Tangram/bin",
-      "executable" : "tangram-index",
+      "executable" : "tangram_index",
       "help" : "--help|-h",
       "arguments" : {
         "-ref" : {
@@ -44,7 +44,7 @@
     "tangram-scan" : {
       "description" : "Generate a histogram of the fragment length distributions of the input libraries.",
       "path" : "Tangram/bin",
-      "executable" : "tangram-scan",
+      "executable" : "tangram_scan",
       "help" : "--help|-h",
       "arguments" : {
         "-in" : {
@@ -58,12 +58,17 @@
         },
         "-dir" : {
           "description" : "Path of the output directory.  This must be empty or non-existent.",
-          "input" : true,
-          "output" : false,
+          "input" : false,
+          "output" : true,
+          "directory" : true,
           "required" : true,
           "dependent" : false,
           "type" : "string",
-          "extension" : "no extension"
+          "extension" : "no extension",
+          "generated files" : [
+            "lib_table.dat",
+            "hist.dat"
+          ]
         },
         "-cf" : {
           "description" : "Threshold for determining consistency with the fragment length distribution [0.01]",
@@ -91,6 +96,15 @@
           "dependent" : false,
           "type" : "integer",
           "extension" : "no extension"
+        },
+        "-mf" : {
+          "description" : "The minimum number of normal fragments in a library [10000].",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "integer",
+          "extension" : "no extension"
         }
       },
       "instances" : {
@@ -103,7 +117,7 @@
     "tangram-merge" : {
       "description" : "Merges fragment length distributions from multiple BAM files.",
       "path" : "Tangram/bin",
-      "executable" : "tangram-merge",
+      "executable" : "tangram_merge",
       "help" : "--help|-h",
       "arguments" : {
         "-dir" : {
@@ -126,7 +140,7 @@
     "tangram-detect" : {
       "description" : "Detect and genotype structural variation events.",
       "path" : "Tangram/bin",
-      "executable" : "tangram-detect",
+      "executable" : "tangram_detect",
       "help" : "--help|-h",
       "arguments" : {
         "-lb" : {
@@ -178,7 +192,7 @@
           "description" : "The output file (including path) [stdout].",
           "input" : false,
           "output" : true,
-          "required" : false,
+          "required" : true,
           "dependent" : false,
           "type" : "string",
           "extension" : "vcf"

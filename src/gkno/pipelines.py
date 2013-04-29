@@ -48,6 +48,7 @@ class pipeline:
     self.allowedConstructFields['get root from task']              = False
     self.allowedConstructFields['get root from argument']          = False
     self.allowedConstructFields['remove input extension']          = False
+    self.allowedConstructFields['additional text']                 = False
     self.allowedConstructFields['additional text from parameters'] = False
     self.allowedConstructFields['output extension']                = False
 
@@ -281,7 +282,7 @@ class pipeline:
                   self.errors.terminate()
                 if 'remove input extension' not in data['construct filenames'][task][argument]:
                   text = 'remove input extension'
-                  self.errors.missingRootInformationInConstruct(verbose, task, argument, self.pipelineFile)
+                  self.errors.missingRootInformationInConstruct(verbose, task, argument, 'remove input extension', self.pipelineFile)
                   self.errors.terminate()
 
                 # If the necessary fields are present, check that they are valid.
@@ -507,6 +508,13 @@ class pipeline:
       if 'link to this task' not in self.argumentInformation[argument]:
         self.errors.pipelineArgumentMissingInformation(verbose, argument, 'link to this task', self.pipelineFile)
         self.errors.terminate()
+
+      # Check that the task being linked to exists in the workflow.
+      else:
+        linkedTask = self.argumentInformation[argument]['link to this task']
+        if linkedTask not in self.workflow:
+          self.errors.invalidLinkedTaskInArguments(verbose, linkedTask, self.pipelineFile)
+          self.errors.terminate()
 
       if 'link to this argument' not in self.argumentInformation[argument]:
         self.errors.pipelineArgumentMissingInformation(verbose, argument, 'link to this argument', self.pipelineFile)

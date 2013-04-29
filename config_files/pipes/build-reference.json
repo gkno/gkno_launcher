@@ -39,6 +39,7 @@
   },
   "arguments" : {
     "--fasta" : {
+      "description" : "Reference fasta file{s}.",
       "link to this task" : "build-reference",
       "link to this argument" : "-fr",
       "short form argument" : "-f",

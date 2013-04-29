@@ -134,13 +134,26 @@ def constructFilenames(task, tool, arguments, argumentInformation, constructFile
     inputFiles          = []
     outputFiles         = {}
 
-    for argument in iteration:
+    for argument in arguments[task][counter]:
       if argument != 'json parameters':
         isInput  = argumentInformation[tool][argument]['input']
         isOutput = argumentInformation[tool][argument]['output']
 
         # If this is an input file, check to see if it is to be used for building filenames.
         if isInput:
+
+          # Check if this input file is itself to be created.  If so, create it now.  If the
+          # information is not yet available, terminate.
+          construct = False
+          if task in constructFilenames:
+            for constructArgument in constructFilenames[task]:
+              if constructArgument == argument:
+                construct = True
+                break
+          if construct:
+            construction = constructFilename(task, tool, counter, argument, constructFilenames, arguments, argumentInformation, taskToTool, verbose)
+            arguments[task][counter][argument].append(construction)
+
           inputFiles.append(argument)
           if 'use for filenames' in argumentInformation[tool][argument]:
             if argumentInformation[tool][argument]['use for filenames']:
@@ -190,7 +203,8 @@ def constructFilenames(task, tool, arguments, argumentInformation, constructFile
 
       # If to be constructed using information from the configuration file, construct.
       if outputFiles[outputFile] == 'construct':
-        constructFilename(task, tool, counter, outputFile, constructFilenames, arguments, argumentInformation, taskToTool, verbose)
+        construction = constructFilename(task, tool, counter, outputFile, constructFilenames, arguments, argumentInformation, taskToTool, verbose)
+        arguments[task][counter][outputFile].append(construction)
 
       elif outputFiles[outputFile] == 'from input':
 
@@ -215,8 +229,9 @@ def constructFilename(task, tool, iteration, argument, constructFilenames, argum
   construction = ''
   separator    = '_'
 
-  filenameRoot   = constructFilenames[task][argument]['filename root']
-  additionalText = constructFilenames[task][argument]['additional text from parameters'] if 'additional text from parameters' in \
+  filenameRoot             = constructFilenames[task][argument]['filename root']
+  additionalText           = constructFilenames[task][argument]['additional text'] if 'additional text' in constructFilenames[task][argument] else ''
+  additionalTextParameters = constructFilenames[task][argument]['additional text from parameters'] if 'additional text from parameters' in \
   constructFilenames[task][argument] else ''
 
   # If the basename is 'from argument', the 'tool', 'argument' and 'remove extension'
@@ -251,25 +266,25 @@ def constructFilename(task, tool, iteration, argument, constructFilenames, argum
   elif filenameRoot == 'from text':
     construction = constructFilenames[task][argument]['filename root text']
 
-  # If there is additional text to add to the name, the additionalText variable will have
+  # If there is additional text to add to the name, the additionalTextParameters variable will have
   # a value.  If this is the case, a list of tool/argument pairs needs to be provided.  These
   # values will be added to the name separated by the separator variable.
-  if len(additionalText) != 0:
+  if len(additionalTextParameters) != 0:
 
     # Determine the separator to be used when joining the values together.  If no separator
     # is provided, use '_'.
-    if 'separator' in additionalText: separator = additionalText['separator']
+    if 'separator' in additionalTextParameters: separator = additionalTextParameters['separator']
 
    # Determine the order of the variables to add.
-    order = additionalText['order']
+    order = additionalTextParameters['order']
 
     for field in order:
       if field != 'filename root' and field != 'separator':
 
         # If the text isn't 'filename root' or 'separator', then it refers to a variable used in the pipeline.
-        additionalTask            = additionalText[field]['get parameter from task']
-        additionalArgument        = additionalText[field]['get parameter from argument']
-        additionalRemoveExtension = additionalText[field]['remove extension']
+        additionalTask            = additionalTextParameters[field]['get parameter from task']
+        additionalArgument        = additionalTextParameters[field]['get parameter from argument']
+        additionalRemoveExtension = additionalTextParameters[field]['remove extension']
         additionalTool            = taskToTool[additionalTask]
 
         # Now get the variable if it exists.
@@ -297,6 +312,9 @@ def constructFilename(task, tool, iteration, argument, constructFilenames, argum
                 break
         if value != '': construction += separator + str(value)
 
+  # If there is additional text to add to the filename (not from a parameter), add it here.
+  if len(additionalText) != 0: construction += additionalText
+
   # Determine if the output file is a stub.  If not, add the extension to the output file.
   isStub = argumentInformation[tool][argument]['stub'] if 'stub' in argumentInformation[tool][argument] else False
   if not isStub:
@@ -310,10 +328,12 @@ def constructFilename(task, tool, iteration, argument, constructFilenames, argum
       outputExtension = constructFilenames[task][argument]['output extension'] if 'output extension' in constructFilenames[task][argument] else ''
       if outputExtension != '': construction += '.' + str(outputExtension)
 
-    else: construction += '.' + str(extension)
+    else:
 
-  # Having built the filename, set the value in the tl.toolArguments data structure.
-  arguments[task][iteration][argument].append(construction)
+      # Check if the extension is already in place.  If not add it.
+      if not construction.endswith('.' + extension): construction += '.' + str(extension)
+
+  return construction
 
 # If the output filename is to be constructed from an input filename, take the
 # requested input filename, remove the extension and replace with the required
@@ -505,7 +525,7 @@ def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipe
 
 # Determine which files are required for each tool to run.  For each tool, these files
 # are stored in a list and are used to define the dependencies in the Makefile.
-def determineDependencies(argumentInformation, workflow, taskToTool, toolsOutputtingToStream, arguments):
+def determineDependencies(argumentInformation, generatedFiles, workflow, taskToTool, toolsOutputtingToStream, arguments):
   er           = errors()
   previousTask = ''
   dependencies = {}
@@ -529,18 +549,27 @@ def determineDependencies(argumentInformation, workflow, taskToTool, toolsOutput
           # file.  If it is an output, the file should be added to the string containing
           # all outputs from this tool.  If it is an input or dependent file, this will
           # be added to the string containing all files required for this tool to run.
-          isInput     = argumentInformation[tool][argument]['input']
-          isOutput    = argumentInformation[tool][argument]['output']
-          isDependent = argumentInformation[tool][argument]['dependent']
-          isFlag      = True if argumentInformation[tool][argument]['type'] == 'flag' else False
+          hasGeneratedFiles = True if 'generated files' in argumentInformation[tool][argument] else False
+          isInput           = argumentInformation[tool][argument]['input']
+          isOutput          = argumentInformation[tool][argument]['output']
+          isDependent       = argumentInformation[tool][argument]['dependent']
+          isFlag            = True if argumentInformation[tool][argument]['type'] == 'flag' else False
   
           # Determine if the input and output from this task are the stream.  If so, the
           # dependencies and outputs structures do not need to be updated to include these
           # arguments
           outputToStream = True if task in toolsOutputtingToStream else False
           inputIsStream  = True if (previousTask != '') and (previousTask in toolsOutputtingToStream) else False
-  
-          if isInput or isDependent or isOutput:
+
+          # If the files generated by this task are defined, use them to define the outputs.
+          if hasGeneratedFiles:
+
+            # If the argument specified a directory, include the directory name in the filename.
+            isDirectory = True if 'directory' in argumentInformation[tool][argument] else False
+            directory = arguments[task][counter][argument][0] + '/' if isDirectory else ''
+            for filename in generatedFiles[tool]: outputs[task][counter].append(directory + filename)
+
+          if isInput or isDependent or isOutput and not hasGeneratedFiles:
   
             # If the input/output file is defined, check that the extension is as expected.
             for value in arguments[task][counter][argument]:

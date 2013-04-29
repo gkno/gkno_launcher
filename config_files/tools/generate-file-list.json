@@ -1,0 +1,46 @@
+{
+  "tools" : {
+    "generate-file-list" : {
+      "description" : "Generate a text file containing a list of files",
+      "path" : "scripts",
+      "hide tool" : true,
+      "executable" : "generate-file-list.sh",
+      "help" : "--help|-h",
+      "arguments" : {
+        "--in" : {
+          "short form argument" : "-i",
+          "description" : "Input files to be added to the list.",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "dependent" : true,
+          "type" : "string",
+          "extension" : "no extension",
+          "allow multiple definitions" : true,
+          "modify argument name on command line" : "hide"
+        },
+        "--out" : {
+          "short form argument" : "-o",
+          "description" : "the output file list.",
+          "input" : false,
+          "output" : true,
+          "required" : true,
+          "dependent" : false,
+          "type" : "string",
+          "extension" : "no extension",
+          "do not construct filename from input" : true,
+          "modify argument name on command line" : "stdout"
+        }
+      },
+      "argument order" : [
+        "--in",
+        "--out"
+      ],
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
+        }
+      }
+    }
+  }
+}

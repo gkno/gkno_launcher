@@ -1,6 +1,10 @@
 {
   "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
   "workflow" : [
+    "build-tangram-reference",
+    "merge-fasta",
+    "index-fasta",
+    "create-sequence-dictionary",
     "build-reference",
     "build-jump-database",
     "generate-mosaik-parameters",
@@ -9,10 +13,16 @@
     "sort-primary-bam",
     "sort-multiple-bam",
     "index-primary-bam",
-    "count-covariates",
-    "recalibrate-bq"
+    "mark-duplicates",
+    "generate-bam-list",
+    "scan-bam-files",
+    "detect-mei"
   ],
   "tools" : {
+    "build-tangram-reference" : "tangram-index",
+    "merge-fasta" : "concatenate-files",
+    "index-fasta" : "samtools-index-fasta",
+    "create-sequence-dictionary" : "picard-create-sequence-dictionary",
     "build-reference" : "mosaik-build-reference",
     "build-jump-database" : "mosaik-jump",
     "generate-mosaik-parameters" : "premo",
@@ -21,8 +31,10 @@
     "sort-primary-bam" : "bamtools-sort",
     "sort-multiple-bam" : "bamtools-sort",
     "index-primary-bam" : "bamtools-index",
-    "count-covariates" : "gatk-count-covariates",
-    "recalibrate-bq" : "gatk-recalibrate-bq"
+    "generate-bam-list" : "generate-file-list",
+    "mark-duplicates" : "picard-mark-duplicates",
+    "scan-bam-files" : "tangram-scan",
+    "detect-mei" : "tangram-detect"
   },
   "internal loop" : [
     "generate-mosaik-parameters",
@@ -31,8 +43,7 @@
     "sort-primary-bam",
     "sort-multiple-bam",
     "index-primary-bam",
-    "count-covariates",
-    "recalibrate-bq"
+    "mark-duplicates"
   ],
   "construct filenames" : {
     "build-reference" : {
@@ -61,9 +72,65 @@
           }
         }
       }
+    },
+    "generate-bam-list" : {
+      "--out" : {
+        "filename root" : "from text",
+        "filename root text" : "tangram-bam-list.txt"
+      }
+    },
+    "detect-mei" : {
+      "-lb" : {
+        "filename root" : "from argument",
+        "get root from task" : "scan-bam-files",
+        "get root from argument" : "-dir",
+        "remove input extension" : true,
+        "additional text" : "/lib_table.dat"
+      },
+      "-ht" : {
+        "filename root" : "from argument",
+        "get root from task" : "scan-bam-files",
+        "get root from argument" : "-dir",
+        "remove input extension" : false,
+        "additional text" : "/hist.dat"
+      },
+      "-out" : {
+        "filename root" : "from text",
+        "filename root text" : "tangram"
+      }
     }
   },
   "linkage" : {
+    "merge-fasta" : {
+      "--in" : {
+        "link to this task" : [
+          "build-tangram-reference",
+          "build-tangram-reference"
+        ],
+        "link to this argument" : [
+          "-ref",
+          "-sp"
+        ]
+      }
+    },
+    "index-fasta" : {
+      "--in" : {
+        "link to this task" : "merge-fasta",
+        "link to this argument" : "--out"
+      }
+    },
+    "create-sequence-dictionary" : {
+      "REFERENCE" : {
+        "link to this task" : "merge-fasta",
+        "link to this argument" : "--out"
+      }
+    },
+    "build-reference" : {
+      "-fr" : {
+        "link to this task" : "merge-fasta",
+        "link to this argument" : "--out"
+      }
+    },
     "build-jump-database" : {
       "-ia" : {
         "link to this task" : "build-reference",
@@ -159,38 +226,63 @@
         "link to this argument" : "-out"
       }
     },
-    "count-covariates" : {
-      "--reference_sequence" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-fr"
-      },
-      "--input_file" : {
+    "mark-duplicates" : {
+      "INPUT" : {
         "link to this task" : "sort-primary-bam",
         "link to this argument" : "-out"
       }
     },
-    "recalibrate-bq" : {
-      "--reference_sequence" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-fr"
-      },
-      "--input_file" : {
-        "link to this task" : "count-covariates",
-        "link to this argument" : "--input_file"
-      },
-      "--BQSR" : {
-        "link to this task" : "count-covariates",
+    "generate-bam-list" : {
+      "--in" : {
+        "link to this task" : "mark-duplicates",
+        "link to this argument" : "OUTPUT"
+      }
+    },
+    "scan-bam-files" : {
+      "-in" : {
+        "link to this task" : "generate-bam-list",
         "link to this argument" : "--out"
+      }
+    },
+    "detect-mei" : {
+      "-in" : {
+        "link to this task" : "generate-bam-list",
+        "link to this argument" : "--out"
+      },
+      "-ref" : {
+        "link to this task" : "build-tangram-reference",
+        "link to this argument" : "-out"
       }
     }
   },
   "arguments" : {
-    "--fasta" : {
-      "link to this task" : "build-reference",
-      "link to this argument" : "-fr",
-      "short form argument" : "-f",
+    "--reference" : {
+      "description" : "The input reference fasta.",
+      "link to this task" : "build-tangram-reference",
+      "link to this argument" : "-ref",
+      "short form argument" : "-r",
+      "type" : "string"
+    },
+    "--moblist-reference" : {
+      "description" : "The input mobile element reference fasta.",
+      "link to this task" : "build-tangram-reference",
+      "link to this argument" : "-sp",
+      "short form argument" : "-mr",
+      "type" : "string"
+    },
+    "--output-reference" : {
+      "description" : "The output reference file for use with TANGRAM.",
+      "link to this task" : "build-tangram-reference",
+      "link to this argument" : "-out",
+      "short form argument" : "-or",
+      "type" : "string"
+    },
+    "--merged-reference" : {
+      "description" : "The merged reference fasta for aligning the reads (MOSAIK).",
+      "link to this task" : "merge-fasta",
+      "link to this argument" : "--out",
       "type" : "string",
-      "default" : "test_genome.fa"
+      "short form argument" : "-ar"
     },
     "--hash-size" : {
       "description" : "hash-size",
@@ -212,20 +304,6 @@
       "short form argument" : "-q2",
       "type" : "string",
       "user entry required" : "true"
-    },
-    "--mosaik-reference" : {
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-ref",
-      "short form argument" : "-r",
-      "type" : "string",
-      "default" : "test_genome.dat"
-    },
-    "--mosaik-jump-database" : {
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-jmp",
-      "short form argument" : "-j",
-      "type" : "string",
-      "default" : "test_genome"
     },
     "--batch-size" : {
       "link to this task" : "generate-mosaik-parameters",
@@ -266,24 +344,79 @@
       "type" : "integer",
       "short form argument" : "-mfl"
     },
-    "--out" : {
+    "--archive-name" : {
       "link to this task" : "build-read-archive",
       "link to this argument" : "-out",
-      "short form argument" : "-o",
+      "short form argument" : "-an",
       "type" : "string"
     },
-    "--reference-fasta" : {
-      "link to this task" : "count-covariates",
-      "link to this argument" : "--reference_sequence",
-      "short form argument" : "-rf",
-      "type" : "string",
-      "default" : "test_genome.fa"
+    "--special-references" : {
+      "description" : "Specifies the prefixes of 'special' reference sequences.",
+      "link to this task" : "align",
+      "link to this argument" : "-sref",
+      "short form argument" : "-sr",
+      "type" : "string"
     },
-    "--known-sites" : {
-      "link to this task" : "count-covariates",
-      "link to this argument" : "-knownSites",
-      "short form argument" : "-k",
-      "type" : "flag"
+    "--special-reference-hashes" : {
+      "description" : "Specifies the maximum number of hashes for the special reference sequences.",
+      "link to this task" : "align",
+      "link to this argument" : "-srefn",
+      "short form argument" : "-srh",
+      "type" : "integer"
+    },
+    "--tangram-directory" : {
+      "link to this task" : "scan-bam-files",
+      "link to this argument" : "-dir",
+      "short form argument" : "-td",
+      "type" : "string"
+    },
+    "--minimum-fragments" : {
+      "link to this task" : "scan-bam-files",
+      "link to this argument" : "-mf",
+      "short form argument" : "-mf",
+      "type" : "integer"
+    },
+    "--detection-bam-list" : {
+      "link to this task" : "detect-mei",
+      "link to this argument" : "-in",
+      "short form argument" : "-dl",
+      "type" : "string"
+    },
+    "--library-file" : {
+      "link to this task" : "detect-mei",
+      "link to this argument" : "-lb",
+      "short form argument" : "-lb",
+      "type" : "string"
+    },
+    "--histogram-file" : {
+      "link to this task" : "detect-mei",
+      "link to this argument" : "-ht",
+      "short form argument" : "-ht",
+      "type" : "string"
+    },
+    "--tangram-reference" : {
+      "link to this task" : "detect-mei",
+      "link to this argument" : "-ref",
+      "short form argument" : "-tr",
+      "type" : "string"
+    },
+    "--tangram-region" : {
+      "link to this task" : "detect-mei",
+      "link to this argument" : "-rg",
+      "short form argument" : "-rg",
+      "type" : "string"
+    },
+    "--tangram-output" : {
+      "link to this task" : "detect-mei",
+      "link to this argument" : "-out",
+      "short form argument" : "-to",
+      "type" : "string"
+    },
+    "--tangram-threads" : {
+      "link to this task" : "detect-mei",
+      "link to this argument" : "-p",
+      "short form argument" : "-tt",
+      "type" : "integer"
     }
   },
   "delete files" : {
@@ -311,14 +444,33 @@
     },
     "test" : {
       "description" : "Test instance for the test harness.",
-      "--fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--reference" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--moblist-reference" : "$(RESOURCES)/tutorial/current/mobile_element_sequences.fa",
       "--fastq" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq",
       "--fastq2" : "$(RESOURCES)/tutorial/current/simulated_reads_2.fq",
       "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
       "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
       "--hash-size" : "10",
+      "--sequencing-technology" : "illumina"
+    },
+    "tutorial" : {
+      "description" : "Tutorial instance for running TANGRAM.",
+      "--reference" : "$(RESOURCES)/tutorial/current/test_genome.fa",
+      "--moblist-reference" : "$(RESOURCES)/tutorial/current/mobile_element_sequences.fa",
+      "--output-reference" : "tangram-reference",
+      "--merged-reference" : "reference_moblist.fa",
+      "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
+      "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
+      "--hash-size" : "10",
       "--sequencing-technology" : "illumina",
-      "--known-sites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf"
+      "--special-references" : "moblist",
+      "--special-reference-hashes" : "50",
+      "--internal-loop" : "$(RESOURCES)/tutorial/current/tangram-align.json",
+      "--number-jobs" : "2",
+      "--tangram-directory" : "tangram-files",
+      "--minimum-fragments" : "0",
+      "--tangram-region" : "20:1-999999",
+      "--tangram-output" : "tangram-calls"
     }
   }
 }

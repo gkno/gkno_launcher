@@ -1,0 +1,9 @@
+{
+  "instances": {
+    "michigan-test": {
+      "--fasta": "../resources/tutorial/current/test_genome.fa", 
+      "description": "User specified instance", 
+      "--hash-size": "10"
+    }
+  }
+}

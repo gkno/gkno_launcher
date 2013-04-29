@@ -42,6 +42,7 @@ class tools:
     self.availableTools             = []
     self.descriptions               = {}
     self.executables                = {}
+    self.generatedFiles             = {}
     self.instances                  = {}
     self.modifiers                  = {}
     self.paths                      = {}
@@ -70,7 +71,7 @@ class tools:
       self.observedFields = {}
       hasArgumentOrder    = False
 
-      for  field in data['tools'][tool]:
+      for field in data['tools'][tool]:
 
         # Following is a list of all the allowed blocks in the configuration file.  Each is checked
         # for errors before proceeding.
@@ -199,8 +200,10 @@ class tools:
         elif field == 'default': self.checkGeneralField(tool, arguments[argument][field], field, list, filename)
         elif field == 'dependent': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
         elif field == 'description': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
+        elif field == 'directory': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
         elif field == 'do not construct filename from input': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
         elif field == 'extension': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
+        elif field == 'generated files': self.checkGeneratedFiles(tool, argument, arguments[argument][field], field, list, filename)
         elif field == 'if input is stream': self.checkArgumentInputStream(tool, arguments[argument], argument, field, arguments[argument][field], filename)
         elif field == 'if output is stream': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
         elif field == 'if output to stream': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
@@ -379,7 +382,8 @@ class tools:
   # If the field for an argument is expected to be of a specific type, check that it is.
   def checkGeneralField(self, tool, value, text, expectedType, filename):
     givenType     = type(value)
-    if (givenType != expectedType and
+    print('CHECK', tool, value, expectedType, givenType, givenType == expectedType)
+    if ((givenType != expectedType) or
         (givenType == str and not isinstance(value, basestring))):
       self.errors.differentDataTypeInConfig(False, filename, tool, text, givenType, expectedType)
       self.errors.terminate()
@@ -399,6 +403,15 @@ class tools:
       self.errors.invalidArgumentInRepeat(False, filename, tool, argument, text, value)
       self.errors.terminate()
     self.observedArgumentFields[field] = True
+
+  def checkGeneratedFiles(self, tool, argument, arguments, field, expectedType, filename):
+    givenType = type(arguments)
+    if givenType != expectedType:
+      text = 'arguments -> ' + argument + ' -> generated files'
+      self.errors.differentDataTypeInConfig(False, filename, tool, text, givenType, list)
+      self.errors.terminate()
+
+    self.generatedFiles[tool] = arguments
 
   # If the argument input is the stream, there are a number of ways that gkno can be instructed
   # to modify the command line.  Check that the value given is valid and that any further information

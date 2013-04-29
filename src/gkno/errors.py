@@ -460,6 +460,17 @@ class errors:
     self.writeFormattedText()
     self.hasError = True
 
+  # If an argument links to a task not in the workflow, terminate.
+  def invalidLinkedTaskInArguments(self, newLine, task, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Malformed pipeline configuration file: ' + filename
+    self.text.append(text)
+    text = 'The configuration file contains information for a task that is not present in the pipeline workflow (\'' + task + '\').  Please ' + \
+    'check the configuration file and ensure that all pipeline arguments are for allowed tasks.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
   # If the linkage section contains an argument linked to an unknown argument, terminate.
   def invalidArgumentInConstruct(self, newLine, task, argument, filename):
     if newLine: print(file=sys.stderr)
