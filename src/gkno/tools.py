@@ -382,7 +382,6 @@ class tools:
   # If the field for an argument is expected to be of a specific type, check that it is.
   def checkGeneralField(self, tool, value, text, expectedType, filename):
     givenType     = type(value)
-    print('CHECK', tool, value, expectedType, givenType, givenType == expectedType)
     if ((givenType != expectedType) or
         (givenType == str and not isinstance(value, basestring))):
       self.errors.differentDataTypeInConfig(False, filename, tool, text, givenType, expectedType)

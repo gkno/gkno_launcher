@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.67"
+__version__ = "0.68"
 __date__ = "April 2013"
 
 def main():
@@ -423,11 +423,11 @@ def main():
 
   # Having established the mode of operation and checked that the command lines are
   # valid etc., ping the website to log use of gkno.
-  if verbose: writeTracking(phoneHomeID)
-  phoneHome(sourcePath, phoneHomeID)
-  if verbose:
-    writeDone()
-    writeBlankLine()
+  if pl.arguments['--do-not-log-usage'] == 'unset':
+    if verbose: writeTracking(phoneHomeID)
+    phoneHome(sourcePath, phoneHomeID)
+    if verbose: writeDone()
+  writeBlankLine()
 
   # Execute the generated script unless the execute flag has been unset.
   success = 0
@@ -439,6 +439,7 @@ def main():
       if pl.arguments['--number-jobs'] != '': execute = 'make -j ' + str(pl.arguments['--number-jobs'])
       else: execute = 'make'
       execute += ' --file ' + makefile
+      print('Executing command:', execute, '\n')
       success = subprocess.call(execute.split())
       if verbose: writeComplete(success)
 

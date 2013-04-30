@@ -14,6 +14,7 @@
     "sort-multiple-bam",
     "index-primary-bam",
     "mark-duplicates",
+    "index-final-bam",
     "generate-bam-list",
     "scan-bam-files",
     "detect-mei"
@@ -33,6 +34,7 @@
     "index-primary-bam" : "bamtools-index",
     "generate-bam-list" : "generate-file-list",
     "mark-duplicates" : "picard-mark-duplicates",
+    "index-final-bam" : "bamtools-index",
     "scan-bam-files" : "tangram-scan",
     "detect-mei" : "tangram-detect"
   },
@@ -43,7 +45,8 @@
     "sort-primary-bam",
     "sort-multiple-bam",
     "index-primary-bam",
-    "mark-duplicates"
+    "mark-duplicates",
+    "index-final-bam"
   ],
   "construct filenames" : {
     "build-reference" : {
@@ -230,6 +233,12 @@
       "INPUT" : {
         "link to this task" : "sort-primary-bam",
         "link to this argument" : "-out"
+      }
+    },
+    "index-final-bam" : {
+      "-in" : {
+        "link to this task" : "mark-duplicates",
+        "link to this argument" : "OUTPUT"
       }
     },
     "generate-bam-list" : {

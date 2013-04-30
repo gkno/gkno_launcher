@@ -727,7 +727,7 @@ class pipeline:
     self.argumentInformation['--number-jobs']['type']                = 'integer'
     self.argumentInformation['--number-jobs']['default']             = '1'
     self.shortForms['-nj']                                             = '--number-jobs'
-    self.arguments['--number-jobs']                                  = ''
+    self.arguments['--number-jobs']                                  = '1'
 
     self.argumentInformation['--task-stdout']                        = {}
     self.argumentInformation['--task-stdout']['description']         = 'Generate a stdout and stderr for each task.'
@@ -746,6 +746,15 @@ class pipeline:
     self.argumentInformation['--instance']['default']             = ''
     self.shortForms['-is']                                        = '--instance'
     self.arguments['--instance']                                  = ''
+
+    self.argumentInformation['--do-not-log-usage']                        = {}
+    self.argumentInformation['--do-not-log-usage']['description']         = 'Do not log this run of gkno.'
+    self.argumentInformation['--do-not-log-usage']['link to this task']   = 'pipeline'
+    self.argumentInformation['--do-not-log-usage']['short form argument'] = '-dnl'
+    self.argumentInformation['--do-not-log-usage']['type']                = 'flag'
+    self.argumentInformation['--do-not-log-usage']['default']             = 'unset'
+    self.shortForms['-dnl']                                               = '--do-not-log-usage'
+    self.arguments['--do-not-log-usage']                                  = 'unset'
 
   # Modify pipeline information to handle an individual tool.
   def setupIndividualTool(self, tool, verbose):

@@ -184,7 +184,8 @@ class commandLine:
           shortForm = pipeArguments[argumentName]['short form argument']
           dataType  = pipeArguments[argumentName]['type']
           value     = self.checkDataType(task, 'pipeline', argumentName, shortForm, '', '', value, dataType, verbose)
-          pipelineArguments[argumentName] = value
+          if dataType == 'flag': pipelineArguments[argumentName] = 'set'
+          else: pipelineArguments[argumentName] = value
 
       # If a pipeline is being run, the name of a task in the workflow is an allowed command line
       # argument.  If this is the case, there may be multiple arguments supplied for that specific

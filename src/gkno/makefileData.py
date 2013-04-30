@@ -153,11 +153,11 @@ class makefileData:
     if stdout:
       if hasMultipleRuns: self.outputID = str(taskBlock[-1]) + '_' + str(self.id)
       else: self.outputID = str(taskBlock[-1])
-      self.redirect = '>'
+      self.redirect = '>>'
     else:
       if hasMultipleRuns: self.outputID = str(self.filename.split('.')[0]) + '_' + str(self.id)
       else: self.outputID = str(self.filename.split('.')[0])
-      self.redirect = '>' if taskBlock == self.taskBlocks[0] else '>>'
+      self.redirect = '>>'
 
   # The arguments structure needs to be modified, so that each task has a list of arguments.  If
   # there is an internal loop, each task can have multiple sets of parameters to define multiple
