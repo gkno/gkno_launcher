@@ -15,22 +15,23 @@ import sys
 
 class pipeline:
   def __init__(self):
-    self.errors                  = errors()
-    self.toolArgumentLinks       = {}
-    self.arguments               = {}
-    self.argumentInformation     = {}
-    self.constructFilenames      = {}
-    self.deleteFiles             = {}
-    self.description             = ''
-    self.hasInternalLoop         = False
-    self.instances               = {}
-    self.isPipeline              = False
-    self.linkage                 = {}
-    self.pipelineName            = ''
-    self.shortForms              = {}
-    self.taskToTool              = {}
-    self.toolsOutputtingToStream = []
-    self.workflow                = []
+    self.additionalFileDependencies = {}
+    self.arguments                  = {}
+    self.argumentInformation        = {}
+    self.constructFilenames         = {}
+    self.deleteFiles                = {}
+    self.description                = ''
+    self.errors                     = errors()
+    self.hasInternalLoop            = False
+    self.instances                  = {}
+    self.isPipeline                 = False
+    self.linkage                    = {}
+    self.pipelineName               = ''
+    self.shortForms                 = {}
+    self.taskToTool                 = {}
+    self.toolArgumentLinks          = {}
+    self.toolsOutputtingToStream    = []
+    self.workflow                   = []
 
     # Define the fields that are allowed for each argument in the linkage section of the
     # configuration file.  The Boolean value describes if the field is required or not.
@@ -39,6 +40,10 @@ class pipeline:
     self.allowedLinkageFields['link to this argument'] = True
     self.allowedLinkageFields['json block']            = False
     self.allowedLinkageFields['extension']             = False
+
+    # Define the allowed fields that can appear for each task in the 'additional dependencies' section.
+    self.allowedDependenciesFields                = {}
+    self.allowedDependenciesFields['task output'] = False
 
     # Define the fields that are allowed for each argument in the construct filenames section
     # of the configuration file.  The Boolean value describes if the field is required or not.
@@ -100,6 +105,10 @@ class pipeline:
     # The linkage section describing how different tools are linked together in the pipeline is a
     # dictionary containing tasks in the workflow as keys.  Check that these are all valid tasks.
     if 'linkage' in data: self.checkLinkageSection(data['linkage'], argumentInformation, verbose)
+
+    # Check if the 'additional dependencies' section exists.  This defines files on which a tool
+    # depends that are not explicitly supplied in a command line argument.
+    if 'additional dependencies' in data: self.checkAdditionalDependencies(data['additional dependencies'], argumentInformation, verbose)
 
     # The arguments section is required and contains all the arguments allowed for the pipeline.
     self.checkArguments(data, verbose)
@@ -489,6 +498,65 @@ class pipeline:
 
       self.linkage[task] = linkage[task]
     self.jsonSections.remove('linkage')
+
+  # Check the contents of the 'additional dependencies' section,
+  def checkAdditionalDependencies(self, data, argumentInformation, verbose):
+
+    # Check that the section is a dictionary.
+    if not isinstance(data, dict):
+      self.errors.pipelineSectionIsNotADictionary(verbose, 'additional dependencies', self.pipelineFile)
+      self.errors.terminate()
+
+    # Now loop over the tasks, checking that they are valid.
+    for task in data:
+      if task not in self.workflow:
+        self.errors.taskNotInWorkflow(verbose, 'additional dependencies', task, self.pipelineFile)
+        self.errors.terminate()
+
+      for field in data[task]:
+
+        # If the dependency comes from a previous task output, check that the task and
+        # argument exist.
+        if field == 'task output':
+          if not isinstance(data[task][field], dict):
+            text = 'additional dependencies -> ' + task + ' -> ' + field
+            self.errors.pipelineSectionIsNotADictionary(verbose, text, self.pipelineFile)
+            self.errors.terminate()
+
+          for linkedTask in data[task][field]:
+            if linkedTask not in self.workflow:
+              self.errors.unknownTaskInAdditionalDepedenciesTaskOutput(verbose, task, linkedTask, self.pipelineFile)
+              self.errors.terminate()
+
+            # Check that the linkedTask is a list of arguments.
+            if not isinstance(data[task][field][linkedTask], list):
+              text = 'additional dependencies -> ' + task + ' -> ' + field + ' -> ' + linkedTask
+              self.errors.pipelineSectionIsNotAList(verbose, text, self.pipelineFile)
+              self.errors.terminate()
+
+        # If the dependency is any additional files created by a tool.
+        elif field == 'additional files from task':
+
+          # Check that a list of valid tasks is supplied.
+          if not isinstance(data[task][field], list):
+            text = 'additional dependencies -> ' + task + ' -> ' + field
+            self.errors.pipelineSectionIsNotAList(verbose, text, self.pipelineFile)
+            self.errors.terminate()
+
+          for linkedTask in data[task][field]:
+            if linkedTask not in self.workflow:
+              text = 'additional dependencies -> ' + task + ' -> ' + field
+              self.errors.taskNotInWorkflow(verbose, text, linkedTask, self.pipelineFile)
+              self.errors.terminate()
+
+            if task not in self.additionalFileDependencies: self.additionalFileDependencies[task] = []
+            self.additionalFileDependencies[task].append(linkedTask)
+
+        else:
+          self.errors.unrecognisedFieldInAdditionalDependencies(verbose, task, field, self.allowedDependenciesFields, self.pipelineFile)
+          self.errors.terminate()
+
+    self.jsonSections.remove('additional dependencies')
 
   # The arguments section is required and contains all the arguments allowed for the pipeline.
   def checkArguments(self, data, verbose):

@@ -396,7 +396,7 @@ class errors:
     self.hasError = True
 
   # If a dictionary was expected, but a different type obesrved, terminate.
-  def pipelineSectionIsNotADict(self, newLine, sectionName, filename):
+  def pipelineSectionIsNotADictionary(self, newLine, sectionName, filename):
     if newLine: print(file=sys.stderr)
     text = 'Malformed pipeline configuration file: ' + filename
     self.text.append(text)
@@ -411,7 +411,7 @@ class errors:
     if newLine: print(file=sys.stderr)
     text = 'Malformed pipeline configuration file: ' + filename
     self.text.append(text)
-    text = "The '" + sectionName + "' in the configuration file is not a list as required.  Please check and repair the configuration file."
+    text = "The section '" + sectionName + "' in the configuration file is not a list as required.  Please check and repair the configuration file."
     self.text.append(text)
     self.writeFormattedText()
     self.hasError = True
@@ -1371,6 +1371,34 @@ class errors:
     self.text.append(text)
     self.text.append('\t')
     for executable in missingExecutableList: self.text.append(executable)
+    self.writeFormattedText()
+    self.hasError = True
+
+  # If there is an unrecognised field in the 'additional dependencies' section, fail.
+  def unrecognisedFieldInAdditionalDependencies(self, newLine, task, field, allowedFields, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Malformed pipeline configuration file: ' + filename
+    self.text.append(text)
+    text = 'The \'additional dependencies\' section contains dependency information for the task \'' + task + '\'.  An unrecognised field (' + \
+    field + ') was included for this task.  The allowed fields for each task are:'
+    self.text.append(text)
+    self.text.append('\t')
+    for field in allowedFields: self.text.append(field)
+    text = 'Please check and repair the pipeline configuration file.'
+    self.text.append('\t')
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
+  # If the task output section in the additional dependencies points to an unknown task, fail.
+  def unknownTaskInAdditionalDepedenciesTaskOutput(self, newLine, task, linkedTask, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Malformed pipeline configuration file: ' + filename
+    self.text.append(text)
+    text = 'The \'additional dependencies\' section contains information for task \'' + task + '\'.  Within the \'task output\' section, ' + \
+    'the task \'' + linkedTask + '\' is listed as a task from which to get a dependency, but this is not a task in the pipeline workflow.  ' + \
+    'Please check and repair the pipeline configuration file.'
+    self.text.append(text)
     self.writeFormattedText()
     self.hasError = True
 

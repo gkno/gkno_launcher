@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.68"
+__version__ = "0.69"
 __date__ = "April 2013"
 
 def main():
@@ -354,8 +354,13 @@ def main():
     # Similarly, each tool produces output files.  These are listed in the
     # Makefile in order to ensure that tools are only run if their outputs
     # don't already exist.
-    determineAdditionalFiles(tl.additionalFiles, pl.workflow, pl.taskToTool, make.arguments, make.dependencies, make.outputs, verbose)
+    determineAdditionalFiles(tl.additionalFiles, pl.workflow, pl.taskToTool, pl.additionalFileDependencies, make.arguments, make.dependencies, make.outputs, verbose)
   
+    # If there are any explicit dependencies included in the pipeline configuration file, 
+    # include them.
+    #if pl.isPipeline:
+    #  if len(pl.additionalFileDependencies) != 0: includeAdditionalFileDependencies(pl.additionalFileDependencies, make.dependencies)
+
     # In the course of executing the pipeline, some of the intermediate files
     # generated along the way should be deleted.  The pipeline configuration
     # file segment 'delete files' identifies which files should be deleted and

@@ -615,7 +615,7 @@ def determineDependencies(argumentInformation, generatedFiles, workflow, taskToT
 # file.  In these instances, the additional output files for the tool are
 # included at the beginning of the tools configuration files.  Parse these
 # additional output files (if there are any) and add to the outputs string.
-def determineAdditionalFiles(additionalFiles, workflow, taskToTool, arguments, dependencies, outputs, verbose):
+def determineAdditionalFiles(additionalFiles, workflow, taskToTool, pipelineDependencies, arguments, dependencies, outputs, verbose):
   er = errors()
 
   # Loop over each tool in turn and check for additional output files.
@@ -640,7 +640,7 @@ def determineAdditionalFiles(additionalFiles, workflow, taskToTool, arguments, d
           # Loop over all the values for this argument (if there is an internal loop, there
           # could be multiple values for this).
           for counter, iteration in enumerate(arguments[task]):
-            filename = iteration[argument][0]
+            filename = arguments[task][counter][argument][0]
 
             # In constructing the output file name, the extension associated with the associated
             # file name can be stripped off and a new extension can be appended if requested.
@@ -649,6 +649,12 @@ def determineAdditionalFiles(additionalFiles, workflow, taskToTool, arguments, d
             if field['add extension']:
               extension = field['output extension']
               filename += '.' + extension
+
+            # Check if any of the other tasks in the pipeline demand this output as a dependency.
+            for pipelineTask in pipelineDependencies:
+              if task in pipelineDependencies[pipelineTask]:
+                if len(dependencies[pipelineTask]) == 1: dependencies[pipelineTask][0].append(filename)
+                else: dependencies[pipelineTask][counter].append(filename)
 
             # If the file is a dependency, add to the dependency string, otherwise add to the
             # output string.

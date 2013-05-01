@@ -264,6 +264,15 @@
       }
     }
   },
+
+  "additional dependencies" : {
+    "detect-mei" : {
+      "additional files from task" : [
+        "index-final-bam"
+      ]
+    }
+  },
+
   "arguments" : {
     "--reference" : {
       "description" : "The input reference fasta.",
