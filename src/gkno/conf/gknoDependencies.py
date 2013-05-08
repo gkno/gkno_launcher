@@ -134,7 +134,27 @@ class Cmake(GknoDependency):
     self.command = "cmake --version"
 
   def extractCurrentVersion(self):
-    return self.extractNormalVersionNumber(self.outdata)
+  
+    # Try to extract normal version, like other tools, returning False on complete failure.
+    # But we're not done yet, so don't simply return the result of extraction.
+    if not self.extractNormalVersionNumber(self.outdata):
+      return False
+ 
+    # Cmake versions 2.6.x have a different version output format (2.6-patch x)
+    # After the initial 'extractNormalVersionNumber', our currentVersion will be 2.6,
+    # but the patch number is not yet set. So we need to tease it out.
+    if ("patch" in self.outdata) and (self.currentVersion == distutils.version.LooseVersion("2.6")):
+      m = re.search(r'patch\s+(\d+)', self.outdata)
+      if m: 
+        patchNumber = m.group(1)   
+      else:
+        return False 
+
+      versionString = "2.6."+patchNumber
+      self.currentVersion = distutils.version.LooseVersion(versionString)
+
+    # We should be OK by here
+    return True
 
 # gcc
 class Gcc(GknoDependency):
