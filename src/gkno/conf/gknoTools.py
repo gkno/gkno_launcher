@@ -229,8 +229,7 @@ class Mosaik(GknoTool):
   # $ make -j N
   def doUpdate(self):
     os.chdir("src") 
-    if not self.doPlatformExports():
-      return False                   
+    self.doPlatformExports()
     return self.make()
 
   # Mosaik has some platform-specific export commands
@@ -377,7 +376,6 @@ class VcfLib(GknoTool):
 ##############################################################
 # Add any new built-in gkno tools to the list below.
 ##############################################################
-
 
 List = [ 
         BamTools(),
