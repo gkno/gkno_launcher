@@ -86,6 +86,33 @@
           "extension" : "no extension",
           "type" : "string"
         },
+        "-cn" : {
+          "description" : "The sequencing center name.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "no extension",
+          "type" : "string"
+        },
+        "-ln" : {
+          "description" : "The library name. e.g. g1k-sc-NA18944-JPT-1.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "no extension",
+          "type" : "string"
+        },
+        "-pu" : {
+          "description" : "The platform unit. e.g. IL12_490_5.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "no extension",
+          "type" : "string"
+        },
         "-st" : {
           "description" : "Sets the sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
           "input" : false,

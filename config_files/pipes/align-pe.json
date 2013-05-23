@@ -211,6 +211,41 @@
       "short form argument" : "-o",
       "type" : "string"
     },
+    "--sample" : {
+      "description" : "The sample name. e.g. NA12878.",
+      "link to this task" : "build-read-archive",
+      "link to this argument" : "-sam",
+      "short form argument" : "-sm",
+      "type" : "string"
+    },
+    "--center" : {
+      "description" : "The sequencing center name.",
+      "link to this task" : "build-read-archive",
+      "link to this argument" : "-cn",
+      "short form argument" : "-cn",
+      "type" : "string"
+    },
+    "--read-group" : {
+      "description" : "The read group ID. e.g. SRR009060.",
+      "link to this task" : "build-read-archive",
+      "link to this argument" : "-id",
+      "short form argument" : "-rg",
+      "type" : "string"
+    },
+    "--library" : {
+      "description" : "The library name. e.g. g1k-sc-NA18944-JPT-1.",
+      "link to this task" : "build-read-archive",
+      "link to this argument" : "-ln",
+      "short form argument" : "-lb",
+      "type" : "string"
+    },
+    "--platform-name" : {
+      "description" : "The platform unit. e.g. IL12_490_5.",
+      "link to this task" : "build-read-archive",
+      "link to this argument" : "-pu",
+      "short form argument" : "-pn",
+      "type" : "string"
+    },
     "--reference-fasta" : {
       "description" : "The reference fasta genome.  This must be the fasta from which the Mosaik archive was generated.",
       "link to this task" : "index-fasta",
