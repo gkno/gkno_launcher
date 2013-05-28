@@ -661,6 +661,13 @@ def determineAdditionalFiles(additionalFiles, workflow, taskToTool, pipelineDepe
             if fileType == 'dependency': dependencies[task][counter].append(filename)
             elif fileType == 'output': outputs[task][counter].append(filename)
 
+      # If there are defined files that are created by a particular tool, add these to the
+      # outputs.
+      elif 'defined filenames':
+        for filename in additionalFiles[tool]['defined filenames']:
+          for counter, iteration in enumerate(arguments[task]):
+            outputs[task][counter].append(filename)
+
 # In the course of executing the pipeline, some of the intermediate files
 # generated along the way should be deleted.  The pipeline configuration
 # file segment 'delete files' identifies which files should be deleted and

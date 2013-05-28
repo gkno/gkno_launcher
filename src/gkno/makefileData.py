@@ -19,6 +19,8 @@ class makefileData:
     self.hasPipes               = False
     self.intermediateFiles      = []
     self.outputs                = {}
+    self.phonyTargetID          = 1
+    self.phonyTargets           = []
     self.taskBlocks             = []
     self.taskBlocksOutputs      = []
     self.taskBlocksDependencies = []
@@ -98,7 +100,17 @@ class makefileData:
     print('MAKEFILE_ID=', self.filename.split('/')[-1].split('.')[0], sep = '', file = self.makeFilehandle)
     print(file = self.makeFilehandle)
     print('.DELETE_ON_ERROR:', file = self.makeFilehandle)
-    print('.PHONY: all', file = self.makeFilehandle)
+    print('.PHONY: all', end = ' ', file = self.makeFilehandle)
+
+    # Check if any of the recipes require phony targets.
+    phonyCounter = 1
+    for outputs in self.taskBlockOutputs:
+      for counter in range(0, len(outputs)):
+        if len(outputs[counter]) == 0:
+          print('phonyTarget_' + str(phonyCounter), end = ' ', file = self.makeFilehandle)
+          self.phonyTargets.append('phonyTarget_' + str(phonyCounter))
+          phonyCounter += 1
+    print(file = self.makeFilehandle)
 
   # Build up the command lines in the makefile.
   def setIntermediateFiles(self, workflow, taskToTool):
@@ -126,7 +138,10 @@ class makefileData:
   # Write out all of the output files generated.
   def writeAllOutputs(self):
     print(file = self.makeFilehandle)
-    print('all:', end = "", file = self.makeFilehandle)
+    print('all:', end = ' ', file = self.makeFilehandle)
+
+    # Include all phony targets.
+    for phonyTarget in self.phonyTargets: print(phonyTarget, end = ' ', file = self.makeFilehandle)
 
     allOutputs = []
     for outputBlock in reversed(self.taskBlockOutputs):
@@ -386,8 +401,9 @@ class makefileData:
     #TODO Handle phony targets
     # Check if the target is a phony target.  If so, define the phony target. 
     if len(outputBlock) == 0: 
-      print('NO OUTPUTS: NOT HANDLED PHONY') 
-      exit(1) 
+      phonyTarget = 'phonyTarget_' + str(self.phonyTargetID)
+      self.phonyTargetID += 1
+      print(phonyTarget, sep = '', end = ': ', file = self.makeFilehandle)
     else:
 
       # Determine how many output files there are.  If there are multiple output files, 

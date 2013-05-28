@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.72"
+__version__ = "0.73"
 __date__ = "May 2013"
 
 def main():
@@ -388,14 +388,14 @@ def main():
     # order.
     make.taskBlocks = determineToolWriteOrder(pl.workflow, pl.toolsOutputtingToStream, make.hasPipes)
   
+    # Determine the outputs and dependencies for each block of tasks.
+    make.taskBlockOutputs, make.taskBlockDependencies = getTaskBlockOutputsAndDependencies(make.taskBlocks, make.outputs, make.dependencies, iLoop.tasks, iLoop.numberOfIterations)
+    determineFinalOutputs(make.deleteFiles, make.outputs)
+
     # Generate scripts to run the selected pipeline.
     make.openMakefile(sourcePath, pl.isPipeline)
     make.setIntermediateFiles(pl.workflow, pl.taskToTool)
-
-    # Determine the outputs and dependencies for each block of tasks.
-    make.taskBlockOutputs, make.taskBlockDependencies = getTaskBlockOutputsAndDependencies(make.taskBlocks, make.outputs, make.dependencies, iLoop.tasks, iLoop.numberOfIterations)
     make.writeAllOutputs()
-    determineFinalOutputs(make.deleteFiles, make.outputs)
 
     # Loop over all of the task blocks in the pipeline.
     for tasks, outputs, dependencies in zip(reversed(make.taskBlocks), reversed(make.taskBlockOutputs), reversed(make.taskBlockDependencies)):

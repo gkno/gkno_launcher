@@ -291,12 +291,6 @@ class tools:
   # ...additional files...
   def checkAdditionalFiles(self, tool, arguments, filename):
     required = []
-    required.append('type')
-    required.append('link to this argument')
-    required.append('remove extension')
-    required.append('add extension')
-    required.append('output extension')
-    required.append('stub')
 
     # The only allowed fields within the 'additional fields' section are:
     #   1. from input argument.
@@ -354,12 +348,24 @@ class tools:
               self.errors.unknownFieldInAdditionalFilesDictionary(False, filename, tool, information)
               self.errors.terminate()
 
-
           # Check that all of the required fields are present.
+          required.append('type')
+          required.append('link to this argument')
+          required.append('remove extension')
+          required.append('add extension')
+          required.append('output extension')
+          required.append('stub')
           for information in required:
             if information not in entry:
               self.errors.missingFieldInAdditionalFiles(False, filename, tool, information, required)
               self.errors.terminate()
+
+      elif field == 'defined filenames':
+
+        # Check that a list of values is included.
+        if type(arguments[field]) != list:
+          self.errors.differentDataTypeInConfig(False, filename, tool, field, type(arguments[field]), list)
+          self.errors.terminate()
 
       # If the field is not known.
       else:
