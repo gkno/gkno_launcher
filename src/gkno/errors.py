@@ -921,14 +921,17 @@ class errors:
   # gkno will read the expected format and then for each run, read the values for each value specified
   # in this list.  If there isn't an integral multiple, the values for each run are not given correctly,
   # so terminate.
-  def incorrectNumberOfEntriesInMultipleJson(self, newLine, filename):
+  def incorrectNumberOfEntriesInMultipleJson(self, newLine, setID, filename):
     if newLine: print(file=sys.stderr)
     text = 'Malformed multiple runs input file: ' + filename
     self.text.append(text)
-    text = 'The number of entries in the "data list" must be a multiple of the number of entries in the "format of data list".  For each ' + \
-    'makefile generated, the command line arguments defined in the "format of data list" will be set with a value taken from the "data list" ' + \
-    'section.  This means that the "data list" section is an ordered list of each argument in the format list repeated for the number ' + \
+    text = 'The number of entries in the "values" section must be a multiple of the number of entries in the "arguments".  For each ' + \
+    'makefile generated, the command line arguments defined in the "arguments" will be set with a value taken from the "values" ' + \
+    'section.  This means that the "values" section is an ordered list of each argument in the format list repeated for the number ' + \
     'of runs required.  Please ensure that the multiple runs file is correctly built.'
+    self.text.append(text)
+    self.text.append('\t')
+    text = 'The data set at fault is that with ID: ' + setID
     self.text.append(text)
     self.writeFormattedText()
     self.hasError = True
@@ -938,8 +941,8 @@ class errors:
     if newLine: print(file=sys.stderr)
     text = 'Malformed multiple runs input file: ' + filename
     self.text.append(text)
-    text = 'The multiple-runs input file must contain two sections.  The first section is titled "format of data list" and is a list ' + \
-    'of the command line arguments for which data appears in the second section.  The second section is titled "data list" and contains ' + \
+    text = 'The multiple-runs input file must contain two sections.  The first section is titled "arguments" and is a list ' + \
+    'of the command line arguments for which data appears in the second section.  The second section is titled "values" and contains ' + \
     "the data.  The provided file is missing the '" + section + "' section.  Please check and repair the multiple runs file."
     self.text.append(text)
     self.writeFormattedText()

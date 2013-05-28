@@ -52,50 +52,59 @@ class multipleRuns:
     io = files()
     data = io.getJsonData(self.filename, False)
     if data == '':
-      er.noMultipleRunFile(False, self.filename)
+      er.noMultipleRunFile(verbose, self.filename)
       er.terminate()
 
     # The multiple runs file should contain two sections: 'format of data list' and 'data list'.
     # Check that these exist and store the information
-    if 'format of data list' not in data:
-      er.missingSectionMultipleRunsFile(False, self.filename, 'format of data list')
+    if 'arguments' not in data:
+      er.missingSectionMultipleRunsFile(verbose, self.filename, 'arguments')
       er.terminate()
 
-    if 'data list' not in data:
-      er.missingSectionMultipleRunsFile(False, self.filename, 'data list')
+    if 'values' not in data:
+      er.missingSectionMultipleRunsFile(verbose, self.filename, 'values')
       er.terminate()
 
     # Check that the "format of data list" is well formed and store.
-    givenType = type(data['format of data list'])
+    givenType = type(data['arguments'])
     if givenType != list:
-      er.differentDataTypeInConfig(False, self.filename, '', 'format of data list', list, givenType)
+      er.differentDataTypeInConfig(verbose, self.filename, '', 'values', list, givenType)
       er.terminate()
 
     # Ensure that the long form of the argument is used in the argumentFormats structure.
-    for argument in data['format of data list']:
+    for argument in data['arguments']:
       self.argumentFormats.append(argument)
 
     # Now check the data for the "data list" and store the information.
-    givenType = type(data['data list'])
-    if givenType != list:
-      er.differentDataTypeInConfig(False, self.filename, '', 'data list', list, givenType)
+    givenType = type(data['values'])
+    if givenType != dict:
+      er.differentDataTypeInConfig(verbose, self.filename, '', 'values', dict, givenType)
       er.terminate()
 
-    # Check that there is a valid number of entries in the list.  For example, if the argumentFormats list
-    # has two entries, the data list must contain two entries for each run (i.e. one value for each argument
-    # defined in the formats for each run).  Thus the number of entries in the 'data list' must be a
-    # multiple of the number of entries in the 'format of data list' section.
-    if len(data['data list']) % len(self.argumentFormats) != 0:
-      er.incorrectNumberOfEntriesInMultipleJson(False, self.filename)
-      er.terminate()
-    self.numberDataSets = len(data['data list']) / len(self.argumentFormats)
+    # Parse and check each set of data.
+    count               = 0
+    self.numberDataSets = 0
+    for dataSetID in data['values']:
+      self.numberDataSets += 1
+      dataSet = data['values'][dataSetID]
+      givenType = type(dataSet)
+      if givenType != list:
+        er.differentDataTypeInConfig(verbose, self.filename, '', 'values', list, givenType)
+        er.terminate()
 
-    count = 0
-    for argument in data['data list']:
-      if self.argumentFormats[count] not in self.argumentData: self.argumentData[self.argumentFormats[count]] = []
-      self.argumentData[self.argumentFormats[count]].append(argument)
-      count += 1
-      if count == len(self.argumentFormats): count = 0
+      # Check that there is a valid number of entries in the list.  For example, if the argumentFormats list
+      # has two entries, the data list must contain two entries for each run (i.e. one value for each argument
+      # defined in the formats for each run).  Thus the number of entries in the 'data list' must be a
+      # multiple of the number of entries in the 'format of data list' section.
+      if len(data['values'][dataSetID]) != len(self.argumentFormats) != 0:
+        er.incorrectNumberOfEntriesInMultipleJson(verbose, dataSetID, self.filename)
+        er.terminate()
+
+      for argument in data['values'][dataSetID]:
+        if self.argumentFormats[count] not in self.argumentData: self.argumentData[self.argumentFormats[count]] = []
+        self.argumentData[self.argumentFormats[count]].append(argument)
+        count += 1
+        if count == len(self.argumentFormats): count = 0
 
   # Check that the arguments in the argumentFormats list are valid command line arguments and that
   # the associated data is valid.
