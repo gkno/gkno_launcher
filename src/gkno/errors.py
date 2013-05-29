@@ -1409,6 +1409,20 @@ class errors:
   # Internal loop errors
   ######################
 
+  # If an internal loop file was specified on the command line, but the pipeline does not
+  # have any internal loop information set up, terminate.
+  def internalLoopRequestedButUndefined(self, newLine, pipelineName, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Attempt to use internal loop when none is defined: ' + filename
+    self.text.append(text)
+    text = 'The command line includes the \'--internal-loop\' argument, requesting that the pipeline loop over certain tasks in the ' + \
+    'workflow.  This is only permissible for pipelines where information about internal loops has been provided in the configuration file. ' + \
+    'The pipeline being run (' + pipelineName + ') does not have any information abomut an internal loop.  Please remove the internal loop ' + \
+    'request from the command line, or modify the pipeline to accept internal loops.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
   # If an unrecognised section appears in the file, terminate.
   def missingSectionsInternalLoop(self, newLine, section, filename):
     if newLine: print(file=sys.stderr)
