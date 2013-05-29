@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.76"
+__version__ = "0.77"
 __date__ = "May 2013"
 
 def main():
@@ -229,7 +229,7 @@ def main():
   # the internal loop.  If so, check that the supplied file exists and read in the information.  First,
   # check if an internal loop was specified on the command line, but the pipeline does not have any
   # internal loop information in the configuration file.
-  if '--internal-loop' in pl.arguments and not pl.hasInternalLoop:
+  if pl.arguments['--internal-loop'] != ''  and not pl.hasInternalLoop:
     er.internalLoopRequestedButUndefined(verbose, pl.pipelineName, pl.arguments['--internal-loop'])
     er.terminate()
   if pl.isPipeline and pl.hasInternalLoop:

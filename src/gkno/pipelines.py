@@ -824,6 +824,15 @@ class pipeline:
     self.shortForms['-dnl']                                               = '--do-not-log-usage'
     self.arguments['--do-not-log-usage']                                  = 'unset'
 
+    self.argumentInformation['--timing']                        = {}
+    self.argumentInformation['--timing']['description']         = ''
+    self.argumentInformation['--timing']['link to this task']   = 'pipeline'
+    self.argumentInformation['--timing']['short form argument'] = '-tm'
+    self.argumentInformation['--timing']['type']                = 'bool'
+    self.argumentInformation['--timing']['default']             = False
+    self.shortForms['-tm']                                      = '--timing'
+    self.arguments['--timing']                                  = False
+
   # Modify pipeline information to handle an individual tool.
   def setupIndividualTool(self, tool, verbose):
     self.workflow.append(tool)
