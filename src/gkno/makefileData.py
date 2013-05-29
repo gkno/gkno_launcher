@@ -341,12 +341,17 @@ class makefileData:
           if isFlag:
             if self.arguments[task][internalLoopCounter][argument][0] == 'set': print(" \\\n\t", argument, sep = '', end = '', file = self.makeFilehandle)
           else:
-  
+
             # Some command lines allow multiple options to be set and the command line can
             # therefore be repeated multiple times.  If the defined value is a list, this
             # is the case and the command should be written out once for each value in the
             # list.
             for value in self.arguments[task][internalLoopCounter][argument]:
+  
+              # If the value contains whitespace, include quotation marks around the value.
+              if isinstance(value, basestring):
+                if ' ' in value: value = str('"') + value + str('"')
+
               if hideArgument: print(" \\\n\t", value, sep = '', end = '', file = self.makeFilehandle)
               elif writeNothing: pass
               elif useStdout: print(" \\\n\t> ", value, sep = '', end = '', file = self.makeFilehandle)
