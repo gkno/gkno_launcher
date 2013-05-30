@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.77"
+__version__ = "0.78"
 __date__ = "May 2013"
 
 def main():
@@ -414,7 +414,7 @@ def main():
         make.writeOutputsToMakefile(outputs[counter])
         make.writeDependenciesToMakefile(dependencies[counter])
         make.checkStdout(tasks, pl.arguments['--task-stdout'], mr.hasMultipleRuns)
-        make.generateCommand(tl.argumentInformation, tl.argumentDelimiters, tl.precommands, tl.executables, tl.modifiers, tl.argumentOrder, pl.taskToTool, pl.linkage, tasks, verbose, counter)
+        make.generateCommand(tl.argumentInformation, tl.argumentDelimiters, tl.precommands, tl.executables, tl.modifiers, tl.argumentOrder, pl.taskToTool, pl.linkage, pl.arguments['--timing'], tasks, verbose, counter)
         make.addFileDeletion(tasks, counter)
         make.handleAdditionalOutputs(outputs[counter], dependencies[counter])
       print(file = make.makeFilehandle)

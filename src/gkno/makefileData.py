@@ -201,7 +201,7 @@ class makefileData:
     self.arguments = deepcopy(arguments)
 
   # Loop over each of the tasks in the task block and generate the command line.
-  def generateCommand(self, argumentInformation, delimiters, precommands, executables, modifiers, argumentOrder, taskToTool, linkage, taskBlock, verbose, internalLoopCounter):
+  def generateCommand(self, argumentInformation, delimiters, precommands, executables, modifiers, argumentOrder, taskToTool, linkage, timing, taskBlock, verbose, internalLoopCounter):
     er                 = errors()
     useStdout          = False
     lineStart          = "\t"
@@ -224,7 +224,12 @@ class makefileData:
       # If this is a single command, or the first command in a set of piped commands, 
       # start the line with the '@' character.  This will stop make 'echoing' the command
       # to the screen.
-      if firstCommand: print('@', end = '', file = self.makeFilehandle)
+      if firstCommand: 
+        if timing == 'set':
+          print('@echo -e \'Running task: ', task ,'\' ', self.redirect, ' ', self.outputID, '.stderr', sep = '', file = self.makeFilehandle)
+          print(lineStart, end = '', file = self.makeFilehandle)
+          print('@(time ', end = '', file = self.makeFilehandle)
+        else: print('@', end = '', file = self.makeFilehandle)
 
       # Write the command line.
       if tool in precommands:
@@ -362,7 +367,8 @@ class makefileData:
         firstCommand = False
 
     # Write the stdout and stderr to file.
-    print(' \\', file = self.makeFilehandle)
+    if timing == 'set': print(') \\', file = self.makeFilehandle)
+    else: print(' \\', file = self.makeFilehandle)
     if not useStdout: print("\t", self.redirect, ' ', self.outputID, '.stdout \\', sep = '', file = self.makeFilehandle)
     print("\t2", self.redirect, ' ', self.outputID, '.stderr', sep = '', file = self.makeFilehandle)
     print("\t@echo -e \"completed successfully.\"", sep = '', file = self.makeFilehandle)

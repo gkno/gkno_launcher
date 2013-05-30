@@ -828,10 +828,10 @@ class pipeline:
     self.argumentInformation['--timing']['description']         = ''
     self.argumentInformation['--timing']['link to this task']   = 'pipeline'
     self.argumentInformation['--timing']['short form argument'] = '-tm'
-    self.argumentInformation['--timing']['type']                = 'bool'
-    self.argumentInformation['--timing']['default']             = False
+    self.argumentInformation['--timing']['type']                = 'flag'
+    self.argumentInformation['--timing']['default']             = 'unset'
     self.shortForms['-tm']                                      = '--timing'
-    self.arguments['--timing']                                  = False
+    self.arguments['--timing']                                  = 'unset'
 
   # Modify pipeline information to handle an individual tool.
   def setupIndividualTool(self, tool, verbose):
