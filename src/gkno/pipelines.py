@@ -825,7 +825,7 @@ class pipeline:
     self.arguments['--do-not-log-usage']                                  = 'unset'
 
     self.argumentInformation['--timing']                        = {}
-    self.argumentInformation['--timing']['description']         = ''
+    self.argumentInformation['--timing']['description']         = 'Generate timing information for all tasks.'
     self.argumentInformation['--timing']['link to this task']   = 'pipeline'
     self.argumentInformation['--timing']['short form argument'] = '-tm'
     self.argumentInformation['--timing']['type']                = 'flag'
