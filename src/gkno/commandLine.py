@@ -89,7 +89,7 @@ class commandLine:
           nextArgument += ' ' + buildTaskArguments
           if not buildTaskArguments.endswith(']'): taskArgumentCounter += 1
           else:
-           count += taskArgumentCounter
+           count += taskArgumentCounter - 1
 
            # Strip off the square brackets.
            nextArgument = nextArgument[1:len(nextArgument) - 1]
