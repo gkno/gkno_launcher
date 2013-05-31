@@ -60,44 +60,68 @@ class commandLine:
       gknoHelp.printHelp   = True
 
   # Parse through the command line and put all of the arguments into a list.
-  def getCommandLineArguments(self, tool, isPipeline, pipeArguments, pipeShortForms, workflow):
-    skip = False
-    for count, argument in enumerate(sys.argv[1:]):
-      if skip: skip = False
-      else: 
+  def getCommandLineArguments(self, tool, isPipeline, pipeArguments, pipeShortForms, workflow, verbose):
+    count = 1
+    while True:
+      try: argument = sys.argv[count]
+      except: break
 
-        # Check the next argument on the command line.  If it does not begin with a '-', then this
-        # is assumed to be a value that goes with the current arguments.  Add the pair to the list
-        # of arguments as a tuple.
-        try: nextArgument = sys.argv[count + 2]
-        except: nextArgument = '-'
+      # Check the next argument on the command line.  If it does not begin with a '-', then this
+      # is assumed to be a value that goes with the current arguments.  Add the pair to the list
+      # of arguments as a tuple.
+      try: nextArgument = sys.argv[count + 1]
+      except: nextArgument = '-'
 
-        # The command line will include an instruction on whether to run a pipe or the name of the
-        # tool.  Ignore this argument.
-        if argument != tool and argument != 'pipe' and argument != 'run-test':
-          if argument in pipeShortForms: argument = pipeShortForms[argument]
-          if argument not in self.uniqueArguments: self.uniqueArguments[argument] = 1
-          else: self.uniqueArguments[argument] += 1
+      # If arguments for a task within the pipeline are being set on the command line, all of the
+      # task specific arguments must be contained within square brackets.  If the nextArgument is
+      # identified as beginning with a square bracket, find the end of the task specific commands.
+      if nextArgument.startswith('['):
+        taskArgumentCounter = 2
+        while True:
+          try: buildTaskArguments = sys.argv[count + taskArgumentCounter]
+          except: self.errors.hasError = True
 
-        # Check if the next argument starts with a '-'.  If so, the next argument on the command line
-        # is not a value to accompany this argument, but is a new argument.  This is either because
-        # the current argument is a flag or the argument is the name of a task within the pipeline.
-        # If the argument is the name of a task in the workflow, the next entry on the command line
-        # should be the value for this argument.
-        if nextArgument.startswith('-'):
+          # If the square brackets aren't closed, terminate.
+          if self.errors.hasError:
+            self.errors.unterminatedTaskSpecificOptions(verbose, argument)
+            self.errors.terminate()
 
-          # Check if the argument is the name of a task.
-          task = ''
-          if argument.startswith('-'): task = argument[1:]
-          if argument.startswith('--'): task = argument[2:]
+          nextArgument += ' ' + buildTaskArguments
+          if not buildTaskArguments.endswith(']'): taskArgumentCounter += 1
+          else:
+           count += taskArgumentCounter
 
-          if task in workflow:
-            self.argumentList.append((argument, nextArgument))
-            skip = True
-          elif argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, ''))
-        else:
-          if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, nextArgument))
-          skip = True
+           # Strip off the square brackets.
+           nextArgument = nextArgument[1:len(nextArgument) - 1]
+           break
+
+      # The command line will include an instruction on whether to run a pipe or the name of the
+      # tool.  Ignore this argument.
+      if argument != tool and argument != 'pipe' and argument != 'run-test':
+        if argument in pipeShortForms: argument = pipeShortForms[argument]
+        if argument not in self.uniqueArguments: self.uniqueArguments[argument] = 1
+        else: self.uniqueArguments[argument] += 1
+
+      # Check if the next argument starts with a '-'.  If so, the next argument on the command line
+      # is not a value to accompany this argument, but is a new argument.  This is either because
+      # the current argument is a flag or the argument is the name of a task within the pipeline.
+      # If the argument is the name of a task in the workflow, the next entry on the command line
+      # should be the value for this argument.
+      if nextArgument.startswith('-'):
+
+        # Check if the argument is the name of a task.
+        task = ''
+        if argument.startswith('-'): task = argument[1:]
+        if argument.startswith('--'): task = argument[2:]
+
+        if task in workflow:
+          self.argumentList.append((argument, nextArgument))
+          count += 1
+        elif argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, ''))
+      else:
+        if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, nextArgument))
+        count += 1
+      count += 1
 
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.

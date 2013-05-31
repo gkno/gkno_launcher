@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.79"
+__version__ = "0.80"
 __date__ = "May 2013"
 
 def main():
@@ -170,7 +170,7 @@ def main():
 
   # Parse the command line and put all of the arguments into a list.
   if verbose: gettingCommandLineArguments()
-  cl.getCommandLineArguments(tl.tool, pl.isPipeline, pl.argumentInformation, pl.shortForms, pl.workflow)
+  cl.getCommandLineArguments(tl.tool, pl.isPipeline, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
   if verbose:
     writeDone()
     writeBlankLine()

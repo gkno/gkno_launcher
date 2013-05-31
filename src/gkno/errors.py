@@ -851,6 +851,18 @@ class errors:
     self.writeFormattedText()
     self.hasError = True
 
+  # If commands for a specific tool are included, but the square brackets enclosing the arguments
+  # are not terminated. fail.
+  def unterminatedTaskSpecificOptions(self, newLine, task):
+    if newLine: print(file=sys.stderr)
+    text = 'Arguments for specific task are incomplete: ' + task
+    self.text.append(text)
+    text = 'Arguments for task \'' + task  + '\' are provided.  Arguments for a specific task must be enclosed in square brackets, but these ' + \
+    'were not terminated.  Please check and amend the command line.'
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
   ######################
   # Multiple runs errors
   ######################
