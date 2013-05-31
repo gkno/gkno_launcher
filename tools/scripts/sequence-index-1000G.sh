@@ -3,7 +3,7 @@
 TYPE=$1
 INDEX=$2
 MERGE=$3
-FASTQ_DIR=$4
+FASTQ_DIR="$(pwd)"/"$(basename $4)"
 
 ## FUNCTIONS
 
@@ -44,10 +44,13 @@ write_data_to_align_file()
   local id=$8
   local fastq=$9
   local fastq2=${10}
+
+  # Define the output filename.
   local output=`echo "$fastq" | cut -d '.' -f 1`
   if [[ $1 == 'paired' ]]
   then
-    output=`echo "$output" | cut -d '_' -f 1`
+    output=${output%?}
+    output=${output%?}
   fi
   output="$output.$1.mkb"
 
@@ -146,7 +149,7 @@ fi
 if [[ $MERGE != 'True' ]] && [[ $MERGE != 'False' ]]
 then
   echo -e "Usage: 1000G_script.sh <analysis type> <sequence index file> <merge samples>" 1>&2
-  echo -e "\tThe merge samples option must be set to 'true' or 'false'" 1>&2
+  echo -e "\tThe merge samples option must be set to 'True' or 'False'" 1>&2
   echo -e "\tCurrent value is: $MERGE" 1>&2
   exit 1
 fi
