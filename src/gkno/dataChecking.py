@@ -363,6 +363,30 @@ def constructFilenameFromInput(task, tool, iteration, argumentInformation, argum
   if isStub: arguments[task][iteration][outputFile].append(inputFile)
   else: arguments[task][iteration][outputFile].append(inputFile + '.' + argumentInformation[tool][outputFile]['extension'].split('|')[0])
 
+
+# Check if a streamed output is to write to stdout.
+def checkStreamedOutput(task, tool, argumentInformation, taskToTool, constructFilenames, outputtingToStream, arguments, verbose):
+
+  # Check if the tool is outputting to a stream.
+  if task not in outputtingToStream:
+
+    # Check if the tool has an option for the output file or if the name of the output
+    # file is to be constructed according to supplied instructions.
+    if task in constructFilenames:
+      for argument in constructFilenames[task]:
+        for counter, iteration in enumerate(arguments[task]):
+          construction = constructFilename(task, tool, counter, argument, constructFilenames, arguments, argumentInformation, taskToTool, verbose)
+          if argument not in arguments[task][counter]: arguments[task][counter][argument] = []
+          arguments[task][counter][argument].append(construction)
+
+    #TODO Check for manual definition of output filename.
+
+    # If the output file is not provided or can be constucted, fail.
+    else:
+      print('\t\tfail')
+      er = errors()
+      er.terminate()
+
 # Check to see if the input file has a path or not.  If not, set it to the
 # input or the output path.
 def setPaths(task, tool, argumentInformation, shortForms, pipelineArgumentInformation, pipelineArguments, links, arguments, verbose):

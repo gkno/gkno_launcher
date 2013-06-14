@@ -339,6 +339,10 @@ class makefileData:
               useStderr    = True if argumentInformation[tool][argument]['modify argument name on command line'] == 'stderr' else False
               writeNothing = True if argumentInformation[tool][argument]['modify argument name on command line'] == 'omit' else False
 
+            # If the tool is listed as outputting to the stream, but appears at the end of a loop
+            # or as a standalone task, check that there is an option defining an output to write to.
+            if 'if not output to stream' in argumentInformation[tool][argument]: useStdout = True
+
             if argumentInformation[tool][argument]['type'] == 'flag': isFlag = True
 
           # If the command is a flag, check if the value is 'set' or 'unset'.  If 'set',

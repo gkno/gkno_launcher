@@ -27,6 +27,17 @@
           "extension" : "no extension",
           "short form argument" : "-m",
           "type" : "integer"
+        },
+        "--out" : {
+          "description" : "The output BAM file.",
+          "input" : false,
+          "output" : true,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "left_aligned.bam",
+          "short form argument" : "-o",
+          "type" : "string",
+          "if not output to stream" : "stdout"
         }
       },
       "instances" : {

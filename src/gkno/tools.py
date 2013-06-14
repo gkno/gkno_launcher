@@ -207,6 +207,7 @@ class tools:
         elif field == 'if input is stream': self.checkArgumentInputStream(tool, arguments[argument], argument, field, arguments[argument][field], filename)
         elif field == 'if output is stream': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
         elif field == 'if output to stream': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
+        elif field == 'if not output to stream' : self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
         elif field == 'input': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
         elif field == 'list of input files': self.checkInputList(tool, argument, arguments[argument], field, filename)
         elif field == 'modify argument name on command line': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)

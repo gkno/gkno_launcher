@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.83"
+__version__ = "0.84"
 __date__ = "June 2013"
 
 def main():
@@ -334,15 +334,19 @@ def main():
       if pl.isPipeline:
         pl.toolLinkage(task, tool, tl.argumentInformation[tool], make.arguments, iLoop.usingInternalLoop, iLoop.tasks, iLoop.numberOfIterations, verbose)
 
+        # If the tool is listed as only outputting to a stream, check if it appears within or
+        # at the end of piped tasks.  If it appears at the end and an output file has been
+        # specified (or instructtions on how to construct it have been included), set the output.
+        if tool in tl.toolsDemandingOutputStream: checkStreamedOutput(task, tool, tl.argumentInformation, pl.taskToTool, pl.constructFilenames, pl.toolsOutputtingToStream, make.arguments, verbose)
+
         # Check all input and output files.  If there are instructions on how to construct
         # filenames, construct them.
         constructFilenames(task, tool, make.arguments, tl.argumentInformation, pl.constructFilenames, pl.toolArgumentLinks, pl.taskToTool, verbose)
-  
+
       # For all files, check that a path has been given.  If a path is set, leave the file
       # as is.  If no path has been set, check if the file is an input or output
       # file and use the --input-path and --output-path values
       # respectively.
-
       setPaths(task, tool, tl.argumentInformation, tl.shortForms, pl.argumentInformation, pl.arguments, pl.toolArgumentLinks, make.arguments, verbose)
 
       # Check that all required files and parameters have been set.
