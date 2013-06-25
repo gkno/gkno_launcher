@@ -361,7 +361,8 @@
       "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
       "--hash-size" : "10",
       "--sequencing-technology" : "illumina",
-      "--known-sites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf"
+      "--known-sites" : "$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf",
+      "--output-reference" : "test_moblist_reference.fa"
     },
     "tangram-tutorial" : {
       "description" : "Tutorial instance for running TANGRAM.",

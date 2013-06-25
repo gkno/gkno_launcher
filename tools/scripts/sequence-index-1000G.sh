@@ -216,8 +216,8 @@ do
       write_data_to_align_file 'paired' "$SAMPLE" "$CENTRE" "$TECH" "$READ_GROUP" "$LIBRARY" "$LANE" "$NO_PAIRED_READS" "$FASTQ" "$FASTQ2"
       NO_PAIRED_READS=$(($NO_PAIRED_READS + 1))
 
-    # Check that the fastq file exists.
-    check_fastq $FASTQ $FASTQ2
+      # Check that the fastq file exists.
+      check_fastq $FASTQ $FASTQ2
     fi
   fi
 

@@ -1,0 +1,133 @@
+{
+  "tools" : {
+    "mason-illumina" : {
+      "description" : "Generate simulated Illumina reads.",
+      "path" : "mason/bin",
+      "executable" : "mason",
+      "modifier" : "illumina",
+      "help" : "--help|-h",
+      "arguments" : {
+        "--input-fasta" : {
+          "description" : "The input FASTA sequence file.",
+          "short form argument" : "-in",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "dependent" : true,
+          "type" : "string",
+          "extension" : "fa|fasta",
+          "modify argument name on command line" : "hide"
+        },
+        "--seed" : {
+          "description" : "The seed for Rng. Default: 0.",
+          "short form argument" : "-s",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "integer",
+          "extension" : "no extension"
+        },
+        "--simulate-qualities" : {
+          "description" : "Simulate qualities, generate FASTQ instead of FASTA.",
+          "short form argument" : "-sq",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--read-length" : {
+          "description" : "The length of the reads to simulate. All resulting reads will have the same length. Default: 36.",
+          "short form argument" : "-n",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "integer",
+          "extension" : "no extension"
+        },
+        "--num-reads" : {
+          "description" : "Number of reads (or mate pairs) to simulate. Default: 1000.",
+          "short form argument" : "-N",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "integer",
+          "extension" : "no extension"
+        },
+        "--library-length-mean" : {
+          "description" : "Mate-pair mean library length. Default: 1000.",
+          "short form argument" : "-ll",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "integer",
+          "extension" : "no extension"
+        },
+        "--mate-pairs" : {
+          "description" : "Enable mate pair simulation.",
+          "short form argument" : "-mp",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--read-name-prefix" : {
+          "description" : "Read name prefix. Default is output file name.",
+          "short form argument" : "-rnp",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "integer",
+          "extension" : "no extension"
+        },
+        "--haplotype-snp-rate" : {
+          "description" : "Haplotype SNP rate. Default: 0.001.",
+          "short form argument" : "-hs",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "float",
+          "extension" : "no extension"
+        },
+        "--haplotype-indel-rate" : {
+          "description" : "Haplotype indel rate. Default: 0.001.",
+          "short form argument" : "-hi",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "float",
+          "extension" : "no extension"
+        }
+      },
+
+      "argument order" : [
+        "--seed",
+        "--simulate-qualities",
+        "--read-length",
+        "--num-reads",
+        "--library-length-mean",
+        "--mate-pairs",
+        "--read-name-prefix",
+        "--haplotype-snp-rate",
+        "--haplotype-indel-rate",
+        "--input-fasta"
+      ],
+
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
+        }
+      }
+    }
+  }
+}

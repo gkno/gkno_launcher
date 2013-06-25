@@ -383,54 +383,63 @@
       "type" : "integer"
     },
     "--tangram-directory" : {
+      "description" : "The directory containing the histogram and library files.",
       "link to this task" : "scan-bam-files",
       "link to this argument" : "-dir",
       "short form argument" : "-td",
       "type" : "string"
     },
     "--minimum-fragments" : {
+      "description" : "The minimum number of normal fragments in a library [10000].",
       "link to this task" : "scan-bam-files",
       "link to this argument" : "-mf",
       "short form argument" : "-mf",
       "type" : "integer"
     },
     "--detection-bam-list" : {
+      "description" : "A file containing a list of all BAM files to be processed by TANGRAM.",
       "link to this task" : "detect-mei",
       "link to this argument" : "-in",
       "short form argument" : "-dl",
       "type" : "string"
     },
     "--library-file" : {
+      "description" : "The file containing information on the read libraries.",
       "link to this task" : "detect-mei",
       "link to this argument" : "-lb",
       "short form argument" : "-lb",
       "type" : "string"
     },
     "--histogram-file" : {
+      "description" : "The file containing fragment length information.",
       "link to this task" : "detect-mei",
       "link to this argument" : "-ht",
       "short form argument" : "-ht",
       "type" : "string"
     },
     "--tangram-reference" : {
+      "description" : "The reference in a native format for use with TANGRAM.",
       "link to this task" : "detect-mei",
       "link to this argument" : "-ref",
       "short form argument" : "-tr",
       "type" : "string"
     },
     "--tangram-region" : {
+      "description" : "The region in which to search for variants.",
       "link to this task" : "detect-mei",
       "link to this argument" : "-rg",
       "short form argument" : "-rg",
       "type" : "string"
     },
     "--tangram-output" : {
+      "description" : "The output file (including path) [stdout].",
       "link to this task" : "detect-mei",
       "link to this argument" : "-out",
       "short form argument" : "-to",
       "type" : "string"
     },
     "--tangram-threads" : {
+      "description" : "The number of threads to use when detecting variants.",
       "link to this task" : "detect-mei",
       "link to this argument" : "-p",
       "short form argument" : "-tt",
@@ -470,12 +479,20 @@
       "description" : "Test instance for the test harness.",
       "--reference" : "$(RESOURCES)/tutorial/current/test_genome.fa",
       "--moblist-reference" : "$(RESOURCES)/tutorial/current/mobile_element_sequences.fa",
-      "--fastq" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq",
-      "--fastq2" : "$(RESOURCES)/tutorial/current/simulated_reads_2.fq",
+      "--output-reference" : "tangram-reference",
+      "--merged-reference" : "reference_moblist.fa",
       "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
       "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
       "--hash-size" : "10",
-      "--sequencing-technology" : "illumina"
+      "--sequencing-technology" : "illumina",
+      "--special-references" : "moblist",
+      "--special-reference-hashes" : "50",
+      "--internal-loop" : "$(RESOURCES)/tutorial/current/tangram-align.json",
+      "--number-jobs" : "2",
+      "--tangram-directory" : "tangram-files",
+      "--minimum-fragments" : "0",
+      "--tangram-region" : "20:1-999999",
+      "--tangram-output" : "tangram-calls"
     },
     "tutorial" : {
       "description" : "Tutorial instance for running TANGRAM.",

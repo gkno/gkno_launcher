@@ -5,7 +5,6 @@
     "build-read-archive",
     "align",
     "sort-primary-bam",
-    "sort-multiple-bam",
     "index-primary-bam",
     "index-fasta",
     "create-sequence-dictionary",
@@ -17,25 +16,12 @@
     "build-read-archive" : "mosaik-build-fastq",
     "align" : "mosaik-aligner",
     "sort-primary-bam" : "bamtools-sort",
-    "sort-multiple-bam" : "bamtools-sort",
     "index-primary-bam" : "bamtools-index",
     "index-fasta" : "samtools-index-fasta",
     "create-sequence-dictionary" : "picard-create-sequence-dictionary",
     "count-covariates" : "gatk-count-covariates",
     "recalibrate-bq" : "gatk-recalibrate-bq"
   },
-  "internal loop" : [
-    "generate-mosaik-parameters",
-    "build-read-archive",
-    "align",
-    "sort-primary-bam",
-    "sort-multiple-bam",
-    "index-primary-bam",
-    "index-fasta",
-    "create-sequence-dictionary",
-    "count-covariates",
-    "recalibrate-bq"
-  ],
   "linkage" : {
     "build-read-archive" : {
       "-q" : {
@@ -80,11 +66,6 @@
       "-annpe" : {
         "link to this task" : "generate-mosaik-parameters",
         "link to this argument" : "-annpe"
-      },
-      "json parameters" : {
-        "link to this task" : "generate-mosaik-parameters",
-        "link to this argument" : "-out",
-        "json block" : "MosaikAligner"
       }
     },
     "sort-primary-bam" : {
@@ -92,18 +73,6 @@
         "link to this task" : "align",
         "link to this argument" : "-out",
         "extension" : ".bam"
-      }
-    },
-    "sort-multiple-bam" : {
-      "-in" : {
-        "link to this task" : "align",
-        "link to this argument" : "-out",
-        "extension" : ".multiple.bam"
-      },
-      "-out" : {
-        "link to this task" : "align",
-        "link to this argument" : "-out",
-        "extension" : ".multiple.sorted.bam"
       }
     },
     "index-primary-bam" : {
@@ -279,6 +248,20 @@
       "short form argument" : "-srh",
       "type" : "integer"
     },
+    "--alignment-candidate-threshold" : {
+      "description" : "Specifies the minimum length of an alignment candidate.",
+      "link to this task" : "align",
+      "link to this argument" : "-act",
+      "short form argument" : "-act",
+      "type" : "integer"
+    },
+    "--maximum-hash-position" : {
+      "description" : "Specifies the maximum number of positions stored for each hash.",
+      "link to this task" : "align",
+      "link to this argument" : "-mhp",
+      "short form argument" : "-mhp",
+      "type" : "integer"
+    },
     "--known-sites" : {
       "description" : "A database of known polymorphic sites to skip over in the recalibration algorithm.",
       "link to this task" : "count-covariates",
@@ -296,12 +279,10 @@
     "align" : {
       "-out" : {
         "output extension" : [
-          ".bam",
-          ".multiple.bam"
+          ".bam"
         ],
         "delete after task" : [
-          "sort-primary-bam",
-          "sort-multiple-bam"
+          "sort-primary-bam"
         ]
       }
     },

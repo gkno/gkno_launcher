@@ -1,0 +1,15 @@
+{
+  "instances": {
+    "1000G": {
+      "--mosaik-jump-database": "/d1/data/pipeline_resources/references/human_reference.b37.including_decoys/includingMoblist/human_reference_v37_decoys_moblist_15", 
+      "--mosaik-reference": "/d1/data/pipeline_resources/references/human_reference.b37.including_decoys/includingMoblist/human_reference_v37_decoys_moblist.dat", 
+      "description": "User specified instance", 
+      "--special-reference-hashes": "50", 
+      "--reference-fasta": "/d1/data/pipeline_resources/references/human_reference.b37.including_decoys/includingMoblist/human_reference_v37_decoys_moblist.fa", 
+      "--special-references": "moblist", 
+      "--ann-se": "/d1/data/pipeline_resources/references/human_reference.b37.including_decoys/includingMoblist/se.100.005.ann", 
+      "--known-sites": "/d1/data/pipeline_resources/dbSNP/ALL.wgs.dbsnp.build135.snps.sites.vcf", 
+      "--ann-pe": "/d1/data/pipeline_resources/references/human_reference.b37.including_decoys/includingMoblist/pe.100.01.ann"
+    }
+  }
+}

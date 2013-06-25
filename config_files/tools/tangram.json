@@ -65,6 +65,7 @@
           "dependent" : false,
           "type" : "string",
           "extension" : "no extension",
+          "do not construct filename from input" : true,
           "generated files" : [
             "lib_table.dat",
             "hist.dat"
