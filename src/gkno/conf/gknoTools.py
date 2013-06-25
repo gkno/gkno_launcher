@@ -149,6 +149,29 @@ class BamTools(GknoTool):
   def doUpdate(self):
     return self.doBuild()
 
+# bamUtil
+class BamUtil(GknoTool):
+  def __init__(self):
+    super(BamUtil, self).__init__()
+    self.name       = "bamUtil"
+    self.installDir = "bamUtil"
+
+  # $ mkdir build
+  # $ cd build  
+  # $ cmake .. 
+  # $ make -j N 
+  def doBuild(self):
+    buildDir = os.getcwd() + "/build/"
+    self.ensureMakeDir(buildDir)
+    os.chdir(buildDir)
+    if not self.cmake(".."):
+      return False
+    return self.make()
+
+  # Same as doBuild()
+  def doUpdate(self):
+    return self.doBuild()
+
 # freebayes
 class Freebayes(GknoTool):
   def __init__(self):
@@ -382,6 +405,7 @@ List = [
         Freebayes(),
         Gatk(),
         LibStatGen(),
+        BamUtil(),
         Mosaik(),
         Ogap(),
         Picard(),
