@@ -156,21 +156,15 @@ class BamUtil(GknoTool):
     self.name       = "bamUtil"
     self.installDir = "bamUtil"
 
-  # $ mkdir build
-  # $ cd build  
-  # $ cmake .. 
-  # $ make -j N 
+  # $ make -j N   
   def doBuild(self):
-    buildDir = os.getcwd() + "/build/"
-    self.ensureMakeDir(buildDir)
-    os.chdir(buildDir)
-    if not self.cmake(".."):
-      return False
+#    if not self.makeClean(): 
+#      return False 
     return self.make()
 
-  # Same as doBuild()
+  # $ make -j N   
   def doUpdate(self):
-    return self.doBuild()
+    return self.make()
 
 # freebayes
 class Freebayes(GknoTool):
@@ -398,6 +392,11 @@ class VcfLib(GknoTool):
 
 ##############################################################
 # Add any new built-in gkno tools to the list below.
+
+# These tools are listed in alphabetical order with the
+# exception of bamUtil.  This requires that libStatGen is
+# already compiled and so follows it in the list.  Please
+# ensure that this order is not modified.
 ##############################################################
 
 List = [ 

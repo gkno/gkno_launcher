@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.84"
+__version__ = "0.87"
 __date__ = "June 2013"
 
 def main():
