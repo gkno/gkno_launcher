@@ -330,6 +330,12 @@ class makefileData:
           # print to stdout (e.g. use '>') or stderr ('2>').
           hideArgument = False
           writeNothing = False
+
+          #FIXME useCat is a temporary fix for redirecting to a file.  Currently a redirect
+          # from certain tools fails with the 'could not open stdout for writing' error.
+          # For these tools, instead of redirecting to stdout out directly, the output is
+          # piped through cat solving the problem, but inelegantly.
+          useCat       = False
           useStdout    = False
           useStderr    = False
           if inInfo:
@@ -341,7 +347,9 @@ class makefileData:
 
             # If the tool is listed as outputting to the stream, but appears at the end of a loop
             # or as a standalone task, check that there is an option defining an output to write to.
-            if 'if not output to stream' in argumentInformation[tool][argument]: useStdout = True
+            if 'if not output to stream' in argumentInformation[tool][argument]:
+              useCat    = True
+              useStdout = True
 
             if argumentInformation[tool][argument]['type'] == 'flag': isFlag = True
 
@@ -363,6 +371,7 @@ class makefileData:
 
               if hideArgument: print(" \\\n\t", value, sep = '', end = '', file = self.makeFilehandle)
               elif writeNothing: pass
+              elif useCat: print(" \\\n\t| cat > ", value, sep = '', end = '', file = self.makeFilehandle)
               elif useStdout: print(" \\\n\t> ", value, sep = '', end = '', file = self.makeFilehandle)
               elif useStderr: print(" \\\n\t2> ", value, sep = '', end = '', file = self.makeFilehandle)
               else: print(" \\\n\t", argument, delimiter, value, sep = '', end = '', file = self.makeFilehandle)
