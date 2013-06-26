@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.87"
+__version__ = "0.88"
 __date__ = "June 2013"
 
 def main():
@@ -343,14 +343,14 @@ def main():
         # filenames, construct them.
         constructFilenames(task, tool, make.arguments, tl.argumentInformation, pl.constructFilenames, pl.toolArgumentLinks, pl.taskToTool, verbose)
 
+      # Check that all required files and parameters have been set.
+      checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.toolsOutputtingToStream, pl.toolArgumentLinks, True, verbose)
+
       # For all files, check that a path has been given.  If a path is set, leave the file
       # as is.  If no path has been set, check if the file is an input or output
       # file and use the --input-path and --output-path values
       # respectively.
       setPaths(task, tool, tl.argumentInformation, tl.shortForms, pl.argumentInformation, pl.arguments, pl.toolArgumentLinks, make.arguments, verbose)
-
-      # Check that all required files and parameters have been set.
-      checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.toolsOutputtingToStream, pl.toolArgumentLinks, True, verbose)
 
     # Determine each tools dependencies for building the makefile.
     make.dependencies, make.outputs = determineDependencies(tl.argumentInformation, tl.generatedFiles, pl.workflow, pl.taskToTool, pl.toolsOutputtingToStream, make.arguments)
