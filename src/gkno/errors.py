@@ -449,6 +449,40 @@ class errors:
     self.writeFormattedText()
     self.hasError = True
 
+  # If a pipeline argument is missing a description, terminate.
+  def pipelineArgumentMissingDescription(self, newLine, argument, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Malformed pipeline configuration file: ' + filename
+    self.text.append(text)
+    text = "The argument '" + argument + "' in the arguments section of the configuration file does not contain the required description field. " + \
+    "Please include a description of this argument for other users who may use this pipeline."
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
+  # If a pipeline argument is missing the expected data type, terminate.
+  def pipelineArgumentMissingType(self, newLine, argument, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Malformed pipeline configuration file: ' + filename
+    self.text.append(text)
+    text = "The argument '" + argument + "' in the arguments section of the configuration file does not contain the required description of the  " + \
+    "data type.  Please include this \"type\" field for this argument in the configuration file."
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
+  # If a pipeline argument is missing a short form, terminate.
+  def pipelineArgumentMissingShortForm(self, newLine, argument, filename):
+    if newLine: print(file=sys.stderr)
+    text = 'Malformed pipeline configuration file: ' + filename
+    self.text.append(text)
+    text = "The argument '" + argument + "' in the arguments section of the configuration file does not contain the required short form.  All " + \
+    "arguments are required to have a long form (--long-form) and a short form (-sf), for example.  Please include a short form value for this " + \
+    "argument in the configuration file."
+    self.text.append(text)
+    self.writeFormattedText()
+    self.hasError = True
+
   # If information from the arguments section is missing, terminate.
   def pipelineArgumentMissingInformation(self, newLine, argument, missingField, filename):
     if newLine: print(file=sys.stderr)

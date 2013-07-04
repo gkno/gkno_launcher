@@ -3,7 +3,8 @@
 TYPE=$1
 INDEX=$2
 MERGE=$3
-FASTQ_DIR="$(pwd)"/"$(basename $4)"
+FASTQ_DIR=$4
+#FASTQ_DIR="$(pwd)"/"$(basename $4)"
 
 ## FUNCTIONS
 
@@ -87,13 +88,41 @@ write_end_align_file()
 # Write the initial information to the merge sample input json files.
 write_initial_merge_file()
 {
-  local filename=$1
+  local filename="sample.merge.json"
 
   echo '{' > $filename
-  echo '  "format of data list" : [' >> $filename
-  echo '    "--lane"' >> $filename
+  echo '  "arguments" : [' >> $filename
+  echo '    "--bam-list",' >> $filename
+  echo '    "--out"' >> $filename
   echo '  ],' >> $filename
-  echo '  "data list" : [' >> $filename
+  echo '  "values" : {' >> $filename
+}
+
+# Write sample specific information to the merge file.
+write_merge_file()
+{
+  local sample=$1
+  local id=$2
+  local total_number=$3
+  local filename="sample.merge.json"
+
+  echo "    \"$id\" : [" >> $filename
+  echo "      \"${PWD}/$sample.1000G.bam_list.json\"," >> $filename
+  echo "      \"$sample.merged.bam\"" >> $filename
+  if [[ $id == $total_number ]]
+  then
+    echo "    ]" >> $filename
+  else
+    echo "    ]," >> $filename
+  fi
+}
+
+write_end_merge_file()
+{
+  local filename="sample.merge.json"
+
+  echo "  }" >> $filename
+  echo "}" >> $filename
 }
 
 # Check that the fastq file(s) exist.
@@ -154,6 +183,21 @@ then
   exit 1
 fi
 
+# Check that no files of the form *.bam_list.json exist.
+if [[ $MERGE == 'True' ]]
+then
+  ls *.1000G.bam_list.json > /dev/null 2> /dev/null
+  if [[ $? == 0 ]]
+  then
+    echo "ERROR"
+    echo
+    echo "When executed, there can exist no files of the form *.1000G.bam_list.json"
+    echo "in the current directory.  Please move or remove those files from"
+    echo "this directory before proceeding."
+    exit 1
+  fi
+fi
+
 # Set the directory for the fastq files.
 if [[ $FASTQ_DIR == '' ]]
 then
@@ -165,6 +209,7 @@ NO_SINGLE_READS=0
 NO_PAIRED_READS=0
 SINGLE_COUNT=0
 PAIRED_COUNT=0
+unset SAMPLE_LIST
 
 # Open json files for the single and paired end reads as necessary.
 if [[ $TYPE != 'p' ]]
@@ -200,10 +245,28 @@ do
   if [[ $LIBRARY_TYPE == 'SINGLE' ]] && [[ $TYPE != 'p' ]]
   then
     write_data_to_align_file 'single' "$SAMPLE" "$CENTRE" "$TECH" "$READ_GROUP" "$LIBRARY" "$LANE" "$NO_SINGLE_READS" "$FASTQ"
+    if [[ $MERGE == 'True' ]]
+    then
+      if [ ! -f $SAMPLE.1000G.bam_list.json ]
+      then
+        echo '{' >> $SAMPLE.1000G.bam_list.json
+        echo -e "  \"filename list\" : [\c" >> $SAMPLE.1000G.bam_list.json
+      fi
+      NO_LINES=`wc -l $SAMPLE.1000G.bam_list.json | cut -d " " -f 1`
+      if [[ $NO_LINES == 1 ]]
+      then
+        echo -e "\n    \""${PWD}"/"$READ_GROUP".single.sorted.recal.bam\"\c" >> $SAMPLE.1000G.bam_list.json
+      else
+        echo -e ",\n    \""${PWD}"/"$READ_GROUP".single.sorted.recal.bam\"\c" >> $SAMPLE.1000G.bam_list.json
+      fi
+    fi
     NO_SINGLE_READS=$(($NO_SINGLE_READS + 1))
 
     # Check that the fastq file exists.
     check_fastq $FASTQ
+
+    # Add the sample to the list of processed samples.
+    SAMPLE_LIST=("${SAMPLE_LIST[@]}" "$SAMPLE")
   fi
 
   # Handle the paired end reads.  Only handle paired end reads if the name
@@ -214,14 +277,60 @@ do
     if [[ $WHICH_READ == *_1 ]]
     then
       write_data_to_align_file 'paired' "$SAMPLE" "$CENTRE" "$TECH" "$READ_GROUP" "$LIBRARY" "$LANE" "$NO_PAIRED_READS" "$FASTQ" "$FASTQ2"
+      if [[ $MERGE == 'True' ]]
+      then
+	if [ ! -f $SAMPLE.1000G.bam_list.json ]
+        then
+	  echo '{' >> $SAMPLE.1000G.bam_list.json
+	  echo -e "  \"filename list\" : [\c" >> $SAMPLE.1000G.bam_list.json
+	fi
+	NO_LINES=`wc -l $SAMPLE.1000G.bam_list.json | cut -d " " -f 1`
+        if [[ $NO_LINES == 1 ]]
+        then
+          echo -e "\n    \""${PWD}"/"$READ_GROUP".paired.sorted.recal.bam\"\c" >> $SAMPLE.1000G.bam_list.json
+        else
+          echo -e ",\n    \""${PWD}"/"$READ_GROUP".paired.sorted.recal.bam\"\c" >> $SAMPLE.1000G.bam_list.json
+        fi
+      fi
       NO_PAIRED_READS=$(($NO_PAIRED_READS + 1))
 
       # Check that the fastq file exists.
       check_fastq $FASTQ $FASTQ2
+  
+      # Add the sample to the list of processed samples.
+      SAMPLE_LIST=("${SAMPLE_LIST[@]}" "$SAMPLE")
     fi
   fi
 
 done < $INDEX
+
+# Find all of the unique samples in the sample_list.
+for sample in ${SAMPLE_LIST[@]}
+do
+  echo $sample
+done | sort | uniq > temp_samples.txt
+
+SAMPLE_ID=0
+NO_SAMPLES=`wc -l temp_samples.txt | cut -d ' ' -f 1`
+NO_SAMPLES=$(($NO_SAMPLES - 1))
+if [[ $MERGE == "True" ]]
+then
+  write_initial_merge_file
+  while read sample
+  do
+    write_merge_file $sample $SAMPLE_ID $NO_SAMPLES
+    SAMPLE_ID=$(($SAMPLE_ID + 1))
+  done < temp_samples.txt
+  write_end_merge_file
+fi
+rm -f temp_samples.txt
+
+#
+for file in *.bam_list.json
+do
+  echo -e "\n  ]" >> $file
+  echo -e "}" >> $file
+done
 
 # Finish writing the json files, or delete if nothing was addded to them.
 if [[ $NO_SINGLE_READS == 0 ]]

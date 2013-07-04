@@ -186,6 +186,7 @@
   },
   "arguments" : {
     "--fasta" : {
+      "description" : "The reference fasta genome.  This must be the fasta from which the Mosaik archive was generated.",
       "link to this task" : "build-reference",
       "link to this argument" : "-fr",
       "short form argument" : "-f",
@@ -193,27 +194,30 @@
       "default" : "test_genome.fa"
     },
     "--hash-size" : {
-      "description" : "hash-size",
+      "description" : "The hash-size used in Mosaik [4 - 32].",
       "link to this task" : "build-jump-database",
       "link to this argument" : "-hs",
       "type" : "integer",
       "short form argument" : "-hs"
     },
     "--fastq" : {
+      "description" : "The input fastq file (first mate).",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq1",
       "short form argument" : "-q",
       "type" : "string",
-      "user entry required" : "true"
+      "required" : "true"
     },
     "--fastq2" : {
+      "description" : "The input fastq file (second mate).",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq2",
       "short form argument" : "-q2",
       "type" : "string",
-      "user entry required" : "true"
+      "required" : "true"
     },
     "--mosaik-reference" : {
+      "description" : "The Mosaik format reference genome (.dat).",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-ref",
       "short form argument" : "-r",
@@ -221,6 +225,7 @@
       "default" : "test_genome.dat"
     },
     "--mosaik-jump-database" : {
+      "description" : "The input Mosaik jump database stub.",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-jmp",
       "short form argument" : "-j",
@@ -228,16 +233,11 @@
       "default" : "test_genome"
     },
     "--batch-size" : {
+      "description" : "Number of pairs to align per batch.",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-n",
       "short form argument" : "-b",
       "type" : "integer"
-    },
-    "--sequencing-technology" : {
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-st",
-      "short form argument" : "-st",
-      "type" : "string"
     },
     "--sequencing-technology" : {
       "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'.",
@@ -261,25 +261,21 @@
       "type" : "string"
     },
     "--median-fragment-length" : {
+      "description" : "The median fragment length.",
       "link to this task" : "build-read-archive",
       "link to this argument" : "-mfl",
       "type" : "integer",
       "short form argument" : "-mfl"
     },
     "--out" : {
+      "description" : "The output read archive.",
       "link to this task" : "build-read-archive",
       "link to this argument" : "-out",
       "short form argument" : "-o",
       "type" : "string"
     },
-    "--reference-fasta" : {
-      "link to this task" : "count-covariates",
-      "link to this argument" : "--reference_sequence",
-      "short form argument" : "-rf",
-      "type" : "string",
-      "default" : "test_genome.fa"
-    },
     "--known-sites" : {
+      "description" : "A database of known polymorphic sites to skip over in the recalibration algorithm.",
       "link to this task" : "count-covariates",
       "link to this argument" : "-knownSites",
       "short form argument" : "-k",

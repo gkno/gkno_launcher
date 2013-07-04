@@ -47,8 +47,8 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.89"
-__date__ = "June 2013"
+__version__ = "0.90"
+__date__ = "July 2013"
 
 def main():
 
@@ -158,6 +158,11 @@ def main():
 
     # If a single tool is being run, check that it is a valid tool.
     if not pl.isPipeline: tl.checkTool(gknoHelp)
+
+  # There are cases where the arguments for a tool are optional, but when included in a pipeline,
+  # they are required.  Set the status of all arguments by looking at whether they are required
+  # by the tool or the pipeline.
+  pl.setRequiredState(tl.argumentInformation)
 
   # Check for an additional instance file associated with this tool/pipeline and add the information
   # to the relevant data structure.
@@ -291,7 +296,7 @@ def main():
     ei = exportInstance()
     if pl.isPipeline: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, pl.instances, verbose)
     else: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, tl.instances[tl.tool], verbose)
-    ei.getData(gknoHelp, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.taskToTool, pl.argumentInformation, pl.arguments, pl.toolsOutputtingToStream, pl.toolArgumentLinks, make.arguments, verbose)
+    ei.getData(gknoHelp, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.taskToTool, pl.argumentInformation, pl.arguments, pl.toolsOutputtingToStream, pl.toolArgumentLinks, pl.linkage, make.arguments, verbose)
     if pl.isPipeline: ei.writeNewConfigurationFile(sourcePath, 'pipes', ins.externalInstances, pl.instances, cl.linkedArguments)
     else: ei.writeNewConfigurationFile(sourcePath, 'tools', ins.externalInstances, tl.instances[tl.tool], cl.linkedArguments)
 
@@ -344,7 +349,7 @@ def main():
         constructFilenames(task, tool, make.arguments, tl.argumentInformation, pl.constructFilenames, pl.toolArgumentLinks, pl.taskToTool, verbose)
 
       # Check that all required files and parameters have been set.
-      checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.toolsOutputtingToStream, pl.toolArgumentLinks, True, verbose)
+      checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.toolsOutputtingToStream, pl.toolArgumentLinks, pl.linkage, True, verbose)
 
       # For all files, check that a path has been given.  If a path is set, leave the file
       # as is.  If no path has been set, check if the file is an input or output

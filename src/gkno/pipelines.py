@@ -3,6 +3,9 @@
 from __future__ import print_function
 from copy import deepcopy
 
+import dataChecking
+from dataChecking import checkDataType
+
 import errors
 from errors import *
 
@@ -568,9 +571,24 @@ class pipeline:
 
     for argument in data['arguments']:
       self.argumentInformation[argument] = data['arguments'][argument]
+
+      # Check that a description of the argument is supplied.
+      if 'description' not in self.argumentInformation[argument]:
+        self.errors.pipelineArgumentMissingDescription(verbose, argument, self.pipelineFile)
+        self.errors.terminate()
+
+      # Check that the expected data type is included.
+      if 'description' not in self.argumentInformation[argument]:
+        self.errors.pipelineArgumentMissingType(verbose, argument, self.pipelineFile)
+        self.errors.terminate()
+
+      # Set the short form argument.
       if 'short form argument' in self.argumentInformation[argument]:
         shortForm                  = self.argumentInformation[argument]['short form argument']
         self.shortForms[shortForm] = argument
+      else:
+        self.errors.pipelineArgumentMissingShortForm(verbose, argument, self.pipelineFile)
+        self.errors.terminate()
 
       # Check that the task and argument that this argument is linked to is defined.
       if 'link to this task' not in self.argumentInformation[argument]:
@@ -587,6 +605,16 @@ class pipeline:
       if 'link to this argument' not in self.argumentInformation[argument]:
         self.errors.pipelineArgumentMissingInformation(verbose, argument, 'link to this argument', self.pipelineFile)
         self.errors.terminate()
+
+      # If the 'required' field is provided, check that the value is a Boolean.
+      if 'required' in self.argumentInformation[argument]:
+        value = self.argumentInformation[argument]['required']
+        if value == 'true' or value == 'True' or value == True: self.argumentInformation[argument]['required'] = True
+        elif value == 'false' or value == 'False' or value == False: self.argumentInformation[argument]['required'] = False
+        else:
+          text = 'arguments -> ' + argument + ' -> required'
+          self.errors.differentDataTypeInConfig(verbose, self.pipelineFile, '', text, type(self.argumentInformation[argument]['required']), bool)
+          self.errors.terminate()
 
     self.jsonSections.remove('arguments')
 
@@ -845,6 +873,22 @@ class pipeline:
 
     return 'tools/' + tool
 
+  # Set whether or not each argument in the pipeline is required or not.  Arguments that are
+  # set as required by the tool are required, but also, the pipeline configuration file can
+  # identify an optional tool argument as required.
+  def setRequiredState(self, toolInformation):
+    for argument in self.argumentInformation:
+      linkedTask = self.argumentInformation[argument]['link to this task']
+      if linkedTask != 'pipeline':
+        linkedArgument = self.argumentInformation[argument]['link to this argument']
+        linkedTool     = self.taskToTool[linkedTask]
+
+        # Check if the tool argument is required.
+        requiredInTool = toolInformation[linkedTool][linkedArgument]['required']
+        if requiredInTool: self.argumentInformation[argument]['required'] = True
+        else:
+          if 'required' not in self.argumentInformation[argument]: self.argumentInformation[argument]['required'] = False
+
   # Use the 'linkage' section of the pipeline configuration file to set all
   # parameters that depend on other tools.
   def toolLinkage(self, task, tool, argumentInformation, arguments, usingInternalLoop, iTasks, numberOfIterations, verbose):
@@ -883,9 +927,12 @@ class pipeline:
             for currentTargetTask, currentTargetArgument in zip(targetTask, targetArgument):
 
               # Neither the task or the targetTask are in the internal loop and so the arguments structure will
-              # have a single list of values that are written to a sinlge list.
+              # have a single list of values that are written to a sinlge list.  If the target tool argument is
+              # not present, fail.
               if (task not in iTasks and currentTargetTask not in iTasks) or not usingInternalLoop:
-                for value in arguments[currentTargetTask][0][currentTargetArgument]: self.values[0].append(value)
+                if currentTargetTask in arguments:
+                  if currentTargetArgument in arguments[currentTargetTask][0]:
+                    for value in arguments[currentTargetTask][0][currentTargetArgument]: self.values[0].append(value)
 
               # If the targetTask is in the internal loop and the task isn't, the values from each iteration of
               # the targetTask are written to the zeroth iteration of the task (since it isn't in the internal loop).

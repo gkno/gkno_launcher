@@ -119,7 +119,7 @@
       "link to this argument" : "-fq1",
       "short form argument" : "-q",
       "type" : "string",
-      "user entry required" : "true"
+      "required" : "true"
     },
     "--fastq2" : {
       "description" : "The input fastq file (second mate).",
@@ -127,7 +127,7 @@
       "link to this argument" : "-fq2",
       "short form argument" : "-q2",
       "type" : "string",
-      "user entry required" : "true"
+      "required" : "true"
     },
     "--mosaik-reference" : {
       "description" : "The Mosaik format reference genome (.dat).",

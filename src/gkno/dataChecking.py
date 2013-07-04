@@ -482,7 +482,7 @@ def checkExtension(argumentInformation, shortForms, links, task, tool, argument,
   return filename
 
 # Loop over the tools and check that all required information has been set.
-def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipeline, workflow, toolsOutputtingToStream, links, checkRequired, verbose):
+def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipeline, workflow, toolsOutputtingToStream, links, linkage, checkRequired, verbose):
   er = errors()
 
   for counter, iteration in enumerate(arguments[task]):
@@ -529,6 +529,23 @@ def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipe
             if argument in links[task]:
               pipelineArgument  = links[task][argument][0]
               pipelineShortForm = links[task][argument][1]
+
+          # If a pipeline argument/short form was not found, look to see if this argument
+          # is linked through tool linkage to another argument and if so, this is the
+          # argument that needs to be set.
+          found = False
+          while pipelineArgument == '' and not found:
+            if task in linkage:
+              if argument in linkage[task]:
+                linkedTask     = linkage[task][argument]['link to this task']
+                linkedArgument = linkage[task][argument]['link to this argument']
+                if linkedTask in links:
+                  if linkedArgument in links[linkedTask]:
+                    pipelineArgument  = links[linkedTask][linkedArgument][0]
+                    pipelineShortForm = links[linkedTask][linkedArgument][1]
+                    found = True
+              else: found = True
+
           er.missingRequiredValue(verbose, task, argument, shortForm, isPipeline, pipelineArgument, pipelineShortForm)
           er.terminate()
   

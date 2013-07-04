@@ -345,7 +345,7 @@ class helpClass:
       if task != 'pipeline':
         tool         = pl.taskToTool[task]
         toolArgument = pl.argumentInformation[argument]['link to this argument']
-        isRequired   = tl.argumentInformation[tool][toolArgument]['required']
+        isRequired   = pl.argumentInformation[argument]['required']
       if isRequired: requiredArguments[text] = description
       else: arguments[text] = description
     length += 4

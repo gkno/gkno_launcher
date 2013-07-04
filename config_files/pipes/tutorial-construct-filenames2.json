@@ -45,13 +45,14 @@
   },
   "arguments" : {
     "--fasta" : {
+      "description" : "The reference fasta genome.",
       "link to this task" : "build-reference",
       "link to this argument" : "-fr",
       "short form argument" : "-f",
       "type" : "string"
     },
     "--hash-size" : {
-      "description" : "hash-size",
+      "description" : "The hash-size used in Mosaik [4 - 32].",
       "link to this task" : "build-jump-database",
       "link to this argument" : "-hs",
       "type" : "integer",

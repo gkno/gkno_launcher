@@ -45,13 +45,13 @@ class exportInstance:
         er.terminate()
 
   # Get the data for the new configuration file.
-  def getData(self, gknoHelp, argumentInformation, shortForms, isPipeline, workflow, taskToTool, pipelineArgumentInformation, pipelineArguments, toolsOutputtingToStream, links, arguments, verbose):
+  def getData(self, gknoHelp, argumentInformation, shortForms, isPipeline, workflow, taskToTool, pipelineArgumentInformation, pipelineArguments, toolsOutputtingToStream, links, linkage, arguments, verbose):
 
     # Set the paths for all of the inputted files and check that all set parameters are valid.
     for task in workflow:
       tool = taskToTool[task]
       setPaths(task, tool, argumentInformation, shortForms, pipelineArgumentInformation, pipelineArguments, links, arguments, verbose)
-      checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipeline, workflow, toolsOutputtingToStream, links, False, verbose)
+      checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipeline, workflow, toolsOutputtingToStream, links, linkage, False, verbose)
 
   # Write out the new configuration file and move to the config_files/pipes directory.
   def writeNewConfigurationFile(self, sourcePath, directory, external, instances, arguments):

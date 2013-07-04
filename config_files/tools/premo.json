@@ -7,7 +7,7 @@
       "help" : "--help|-h",
       "arguments" : {
         "-fq1" : {
-          "description" : "The input fastq file (first mate)",
+          "description" : "The input fastq file (first mate).",
           "input" : true,
           "output" : false,
           "required" : true,
@@ -16,7 +16,7 @@
           "extension" : "fq|fastq|fq.gz|fastq.gz"
         },
         "-fq2" : {
-          "description" : "The input fastq file (second mate)",
+          "description" : "The input fastq file (second mate).",
           "input" : true,
           "output" : false,
           "required" : false,
@@ -25,7 +25,7 @@
           "extension" : "fq|fastq|fq.gz|fastq.gz"
         },
         "-ref" : {
-          "description" : "Mosaik reference archive",
+          "description" : "Mosaik reference archive.",
           "input" : true,
           "output" : false,
           "required" : true,
@@ -34,7 +34,7 @@
           "extension" : "dat"
         },
         "-jmp" : {
-          "description" : "Stub for Mosaik jump table files",
+          "description" : "Stub for Mosaik jump table files.",
           "input" : true,
           "output" : false,
           "required" : true,
@@ -49,7 +49,7 @@
           ]
         },
         "-mosaik" : {
-          "description" : "Path to Mosaik bin",
+          "description" : "Path to Mosaik bin.",
           "input" : false,
           "output" : false,
           "required" : true,
@@ -61,7 +61,7 @@
           ]
         },
         "-out" : {
-          "description" : "Output json file",
+          "description" : "Output json file.",
           "input" : false,
           "output" : true,
           "required" : true,
@@ -73,7 +73,7 @@
           ]
         },
         "-annse" : {
-          "description" : "Neural network file (single end)",
+          "description" : "Neural network file (single end).",
           "input" : true,
           "output" : false,
           "required" : true,
@@ -82,7 +82,7 @@
           "extension" : "ann"
         },
         "-annpe" : {
-          "description" : "Neural network file (paired end)",
+          "description" : "Neural network file (paired end).",
           "input" : true,
           "output" : false,
           "required" : true,
@@ -91,7 +91,7 @@
           "extension" : "ann"
         },
         "-tmp" : {
-          "description" : "Scratch directory for generated files",
+          "description" : "Scratch directory for generated files.",
           "input" : false,
           "output" : false,
           "required" : true,
@@ -103,7 +103,7 @@
           ]
         },
         "-st" : {
-          "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
+          "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'.",
           "input" : false,
           "output" : false,
           "required" : true,
@@ -115,7 +115,7 @@
           ]
         },
         "-n" : {
-          "description" : "Number of pairs to align per batch",
+          "description" : "Number of pairs to align per batch.",
           "input" : false,
           "output" : false,
           "required" : true,
@@ -127,7 +127,7 @@
           ]
         },
         "-hs" : {
-          "description" : "Mosaik hash size",
+          "description" : "Mosaik hash size.",
           "input" : false,
           "output" : false,
           "required" : true,
