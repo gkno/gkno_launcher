@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.90"
+__version__ = "0.91"
 __date__ = "July 2013"
 
 def main():
@@ -349,7 +349,7 @@ def main():
         constructFilenames(task, tool, make.arguments, tl.argumentInformation, pl.constructFilenames, pl.toolArgumentLinks, pl.taskToTool, verbose)
 
       # Check that all required files and parameters have been set.
-      checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.toolsOutputtingToStream, pl.toolArgumentLinks, pl.linkage, True, verbose)
+      checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.argumentInformation, pl.toolsOutputtingToStream, pl.toolArgumentLinks, pl.linkage, True, verbose)
 
       # For all files, check that a path has been given.  If a path is set, leave the file
       # as is.  If no path has been set, check if the file is an input or output

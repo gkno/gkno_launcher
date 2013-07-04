@@ -482,7 +482,7 @@ def checkExtension(argumentInformation, shortForms, links, task, tool, argument,
   return filename
 
 # Loop over the tools and check that all required information has been set.
-def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipeline, workflow, toolsOutputtingToStream, links, linkage, checkRequired, verbose):
+def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipeline, workflow, pipelineArgumentInformation, toolsOutputtingToStream, links, linkage, checkRequired, verbose):
   er = errors()
 
   for counter, iteration in enumerate(arguments[task]):
@@ -563,6 +563,29 @@ def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipe
                 pipelineShortForm = links[task][argument][1]
             er.missingRequiredValue(verbose, task, argument, shortForm, isPipeline, pipelineArgument, pipelineShortForm)
             er.terminate()
+
+  # Check if the parameter is listed as required and if so, if it is set.
+  for argument in pipelineArgumentInformation:
+    if pipelineArgumentInformation[argument]['required']:
+      linkedTask     = pipelineArgumentInformation[argument]['link to this task']
+      linkedArgument = pipelineArgumentInformation[argument]['link to this argument']
+      isSet          = False
+      if linkedTask in arguments:
+        if linkedArgument in arguments[linkedTask][0]:
+          if arguments[linkedTask][0][linkedArgument] != '': isSet = True
+      if not isSet:
+        shortForm = ''
+        if linkedTask in argumentInformation:
+          if linkedArgument in argumentInformation[linkedTask]:
+            if 'short form argument' in argumentInformation[linkedTask][linkedArgument]: shortForm = argumentInformation[linkedTask][linkedArgument]['short form argument']
+
+        pipelineShortForm = ''
+        if linkedTask in links:
+          if linkedArgument in links[linkedTask]:
+            pipelineShortForm = links[linkedTask][linkedArgument][1]
+
+        er.missingRequiredValue(verbose, linkedTask, linkedArgument, shortForm, True, argument, pipelineShortForm)
+        er.terminate()
 
 # Determine which files are required for each tool to run.  For each tool, these files
 # are stored in a list and are used to define the dependencies in the Makefile.

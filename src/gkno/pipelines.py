@@ -758,6 +758,7 @@ class pipeline:
     self.argumentInformation['--verbose']['short form argument'] = '-vb'
     self.argumentInformation['--verbose']['type']                = 'bool'
     self.argumentInformation['--verbose']['default']             = True
+    self.argumentInformation['--verbose']['required']            = False
     self.shortForms['-vb']                                       = '--verbose'
     self.arguments['--verbose']                                  = True
 
@@ -767,6 +768,7 @@ class pipeline:
     self.argumentInformation['--input-path']['short form argument'] = '-ip'
     self.argumentInformation['--input-path']['type']                = 'string'
     self.argumentInformation['--input-path']['default']             = '$(PWD)'
+    self.argumentInformation['--input-path']['required']            = False
     self.shortForms['-ip']                                          = '--input-path'
     self.arguments['--input-path']                                  = '$(PWD)'
 
@@ -776,6 +778,7 @@ class pipeline:
     self.argumentInformation['--output-path']['short form argument'] = '-op'
     self.argumentInformation['--output-path']['type']                = 'string'
     self.argumentInformation['--output-path']['default']             = '$(PWD)'
+    self.argumentInformation['--output-path']['required']            = False
     self.shortForms['-op']                                           = '--output-path'
     self.arguments['--output-path']                                  = '$(PWD)'
 
@@ -785,6 +788,7 @@ class pipeline:
     self.argumentInformation['--execute']['short form argument'] = '-ex'
     self.argumentInformation['--execute']['type']                = 'bool'
     self.argumentInformation['--execute']['default']             = True
+    self.argumentInformation['--execute']['required']            = False
     self.shortForms['-ex']                                       = '--execute'
     self.arguments['--execute']                                  = True
 
@@ -794,6 +798,7 @@ class pipeline:
     self.argumentInformation['--export-instance']['short form argument'] = '-ei'
     self.argumentInformation['--export-instance']['type']                = 'string'
     self.argumentInformation['--export-instance']['default']             = ''
+    self.argumentInformation['--export-instance']['required']            = False
     self.shortForms['-ei']                                               = '--export-instance'
     self.arguments['--export-instance']                                  = ''
 
@@ -803,6 +808,7 @@ class pipeline:
     self.argumentInformation['--multiple-runs']['short form argument'] = '-mr'
     self.argumentInformation['--multiple-runs']['type']                = 'string'
     self.argumentInformation['--multiple-runs']['default']             = ''
+    self.argumentInformation['--multiple-runs']['required']            = False
     self.shortForms['-mr']                                             = '--multiple-runs'
     self.arguments['--multiple-runs']                                  = ''
 
@@ -812,6 +818,7 @@ class pipeline:
     self.argumentInformation['--internal-loop']['short form argument'] = '-il'
     self.argumentInformation['--internal-loop']['type']                = 'string'
     self.argumentInformation['--internal-loop']['default']             = ''
+    self.argumentInformation['--internal-loop']['required']            = False
     self.shortForms['-il']                                             = '--internal-loop'
     self.arguments['--internal-loop']                                  = ''
 
@@ -822,7 +829,8 @@ class pipeline:
     self.argumentInformation['--number-jobs']['short form argument'] = '-nj'
     self.argumentInformation['--number-jobs']['type']                = 'integer'
     self.argumentInformation['--number-jobs']['default']             = '1'
-    self.shortForms['-nj']                                             = '--number-jobs'
+    self.argumentInformation['--number-jobs']['required']            = False
+    self.shortForms['-nj']                                           = '--number-jobs'
     self.arguments['--number-jobs']                                  = '1'
 
     self.argumentInformation['--task-stdout']                        = {}
@@ -831,6 +839,7 @@ class pipeline:
     self.argumentInformation['--task-stdout']['short form argument'] = '-ts'
     self.argumentInformation['--task-stdout']['type']                = 'bool'
     self.argumentInformation['--task-stdout']['default']             = False
+    self.argumentInformation['--task-stdout']['required']            = False
     self.shortForms['-ts']                                           = '--task-stdout'
     self.arguments['--task-stdout']                                  = False
 
@@ -840,6 +849,7 @@ class pipeline:
     self.argumentInformation['--instance']['short form argument'] = '-is'
     self.argumentInformation['--instance']['type']                = 'string'
     self.argumentInformation['--instance']['default']             = ''
+    self.argumentInformation['--instance']['required']            = False
     self.shortForms['-is']                                        = '--instance'
     self.arguments['--instance']                                  = ''
 
@@ -849,6 +859,7 @@ class pipeline:
     self.argumentInformation['--do-not-log-usage']['short form argument'] = '-dnl'
     self.argumentInformation['--do-not-log-usage']['type']                = 'flag'
     self.argumentInformation['--do-not-log-usage']['default']             = 'unset'
+    self.argumentInformation['--do-not-log-usage']['required']            = False
     self.shortForms['-dnl']                                               = '--do-not-log-usage'
     self.arguments['--do-not-log-usage']                                  = 'unset'
 
@@ -858,6 +869,7 @@ class pipeline:
     self.argumentInformation['--timing']['short form argument'] = '-tm'
     self.argumentInformation['--timing']['type']                = 'flag'
     self.argumentInformation['--timing']['default']             = 'unset'
+    self.argumentInformation['--timing']['required']            = False
     self.shortForms['-tm']                                      = '--timing'
     self.arguments['--timing']                                  = 'unset'
 
