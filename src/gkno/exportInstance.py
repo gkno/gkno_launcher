@@ -51,7 +51,7 @@ class exportInstance:
     for task in workflow:
       tool = taskToTool[task]
       setPaths(task, tool, argumentInformation, shortForms, pipelineArgumentInformation, pipelineArguments, links, arguments, verbose)
-      checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipeline, workflow, toolsOutputtingToStream, links, linkage, False, verbose)
+      checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipeline, workflow, pipelineArgumentInformation, toolsOutputtingToStream, links, linkage, False, verbose)
 
   # Write out the new configuration file and move to the config_files/pipes directory.
   def writeNewConfigurationFile(self, sourcePath, directory, external, instances, arguments):
