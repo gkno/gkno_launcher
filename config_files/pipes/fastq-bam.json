@@ -274,7 +274,7 @@
       "link to this argument" : "-fq1",
       "description" : "The input fastq file (first mate)",
       "type" : "string",
-      "user entry required" : "true"
+      "required" : "true"
     },
     "--fastq2" : {
       "short form argument" : "-q2",
@@ -282,7 +282,7 @@
       "link to this argument" : "-fq2",
       "description" : "The input fastq file (second mate)",
       "type" : "string",
-      "user entry required" : "true"
+      "required" : "true"
     },
     "--mosaik-reference" : {
       "short form argument" : "-r",
