@@ -12,7 +12,6 @@
     "align",
     "sort-primary-bam",
     "sort-multiple-bam",
-    "index-primary-bam",
     "mark-duplicates",
     "index-final-bam",
     "generate-bam-list",
@@ -31,7 +30,6 @@
     "align" : "mosaik-aligner",
     "sort-primary-bam" : "bamtools-sort",
     "sort-multiple-bam" : "bamtools-sort",
-    "index-primary-bam" : "bamtools-index",
     "generate-bam-list" : "generate-file-list",
     "mark-duplicates" : "picard-mark-duplicates",
     "index-final-bam" : "bamtools-index",
@@ -44,7 +42,6 @@
     "align",
     "sort-primary-bam",
     "sort-multiple-bam",
-    "index-primary-bam",
     "mark-duplicates",
     "index-final-bam"
   ],
@@ -221,12 +218,6 @@
         "link to this task" : "align",
         "link to this argument" : "-out",
         "extension" : ".multiple.sorted.bam"
-      }
-    },
-    "index-primary-bam" : {
-      "-in" : {
-        "link to this task" : "sort-primary-bam",
-        "link to this argument" : "-out"
       }
     },
     "mark-duplicates" : {
@@ -467,6 +458,16 @@
         "delete after task" : [
           "sort-primary-bam",
           "sort-multiple-bam"
+        ]
+      }
+    },
+    "sort-primary-bam" : {
+      "-out" : {
+        "output extension" : [
+          "sorted.bam"
+        ],
+        "delete after task" : [
+          "mark-duplicates"
         ]
       }
     }

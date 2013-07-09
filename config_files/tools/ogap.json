@@ -5,6 +5,7 @@
       "path" : "ogap",
       "executable" : "ogap",
       "help" : "--help|-h",
+      "hide tool" : true,
       "input is stream" : true,
       "output is stream" : true,
       "arguments" : {

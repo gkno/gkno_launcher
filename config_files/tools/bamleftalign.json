@@ -4,6 +4,7 @@
       "description" : "Left-aligns and merges the insertions and deletions in all alignments in stdin.  Iterates until each alignment is stable through a left-realignment step.",
       "path" : "freebayes/bin",
       "executable" : "bamleftalign",
+      "hide tool" : true,
       "input is stream" : true,
       "output is stream" : true,
       "help" : "--help|-h",

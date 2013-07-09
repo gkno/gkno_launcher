@@ -533,18 +533,19 @@ def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipe
           # If a pipeline argument/short form was not found, look to see if this argument
           # is linked through tool linkage to another argument and if so, this is the
           # argument that needs to be set.
-          found = False
-          while pipelineArgument == '' and not found:
-            if task in linkage:
-              if argument in linkage[task]:
-                linkedTask     = linkage[task][argument]['link to this task']
-                linkedArgument = linkage[task][argument]['link to this argument']
-                if linkedTask in links:
-                  if linkedArgument in links[linkedTask]:
-                    pipelineArgument  = links[linkedTask][linkedArgument][0]
-                    pipelineShortForm = links[linkedTask][linkedArgument][1]
-                    found = True
-              else: found = True
+          if isPipeline:
+            found = False
+            while pipelineArgument == '' and not found:
+              if task in linkage:
+                if argument in linkage[task]:
+                  linkedTask     = linkage[task][argument]['link to this task']
+                  linkedArgument = linkage[task][argument]['link to this argument']
+                  if linkedTask in links:
+                    if linkedArgument in links[linkedTask]:
+                      pipelineArgument  = links[linkedTask][linkedArgument][0]
+                      pipelineShortForm = links[linkedTask][linkedArgument][1]
+                      found = True
+                else: found = True
 
           er.missingRequiredValue(verbose, task, argument, shortForm, isPipeline, pipelineArgument, pipelineShortForm)
           er.terminate()
@@ -759,7 +760,7 @@ def determineFilesToDelete(arguments, deleteFiles, iTasks, numberOfIterations, v
           for counter in range(0, numberOfIterations):
             if counter not in output[deleteAfterTask]: output[deleteAfterTask].append([])
             for value in arguments[task][counter][argument]: 
-              if extension != '': value += extension
+              if extension != '' and not value.endswith(extension): value += extension
               output[deleteAfterTask][counter].append(value)
 
         # If task appears in the internal loop, but deleteAfterTask does not, there are (potentially)
