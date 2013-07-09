@@ -29,7 +29,7 @@
           "short form argument" : "-o",
           "extension" : "gz",
           "modify argument name on command line" : "omit",
-          "if output is stream" : "do not include"
+          "if output to stream" : "do not include"
         }
       },
       "instances" : {

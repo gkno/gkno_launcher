@@ -205,7 +205,6 @@ class tools:
         elif field == 'extension': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
         elif field == 'generated files': self.checkGeneratedFiles(tool, argument, arguments[argument][field], field, list, filename)
         elif field == 'if input is stream': self.checkArgumentInputStream(tool, arguments[argument], argument, field, arguments[argument][field], filename)
-        elif field == 'if output is stream': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
         elif field == 'if output to stream': self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
         elif field == 'if not output to stream' : self.checkGeneralField(tool, arguments[argument][field], field, str, filename)
         elif field == 'input': self.checkGeneralField(tool, arguments[argument][field], field, bool, filename)
