@@ -6,10 +6,13 @@
       "executable" : "sequence-index-1000G.sh",
       "help" : "--help|-h",
       "additional files" : {
-        "defined filenames" : [
-          "single_end_reads.json",
-          "paired_end_reads.json"
-        ]
+        "defined filenames" : {
+          "type" : "output",
+          "filenames" : [
+            "single_end_reads.json",
+            "paired_end_reads.json"
+          ]
+        }
       },
       "arguments" : {
         "--index-file" : {

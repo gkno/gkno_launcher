@@ -362,9 +362,24 @@ class tools:
 
       elif field == 'defined filenames':
 
+        # Check that the type (dependency or output) is provided, as well as a list of filenames.
+        if 'type' not in arguments[field]:
+          self.errors.missingTypeDefinedFilenamesInAdditionalFiles(False, filename, tool, 'type')
+          self.errors.terminate()
+
+        if 'filenames' not in arguments[field]:
+          self.errors.missingTypeDefinedFilenamesInAdditionalFiles(False, filename, tool, 'filenames')
+          self.errors.terminate()
+
+        # Check that the 'type' field has a recognised value.
+        if arguments[field]['type'] != 'output' and arguments[field]['type'] != 'dependency':
+          self.errors.unknownTypeDefinedFilenamesInAdditionalFiles(False, filename, tool, arguments[field]['type'])
+          self.errors.terminate()
+
         # Check that a list of values is included.
-        if type(arguments[field]) != list:
-          self.errors.differentDataTypeInConfig(False, filename, tool, field, type(arguments[field]), list)
+        if type(arguments[field]['filenames']) != list:
+          text = field + ' -> ' + 'filenames'
+          self.errors.differentDataTypeInConfig(False, filename, tool, text, type(arguments[field]['filenames']), list)
           self.errors.terminate()
 
       # If the field is not known.

@@ -104,7 +104,7 @@
           "if input is stream" : "replace",
           "replace argument with" : {
             "argument" : "--stdin",
-            "value" : ""
+            "value" : "no value"
           },
           "modify argument name on command line" : "hide"
         },

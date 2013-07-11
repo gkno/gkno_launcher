@@ -631,7 +631,7 @@ def determineDependencies(argumentInformation, generatedFiles, workflow, taskToT
 
             # If the argument specified a directory, include the directory name in the filename.
             isDirectory = True if 'directory' in argumentInformation[tool][argument] else False
-            directory = arguments[task][counter][argument][0] + '/' if isDirectory else ''
+            directory   = arguments[task][counter][argument][0] + '/' if isDirectory else ''
             for filename in generatedFiles[tool]: outputs[task][counter].append(directory + filename)
 
           if isInput or isDependent or isOutput and not hasGeneratedFiles:
@@ -729,9 +729,11 @@ def determineAdditionalFiles(additionalFiles, workflow, taskToTool, pipelineDepe
       # If there are defined files that are created by a particular tool, add these to the
       # outputs.
       elif 'defined filenames':
-        for filename in additionalFiles[tool]['defined filenames']:
+        fileType = additionalFiles[tool]['defined filenames']['type']
+        for filename in additionalFiles[tool]['defined filenames']['filenames']:
           for counter, iteration in enumerate(arguments[task]):
-            outputs[task][counter].append(filename)
+            if fileType == 'dependency': dependencies[task][counter].append(filename)
+            if fileType == 'output': outputs[task][counter].append(filename)
 
 # In the course of executing the pipeline, some of the intermediate files
 # generated along the way should be deleted.  The pipeline configuration

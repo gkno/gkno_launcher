@@ -1,28 +1,34 @@
 {
   "description" : "Align fastq files using Mosaik (additional processing steps included).",
   "workflow" : [
+    "index-fasta",
+    "create-sequence-dictionary",
     "generate-mosaik-parameters",
     "build-read-archive",
     "align",
     "sort-primary-bam",
     "index-primary-bam",
-    "index-fasta",
-    "create-sequence-dictionary",
     "count-covariates",
     "recalibrate-bq"
   ],
   "tools" : {
+    "index-fasta" : "samtools-index-fasta",
+    "create-sequence-dictionary" : "picard-create-sequence-dictionary",
     "generate-mosaik-parameters" : "premo",
     "build-read-archive" : "mosaik-build-fastq",
     "align" : "mosaik-aligner",
     "sort-primary-bam" : "bamtools-sort",
     "index-primary-bam" : "bamtools-index",
-    "index-fasta" : "samtools-index-fasta",
-    "create-sequence-dictionary" : "picard-create-sequence-dictionary",
     "count-covariates" : "gatk-count-covariates",
     "recalibrate-bq" : "gatk-recalibrate-bq"
   },
   "linkage" : {
+    "create-sequence-dictionary" : {
+      "REFERENCE" : {
+        "link to this task" : "index-fasta",
+        "link to this argument" : "--in"
+      }
+    },
     "build-read-archive" : {
       "-q" : {
         "link to this task" : "generate-mosaik-parameters",
@@ -81,12 +87,6 @@
         "link to this argument" : "-out"
       }
     },
-    "create-sequence-dictionary" : {
-      "REFERENCE" : {
-        "link to this task" : "index-fasta",
-        "link to this argument" : "--in"
-      }
-    },
     "count-covariates" : {
       "--reference_sequence" : {
         "link to this task" : "index-fasta",
@@ -113,6 +113,13 @@
     }
   },
   "arguments" : {
+    "--reference-fasta" : {
+      "description" : "The reference fasta genome.  This must be the fasta from which the Mosaik archive was generated.",
+      "link to this task" : "index-fasta",
+      "link to this argument" : "--in",
+      "short form argument" : "-rf",
+      "type" : "string"
+    },
     "--fastq" : {
       "description" : "The input fastq file (first mate).",
       "link to this task" : "generate-mosaik-parameters",
@@ -225,13 +232,6 @@
       "link to this task" : "build-read-archive",
       "link to this argument" : "-pu",
       "short form argument" : "-pn",
-      "type" : "string"
-    },
-    "--reference-fasta" : {
-      "description" : "The reference fasta genome.  This must be the fasta from which the Mosaik archive was generated.",
-      "link to this task" : "index-fasta",
-      "link to this argument" : "--in",
-      "short form argument" : "-rf",
       "type" : "string"
     },
     "--special-references" : {

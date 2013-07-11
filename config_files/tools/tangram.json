@@ -60,12 +60,12 @@
           "description" : "Path of the output directory.  This must be empty or non-existent.",
           "input" : false,
           "output" : true,
-          "directory" : true,
           "required" : true,
           "dependent" : false,
           "type" : "string",
           "extension" : "no extension",
           "do not construct filename from input" : true,
+          "directory" : true,
           "generated files" : [
             "lib_table.dat",
             "hist.dat"
