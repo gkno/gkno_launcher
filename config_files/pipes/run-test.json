@@ -225,6 +225,7 @@
   },
   "arguments" : {
     "--fasta" : {
+      "description" : "The reference fasta genome.",
       "link to this task" : "build-reference",
       "link to this argument" : "-fr",
       "short form argument" : "-f",
@@ -238,42 +239,49 @@
       "short form argument" : "-hs"
     },
     "--fastq" : {
+      "description" : "The input fastq file (first mate)",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq1",
       "short form argument" : "-q",
       "type" : "string"
     },
     "--fastq2" : {
+      "description" : "The input fastq file (second mate)",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-fq2",
       "short form argument" : "-q2",
       "type" : "string"
     },
     "--mosaik-reference" : {
+      "description" : "Mosaik reference archive",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-ref",
       "short form argument" : "-r",
       "type" : "string"
     },
     "--mosaik-jump-database" : {
+      "description" : "Stub for Mosaik jump table files",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-jmp",
       "short form argument" : "-j",
       "type" : "string"
     },
     "--ann-se" : {
+      "description" : "Neural network file for Mosaik mapping quality scores (single end).",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-annse",
       "short form argument" : "-as",
       "type" : "integer"
     },
     "--ann-pe" : {
+      "description" : "Neural network file for Mosaik mapping quality scores (paired end).",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-annpe",
       "short form argument" : "-ap",
       "type" : "integer"
     },
     "--batch-size" : {
+      "description" : "number of pairs to align per batch",
       "link to this task" : "generate-mosaik-parameters",
       "link to this argument" : "-n",
       "short form argument" : "-b",
@@ -287,18 +295,21 @@
       "type" : "string"
     },
     "--median-fragment-length" : {
+      "description" : "Median fragment length. e.g. 150",
       "link to this task" : "build-read-archive",
       "link to this argument" : "-mfl",
       "type" : "integer",
       "short form argument" : "-mfl"
     },
     "--out" : {
+      "description" : "The output read archive.",
       "link to this task" : "build-read-archive",
       "link to this argument" : "-out",
       "short form argument" : "-o",
       "type" : "string"
     },
     "--knownSites" : {
+      "description" : "A database of known polymorphic sites to skip over in the recalibration algorithm.",
       "link to this task" : "count-covariates",
       "link to this argument" : "-knownSites",
       "short form argument" : "-k",
