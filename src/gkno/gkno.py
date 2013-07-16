@@ -47,7 +47,7 @@ import writeToScreen
 from writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.99"
+__version__ = "0.100"
 __date__ = "July 2013"
 
 def main():
@@ -246,9 +246,11 @@ def main():
   # If the pipeline is going to be run multiple times for a different set of input
   # files, the '--multiple-runs (-mr)' argument can be set.  If this is set, the
   # whole pipeline needs to be looped over with each iteration built from the new
-  # input files.  Check to see if this value is set.
+  # input files.  Check to see if this value is set.  If the --multiple-runs argument
+  # was set in the instance, this will be stored in the pl.arguments, so also check
+  # this value.
   mr = multipleRuns()
-  mr.checkForMultipleRuns(cl.uniqueArguments, cl.argumentList, verbose)
+  mr.checkForMultipleRuns(cl.uniqueArguments, cl.argumentList, pl.arguments['--multiple-runs'], sourcePath + '/resources', verbose)
   if verbose: writeCheckingMultipleRunsInformation()
   if mr.hasMultipleRuns:
     mr.getInformation(verbose)

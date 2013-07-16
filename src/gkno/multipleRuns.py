@@ -25,10 +25,10 @@ class multipleRuns:
     self.numberDataSets  = 1
 
   # Check if the pipeline is going to be run multiple times.
-  def checkForMultipleRuns(self, uniqueArguments, argumentList, verbose):
+  def checkForMultipleRuns(self, uniqueArguments, argumentList, pipelineValue, resourcePath, verbose):
     er = errors()
 
-    # First, check if multiple runs have been requested.
+    # First, check if multiple runs have been requested on the command line.
     if '--multiple-runs' in uniqueArguments:
       self.hasMultipleRuns = True
 
@@ -43,6 +43,14 @@ class multipleRuns:
       if self.filename == '':
         er.missingArgumentValue(verbose, '', 'pipeline', '--multiple-runs', '-mr', '', '', 'string')
         er.terminate()
+
+    # Next check if it was contained in the instance information.
+    elif pipelineValue != '':
+      self.hasMultipleRuns = True
+      self.filename        = pipelineValue
+
+      # The filename path can contain the term '$(RESOURCES)' in keeping with the style
+      if self.filename.startswith('$(RESOURCES)'): self.filename = self.filename.replace('$(RESOURCES)', resourcePath)
 
   # Get all of the information required for performing multiple runs.
   def getInformation(self, verbose):
