@@ -8,30 +8,27 @@ import json
 import os
 import sys
 
-class pipelineArgument:
+class nodeAttributes:
   def __init__(self):
     self.description = ''
-    self.ID          = ''
+    self.inputNodes  = {}
+    self.nodeType    = ''
+    self.outputNodes = []
     self.shortForm   = ''
+    self.tool        = ''
 
-class taskInformation:
+class pipelineConfiguration:
   def __init__(self):
-    self.tool          = ''
-    self.preTaskNodes  = []
-    self.postTaskNodes = []
-
-class pipelineAttributes:
-  def __init__(self):
-    self.arguments       = {}
     self.configuration   = {}
+    self.filename        = ''
     self.jsonError       = ''
-    self.taskInformation = {}
 
   # Open a configuration file and store the contents of the file in the
   # configuration dictionary.
   def readConfiguration(self, filename):
     try: jsonData = open(filename)
     except: return False
+    self.filename = filename
 
     try: self.configuration = json.load(jsonData)
     except:
@@ -41,66 +38,107 @@ class pipelineAttributes:
 
     return True
 
-#TODO
-# Check that the pipeline configuration file is valid.
-  def validate(self, filename):
+  #TODO
+  # Check that the pipeline configuration file is valid.  If so, put all the information in
+  # the pipeline data structures.
+  def validateConfigurationData(self, filename):
     return True
 
   # Transfer all of the information from the configuration file into data structures.
-  def setPipelineDataStructures(self):
+  def addNodesAndEdges(self, graph):
 
     # Set the pipeline arguments.
     for argument in self.configuration['arguments']:
-      if argument not in self.arguments: self.arguments[argument] = pipelineArgument()
-      self.arguments[argument].description = self.configuration['arguments'][argument]['description']
-      self.arguments[argument].ID          = self.configuration['arguments'][argument]['ID']
-      self.arguments[argument].shortForm   = self.configuration['arguments'][argument]['short form']
+
+      # Each new node ID must be unique.  Throw an error if this node ID has been seen before.
+      nodeID = self.configuration['arguments'][argument]['ID']
+      if graph.has_node(nodeID):
+        print('non-unique argument node: ', nodeID)
+        exit(1)
+
+      attributes             = nodeAttributes()
+      attributes.nodeType    = 'data'
+      attributes.description = self.configuration['arguments'][argument]['description']
+      attributes.shortForm   = self.configuration['arguments'][argument]['short form']
+      graph.add_node(nodeID, attributes = attributes)
 
     # Loop through all of the tasks and store all the information about the edges.
     for task in self.configuration['tasks']:
-      if task not in self.taskInformation: self.taskInformation[task] = taskInformation()
-      self.taskInformation[task].tool = self.configuration['tasks'][task]['tool']
-      for edge in self.configuration['tasks'][task]['edges']:
-        nodeValue = self.configuration['tasks'][task]['edges'][edge]
-        if nodeValue == 0: self.taskInformation[task].preTaskNodes.append(edge)
-        else: self.taskInformation[task].postTaskNodes.append(edge)
+
+      # Each new node ID must be unique.  Throw an error if this node ID has been seen before.
+      if graph.has_node(task):
+        print('non-unique task node: ', task)
+        exit(1)
+
+      # Create the new node and attach the relevant information to it.
+      attributes          = nodeAttributes()
+      attributes.nodeType = 'task'
+      attributes.tool     = self.configuration['tasks'][task]['tool']
+      for inputNode in self.configuration['tasks'][task]['input nodes']: 
+        attributes.inputNodes[inputNode] = self.configuration['tasks'][task]['input nodes'][inputNode]
+
+        # If the input node is not already in the graph, add it.
+        if not graph.has_node(inputNode):
+          dataNodeAttributes                   = nodeAttributes()
+          dataNodeAttributes.nodeType          = 'data'
+          graph.add_node(inputNode, attributes = dataNodeAttributes)
+
+        # Add an edge from the input node to the task.
+        graph.add_edge(inputNode, task, argument = attributes.inputNodes[inputNode])
+
+      # Now add output nodes and draw connections.
+      for outputNode in self.configuration['tasks'][task]['output nodes']:
+        attributes.outputNodes.append(outputNode)
+
+        # If the input node is not already in the graph, add it.
+        if not graph.has_node(outputNode):
+          dataNodeAttibutes                     = nodeAttributes()
+          dataNodeAttibutes.nodeType            = 'data'
+          graph.add_node(outputNode, attributes = dataNodeAttibutes)
+
+        # Add an edge from the input node to the task.
+        graph.add_edge(task, outputNode, argument = 'dummy')
+
+      graph.add_node(task, attributes = attributes)
 
     self.configuration = {}
-
-  # Given a data from the pipeline configuration file, define all of the edges.
-  def defineEdges(self, graph):
-
-    # Loop over all of the tasks in the pipeline and define all of the edges,
-    for task in self.taskInformation:
-
-      # First, define all of the edges that have the task node as the target, then those that have
-      # the task as the source (e.g. outputs).  For each new node, initialise the node attributes
-      # with the nodes class and then set the nodes.nodeType to either 'task' or 'data'.
-      for edge in self.taskInformation[task].preTaskNodes:
-        if not graph.has_node(edge): graph.add_node(edge, nodeType = 'data')
-        if not graph.has_node(task.upper()): graph.add_node(task.upper(), nodeType = 'task')
-        graph.add_edge(edge, task.upper())
-      for edge in self.taskInformation[task].postTaskNodes:
-        if not graph.has_node(edge): graph.add_node(edge, nodeType = 'data')
-        if not graph.has_node(task.upper()): graph.add_node(task.upper(), nodeType = 'task')
-        graph.add_edge(task.upper(), edge)
 
   # Generate the task workflow from the topologically sorted pipeline graph.
   def generateWorkflow(self, graph):
     workflow  = []
     topolSort = nx.topological_sort(graph)
     for node in topolSort:
-      if graph.node[node]['nodeType'] == 'task': workflow.append(node)
+      if graph.node[node]['attributes'].nodeType == 'task': workflow.append(node)
 
     return workflow
 
   # Set all task node attributes.
-  def setTaskNodeAttributes(self, graph, workflow):
+  def getRequiredTools(self, graph):
     tools = []
-    for task in workflow:
+    for node in graph.nodes(data = False):
 
       # Find the tool used by this task.
-      graph.node[task]['tool'] = self.taskInformation[task.lower()].tool
-      tools.append(self.taskInformation[task.lower()].tool)
+      if graph.node[node]['attributes'].nodeType == 'task': tools.append(graph.node[node]['attributes'].tool)
 
     return tools
+
+  # Check that all of the supplied edges (tool arguments) are present in the graph.
+  def checkRequiredTaskConnections(self, graph, task, requiredEdges):
+    missingEdges = []
+
+    for edge in requiredEdges:
+      edgeIsDefined = False
+
+      # Loop over the input and output nodes of this task and check that an edge corresponding to
+      # the required edge exists.
+      neigbours = nx.all_neighbors(graph, task)
+      for node in neigbours:
+        isInputNode = True if node in graph.node[task]['attributes'].inputNodes else False
+        graphEdge   = graph[node][task]['argument'] if isInputNode else graph[task][node]['argument']
+        if graphEdge == edge:
+          edgeIsDefined = True
+          break
+
+      if not edgeIsDefined: missingEdges.append(edge)
+
+    return missingEdges
