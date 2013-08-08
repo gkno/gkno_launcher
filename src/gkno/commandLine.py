@@ -12,52 +12,51 @@ from files import *
 class commandLine:
 
   # Constructor.
-  def __init__(self, tl, admin):
+  def __init__(self):
     self.arguments       = {}
     self.argumentList    = []
     self.errors          = errors()
     self.linkedArguments = {}
     self.uniqueArguments = {}
 
+  # Check if a mode has been defined.  The mode is either 'pipe', 'run-test' or
+  # a tool name.  If nothing is set, then no mode is chosen and the general help
+  # message will be displayed.
+  def isModeSet(self):
+    isSet = True
+    try: argument = sys.argv[1]
+    except: isSet = False
+
+    return isSet
+
   # Check the first entry on the command line is valid.
-  def getMode(self, io, gknoHelp, tl, pl, admin):
+  def isPipelineMode(self):
+    isPipeline   = False
+    hasName      = False
+    pipelineName = ''
 
-    # If a mode of operation has not been defined, show the gkno
-    # launcher usage information.
-    #terminate = False
-    try:
-      argument = sys.argv[1]
+    # If a pipeline has been selected set the mode to pipe and get the name of
+    # the pipeline.
+    if sys.argv[1] == 'pipe':
+      isPipeline   = True
+      hasName      = True
+      try: pipelineName = sys.argv[2]
+      except: hasName = False
 
-      # If a pipeline has been selected set the mode to pipe and get the name of
-      # the pipeline.
-      if argument == 'pipe':
-        pl.isPipeline   = True
-        pl.pipelineName = ''
+    # If the pipeline being run is run-test, the 'pipe' command is not required.
+    elif sys.argv[1] == 'run-test':
+      isPipeline   = True
+      hasName      = True
+      pipelineName = 'run-test'
 
-        try: pl.pipelineName = sys.argv[2]
-        except:
-          gknoHelp.pipelineHelp = True
-          gknoHelp.printHelp    = True
+    return isPipeline, hasName, pipelineName
 
-      # If the test described in the 'Getting started with gkno' tutorial is
-      # requested, set the mode to 'pipe' and set the pipelineName to run-test.
-      elif argument == 'run-test':
-        pl.isPipeline   = True
-        pl.pipelineName = 'run-test'
+  # If an admin operation has been requested, check which admin mode is required.
+  def isAdminMode(self, adminModes):
+    isAdmin = False
+    if sys.argv[1] in adminModes: isAdmin = True
 
-      # If any admin operation was requested, set requested mode.
-      # (We'll parse for add'l args latself.errors.)
-      elif argument in admin.allModes:
-        admin.isRequested = True
-        admin.mode = argument
-
-      # If this isn't a pipeline or admin command, the argument should be the name of a tool.
-      else:
-        tl.tool = argument
-
-    except:
-      gknoHelp.generalHelp = True
-      gknoHelp.printHelp   = True
+    return isAdmin
 
   # Parse through the command line and put all of the arguments into a list.
   def getCommandLineArguments(self, tool, isPipeline, pipeArguments, pipeShortForms, workflow, verbose):

@@ -1,11 +1,15 @@
 #!/usr/bin/python
 
 from __future__ import print_function
+
 from copy import deepcopy
 import os.path
 import getpass
 import subprocess
 import sys
+
+# Add the configuration class directory to the search path for modules.
+sys.path.insert(0,'../configurationClass')
 
 import networkx as nx
 
@@ -36,11 +40,11 @@ from makefileData import *
 import multipleRuns
 from multipleRuns import *
 
-import pipelines
-from pipelines import *
+import pipelineAttributes
+from pipelineAttributes import *
 
-import tools
-from tools import *
+import toolAttributes
+from toolAttributes import *
 
 import tracking
 from tracking import *
@@ -64,21 +68,40 @@ def main():
   # along with 'resource' management.
   admin = adminUtils(sourcePath)
 
+  # Define a pipeline configuration object.  This is part of the configurationClass library.
+  pipe = pipelineConfiguration()
+
+  # Create a graph object.  This is a directed graph consisting of nodes representing the tasks
+  # in the pipeline as well as data being fed into the nodes.  All relevant tool information
+  # will be attached to the task nodes and information about the data is attached to the data
+  # nodes.  The edges between the nodes define the command line argument for the data and tool.
+  pipelineGraph = nx.DiGraph()
+
+  # Each task in the pipeline (if a single tool is being run, the graph consists of a single
+  # task node, but is still represented by a graph) is represented by a node.  The task is
+  # then associated with a tool.  Each unique tool in the pipeline has a configuration file
+  # associated with it, so we need an array of tool objects to handle each of the required
+  # tools.  These are stored in the toolObjects hash table.
+  toolObjects = {}
+
+  # FIXME REMOVE. REPLACED WITH TOOLOBJECTS
   # Define a tools object.  This stores all information specific to individual
   # tools.
-  tl = tools()
+  #tl = tools()
 
   # Define a command line options, get the first command line argument
   # and proceed as required.
-  cl = commandLine(tl, admin)
+  commands = commandLine()
 
+  # FIXME REMOVE. REPLACED WITH PIPE
   # Define a pipeline object.  Even if a single tool is all that is required,
   # some of the routines in the pipelines.py are still used.  A single tool
   # is essentially treated as a pipeline with a single element.
-  pl = pipeline()
+  #pl = pipeline()
 
+  # FIXME. REMOVE AND REMOVE FILES.PY.  HANDLED IN THE CONFIGURATIONCLASS
   # Generate a class for handling files.
-  io = files()
+  #io = files()
 
   # Generate a class for handling instances.
   ins = instances()
@@ -94,7 +117,38 @@ def main():
 
   # Check if help has been requested.  If so, print out usage information for
   # the tool or pipeline as requested.
-  cl.getMode(io, gknoHelp, tl, pl, admin)
+  isModeSet    = commands.isModeSet()
+  isPipeline   = False
+  isTool       = False
+  pipelineName = ''
+  toolName     = ''
+  if not isModeSet:
+    gknoHelp.generalHelp = True
+    gknoHelp.printHelp   = True
+    isPipeline           = False
+  else:
+
+    # Check if gkno is running in pipeline mode and if so, that a pipeline name is given.
+    # Also check if the pipeline to be run is the run-test pipeline from the 'Getting started
+    # with gkno' tutorial.  This doesn't require the pipeline to be explicitly defined with
+    # the pipe identifier on the command line.
+    isPipeline, hasName, pipelineName = commands.isPipelineMode()
+    if isPipeline:
+      if not hasName:
+        gknoHelp.pipelineHelp = True
+        gknoHelp.printHelp    = True
+
+    # Check if an admin function was requested.
+    else:
+      admin.isRequested = commands.isAdminMode(admin.allModes)
+      if admin.isRequested: admin.mode = sys.argv[1]
+
+      # If this isn't a pipeline or a request for admin functions, then it must be a tool.
+      else:
+        isTool   = True
+        toolName = sys.argv[1]
+
+  exit(0)
 
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
@@ -102,6 +156,7 @@ def main():
 
   # Print gkno title and version to the screen.
   gknoHelp.printHeader(__version__, __date__)
+  exit(0)
 
   # No admin mode requested. Prepare to setup our tool or pipeline run.
   if not admin.isRequested:
