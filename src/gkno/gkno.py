@@ -7,6 +7,8 @@ import getpass
 import subprocess
 import sys
 
+import networkx as nx
+
 import adminUtils
 from adminUtils import *
 
