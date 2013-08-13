@@ -25,7 +25,7 @@ class pipelineConfiguration:
 
   # Open a configuration file and store the contents of the file in the
   # configuration dictionary.
-  def readConfiguration(self, filename):
+  def readConfigurationFile(self, filename):
     try: jsonData = open(filename)
     except: return False
     self.filename = filename
