@@ -25,6 +25,9 @@ from exportInstance import *
 import files
 from files import *
 
+import gknoConfigurationFiles
+from gknoConfigurationFiles import *
+
 import helpClass
 from helpClass import *
 
@@ -68,8 +71,11 @@ def main():
   # along with 'resource' management.
   admin = adminUtils(sourcePath)
 
-  # Define a pipeline configuration object.  This is part of the configurationClass library.
+  # Define a pipeline configuration object.  This is part of the configurationClass library.  Also
+  # define an object that handles finding configuration files for gkno (e.g. gkno specific
+  # configuration file operations.
   pipe = pipelineConfiguration()
+  conf = gknoConfigurationFiles()
 
   # Create a graph object.  This is a directed graph consisting of nodes representing the tasks
   # in the pipeline as well as data being fed into the nodes.  All relevant tool information
@@ -148,15 +154,12 @@ def main():
         isTool   = True
         toolName = sys.argv[1]
 
-  exit(0)
-
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
-  verbose = cl.checkForHelp(gknoHelp, pl.isPipeline, pl.pipelineName, admin)
+  verbose = commands.checkForHelp(gknoHelp, isPipeline, pipelineName, admin)
 
   # Print gkno title and version to the screen.
   gknoHelp.printHeader(__version__, __date__)
-  exit(0)
 
   # No admin mode requested. Prepare to setup our tool or pipeline run.
   if not admin.isRequested:
@@ -167,52 +170,60 @@ def main():
       er.gknoNotBuilt()
       er.terminate()
 
+    # FIXME NO LONGER NEED TO READ IN ALL TOOL CONFIGURATION FILES.  JUST THOSE
+    # THAT ARE REQUIRED ARE READ IN AND THESE ARE READ IN WHEN THEY ARE KNOWN.
+    # REMOVE THIS SECTION.
     # Each of the tools available to gkno should have a config file to
     # describe its operation, purpose etc.  These are contained in
     # config_files/tools.  Find all of the config files and create a hash
     # table with all available tools.
-    io.getJsonFiles(sourcePath + '/config_files/')
+    #io.getJsonFiles(sourcePath + '/config_files/')
 
+    # FIXME THESE NEED TO BE ADDED TO THE GRAPH AS NODES.
     # Add some necessary commands to the pipeline arguments structure.
-    pl.addPipelineSpecificOptions()
+    #pl.addPipelineSpecificOptions()
 
+    # FIXME DEAL WITH CONFIG FILES WITH CONFIGURATIONCLASS.  REMOVE THIS.
     # Check that the config files are valid.
     if gknoHelp.printHelp: verbose = False
-    if verbose: beginToolConfigurationFileCheck()
-    for toolFile in io.jsonToolFiles:
-      if verbose: writeToolConfigurationFile(toolFile)
-      toolData = io.getJsonData(sourcePath + '/config_files/tools/' + toolFile, True)
-      tl.checkToolConfigurationFile(toolData, toolFile, verbose)
-      tl.setupShortFormArguments()
-      pl.taskToTool[tl.tool] = tl.tool
-      toolData = '' # Clear the data structure as it is no longer necessary
-      if verbose: writeDone()
-    if verbose: writeBlankLine()
+    #if verbose: beginToolConfigurationFileCheck()
+    #for toolFile in io.jsonToolFiles:
+    #  if verbose: writeToolConfigurationFile(toolFile)
+    #  toolData = io.getJsonData(sourcePath + '/config_files/tools/' + toolFile, True)
+    #  tl.checkToolConfigurationFile(toolData, toolFile, verbose)
+    #  tl.setupShortFormArguments()
+    #  pl.taskToTool[tl.tool] = tl.tool
+    #  toolData = '' # Clear the data structure as it is no longer necessary
+    #  if verbose: writeDone()
+    #if verbose: writeBlankLine()
 
     # If a pipeline is being run, check that configuration files
     # exist for the selected pipeline.  This should be in directory
     # config_files and have the name <$ARGV[1]>.json.  If the file
     # exists, parse the json file.
     phoneHomeID = ''
-    if pl.isPipeline:
-      phoneHomeID  = 'pipes/' + pl.pipelineName
-      pl.pipelineFile = sourcePath + '/config_files/pipes/' + pl.pipelineName + '.json'
-      success         = pl.checkPipelineExists(gknoHelp, io.jsonPipelineFiles)
-      if success:
-        if verbose: checkPipelineConfigurationFile(pl.pipelineFile)
-        pipelineData    = io.getJsonData(pl.pipelineFile, True)
-        iLoop.tasks     = pl.checkConfigurationFile(gknoHelp, pipelineData, io.jsonPipelineFiles, tl.availableTools, tl.argumentInformation, verbose)
-        pipelineData    = '' # Clear the data structure as it is no longer necessary.
-        pl.setArgumentLinks()
-        if verbose: writeDone()
+    if isPipeline:
+      phoneHomeID  = 'pipes/' + pipelineName
+      pipelineFile = sourcePath + '/config_files/pipes/' + pipelineName + '.json'
+      pipe.readConfigurationFile(pipelineFile)
+      exit(0)
+      #success      = pl.checkPipelineExists(gknoHelp, io.jsonPipelineFiles)
+      #if success:
+      #  if verbose: checkPipelineConfigurationFile(pl.pipelineFile)
+      #  pipelineData    = io.getJsonData(pl.pipelineFile, True)
+      #  iLoop.tasks     = pl.checkConfigurationFile(gknoHelp, pipelineData, io.jsonPipelineFiles, tl.availableTools, tl.argumentInformation, verbose)
+      #  pipelineData    = '' # Clear the data structure as it is no longer necessary.
+      #  pl.setArgumentLinks()
+      #  if verbose: writeDone()
 
     # If gkno is being run in tool mode, the pl object still exists and is used.
     # Set the pl.information structure up to reflect a pipeline containing a
     # single tool.
     else:
-      pl.pipelineName = tl.tool
-      phoneHomeID     = pl.setupIndividualTool(tl.tool, not gknoHelp.printHelp)
+      pipelineName = toolName
+      #phoneHomeID  = pl.setupIndividualTool(toolName, not gknoHelp.printHelp)
 
+    exit(0)
     # If a single tool is being run, check that it is a valid tool.
     if not pl.isPipeline: tl.checkTool(gknoHelp)
 
