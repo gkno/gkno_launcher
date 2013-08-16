@@ -271,28 +271,17 @@ def main():
         error.jsonOpenError(True, jsonErrorText, toolFile)
         error.terminate()
 
-    exit(0)
-
-    # Loop over the task in the graph and perform necessary operations.
-    #for task in workflow:
-      #associatedTool = pipelineGraph.node[task]['attributes'].tool
-  
-      # Check that all the required nodes are defined for the tool.  If some data is required by
-      # the tool, it's source must either be the command line or a different tool in the pipeline.
-      # All pipeline command line arguments and tool outputs are specified in the pipeline
-      # configuration file, so if the connections do not already exist in the graph, then the
-      # pipeline cannot function.
-      #requiredArguments = toolObjects[associatedTool].getRequiredArguments()
-      #missingEdges      = pipe.checkRequiredTaskConnections(pipelineGraph, task, requiredArguments)
-      #if len(missingEdges) != 0:
-      #  print('missing required edges for task:', task, missingEdges)
+    # Loop over all of the nodes and determine which require a value.  Also check to see if there
+    # are missing edges.  For example, if a tool has an argument that is required, but is not included
+    # in the pipeline configuration file (as a pipeline argument or via connections), the graph cannot
+    # be completely defined.
+    pipe.setRequiredNodes(pipelineGraph, toolData)
+    missingEdges = pipe.checkRequiredTaskConnections(pipelineGraph, toolData)
+    if len(missingEdges) != 0:
+      print('missing required edges for task:', missingEdges)
+      error.terminate()
 
   exit(0)
-
-  # There are cases where the arguments for a tool are optional, but when included in a pipeline,
-  # they are required.  Set the status of all arguments by looking at whether they are required
-  # by the tool or the pipeline.
-  #pl.setRequiredState(tl.argumentInformation)
 
   # Check for an additional instance file associated with this tool/pipeline and add the information
   # to the relevant data structure.
