@@ -24,7 +24,12 @@ class commandLine:
   # message will be displayed.
   def isModeSet(self):
     isSet = True
-    try: argument = sys.argv[1]
+    try:
+      argument = sys.argv[1]
+
+      # If help is requested, a mode isn't set.
+      if argument == '-h' or argument == '--help': isSet = False
+
     except: isSet = False
 
     return isSet
@@ -59,7 +64,7 @@ class commandLine:
     return isAdmin
 
   # Parse through the command line and put all of the arguments into a list.
-  def getCommandLineArguments(self, tool, isPipeline, pipeArguments, pipeShortForms, workflow, verbose):
+  def getCommandLineArguments(self, graph, tool, isPipeline):
     count = 1
     while True:
       try: argument = sys.argv[count]
@@ -97,7 +102,12 @@ class commandLine:
       # The command line will include an instruction on whether to run a pipe or the name of the
       # tool.  Ignore this argument.
       if argument != tool and argument != 'pipe' and argument != 'run-test':
-        if argument in pipeShortForms: argument = pipeShortForms[argument]
+        for node in graph.nodes(data = False):
+          if graph.node[node]['attributes'].isPipelineArgument:
+            if argument == graph.node[node]['attributes'].shortForm:
+              argument = graph.node[node]['attributes'].argument
+              break
+
         if argument not in self.uniqueArguments: self.uniqueArguments[argument] = 1
         else: self.uniqueArguments[argument] += 1
 
@@ -113,10 +123,18 @@ class commandLine:
         if argument.startswith('-'): task = argument[1:]
         if argument.startswith('--'): task = argument[2:]
 
-        if task in workflow:
-          self.argumentList.append((argument, nextArgument))
-          count += 1
-        elif argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, ''))
+        isTask = False
+        if task in graph.nodes(data = False):
+
+          # The task is a node in the pipeline, but check that the node is a task node.
+          if graph.node[task]['attributes'].nodeType == 'task':
+            self.argumentList.append((argument, nextArgument))
+            count += 1
+            isTask = True
+
+        if not isTask:
+          if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, ''))
+
       else:
         if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, nextArgument))
         count += 1

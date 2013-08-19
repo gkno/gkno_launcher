@@ -28,12 +28,12 @@ def gettingCommandLineArguments():
   print('Reading in command line arguments...', end = '', file = sys.stdout)
   sys.stdout.flush()
 
-def writePipelineWorkflow(workflow, taskToTool, availableTools, descriptions, gknoHelp):
+def writePipelineWorkflow(graph, workflow, gknoHelp):
 
   # Determine the length of the longest tool name.
   length  = 0
   for task in workflow:
-    tool   = taskToTool[task]
+    tool   = graph.node[task]['attributes'].tool
     text   = task + ' (' + tool + '):'
     length = len(text) if len(text) > length else length
   length += 5
@@ -41,9 +41,9 @@ def writePipelineWorkflow(workflow, taskToTool, availableTools, descriptions, gk
   print('Workflow:', sep = '', file = sys.stdout)
   sys.stdout.flush()
   for task in workflow:
-    tool        = taskToTool[task]
+    tool        = graph.node[task]['attributes'].tool
     text        = task + ' (' + tool + '):'
-    description = descriptions[tool]
+    description = graph.node[task]['attributes'].description
     gknoHelp.writeFormattedText(text, description, length, 1, '')
   print(file = sys.stdout)
 

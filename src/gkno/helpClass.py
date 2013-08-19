@@ -1,44 +1,63 @@
 #!/usr/bin/python
 
 from __future__ import print_function
+
+import pipelineAttributes
+from pipelineAttributes import *
+
 import os
 import sys
 
 class helpClass:
   def __init__(self):
-    self.printHelp            = False
+    self.adminHelp            = False
+    self.availablePipelines   = []
+    self.availableTools       = []
     self.generalHelp          = False
     self.pipelineHelp         = False
+    self.printHelp            = False
     self.specificPipelineHelp = False
     self.toolHelp             = False
-    self.adminHelp            = False
     self.unknownPipeline      = False
     self.unknownTool          = False
 
+  # Define lists of all available tools and pipelines.
+  def setAvailableToolsAndPipelines(self, tools, pipelines):
+
+    # Tool list.
+    self.availableTools = tools
+
+    # Pipeline list.
+    for pipelineFile in pipelines:
+      pipeline = pipelineFile.replace('.json', '')
+
+      # Ignore 'instances' files.
+      if not pipeline.endswith('_instances'): self.availablePipelines.append(pipeline)
+
   # If usage information needs to be printed out, determine the exact level
   # of usage information to provide, write to screen and then terminate.
-  def printUsage(self, io, tl, pl, admin, version, date, path):
+  def printUsage(self, graph, pipeline, workflow, toolData, admin, version, date, path):
 
     # General gkno usage.
     if self.generalHelp:
-      self.usage(io, tl, admin, path)
+      self.usage(graph, toolData, admin, path)
 
     # gkno tool mode usage.
     elif self.toolHelp:
       if self.unknownTool:
-        self.printToolModeUsage(tl)
-        self.unknownToolMessage(tl.tool)
+        self.printToolModeUsage(toolData)
+        self.unknownToolMessage(graph, pipeline.pipelineName)
       else:
-        self.toolUsage(tl, tl.tool)
+        self.toolUsage(graph, pipeline.pipelineName)
 
     # General pipeline help.
     elif self.pipelineHelp:
-      self.pipelineUsage(io, tl, pl, path)
-      if self.unknownPipeline: self.unknownPipelineMessage(pl.pipelineName)
+      self.pipelineUsage(graph, path)
+      if self.unknownPipeline: self.unknownPipelineMessage()
 
     # Specific pipeline help.
     elif self.specificPipelineHelp:
-      self.specificPipelineUsage(tl, pl)
+      self.specificPipelineUsage(graph, pipeline, workflow, toolData)
 
     # Admin mode help.
     elif self.adminHelp:
@@ -60,7 +79,7 @@ class helpClass:
     print(file = sys.stdout)
 
   # Print usage information.
-  def usage(self, io, tl, admin, path):
+  def usage(self, graph, toolData, admin, path):
     print('The gkno package can be run in three different modes:', file=sys.stdout)
     print('     ADMIN mode:     lets you manage gkno itself', file = sys.stdout)
     print('     TOOL mode:      runs a single tool', file=sys.stdout)
@@ -73,10 +92,10 @@ class helpClass:
     self.printAdminModeUsage(admin)
 
     # Print out a list of available tools.
-    self.printToolModeUsage(tl)
+    self.printToolModeUsage(toolData)
 
     # Print out pipeline help.
-    self.printPipelineModeUsage(io, path)
+    self.printPipelineModeUsage(path)
 
   # Print usage information on the admin mode of operation.
   def printAdminModeUsage(self, admin):
@@ -104,7 +123,7 @@ class helpClass:
     print(file = sys.stdout)
 
   # Print usage information on the tool mode of operation.
-  def printToolModeUsage(self, tl):
+  def printToolModeUsage(self, toolData):
     print('=============', file = sys.stdout)
     print('  tool mode', file = sys.stdout)
     print('=============', file = sys.stdout)
@@ -116,25 +135,22 @@ class helpClass:
     # For the purposes of formatting the screen output, find the longest tool
     # name and use this to define the format length.
     length = 0
-    for tool in tl.availableTools:
+    for tool in self.availableTools:
       if len(tool) > length: length = len(tool)
     length += 5
 
-    sortedKeys = sorted(tl.availableTools)
+    sortedKeys = sorted(self.availableTools)
     for tool in sortedKeys:
 
       # Get the tool description.
-      description = tl.descriptions[tool]
+      description = toolData.attributes[tool].description
       printTool   = tool + ":"
 
-      hidden = False
-      if tool in tl.hiddenTools:
-        if tl.hiddenTools[tool]: hidden = True
-      if not hidden: self.writeFormattedText(printTool, description, length, 2, '')
+      if not toolData.attributes[tool].isHidden: self.writeFormattedText(printTool, description, length, 2, '')
     print(file = sys.stdout)
 
   # Print usage information on the pipeline mode of operation.
-  def printPipelineModeUsage(self, io, path):
+  def printPipelineModeUsage(self, path):
     print('=================', file = sys.stdout)
     print('  pipeline mode', file = sys.stdout)
     print('=================', file = sys.stdout)
@@ -145,26 +161,28 @@ class helpClass:
 
     # For the purposes of formatting the screen output, find the longest tool
     # name and use this to define the format length.
-    sortedKeys = sorted(io.jsonPipelineFiles.keys())
+    sortedKeys = sorted(self.availablePipelines)
     length = 0
     for pipeline in sortedKeys:
-      pipeline = pipeline[0:(len(pipeline) - 5)]
       if len(pipeline) > length: length = len(pipeline)
     length += 5
 
     for pipeline in sortedKeys:
 
       # Open the json file and get the pipeline description.
-      pipelineFile = path + '/config_files/pipes/' + pipeline
-      jsonData     = io.getJsonData(pipelineFile, True)
-      description  = jsonData['description'] if 'description' in jsonData else 'No description'
+      pipelineFile = path + '/config_files/pipes/' + pipeline + '.json'
 
-      pipeline = pipeline[0:(len(pipeline) - 5)] + ':'
+      # Create a pipieline configuration file object.
+      pipe                                     = pipelineConfiguration()
+      pipelineExists, jsonError, jsonErrorText = pipe.readConfigurationFile(pipelineFile)
+      description                              = pipe.configurationData['description']
+
+      pipeline = pipeline + ':'
       self.writeFormattedText(pipeline, description, length, 2, '')
     sys.stdout.flush()
 
   # Print out tool usage.
-  def toolUsage(self, tl, tool):
+  def toolUsage(self):
     print('===================', file = sys.stdout)
     print('  gkno tool usage', file = sys.stdout)
     print('===================', file = sys.stdout)
@@ -287,17 +305,17 @@ class helpClass:
 
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
-  def specificPipelineUsage(self, tl, pl):
-    length = len(pl.pipelineName) + 26
+  def specificPipelineUsage(self, graph, pipeline, workflow, toolData):
+    length = len(pipeline.pipelineName) + 26
     print('=' * length)
-    print('  gkno pipeline usage - ', pl.pipelineName, sep = '', file = sys.stdout)
+    print('  gkno pipeline usage - ', pipeline.pipelineName, sep = '', file = sys.stdout)
     print('=' * length)
     print(file = sys.stdout)
-    print('Usage: gkno pipe ', pl.pipelineName, ' [options]', sep = '', file = sys.stdout)
+    print('Usage: gkno pipe ', pipeline.pipelineName, ' [options]', sep = '', file = sys.stdout)
     print(file = sys.stdout)
 
     # Print out the decription of the pipeline.
-    description = pl.description
+    description = pipeline.description
     print('     Description:', file = sys.stdout)
     self.writeFormattedText('', description, 0, 2, '')
     print(file = sys.stdout)
@@ -305,26 +323,27 @@ class helpClass:
     # Write out the pipeline workflow.
     print('     Workflow:', file = sys.stdout)
     length = 0
-    for task in pl.workflow: length = len(task) if (len(task) > length) else length
+    for task in workflow: length = len(task) if (len(task) > length) else length
     length += 4
-    for task in pl.workflow:
-      tool        = pl.taskToTool[task]
-      description = tl.descriptions[tool]
+    for task in workflow:
+      associatedTool = graph.node[task]['attributes'].tool
+      description    = graph.node[task]['attributes'].description
       self.writeFormattedText(task + ":", description, length, 2, '')
     print(file = sys.stdout)
 
     # If this pipeline has different instances, print them to screen.
-    if len(pl.instances) > 0:
-      print('     Instances:', file = sys.stdout)
-      length = 0
-      for instance in pl.instances: length = len(instance) if len(instance) > length else length
-      length += 4
+    # TODO Sort instances
+    #if len(pl.instances) > 0:
+    #  print('     Instances:', file = sys.stdout)
+    #  length = 0
+    #  for instance in pl.instances: length = len(instance) if len(instance) > length else length
+    #  length += 4
 
-      sortedInstances = sorted(pl.instances)
-      for instance in sortedInstances:
-        description = pl.instances[instance]['description']
-        self.writeFormattedText(instance + ":", description, length, 2, '')
-      print(file = sys.stdout)
+    #  sortedInstances = sorted(pl.instances)
+    #  for instance in sortedInstances:
+    #    description = pl.instances[instance]['description']
+    #    self.writeFormattedText(instance + ":", description, length, 2, '')
+    #  print(file = sys.stdout)
 
     # List the options available at the pipeline level.
     #
@@ -333,21 +352,15 @@ class helpClass:
     length            = 0
     arguments         = {}
     requiredArguments = {}
-    for argument in pl.argumentInformation:
-      text        = argument
-      description = 'No description'
-      if 'short form argument' in pl.argumentInformation[argument]: text += ' (' + pl.argumentInformation[argument]['short form argument'] + ')'
-      if 'description' in pl.argumentInformation[argument]: description = pl.argumentInformation[argument]['description']
-      text += ':'
-      length       = len(text) if (len(text) > length) else length
-      isRequired   = False
-      task         = pl.argumentInformation[argument]['link to this task']
-      if task != 'pipeline':
-        tool         = pl.taskToTool[task]
-        toolArgument = pl.argumentInformation[argument]['link to this argument']
-        isRequired   = pl.argumentInformation[argument]['required']
-      if isRequired: requiredArguments[text] = description
-      else: arguments[text] = description
+    for node in graph.nodes(data = False):
+      if graph.node[node]['attributes'].isPipelineArgument:
+        description = graph.node[node]['attributes'].description
+        shortForm   = graph.node[node]['attributes'].shortForm
+        text        = graph.node[node]['attributes'].argument + ' (' + shortForm + '):'
+        length      = len(text) if (len(text) > length) else length
+        isRequired  = graph.node[node]['attributes'].isRequired
+        if isRequired: requiredArguments[text] = description
+        else: arguments[text] = description
     length += 4
 
     if len(requiredArguments) != 0:
@@ -368,19 +381,17 @@ class helpClass:
     # in order to modify parameters for the specified tool.
     print('     The following tools can have parameters modified:', file = sys.stdout)
     length = 0
-    for task in pl.workflow:
+    for task in workflow:
       length = len(task) if (len(task) > length) else length
     length += 5
 
-    sortedTasks = sorted(pl.workflow)
+    sortedTasks = sorted(workflow)
     for task in sortedTasks:
-      tool   = pl.taskToTool[task]
-      hidden = False
-      if tool in tl.hiddenTools:
-        if tl.hiddenTools[tool]: hidden = True
-      if not hidden:
+      associatedTool = graph.node[task]['attributes'].tool
+      isHidden       = toolData.attributes[associatedTool].isHidden
+      if not isHidden:
         task += ':'
-        self.writeFormattedText('--' + task, tool, length + 2, 2, '')
+        self.writeFormattedText('--' + task, associatedTool, length + 2, 2, '')
     sys.stdout.flush()
 
   # Write out key value pairs in a formatted manned.  These may be tool and
