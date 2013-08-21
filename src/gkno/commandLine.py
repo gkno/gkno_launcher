@@ -201,7 +201,7 @@ class commandLine:
   # Parse through all of the commands stored in the argumentsList and check that they are all valid.
   # If they are, put them in a new structure that groups all of the arguments with their respective
   # task.  This structure is returned.
-  def assignArgumentsToTasks(self, tool, shortForms, isPipeline, pipelineArguments, pipeArguments, pipeShortForms, workflow, verbose):
+  def assignArgumentsToTasks(self):#, tool, shortForms, isPipeline, pipelineArguments, pipeArguments, pipeShortForms, workflow, verbose):
     task = tool if not isPipeline else ''
 
     # Parse through the list of arguments supplied on the command line and determine which task in
@@ -210,6 +210,7 @@ class commandLine:
     # formed: those checks are performed in the parseCommandLine routine.
     for argument, value in self.argumentList:
       argumentName = ''
+      print(argument)
       if argument in pipeArguments or argument in pipeShortForms:
         argumentName = pipeShortForms[argument] if argument in pipeShortForms else argument
         taskLink     = pipeArguments[argumentName]['link to this task']

@@ -333,7 +333,6 @@ def main():
   
   # Print information about the pipeline to screen.
   if isPipeline and verbose: writePipelineWorkflow(pipelineGraph, workflow, gknoHelp)
-  exit(0)
 
   # Set up an array to contain the names of the Makefiles created.
   make.initialiseNames()
@@ -341,7 +340,9 @@ def main():
   # Parse the command line and populate the cl.arguments structure with all of the arguments set
   # by the user.
   if verbose: writeAssignPipelineArgumentsToTasks()
-  cl.assignArgumentsToTasks(tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
+  #cl.assignArgumentsToTasks(tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
+  commands.assignArgumentsToTasks()#tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
+  exit(0)
   if verbose:
     writeDone()
     writeParseCommandLineArguments()
