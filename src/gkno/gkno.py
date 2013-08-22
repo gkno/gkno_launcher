@@ -268,14 +268,16 @@ def main():
 
     # Construct the pipeline graph using the information contained in the pipeline configuration
     # file.
-    pipe.addNodesAndEdges(pipelineGraph)
-
-    # Generate the workflow using a topological sort of the pipeline graph.
-    workflow = pipe.generateWorkflow(pipelineGraph)
+    pipe.addNodesAndEdges(pipelineGraph, toolData)
+    pipe.eraseConfigurationData()
+    exit(0)
 
     # Populate the nodes with necessary information.  Return a list of all of the tools used by the
     # pipelines.
     requiredTools = pipe.getRequiredTools(pipelineGraph)
+
+    # Generate the workflow using a topological sort of the pipeline graph.
+    workflow = pipe.generateWorkflow(pipelineGraph)
 
     # Loop over all of the nodes and determine which require a value.  Also check to see if there
     # are missing edges.  For example, if a tool has an argument that is required, but is not included
