@@ -19,6 +19,9 @@ from adminUtils import *
 import commandLine
 from commandLine import *
 
+import gknoErrors
+from gknoErrors import *
+
 import exportInstance
 from exportInstance import *
 
@@ -62,7 +65,7 @@ __date__ = "July 2013"
 def main():
 
   # Define the errors class.
-  error = errors()
+  error = gknoErrors()
 
   # Define the source path of all the gkno machinery.
   sourcePath = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno/gkno.py')]
@@ -270,7 +273,6 @@ def main():
     # file.
     pipe.addNodesAndEdges(pipelineGraph, toolData)
     pipe.eraseConfigurationData()
-    exit(0)
 
     # Populate the nodes with necessary information.  Return a list of all of the tools used by the
     # pipelines.
@@ -289,6 +291,7 @@ def main():
     if len(missingEdges) != 0:
       print('missing required edges for task:', missingEdges)
       #error.terminate()
+    exit(0)
 
   # For help messages the helpClass needs a list of all available tools and all available pipelines.  These
   # lists are generated here.
