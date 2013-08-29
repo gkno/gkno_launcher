@@ -2,6 +2,9 @@
 
 from __future__ import print_function
 
+import nodeAttributes
+from nodeAttributes import *
+
 import pipelineAttributes
 from pipelineAttributes import *
 
@@ -14,6 +17,7 @@ class helpClass:
     self.availablePipelines   = []
     self.availableTools       = []
     self.generalHelp          = False
+    self.nodeMethods          = nodeClass()
     self.pipelineHelp         = False
     self.printHelp            = False
     self.specificPipelineHelp = False
@@ -326,8 +330,8 @@ class helpClass:
     for task in workflow: length = len(task) if (len(task) > length) else length
     length += 4
     for task in workflow:
-      associatedTool = graph.node[task]['attributes'].tool
-      description    = graph.node[task]['attributes'].description
+      associatedTool = self.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+      description    = self.nodeMethods.getGraphNodeAttribute(graph, task, 'description')
       self.writeFormattedText(task + ":", description, length, 2, '')
     print(file = sys.stdout)
 
@@ -353,14 +357,15 @@ class helpClass:
     arguments         = {}
     requiredArguments = {}
     for node in graph.nodes(data = False):
-      if graph.node[node]['attributes'].isPipelineArgument:
-        description = graph.node[node]['attributes'].description
-        shortForm   = graph.node[node]['attributes'].shortForm
-        text        = graph.node[node]['attributes'].argument + ' (' + shortForm + '):'
-        length      = len(text) if (len(text) > length) else length
-        isRequired  = graph.node[node]['attributes'].isRequired
-        if isRequired: requiredArguments[text] = description
-        else: arguments[text] = description
+      if self.nodeMethods.getGraphNodeAttribute(graph, node, 'nodeType') != 'task':
+        if self.nodeMethods.getGraphNodeAttribute(graph, node, 'isPipelineArgument'):
+          description = self.nodeMethods.getGraphNodeAttribute(graph, node, 'description')
+          shortForm   = self.nodeMethods.getGraphNodeAttribute(graph, node, 'shortForm')
+          text        = self.nodeMethods.getGraphNodeAttribute(graph, node, 'argument') + ' (' + shortForm + '):'
+          length      = len(text) if (len(text) > length) else length
+          isRequired  = self.nodeMethods.getGraphNodeAttribute(graph, node, 'isRequired')
+          if isRequired: requiredArguments[text] = description
+          else: arguments[text] = description
     length += 4
 
     if len(requiredArguments) != 0:
@@ -387,7 +392,7 @@ class helpClass:
 
     sortedTasks = sorted(workflow)
     for task in sortedTasks:
-      associatedTool = graph.node[task]['attributes'].tool
+      associatedTool = self.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
       isHidden       = toolData.attributes[associatedTool].isHidden
       if not isHidden:
         task += ':'

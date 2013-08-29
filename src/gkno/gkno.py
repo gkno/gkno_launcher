@@ -46,6 +46,9 @@ from makefileData import *
 import multipleRuns
 from multipleRuns import *
 
+import nodeAttributes
+from nodeAttributes import *
+
 import pipelineAttributes
 from pipelineAttributes import *
 
@@ -267,6 +270,7 @@ def main():
     print('Not yet handled individual tool')
     exit(0)
 
+  workflow = []
   if isPipeline or isTool:
 
     # Construct the pipeline graph using the information contained in the pipeline configuration
@@ -291,7 +295,6 @@ def main():
     if len(missingEdges) != 0:
       print('missing required edges for task:', missingEdges)
       #error.terminate()
-    exit(0)
 
   # For help messages the helpClass needs a list of all available tools and all available pipelines.  These
   # lists are generated here.
@@ -309,7 +312,8 @@ def main():
 
   # Parse the command line and put all of the arguments into a list.
   if verbose: gettingCommandLineArguments()
-  commands.getCommandLineArguments(pipelineGraph, toolName, isPipeline)
+  commands.getCommandLineArguments(pipelineGraph, pipe, toolName, isPipeline)
+
   if verbose:
     writeDone()
     writeBlankLine()
@@ -337,17 +341,21 @@ def main():
     else: er.terminate()
   
   # Print information about the pipeline to screen.
-  if isPipeline and verbose: writePipelineWorkflow(pipelineGraph, workflow, gknoHelp)
+  if isPipeline and verbose: writePipelineWorkflow(pipelineGraph, pipe, workflow, gknoHelp)
 
   # Set up an array to contain the names of the Makefiles created.
   make.initialiseNames()
+
+  # Attach the values of the pipeline arguments to the relevant nodes.
+  commands.attachPipelineArgumentsToNodes(pipelineGraph, pipe, toolData)
+  exit(0)
 
   # Parse the command line and populate the cl.arguments structure with all of the arguments set
   # by the user.
   if verbose: writeAssignPipelineArgumentsToTasks()
   #cl.assignArgumentsToTasks(tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
+
   commands.assignArgumentsToTasks()#tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
-  exit(0)
   if verbose:
     writeDone()
     writeParseCommandLineArguments()

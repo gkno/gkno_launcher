@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
 from __future__ import print_function
+
+import nodeAttributes
+from nodeAttributes import *
+
 import os
 import sys
 
@@ -28,7 +32,8 @@ def gettingCommandLineArguments():
   print('Reading in command line arguments...', end = '', file = sys.stdout)
   sys.stdout.flush()
 
-def writePipelineWorkflow(graph, workflow, gknoHelp):
+def writePipelineWorkflow(graph, pipe, workflow, gknoHelp):
+  nodeMethods = nodeClass()
 
   # Determine the length of the longest tool name.
   length  = 0
@@ -41,9 +46,9 @@ def writePipelineWorkflow(graph, workflow, gknoHelp):
   print('Workflow:', sep = '', file = sys.stdout)
   sys.stdout.flush()
   for task in workflow:
-    tool        = graph.node[task]['attributes'].tool
+    tool        = nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
     text        = task + ' (' + tool + '):'
-    description = graph.node[task]['attributes'].description
+    description = nodeMethods.getGraphNodeAttribute(graph, task, 'description')
     gknoHelp.writeFormattedText(text, description, length, 1, '')
   print(file = sys.stdout)
 
