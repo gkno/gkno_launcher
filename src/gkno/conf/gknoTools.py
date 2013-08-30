@@ -181,6 +181,8 @@ class Freebayes(GknoTool):
 
   # $ make -j N   
   def doUpdate(self):
+    if not self.makeClean(): 
+      return False 
     return self.make()
 
 # gatk
