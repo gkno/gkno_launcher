@@ -312,7 +312,7 @@ def main():
 
   # Parse the command line and put all of the arguments into a list.
   if verbose: gettingCommandLineArguments()
-  commands.getCommandLineArguments(pipelineGraph, pipe, toolName, isPipeline)
+  commands.getCommandLineArguments(pipelineGraph, pipe, toolName, isPipeline, verbose)
 
   if verbose:
     writeDone()
@@ -347,61 +347,57 @@ def main():
   make.initialiseNames()
 
   # Attach the values of the pipeline arguments to the relevant nodes.
+  if verbose: writeAssignPipelineArgumentsToNodes()
   commands.attachPipelineArgumentsToNodes(pipelineGraph, pipe, toolData)
-  exit(0)
+  if verbose: writeDone()
 
-  # Parse the command line and populate the cl.arguments structure with all of the arguments set
-  # by the user.
-  if verbose: writeAssignPipelineArgumentsToTasks()
   #cl.assignArgumentsToTasks(tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
+  #commands.assignArgumentsToTasks()#tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
+  #cl.parseCommandLine(tl.tool, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.argumentInformation, pl.shortForms, pl.taskToTool, verbose)
 
-  commands.assignArgumentsToTasks()#tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
-  if verbose:
-    writeDone()
-    writeParseCommandLineArguments()
-  cl.parseCommandLine(tl.tool, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.argumentInformation, pl.shortForms, pl.taskToTool, verbose)
-  if verbose: writeDone()
-
+  # TODO SORT OUT INSTANCES
   # Check if an instance was selected.  If so, read the specific instance parameters.
-  if verbose: writeCheckingInstanceInformation()
-  ins.getInstanceName(cl.uniqueArguments, cl.argumentList, verbose)
+  #if verbose: writeCheckingInstanceInformation()
+  #ins.getInstanceName(cl.uniqueArguments, cl.argumentList, verbose)
 
-  if pl.isPipeline:
-    ins.getInstanceArguments(sourcePath + '/config_files/pipes/', pl.pipelineName, pl.instances, verbose)
-    ins.convertPipeArgumentsToToolArguments(pl.argumentInformation, pl.shortForms, pl.arguments, verbose)
-  else:
-    ins.getInstanceArguments(sourcePath + '/config_files/tools/', tl.tool, tl.instances[tl.tool], verbose)
-    ins.setToolArguments(tl.tool, verbose)
-  ins.checkInstanceArguments(pl.taskToTool, tl.argumentInformation, tl.shortForms, verbose)
-  if verbose: writeDone()
+  #if pl.isPipeline:
+  #  ins.getInstanceArguments(sourcePath + '/config_files/pipes/', pl.pipelineName, pl.instances, verbose)
+  #  ins.convertPipeArgumentsToToolArguments(pl.argumentInformation, pl.shortForms, pl.arguments, verbose)
+  #else:
+  #  ins.getInstanceArguments(sourcePath + '/config_files/tools/', tl.tool, tl.instances[tl.tool], verbose)
+  #  ins.setToolArguments(tl.tool, verbose)
+  #ins.checkInstanceArguments(pl.taskToTool, tl.argumentInformation, tl.shortForms, verbose)
+  #if verbose: writeDone()
 
+  # TODO SORT OUT INTERNAL LOOPS.
   # If this is a pipeline and internal loops are permitted, check if the user has requested use of
   # the internal loop.  If so, check that the supplied file exists and read in the information.  First,
   # check if an internal loop was specified on the command line, but the pipeline does not have any
   # internal loop information in the configuration file.
-  if pl.arguments['--internal-loop'] != ''  and not pl.hasInternalLoop:
-    er.internalLoopRequestedButUndefined(verbose, pl.pipelineName, pl.arguments['--internal-loop'])
-    er.terminate()
-  if pl.isPipeline and pl.hasInternalLoop:
-    iLoop.checkLoopFile(sourcePath + '/resources', pl.arguments)
-    if iLoop.usingInternalLoop: iLoop.checkInformation(pl.argumentInformation, pl.shortForms, verbose)
-    else: iLoop.numberOfIterations = 1
-  else: iLoop.numberOfIterations = 1
+  #if pl.arguments['--internal-loop'] != ''  and not pl.hasInternalLoop:
+  #  er.internalLoopRequestedButUndefined(verbose, pl.pipelineName, pl.arguments['--internal-loop'])
+  #  er.terminate()
+  #if pl.isPipeline and pl.hasInternalLoop:
+  #  iLoop.checkLoopFile(sourcePath + '/resources', pl.arguments)
+  #  if iLoop.usingInternalLoop: iLoop.checkInformation(pl.argumentInformation, pl.shortForms, verbose)
+  #  else: iLoop.numberOfIterations = 1
+  #else: iLoop.numberOfIterations = 1
 
+  # TODO SORT OUT MULTIPLE RUNS
   # If the pipeline is going to be run multiple times for a different set of input
   # files, the '--multiple-runs (-mr)' argument can be set.  If this is set, the
   # whole pipeline needs to be looped over with each iteration built from the new
   # input files.  Check to see if this value is set.  If the --multiple-runs argument
   # was set in the instance, this will be stored in the pl.arguments, so also check
   # this value.
-  mr = multipleRuns()
-  mr.checkForMultipleRuns(cl.uniqueArguments, cl.argumentList, pl.arguments['--multiple-runs'], sourcePath + '/resources', verbose)
-  if verbose: writeCheckingMultipleRunsInformation()
-  if mr.hasMultipleRuns:
-    mr.getInformation(verbose)
-    if pl.isPipeline: mr.checkInformation(tl.tool, pl.argumentInformation, pl.shortForms, verbose)
-    else: mr.checkInformation(tl.tool, tl.argumentInformation[tl.tool], tl.shortForms[tl.tool], verbose)
-  if verbose: writeDone()
+  #mr = multipleRuns()
+  #mr.checkForMultipleRuns(cl.uniqueArguments, cl.argumentList, pl.arguments['--multiple-runs'], sourcePath + '/resources', verbose)
+  #if verbose: writeCheckingMultipleRunsInformation()
+  #if mr.hasMultipleRuns:
+  #  mr.getInformation(verbose)
+  #  if pl.isPipeline: mr.checkInformation(tl.tool, pl.argumentInformation, pl.shortForms, verbose)
+  #  else: mr.checkInformation(tl.tool, tl.argumentInformation[tl.tool], tl.shortForms[tl.tool], verbose)
+  #if verbose: writeDone()
 
   # Generate the make.arguments structure.  This is built from the arguments collected from the
   # configuration files, the command line, instances and the multiple runs file where applicable.
@@ -414,47 +410,49 @@ def main():
   #
   # So, parameters appearing in (4) overwrite those in (3) which overwrote those from (2) etc where
   # conflicts occur.
-  if pl.isPipeline: tl.getDefaults(pl.workflow, pl.taskToTool, tl.argumentInformation, tl.shortForms, verbose)
-  else: tl.getDefaults(pl.workflow, pl.taskToTool, tl.argumentInformation, tl.shortForms, verbose)
-  make.getCoreArguments(tl.argumentInformation, pl.workflow, pl.taskToTool, tl.arguments, ins.arguments, cl.arguments)
+  #make.getCoreArguments(tl.argumentInformation, pl.workflow, pl.taskToTool, tl.arguments, ins.arguments, cl.arguments)
 
+  # TODO HANDLE INPUT LISTS
   # Some of the tools included in gkno can have multiple input files set on the
   # command line.  When many files are to be included, it can be more convenient
   # to allow a file including a list of files to be included.  Check if any of the
   # tools have input lists specified and if so, add these to the actual command line
   # argument list that should be used.
-  make.coreArguments = checkInputLists(tl.argumentInformation, pl.workflow, pl.taskToTool, make.coreArguments, verbose) # dataChecking.py
+  #make.coreArguments = checkInputLists(tl.argumentInformation, pl.workflow, pl.taskToTool, make.coreArguments, verbose) # dataChecking.py
 
+  # TODO CHECK THAT THIS IS STILL NECESSARY
   # Ensure that all of the required arguments are present (even if their value is blank) in the coreArguments.
   # These should be filled in later using linkage information, otherwise gkno will terminate.
-  make.setAllRequiredArguments(pl.workflow, pl.taskToTool, tl.argumentInformation)
+  #make.setAllRequiredArguments(pl.workflow, pl.taskToTool, tl.argumentInformation)
 
+  # TODO DEAL WITH INSTANCE EXPORTS
   # If the --export-config has been set, then the user is attempting to create a
   # new configuration file based on the selected pipeline.  This can only be
   # selected for a pipeline and if multiple runs are NOT being performed.
-  if '--export-instance' in cl.uniqueArguments:
-    if mr.hasMultipleRuns:
-      er.exportInstanceForMultipleRuns(verbose)
-      er.terminate()
+  #if '--export-instance' in cl.uniqueArguments:
+    #if mr.hasMultipleRuns:
+    #  er.exportInstanceForMultipleRuns(verbose)
+    #  er.terminate()
 
     # Define the json export object, initialise and then check that the given filename is unique.
-    make.arguments = deepcopy(make.coreArguments)
-    make.prepareForInternalLoop(iLoop.tasks, iLoop.arguments, iLoop.numberOfIterations)
-    ei = exportInstance()
-    if pl.isPipeline: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, pl.instances, verbose)
-    else: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, tl.instances[tl.tool], verbose)
-    ei.getData(gknoHelp, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.taskToTool, pl.argumentInformation, pl.arguments, pl.toolsOutputtingToStream, pl.toolArgumentLinks, pl.linkage, make.arguments, verbose)
-    if pl.isPipeline: ei.writeNewConfigurationFile(sourcePath, 'pipes', ins.externalInstances, pl.instances, cl.linkedArguments)
-    else: ei.writeNewConfigurationFile(sourcePath, 'tools', ins.externalInstances, tl.instances[tl.tool], cl.linkedArguments)
+    #make.arguments = deepcopy(make.coreArguments)
+    #make.prepareForInternalLoop(iLoop.tasks, iLoop.arguments, iLoop.numberOfIterations)
+    #ei = exportInstance()
+    #if pl.isPipeline: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, pl.instances, verbose)
+    #else: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, tl.instances[tl.tool], verbose)
+    #ei.getData(gknoHelp, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.taskToTool, pl.argumentInformation, pl.arguments, pl.toolsOutputtingToStream, pl.toolArgumentLinks, pl.linkage, make.arguments, verbose)
+    #if pl.isPipeline: ei.writeNewConfigurationFile(sourcePath, 'pipes', ins.externalInstances, pl.instances, cl.linkedArguments)
+    #else: ei.writeNewConfigurationFile(sourcePath, 'tools', ins.externalInstances, tl.instances[tl.tool], cl.linkedArguments)
 
     # After the configuration file has been exported, terminate the script.  No
     # Makefile is generated and nothing is executed.
-    exit(0)
+    #exit(0)
 
   # Now that all of the information has been gathered and stored, start a loop over the remainder of 
   # the gkno subroutines.  Each iteration (there is only a single iteration in the absence of the
   # multiple runs command), the arguments for that run are set up and the makefile generated and
   # executed (unless, no execution was requested).
+  exit(0)
   while True:
 
     # Define the name of the Makefile.  If there are multiple runs, append an intefer

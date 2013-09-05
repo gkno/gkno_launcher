@@ -72,7 +72,7 @@ class commandLine:
     return isAdmin
 
   # Parse through the command line and put all of the arguments into a list.
-  def getCommandLineArguments(self, graph, pipe, tool, isPipeline):
+  def getCommandLineArguments(self, graph, pipe, tool, isPipeline, verbose):
     count = 1
     while True:
       try: argument = sys.argv[count]
@@ -88,24 +88,31 @@ class commandLine:
       # task specific arguments must be contained within square brackets.  If the nextArgument is
       # identified as beginning with a square bracket, find the end of the task specific commands.
       if nextArgument.startswith('['):
-        taskArgumentCounter = 2
-        while True:
-          try: buildTaskArguments = sys.argv[count + taskArgumentCounter]
-          except: self.errors.hasError = True
 
-          # If the square brackets aren't closed, terminate.
-          if self.errors.hasError:
-            self.errors.unterminatedTaskSpecificOptions(verbose, argument)
-            self.errors.terminate()
+        # First check if nextArgument ends with a ']'.  If there is only a single command in the
+        # square brackets, the command is a flag and no spaces are included, this woule be the case.
+        if nextArgument.endswith(']'):
+          nextArgument = nextArgument[1:len(nextArgument) - 1]
 
-          nextArgument += ' ' + buildTaskArguments
-          if not buildTaskArguments.endswith(']'): taskArgumentCounter += 1
-          else:
-           count += taskArgumentCounter - 1
-
-           # Strip off the square brackets.
-           nextArgument = nextArgument[1:len(nextArgument) - 1]
-           break
+        else:
+          taskArgumentCounter = 2
+          while True:
+            try: buildTaskArguments = sys.argv[count + taskArgumentCounter]
+            except: self.errors.hasError = True
+  
+            # If the square brackets aren't closed, terminate.
+            if self.errors.hasError:
+              self.errors.unterminatedTaskSpecificOptions(verbose, argument)
+              self.errors.terminate()
+  
+            nextArgument += ' ' + buildTaskArguments
+            if not buildTaskArguments.endswith(']'): taskArgumentCounter += 1
+            else:
+             count += taskArgumentCounter - 1
+  
+             # Strip off the square brackets.
+             nextArgument = nextArgument[1:len(nextArgument) - 1]
+             break
 
       # The command line will include an instruction on whether to run a pipe or the name of the
       # tool.  Ignore this argument.
@@ -273,13 +280,14 @@ class commandLine:
               if nextTaskArgument.startswith('-'):
 
                 # Determine if an edge exists for this argument.  If so, get the node associated with the
-                # data for this edge.
+                # data for this edge.  If not, create the node.
                 sourceNode = self.nodeMethods.getNodeForTaskArgument(graph, node, longForm)
                 if sourceNode == None:
-                  print('node does not exist.')
-                #if task not in self.linkedArguments: self.linkedArguments[task] = []
-                #self.linkedArguments[task].append(('pipeline task', taskArgument, taskArgument, ''))
+                  sourceNode = 'NODE' + str(pipe.nodeIDInteger)
+                  pipe.nodeIDInteger += 1
+                  graph.add_node(sourceNode, attributes = toolData.attributes[associatedTool].arguments[longForm])
               else:
+
                 #if task not in self.linkedArguments: self.linkedArguments[task] = []
                 #self.linkedArguments[task].append(('pipeline task', taskArgument, taskArgument, nextTaskArgument))
                 sourceNode = self.nodeMethods.getNodeForTaskArgument(graph, node, longForm)
@@ -291,11 +299,12 @@ class commandLine:
                   pipe.nodeIDInteger += 1
                   graph.add_node(sourceNode, attributes = toolData.attributes[associatedTool].arguments[longForm])
                   
-                # Add an edge from the source node to the task.
-                edge          = edgeAttributes()
-                edge.argument = longForm
-                graph.add_edge(sourceNode, task, attributes = edge)
                 taskArguments.pop(0)
+
+              # Add an edge from the source node to the task.
+              edge          = edgeAttributes()
+              edge.argument = longForm
+              graph.add_edge(sourceNode, task, attributes = edge)
 
   # Parse through all of the commands stored in the argumentList and check that they are all valid.
   # If they are, put them in a new structure that groups all of the arguments with their respective

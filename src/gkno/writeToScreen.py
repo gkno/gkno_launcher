@@ -52,12 +52,8 @@ def writePipelineWorkflow(graph, pipe, workflow, gknoHelp):
     gknoHelp.writeFormattedText(text, description, length, 1, '')
   print(file = sys.stdout)
 
-def writeAssignPipelineArgumentsToTasks():
-  print('Assigning command line arguments to tasks...', end = '', file = sys.stdout)
-  sys.stdout.flush()
-
-def writeParseCommandLineArguments():
-  print('Checking the command line arguments...', end = '', file = sys.stdout)
+def writeAssignPipelineArgumentsToNodes():
+  print('Assigning command line arguments to graph nodes...', end = '', file = sys.stdout)
   sys.stdout.flush()
 
 def writeCheckingInstanceInformation():
