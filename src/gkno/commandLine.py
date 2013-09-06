@@ -6,14 +6,11 @@ import sys
 import gknoErrors
 from gknoErrors import *
 
+import configurationClass
+from configurationClass import *
+
 import files
 from files import *
-
-import nodeAttributes
-from nodeAttributes import *
-
-import pipelineAttributes
-from pipelineAttributes import *
 
 class commandLine:
 
@@ -24,7 +21,6 @@ class commandLine:
     self.argumentList       = []
     self.errors             = gknoErrors()
     self.linkedArguments    = {}
-    self.nodeMethods        = nodeClass()
     self.uniqueArguments    = {}
 
   # Check if a mode has been defined.  The mode is either 'pipe', 'run-test' or
@@ -72,7 +68,7 @@ class commandLine:
     return isAdmin
 
   # Parse through the command line and put all of the arguments into a list.
-  def getCommandLineArguments(self, graph, pipe, tool, isPipeline, verbose):
+  def getCommandLineArguments(self, graph, config, tool, isPipeline, verbose):
     count = 1
     while True:
       try: argument = sys.argv[count]
@@ -118,10 +114,10 @@ class commandLine:
       # tool.  Ignore this argument.
       if argument != tool and argument != 'pipe' and argument != 'run-test':
         for node in graph.nodes(data = False):
-          if self.nodeMethods.getGraphNodeAttribute(graph, node, 'nodeType') != 'task':
-            if self.nodeMethods.getGraphNodeAttribute(graph, node, 'isPipelineArgument'):
-              if argument == self.nodeMethods.getGraphNodeAttribute(graph, node, 'shortForm'):
-                argument = self.nodeMethods.getGraphNodeAttribute(graph, node, 'argument')
+          if config.nodeMethods.getGraphNodeAttribute(graph, node, 'nodeType') != 'task':
+            if config.nodeMethods.getGraphNodeAttribute(graph, node, 'isPipelineArgument'):
+              if argument == config.nodeMethods.getGraphNodeAttribute(graph, node, 'shortForm'):
+                argument = config.nodeMethods.getGraphNodeAttribute(graph, node, 'argument')
                 break
 
         if argument not in self.argumentDictionary: self.argumentDictionary[argument] = []
@@ -145,7 +141,7 @@ class commandLine:
         if task in graph.nodes(data = False):
 
           # The task is a node in the pipeline, but check that the node is a task node.
-          if self.nodeMethods.getGraphNodeAttribute(graph, task, 'nodeType') == 'task':
+          if config.nodeMethods.getGraphNodeAttribute(graph, task, 'nodeType') == 'task':
 
             # FIXME DELETE REFERENCE TO argumentList.
             #self.argumentList.append((argument, nextArgument))
@@ -224,10 +220,10 @@ class commandLine:
     return verbose
 
   # Attach the values supplied on the command line to the nodes.
-  def attachPipelineArgumentsToNodes(self, graph, pipe, toolData):
+  def attachPipelineArgumentsToNodes(self, graph, config):
     for argument in self.argumentDictionary:
-      node = self.nodeMethods.getNodeForPipelineArgument(graph, argument)
-      if node == None:                     
+      node = config.nodeMethods.getNodeForPipelineArgument(graph, argument)
+      if node == None:
         taskArgument = argument            
         if taskArgument.startswith('--'): taskArgument = argument[2:len(argument)]
         if taskArgument.startswith('-'): taskArgument = argument[1:len(argument)]
@@ -250,9 +246,9 @@ class commandLine:
 
           # Handle command line arguments that correspond to a data node first.  Deal with arguments
           # pointing to a task node afterwards.
-          if not self.nodeMethods.getGraphNodeAttribute(graph, node, 'nodeType') == 'task':
-            self.nodeMethods.setGraphNodeAttribute(graph, node, 'numberOfDataSets', 1)
-            self.nodeMethods.setGraphNodeAttribute(graph, node, 'values', ('1', self.argumentDictionary[argument]))
+          if not config.nodeMethods.getGraphNodeAttribute(graph, node, 'nodeType') == 'task':
+            config.nodeMethods.setGraphNodeAttribute(graph, node, 'numberOfDataSets', 1)
+            config.nodeMethods.setGraphNodeAttribute(graph, node, 'values', ('1', self.argumentDictionary[argument]))
 
           # Now deal with arguments pointing to task nodes.
           else:
@@ -273,31 +269,31 @@ class commandLine:
 
               # Ensure that we are using the long form argument.
               task           = node
-              associatedTool = self.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-              longForm       = toolData.getLongFormArgument(associatedTool, taskArgument)
+              associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+              longForm       = config.tools.getLongFormArgument(associatedTool, taskArgument)
     
               # If the argument is a flag, the next argument will start with a '-'.
               if nextTaskArgument.startswith('-'):
 
                 # Determine if an edge exists for this argument.  If so, get the node associated with the
                 # data for this edge.  If not, create the node.
-                sourceNode = self.nodeMethods.getNodeForTaskArgument(graph, node, longForm)
+                sourceNode = config.nodeMethods.getNodeForTaskArgument(graph, node, longForm)
                 if sourceNode == None:
-                  sourceNode = 'NODE' + str(pipe.nodeIDInteger)
-                  pipe.nodeIDInteger += 1
-                  graph.add_node(sourceNode, attributes = toolData.attributes[associatedTool].arguments[longForm])
+                  sourceNode = 'NODE' + str(config.pipeline.nodeIDInteger)
+                  config.pipeline.nodeIDInteger += 1
+                  graph.add_node(sourceNode, attributes = config.tools.attributes[associatedTool].arguments[longForm])
               else:
 
                 #if task not in self.linkedArguments: self.linkedArguments[task] = []
                 #self.linkedArguments[task].append(('pipeline task', taskArgument, taskArgument, nextTaskArgument))
-                sourceNode = self.nodeMethods.getNodeForTaskArgument(graph, node, longForm)
+                sourceNode = config.nodeMethods.getNodeForTaskArgument(graph, node, longForm)
 
                 # If there is no edge for this argument, there is no node containing the data.  Generate
                 # a new node, populate it with the supplied value and connect the node to the task.
                 if sourceNode == None:
-                  sourceNode = 'NODE' + str(pipe.nodeIDInteger)
-                  pipe.nodeIDInteger += 1
-                  graph.add_node(sourceNode, attributes = toolData.attributes[associatedTool].arguments[longForm])
+                  sourceNode = 'NODE' + str(config.pipeline.nodeIDInteger)
+                  config.pipeline.nodeIDInteger += 1
+                  graph.add_node(sourceNode, attributes = config.tools.attributes[associatedTool].arguments[longForm])
                   
                 taskArguments.pop(0)
 

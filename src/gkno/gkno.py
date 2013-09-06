@@ -19,6 +19,9 @@ from adminUtils import *
 import commandLine
 from commandLine import *
 
+import configurationClass
+from configurationClass import *
+
 import gknoErrors
 from gknoErrors import *
 
@@ -46,15 +49,6 @@ from makefileData import *
 import multipleRuns
 from multipleRuns import *
 
-import nodeAttributes
-from nodeAttributes import *
-
-import pipelineAttributes
-from pipelineAttributes import *
-
-import toolAttributes
-from toolAttributes import *
-
 import tracking
 from tracking import *
 
@@ -77,11 +71,11 @@ def main():
   # along with 'resource' management.
   admin = adminUtils(sourcePath)
 
-  # Define a pipeline configuration object.  This is part of the configurationClass library.  Also
+  # Define a configurationClass object.  This is part of the configurationClass library.  Also
   # define an object that handles finding configuration files for gkno (e.g. gkno specific
   # configuration file operations.
-  pipe = pipelineConfiguration()
-  conf = gknoConfigurationFiles()
+  config     = configurationClass()
+  gknoConfig = gknoConfigurationFiles()
 
   # Create a graph object.  This is a directed graph consisting of nodes representing the tasks
   # in the pipeline as well as data being fed into the nodes.  All relevant tool information
@@ -89,12 +83,13 @@ def main():
   # nodes.  The edges between the nodes define the command line argument for the data and tool.
   pipelineGraph = nx.DiGraph()
 
+  # TODO REMOVE THIS.  PART OF CONFIG.
   # Each task in the pipeline (if a single tool is being run, the graph consists of a single
   # task node, but is still represented by a graph) is represented by a node.  The task is
   # then associated with a tool.  Each unique tool in the pipeline has a configuration file
   # associated with it and the information for each tool is store in the toolObjects structure.
   # Each tool configuration will have its own data structure in this object.
-  toolData = toolConfiguration()
+  #toolData = toolConfiguration()
 
   # FIXME REMOVE. REPLACED WITH TOOLOBJECTS
   # Define a tools object.  This stores all information specific to individual
@@ -145,7 +140,7 @@ def main():
     # with gkno' tutorial.  This doesn't require the pipeline to be explicitly defined with
     # the pipe identifier on the command line.
     isPipeline, hasName, pipelineName = commands.isPipelineMode()
-    pipe.pipelineName                 = pipelineName
+    config.pipeline.pipelineName      = pipelineName
     if isPipeline:
       if not hasName:
         gknoHelp.pipelineHelp = True
@@ -181,7 +176,7 @@ def main():
     # describe its operation, purpose etc.  These are contained in
     # config_files/tools.  Find all of the config files and create a hash
     # table with all available tools.
-    toolFiles, pipelineFiles = conf.getJsonFiles(sourcePath + '/config_files/')
+    gknoConfig.getJsonFiles(sourcePath + '/config_files/')
 
     # FIXME THESE NEED TO BE ADDED TO THE GRAPH AS NODES.
     # Add some necessary commands to the pipeline arguments structure.
@@ -207,27 +202,17 @@ def main():
     # exists, parse the json file.
     phoneHomeID = ''
     if isPipeline:
-      phoneHomeID    = 'pipes/' + pipelineName
-      pipelineFile   = sourcePath + '/config_files/pipes/' + pipelineName + '.json'
-      pipelineExists, jsonError, jsonErrorText = pipe.readConfigurationFile(pipelineFile)
-
-      # Terminate if the pipeline file does not exits.
-      if not pipelineExists:
-        error.missingFile(True, pipelineFile)
-        error.terminate()
-
-      # Terminate if there are errors in the json file.
-      if jsonError:
-        error.jsonOpenError(True, jsonErrorText, pipelineFile)
-        error.terminate()
+      phoneHomeID               = 'pipes/' + pipelineName
+      pipelineFile              = sourcePath + '/config_files/pipes/' + pipelineName + '.json'
+      pipelineConfigurationData = config.fileOperations.readConfigurationFile(pipelineFile)
   
       #FIXME REMOVE LINE
       #success      = pl.checkPipelineExists(gknoHelp, io.jsonPipelineFiles)
 
       # TODO VALIDATION MODULE IS INCOMPLETE.  CONFIGURATIONCLASS NEEDS TO BE
       # MODIFIED TO INCLUDE THIS.
-      success = pipe.validateConfigurationData(pipelineFile)
-       
+      success = config.pipeline.processConfigurationData(pipelineConfigurationData, pipelineFile)
+
       #iLoop.tasks     = pl.checkConfigurationFile(gknoHelp, pipelineData, io.jsonPipelineFiles, tl.availableTools, tl.argumentInformation, verbose)
       #pipelineData    = '' # Clear the data structure as it is no longer necessary.
       #pl.setArgumentLinks()
@@ -245,25 +230,15 @@ def main():
     #if not pl.isPipeline: tl.checkTool(gknoHelp)
 
   # Process all of the tool configuration files.
-  for tool in toolFiles:
-    toolFile                                   = sourcePath + '/config_files/tools/' + tool
-    toolExists, jsonError, jsonErrorText, data = toolData.readConfigurationFile(toolFile)
+  for tool in gknoConfig.jsonFiles['tools']:
+    toolFile              = sourcePath + '/config_files/tools/' + tool
+    toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
 
     # TODO TOOL CONFIGURATION FILE VALIDATION HAS NOT YET BEEN HANDLED IN THE
     # CONFIGURATIONCLASS.
     # Ensure that the tool configuration file is well constructed and put all of the data
     # in data structures.  Each tool in each configuration file gets its own data structure.
-    toolData.processConfigurationFile(data, toolFile)
-
-    # Terminate if the file cannot be found.
-    if not toolExists:
-      error.missingFile(True, toolFile)
-      error.terminate()
-
-    # Terminate if there is something wrong with the configuration file.
-    if jsonError:
-      error.jsonOpenError(True, jsonErrorText, toolFile)
-      error.terminate()
+    config.tools.processConfigurationFile(toolConfigurationData, toolFile)
 
   # TODO Deal with individual tool operation.
   if isTool:
@@ -275,44 +250,44 @@ def main():
 
     # Construct the pipeline graph using the information contained in the pipeline configuration
     # file.
-    pipe.addNodesAndEdges(pipelineGraph, toolData)
-    pipe.eraseConfigurationData()
+    config.addNodesAndEdges(pipelineGraph, config.pipeline.configurationData)
+    config.pipeline.eraseConfigurationData()
 
     # Populate the nodes with necessary information.  Return a list of all of the tools used by the
     # pipelines.
-    requiredTools = pipe.getRequiredTools(pipelineGraph)
+    requiredTools = config.getRequiredTools(pipelineGraph)
 
     # Generate the workflow using a topological sort of the pipeline graph.
-    workflow = pipe.generateWorkflow(pipelineGraph)
+    workflow = config.generateWorkflow(pipelineGraph)
 
     # Loop over all of the nodes and determine which require a value.  Also check to see if there
     # are missing edges.  For example, if a tool has an argument that is required, but is not included
     # in the pipeline configuration file (as a pipeline argument or via connections), the graph cannot
     # be completely defined.
-    pipe.setRequiredNodes(pipelineGraph, toolData)
-    pipe.setTaskNodes(pipelineGraph, toolData)
-    missingEdges = pipe.checkRequiredTaskConnections(pipelineGraph, toolData)
+    config.setRequiredNodes(pipelineGraph)
+    config.setTaskNodes(pipelineGraph)
+    missingEdges = config.checkRequiredTaskConnections(pipelineGraph)
     if len(missingEdges) != 0:
       print('missing required edges for task:', missingEdges)
       #error.terminate()
 
   # For help messages the helpClass needs a list of all available tools and all available pipelines.  These
   # lists are generated here.
-  gknoHelp.setAvailableToolsAndPipelines(toolData.attributes.keys(), pipelineFiles)
+  gknoHelp.setAvailableToolsAndPipelines(config.tools.attributes.keys(), gknoConfig.jsonFiles['pipelines'])
 
   # TODO DEAL WITH INSTANCES
   # Check for an additional instance file associated with this tool/pipeline and add the information
   # to the relevant data structure.
-  #if pl.isPipeline:
-  #  instanceData = ins.checkInstanceFile(sourcePath, 'pipes', pl.pipelineName, io.jsonPipelineInstances)
-  #  if len(instanceData) != 0: ins.checkInstanceInformation(instanceData, pl.instances, pl.pipelineName + '_instances.json')
+  if isPipeline:
+    instanceData = ins.checkInstanceFile(sourcePath, 'pipes', pipelineName, gknoConfig.jsonFiles['pipeline instances'])
+    #if len(instanceData) != 0: ins.checkInstanceInformation(instanceData, pl.instances, pl.pipelineName + '_instances.json')
   #else:
   #  instanceData = ins.checkInstanceFile(sourcePath, 'tools', tl.tool, io.jsonToolInstances)
   #  if len(instanceData) != 0: ins.checkInstanceInformation(instanceData, tl.instances[tl.tool], tl.tool + '_instances.json')
 
   # Parse the command line and put all of the arguments into a list.
   if verbose: gettingCommandLineArguments()
-  commands.getCommandLineArguments(pipelineGraph, pipe, toolName, isPipeline, verbose)
+  commands.getCommandLineArguments(pipelineGraph, config, toolName, isPipeline, verbose)
 
   if verbose:
     writeDone()
@@ -321,7 +296,7 @@ def main():
   # If help was requested or there were problems (e.g. the tool name or pipeline
   # name did not exist), print out the required usage information.
   #if gknoHelp.printHelp: gknoHelp.printUsage(io, tl, pl, admin, __version__, __date__, sourcePath)
-  if gknoHelp.printHelp: gknoHelp.printUsage(pipelineGraph, pipe, workflow, toolData, admin, __version__, __date__, sourcePath)
+  if gknoHelp.printHelp: gknoHelp.printUsage(pipelineGraph, config, workflow, admin, __version__, __date__, sourcePath)
 
   # Populate the tl.arguments structure with the arguments with defaults from the tool configuration files.
   # The x.arguments structures for each of the classes used in gkno has the same format (a dictionary whose
@@ -341,14 +316,14 @@ def main():
     else: er.terminate()
   
   # Print information about the pipeline to screen.
-  if isPipeline and verbose: writePipelineWorkflow(pipelineGraph, pipe, workflow, gknoHelp)
+  if isPipeline and verbose: writePipelineWorkflow(pipelineGraph, config, workflow, gknoHelp)
 
   # Set up an array to contain the names of the Makefiles created.
   make.initialiseNames()
 
   # Attach the values of the pipeline arguments to the relevant nodes.
   if verbose: writeAssignPipelineArgumentsToNodes()
-  commands.attachPipelineArgumentsToNodes(pipelineGraph, pipe, toolData)
+  commands.attachPipelineArgumentsToNodes(pipelineGraph, config)
   if verbose: writeDone()
 
   #cl.assignArgumentsToTasks(tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
@@ -357,8 +332,10 @@ def main():
 
   # TODO SORT OUT INSTANCES
   # Check if an instance was selected.  If so, read the specific instance parameters.
-  #if verbose: writeCheckingInstanceInformation()
+  if verbose: writeCheckingInstanceInformation()
   #ins.getInstanceName(cl.uniqueArguments, cl.argumentList, verbose)
+  if verbose: writeDone()
+  exit(0)
 
   #if pl.isPipeline:
   #  ins.getInstanceArguments(sourcePath + '/config_files/pipes/', pl.pipelineName, pl.instances, verbose)
@@ -447,6 +424,16 @@ def main():
     # After the configuration file has been exported, terminate the script.  No
     # Makefile is generated and nothing is executed.
     #exit(0)
+
+  # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
+  # defined by the user.  If there is a required output file and it does not have its value set, 
+  # determine how to construct the filename and populate the node with the value.
+  constructFilenames()
+
+  # Check that all of the required values are set.  This is simply a case of stepping through each node
+  # in turn, checking the isRequired flag and if this is set to true, checking that the values dictionary
+  # is not empty.
+  checkParameters()
 
   # Now that all of the information has been gathered and stored, start a loop over the remainder of 
   # the gkno subroutines.  Each iteration (there is only a single iteration in the absence of the

@@ -12,11 +12,18 @@ from errors import *
 import files
 from files import *
 
+import gknoConfigurationFiles
+from gknoConfigurationFiles import *
+
+import gknoErrors
+from gknoErrors import *
+
 class instances:
 
   # Constructor.
   def __init__(self):
     self.arguments         = {}
+    self.errors            = gknoErrors()
     self.externalInstance  = False
     self.externalInstances = []
     self.hasInstance       = False
@@ -25,25 +32,37 @@ class instances:
   # Check for and read in instances from separate instance files.
   def checkInstanceFile(self, sourcePath, directory, filename, instances):
     instanceFilename = filename + '_instances.json'
+    print('INSTANCES', instanceFilename, instances.keys())
     if instanceFilename in instances.keys():
-      io   = files()
-      data = io.getJsonData(sourcePath + '/config_files/' + directory + '/' + instanceFilename, True)
+      data = self.readConfigurationFile(sourcePath + '/config_files/' + directory + '/' + instanceFilename)
       return data
     else: return ''
 
+  # Open a configuration file and store the contents of the file in the
+  # configuration dictionary.
+  def readConfigurationFile(self, filename):
+    try: jsonData = open(filename)
+    except:
+      self.errors.missingFile(False, filename)
+      self.errors.terminate()
+
+    try: configurationData = json.load(jsonData)
+    except:
+      exc_type, exc_value, exc_traceback = sys.exc_info()
+      self.errors.jsonOpenError(False, exc_value, filename)
+      self.errors.terminate()
+
   # Check the contents of the external instance file.
   def checkInstanceInformation(self, instances, storedInstances, filename):
-    er = errors()
-
     if 'instances' not in instances:
-      er.instancesFileHasNoInstances(False, filename)
-      er.terminate()
+      self.errors.instancesFileHasNoInstances(False, filename)
+      self.errors.terminate()
 
     instances = instances['instances']
     givenType     = type(instances)
     if givenType != dict:
-      er.differentDataTypeInConfig(False, filename, '', 'instances', givenType, dict)
-      er.terminate()
+      self.errors.differentDataTypeInConfig(False, filename, '', 'instances', givenType, dict)
+      self.errors.terminate()
 
     # Loop over the instances and add them to the storedInstances structure.
     for instance in instances:
@@ -51,8 +70,8 @@ class instances:
       # Check that the instances in the instances file do not have the same name as any in the
       # configuration file.
       if instance in storedInstances:
-        er.instanceNameAlreadyExists(False, instance, filename)
-        er.terminate()
+        self.errors.instanceNameAlreadyExists(False, instance, filename)
+        self.errors.terminate()
       storedInstances[instance] = instances[instance]
 
       # Also store the instance name in the externalInstances structure.  This keeps track of

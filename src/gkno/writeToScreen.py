@@ -32,8 +32,7 @@ def gettingCommandLineArguments():
   print('Reading in command line arguments...', end = '', file = sys.stdout)
   sys.stdout.flush()
 
-def writePipelineWorkflow(graph, pipe, workflow, gknoHelp):
-  nodeMethods = nodeClass()
+def writePipelineWorkflow(graph, config, workflow, gknoHelp):
 
   # Determine the length of the longest tool name.
   length  = 0
@@ -46,9 +45,9 @@ def writePipelineWorkflow(graph, pipe, workflow, gknoHelp):
   print('Workflow:', sep = '', file = sys.stdout)
   sys.stdout.flush()
   for task in workflow:
-    tool        = nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+    tool        = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
     text        = task + ' (' + tool + '):'
-    description = nodeMethods.getGraphNodeAttribute(graph, task, 'description')
+    description = config.nodeMethods.getGraphNodeAttribute(graph, task, 'description')
     gknoHelp.writeFormattedText(text, description, length, 1, '')
   print(file = sys.stdout)
 
