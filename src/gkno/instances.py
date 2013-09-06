@@ -3,6 +3,9 @@
 from __future__ import print_function
 import sys
 
+import configurationClass
+from configurationClass import *
+
 import dataChecking
 from dataChecking import *
 
@@ -32,9 +35,9 @@ class instances:
   # Check for and read in instances from separate instance files.
   def checkInstanceFile(self, sourcePath, directory, filename, instances):
     instanceFilename = filename + '_instances.json'
-    print('INSTANCES', instanceFilename, instances.keys())
     if instanceFilename in instances.keys():
-      data = self.readConfigurationFile(sourcePath + '/config_files/' + directory + '/' + instanceFilename)
+      config = configurationClass()
+      data   = config.fileOperations.readConfigurationFile(sourcePath + '/config_files/' + directory + '/' + instanceFilename)
       return data
     else: return ''
 

@@ -201,7 +201,7 @@ def main():
     # config_files and have the name <$ARGV[1]>.json.  If the file
     # exists, parse the json file.
     phoneHomeID = ''
-    if isPipeline:
+    if isPipeline and not gknoHelp.pipelineHelp:
       phoneHomeID               = 'pipes/' + pipelineName
       pipelineFile              = sourcePath + '/config_files/pipes/' + pipelineName + '.json'
       pipelineConfigurationData = config.fileOperations.readConfigurationFile(pipelineFile)
@@ -246,7 +246,7 @@ def main():
     exit(0)
 
   workflow = []
-  if isPipeline or isTool:
+  if (isPipeline or isTool) and not gknoHelp.pipelineHelp:
 
     # Construct the pipeline graph using the information contained in the pipeline configuration
     # file.

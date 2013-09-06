@@ -53,7 +53,7 @@ class helpClass:
 
     # General pipeline help.
     elif self.pipelineHelp:
-      self.pipelineUsage(graph, path)
+      self.pipelineUsage(graph, config, path)
       if self.unknownPipeline: self.unknownPipelineMessage()
 
     # Specific pipeline help.
@@ -278,7 +278,7 @@ class helpClass:
       sys.stdout.flush()
 
   # Print usage information for pipelines:
-  def pipelineUsage(self, io, tl, pl, path):
+  def pipelineUsage(self, graph, config, path):
     print('=======================', file = sys.stdout)
     print('  gkno pipeline usage', file = sys.stdout)
     print('=======================', file = sys.stdout)
@@ -289,7 +289,7 @@ class helpClass:
 
     # Determine the length of the longest pipeline name.
     length = 0
-    sortedKeys = sorted(io.jsonPipelineFiles.keys())
+    sortedKeys = sorted(self.availablePipelines)
     for pipeline in sortedKeys:
       length = len(pipeline) if (len(pipeline) > length) else length
 
@@ -297,10 +297,10 @@ class helpClass:
 
       # For each available pipeline, open the json and get the pipeline description.
       pipelineFile = path + '/config_files/pipes/' + pipeline
-      pipeline     = pipeline[0:-5] + ':'
+      pipeline     = pipeline + ':'
       if pipeline[-10:-1] != 'instances':
-        pipelineData = io.getJsonData(pipelineFile, True)
-        description  = pipelineData['description'] if 'description' in pipelineData else '\t'
+        data         = config.fileOperations.readConfigurationFile(pipelineFile + '.json')
+        description  = data['description'] if 'description' in data else 'No description provided'
         self.writeFormattedText(pipeline, description, length, 2, '')
     sys.stdout.flush()
 
