@@ -41,20 +41,6 @@ class instances:
       return data
     else: return ''
 
-  # Open a configuration file and store the contents of the file in the
-  # configuration dictionary.
-  def readConfigurationFile(self, filename):
-    try: jsonData = open(filename)
-    except:
-      self.errors.missingFile(False, filename)
-      self.errors.terminate()
-
-    try: configurationData = json.load(jsonData)
-    except:
-      exc_type, exc_value, exc_traceback = sys.exc_info()
-      self.errors.jsonOpenError(False, exc_value, filename)
-      self.errors.terminate()
-
   # Check the contents of the external instance file.
   def checkInstanceInformation(self, instances, storedInstances, filename):
     if 'instances' not in instances:
@@ -83,30 +69,24 @@ class instances:
       self.externalInstances.append(instance)
 
   # Check if an instance was requested and find the information for it if so.
-  def getInstanceName(self, uniqueArguments, argumentList, verbose):
-    er = errors()
+  def getInstanceName(self, graph, config, verbose):
  
-    # Check if the --instance (-is) command appears on the command line.
-    if '--instance' in uniqueArguments:
+    # If multiple instances have been requested, fail.
+    if len(config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-INSTANCE', 'values')[1]) != 1:
+      self.errors.multipleInstances(verbose)
+      self.errors.terminate()
 
-      # If multiple instances have been requested, fail.
-      if uniqueArguments['--instance'] != 1:
-        er.multipleInstances(verbose)
-        er.terminate()
-  
-      # Find the name of the requested instance and check that it is valid.
-      for argument, instance in argumentList:
-        if argument == '--instance':
-          self.instanceName = instance
-          break
-    else: self.instanceName = 'default'
+    # Check the '--instance' node value.  Since the value is a list in a dictionary, allowing
+    # for loops, the name of the instance corresponds to element '1' in the dictionary and is
+    # the only value in the list.
+    self.instanceName = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-INSTANCE', 'values')[1][0]
 
   # If an instance was requested, get the information from the configuration file, or the
   # instance file.
   def getInstanceArguments(self, path, name, instances, verbose):
-    er = errors()
-
+    print('GETTING INSTANCE ARGUMENTS', self.instanceName)
     if self.instanceName not in instances:
+      print('UNKNOWN INSTANCE')
       externalInstancesFilename = name + '_instances.json'
       io = files()
       data = io.getJsonData(path + externalInstancesFilename, False)

@@ -334,17 +334,17 @@ class helpClass:
 
     # If this pipeline has different instances, print them to screen.
     # TODO Sort instances
-    #if len(pl.instances) > 0:
-    #  print('     Instances:', file = sys.stdout)
-    #  length = 0
-    #  for instance in pl.instances: length = len(instance) if len(instance) > length else length
-    #  length += 4
+    if len(config.pipeline.instances) > 0:
+      print('     Instances:', file = sys.stdout)
+      length = 0
+      for instance in config.pipeline.instances: length = len(instance) if len(instance) > length else length
+      length += 4
 
-    #  sortedInstances = sorted(pl.instances)
-    #  for instance in sortedInstances:
-    #    description = pl.instances[instance]['description']
-    #    self.writeFormattedText(instance + ":", description, length, 2, '')
-    #  print(file = sys.stdout)
+      sortedInstances = sorted(config.pipeline.instances)
+      for instance in sortedInstances:
+        description = config.pipeline.instances[instance]['description']
+        self.writeFormattedText(instance + ":", description, length, 2, '')
+      print(file = sys.stdout)
 
     # List the options available at the pipeline level.
     #

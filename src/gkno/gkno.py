@@ -122,6 +122,13 @@ def main():
   # Define a help class.  This provides usage information for the user.
   gknoHelp = helpClass()
 
+  # Read in information from the gkno specific configuration file.
+  gknoConfig.gknoConfigurationData = config.fileOperations.readConfigurationFile(sourcePath + '/config_files/gknoConfiguration.json')
+  #TODO SORT OUT VALIDATION OF GKNO CONFIGURATION FILE>
+  gknoConfig.validateConfigurationFile()
+  gknoConfig.addGknoSpecificNodes(pipelineGraph, config)
+  gknoConfig.eraseConfigurationData()
+
   # Check if help has been requested.  If so, print out usage information for
   # the tool or pipeline as requested.
   isModeSet    = commands.isModeSet()
@@ -280,7 +287,9 @@ def main():
   # to the relevant data structure.
   if isPipeline:
     instanceData = ins.checkInstanceFile(sourcePath, 'pipes', pipelineName, gknoConfig.jsonFiles['pipeline instances'])
-    #if len(instanceData) != 0: ins.checkInstanceInformation(instanceData, pl.instances, pl.pipelineName + '_instances.json')
+    if len(instanceData) != 0: ins.checkInstanceInformation(instanceData, config.pipeline.instances, config.pipeline.pipelineName + '_instances.json')
+
+  # TODO DEAL WITH INSTANCES FOR TOOLS.
   #else:
   #  instanceData = ins.checkInstanceFile(sourcePath, 'tools', tl.tool, io.jsonToolInstances)
   #  if len(instanceData) != 0: ins.checkInstanceInformation(instanceData, tl.instances[tl.tool], tl.tool + '_instances.json')
@@ -323,7 +332,7 @@ def main():
 
   # Attach the values of the pipeline arguments to the relevant nodes.
   if verbose: writeAssignPipelineArgumentsToNodes()
-  commands.attachPipelineArgumentsToNodes(pipelineGraph, config)
+  commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
   if verbose: writeDone()
 
   #cl.assignArgumentsToTasks(tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
@@ -333,13 +342,14 @@ def main():
   # TODO SORT OUT INSTANCES
   # Check if an instance was selected.  If so, read the specific instance parameters.
   if verbose: writeCheckingInstanceInformation()
-  #ins.getInstanceName(cl.uniqueArguments, cl.argumentList, verbose)
+  ins.getInstanceName(pipelineGraph, config, verbose)
   if verbose: writeDone()
-  exit(0)
 
-  #if pl.isPipeline:
-  #  ins.getInstanceArguments(sourcePath + '/config_files/pipes/', pl.pipelineName, pl.instances, verbose)
-  #  ins.convertPipeArgumentsToToolArguments(pl.argumentInformation, pl.shortForms, pl.arguments, verbose)
+  if isPipeline:
+    ins.getInstanceArguments(sourcePath + '/config_files/pipes/', config.pipeline.pipelineName, config.pipeline.instances, verbose)
+    #ins.convertPipeArgumentsToToolArguments(pl.argumentInformation, pl.shortForms, pl.arguments, verbose)
+
+  #TODO DEAL WITH TOOL INSTANCES.
   #else:
   #  ins.getInstanceArguments(sourcePath + '/config_files/tools/', tl.tool, tl.instances[tl.tool], verbose)
   #  ins.setToolArguments(tl.tool, verbose)

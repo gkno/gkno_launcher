@@ -220,14 +220,20 @@ class commandLine:
     return verbose
 
   # Attach the values supplied on the command line to the nodes.
-  def attachPipelineArgumentsToNodes(self, graph, config):
+  def attachPipelineArgumentsToNodes(self, graph, config, gknoConfig):
     for argument in self.argumentDictionary:
       node = config.nodeMethods.getNodeForPipelineArgument(graph, argument)
       if node == None:
-        taskArgument = argument            
-        if taskArgument.startswith('--'): taskArgument = argument[2:len(argument)]
-        if taskArgument.startswith('-'): taskArgument = argument[1:len(argument)]
-        if taskArgument in graph.nodes(data = False): node = taskArgument
+
+        # Check if this argument is a gkno argument defined in the gkno configuration file.  If
+        # so, there exists a 'floating' node in the graph for this argument.
+        node = gknoConfig.getNodeForGknoArgument(graph, config, argument)
+
+        if node == None:
+          taskArgument = argument            
+          if taskArgument.startswith('--'): taskArgument = argument[2:len(argument)]
+          if taskArgument.startswith('-'): taskArgument = argument[1:len(argument)]
+          if taskArgument in graph.nodes(data = False): node = taskArgument
 
       # If the command line argument does not correspond to a node, fail.
       if node == None:
