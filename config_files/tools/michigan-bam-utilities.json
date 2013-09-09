@@ -244,6 +244,192 @@
           "description" : "Default instance requires the users input for all files."
         }
       }
+    },
+
+    "diff" : {
+      "description" : "Compare two coordinate sorted BAM/SAM files (University of Michigan).",
+      "path" : "bamUtil/bin",
+      "executable" : "bam",
+      "modifier" : "diff",
+      "help" : "--help|-h",
+      "arguments" : {
+        "--in1" : {
+          "description" : "First coordinate sorted SAM/BAM file to be diffed.",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "dependent" : true,
+          "type" : "string",
+          "extension" : "bam|sam"
+        },
+        "--in2" : {
+          "description" : "Second coordinate sorted SAM/BAM file to be diffed.",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "dependent" : true,
+          "type" : "string",
+          "extension" : "bam|sam"
+        },
+        "--out" : {
+          "description" : "output filename, use .bam extension to output in SAM/BAM format instead of diff format.  In SAM/BAM format there will be 3 output files: 1) the specified name with record diffs 2) specified name with _only_<in1>.sam/bam with records only in the in1 file 3) specified name with _only_<in2>.sam/bam with records only in the in2 file.",
+          "input" : false,
+          "output" : true,
+          "required" : false,
+          "dependent" : false,
+          "type" : "string",
+          "extension" : "no extension"
+        },
+        "--all" : {
+          "description" : "Diff all the SAM/BAM fields.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--flag" : {
+          "description" : "Diff the flags.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--mapQual" : {
+          "description" : "Diff the mapping qualities.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--mate" : {
+          "description" : "Diff the mate chrom/pos.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--isize" : {
+          "description" : "Diff the insert sizes.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--seq" : {
+          "description" : "Diff the sequence bases.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--baseQual" : {
+          "description" : "Diff the base qualities.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--tags" : {
+          "description" : "Diff the specified Tags formatted as Tag:Type;Tag:Type;Tag:Type...",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "string",
+          "extension" : "no extension"
+        },
+        "--everyTag" : {
+          "description" : "Diff all the Tags",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--noCigar" : {
+          "description" : "Do not diff the the cigars.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--noPos" : {
+          "description" : "Do not diff the positions.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--onlyDiffs" : {
+          "description" : "Only print the fields that are different, otherwise for any diff all the fields that are compared are printed.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--recPoolSize" : {
+          "description" : "Number of records to allow to be stored at a time, default value: 1000000.  Set to -1 for unlimited number of records",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "integer",
+          "extension" : "no extension"
+        },
+        "--posDiff" : {
+          "description" : "Max base pair difference between possibly matching records, default value: 100000",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "integer",
+          "extension" : "no extension"
+        },
+        "--noeof" : {
+          "description" : "Do not expect an EOF block on a bam file.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        },
+        "--params" : {
+          "description" : "Print the parameter settings.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "no extension"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
+        }
+      }
     }
   }
 }
