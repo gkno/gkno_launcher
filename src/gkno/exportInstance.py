@@ -5,8 +5,8 @@ from __future__ import print_function
 import dataChecking
 from dataChecking import *
 
-import errors
-from errors import *
+import gknoErrors
+from gknoErrors import *
 
 import json
 import os
@@ -24,7 +24,7 @@ class exportInstance:
   # pipeline being run.  If this is called X, the file to export to will be X_instances.json.
   # If this file already exists, read in the information present.
   def checkInstanceFile(self, argumentList, filename, instances, verbose):#, toolFiles, pipelineFiles, verbose):
-    er = errors()
+    er = gknoErrors()
     for argument, value in argumentList:
       if argument == '--export-instance':
         self.name = value

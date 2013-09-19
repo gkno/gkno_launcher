@@ -253,8 +253,7 @@ class commandLine:
           # Handle command line arguments that correspond to a data node first.  Deal with arguments
           # pointing to a task node afterwards.
           if not config.nodeMethods.getGraphNodeAttribute(graph, node, 'nodeType') == 'task':
-            config.nodeMethods.setGraphNodeAttribute(graph, node, 'numberOfDataSets', 1)
-            config.nodeMethods.setGraphNodeAttribute(graph, node, 'values', ('1', self.argumentDictionary[argument]))
+            config.nodeMethods.addValuestoGraphNodeAttribute(graph, node, self.argumentDictionary[argument], overwrite = True)
 
           # Now deal with arguments pointing to task nodes.
           else:
@@ -320,7 +319,6 @@ class commandLine:
     # formed: those checks are performed in the parseCommandLine routine.
     for argument, value in self.argumentList:
       argumentName = ''
-      print(argument)
       if argument in pipeArguments or argument in pipeShortForms:
         argumentName = pipeShortForms[argument] if argument in pipeShortForms else argument
         taskLink     = pipeArguments[argumentName]['link to this task']

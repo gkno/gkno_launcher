@@ -12,8 +12,8 @@ import tarfile
 import urllib
 
 import conf
-import errors
-from errors import *
+import gknoErrors
+from gknoErrors import *
 
 class adminUtils:
   def __init__(self, sourcePath):
@@ -31,7 +31,7 @@ class adminUtils:
     self.modeDescriptions["update-resource"] = "Update resource data for an organism."
 
     # General data members
-    self.error        = errors()
+    self.error        = gknoErrors()
     self.isRequested  = False
     self.isVerbose    = False
     self.mode         = ""

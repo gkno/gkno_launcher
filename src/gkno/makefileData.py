@@ -3,8 +3,8 @@
 from __future__ import print_function
 from copy import deepcopy
 
-import errors
-from errors import *
+import gknoErrors
+from gknoErrors import *
 
 import os
 import sys

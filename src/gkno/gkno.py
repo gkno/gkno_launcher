@@ -267,6 +267,9 @@ def main():
     # Generate the workflow using a topological sort of the pipeline graph.
     workflow = config.generateWorkflow(pipelineGraph)
 
+    # All edges to successor nodes (from tasks) are outputs, so set them as such.
+    config.setSuccessorsAsOutputs(pipelineGraph, workflow)
+
     # Loop over all of the nodes and determine which require a value.  Also check to see if there
     # are missing edges.  For example, if a tool has an argument that is required, but is not included
     # in the pipeline configuration file (as a pipeline argument or via connections), the graph cannot
@@ -330,6 +333,18 @@ def main():
   # Set up an array to contain the names of the Makefiles created.
   make.initialiseNames()
 
+  # TODO SORT OUT INSTANCES
+  # Check if an instance was selected.  If so, read the specific instance parameters and attach the values
+  # to the nodes.  This is the first assignment of values to the nodes.  These are added in a hierarchy, such
+  # that commands entered on the command line supercede those contained in the instance.
+  if verbose: writeCheckingInstanceInformation()
+  ins.getInstanceName(pipelineGraph, config, verbose)
+  if verbose: writeDone()
+
+  if isPipeline:
+    ins.getInstanceArguments(sourcePath + '/config_files/pipes/', config.pipeline.pipelineName, config.pipeline.instances, verbose)
+    ins.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
+
   # Attach the values of the pipeline arguments to the relevant nodes.
   if verbose: writeAssignPipelineArgumentsToNodes()
   commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
@@ -338,16 +353,6 @@ def main():
   #cl.assignArgumentsToTasks(tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
   #commands.assignArgumentsToTasks()#tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
   #cl.parseCommandLine(tl.tool, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.argumentInformation, pl.shortForms, pl.taskToTool, verbose)
-
-  # TODO SORT OUT INSTANCES
-  # Check if an instance was selected.  If so, read the specific instance parameters.
-  if verbose: writeCheckingInstanceInformation()
-  ins.getInstanceName(pipelineGraph, config, verbose)
-  if verbose: writeDone()
-
-  if isPipeline:
-    ins.getInstanceArguments(sourcePath + '/config_files/pipes/', config.pipeline.pipelineName, config.pipeline.instances, verbose)
-    #ins.convertPipeArgumentsToToolArguments(pl.argumentInformation, pl.shortForms, pl.arguments, verbose)
 
   #TODO DEAL WITH TOOL INSTANCES.
   #else:
@@ -436,9 +441,46 @@ def main():
     #exit(0)
 
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
-  # defined by the user.  If there is a required output file and it does not have its value set, 
+  # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
-  constructFilenames()
+  print(workflow)
+  for task in workflow:
+    print(task)
+    nodes = config.getInputOutputNodes(pipelineGraph, task, isInput = True)
+    for node in nodes:
+      print('\tA', node)
+      isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'isRequired')
+      isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'hasValue')
+      if isRequired and not isSet:
+        print('\t\tINPUT:', node)
+    exit(0)
+
+    nodes = config.getInputOutputNodes(pipelineGraph, task, isInput = False)
+    for node in nodes:
+      print('\tB', node)
+      isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'isRequired')
+      isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'hasValue')
+      if isRequired and not isSet:
+        print('\t\tOUTPUT:', node)
+#    for node in config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task):
+#
+#      # Check if the file node is required and has a value.
+#      isInput    = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'isInput')
+#      isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'isRequired')
+#      hasValue   = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'hasValue')
+#      if isRequired and not hasValue:
+#        print('MISSING FILE', node)
+#        error.terminate()
+#
+#    for node in config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task):
+#
+#      # Check if the file node is required and has a value.
+#      isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'isRequired')
+#      hasValue   = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'hasValue')
+#      if isRequired and not hasValue:
+#        print('\tOUTPUT', node)
+
+  exit(0)
 
   # Check that all of the required values are set.  This is simply a case of stepping through each node
   # in turn, checking the isRequired flag and if this is set to true, checking that the values dictionary

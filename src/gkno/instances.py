@@ -9,8 +9,8 @@ from configurationClass import *
 import dataChecking
 from dataChecking import *
 
-import errors
-from errors import *
+import gknoErrors
+from gknoErrors import *
 
 import files
 from files import *
@@ -48,7 +48,7 @@ class instances:
       self.errors.terminate()
 
     instances = instances['instances']
-    givenType     = type(instances)
+    givenType = type(instances)
     if givenType != dict:
       self.errors.differentDataTypeInConfig(False, filename, '', 'instances', givenType, dict)
       self.errors.terminate()
@@ -84,18 +84,20 @@ class instances:
   # If an instance was requested, get the information from the configuration file, or the
   # instance file.
   def getInstanceArguments(self, path, name, instances, verbose):
-    print('GETTING INSTANCE ARGUMENTS', self.instanceName)
     if self.instanceName not in instances:
-      print('UNKNOWN INSTANCE')
-      externalInstancesFilename = name + '_instances.json'
-      io = files()
-      data = io.getJsonData(path + externalInstancesFilename, False)
-      if data == '':
-        er.noInstanceInformation(verbose, path, name, self.instanceName)
-        er.terminate()
-      self.externalInstance = True
-      self.instanceData     = data['instances'][self.instanceName]
+      self.errors.noInstanceInformation(verbose, path, name, self.instanceName)
+      self.errors.terminate()
     else: self.instanceData = instances[self.instanceName]
+
+  # Attach the values supplied on the command line to the nodes.
+  def attachPipelineArgumentsToNodes(self, graph, config, gknoConfig):
+    for node in self.instanceData['nodes']:
+      nodeID = node['id']
+
+      # All of the values extracted from the instance json file are unicode.  Convert them to strings.
+      for counter, value in enumerate(node['values']): node['values'][counter] = str(value)
+
+      config.nodeMethods.addValuestoGraphNodeAttribute(graph, nodeID, node['values'], overwrite = True)
 
   # If the instance is for a pipeline, all of the commands appearing in the instance will be pipeline commands.
   # These need to be converted to command line arguments for the individual tools.

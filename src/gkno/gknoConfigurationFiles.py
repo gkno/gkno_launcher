@@ -6,8 +6,8 @@ from copy import deepcopy
 import dataChecking
 from dataChecking import checkDataType
 
-import errors
-from errors import *
+import gknoErrors
+from gknoErrors import *
 
 import helpClass
 from helpClass import *
@@ -68,7 +68,12 @@ class gknoConfigurationFiles:
       config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'description', self.gknoConfigurationData['gkno options'][nodeID]['description'])
       config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'shortForm', self.gknoConfigurationData['gkno options'][nodeID]['short form'])
       if 'value' in self.gknoConfigurationData['gkno options'][nodeID]:
-        config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'values', ('1', self.gknoConfigurationData['gkno options'][nodeID]['value']))
+
+        # Convert unicode values from the configuration file into strings.
+        for counter, value in enumerate(self.gknoConfigurationData['gkno options'][nodeID]['value']):
+          if type(value) != bool: self.gknoConfigurationData['gkno options'][nodeID]['value'][counter] = str(value)
+
+        config.nodeMethods.addValuestoGraphNodeAttribute(graph, nodeID, self.gknoConfigurationData['gkno options'][nodeID]['value'], overwrite = True)
         config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'hasValue', True)
     
   # Clear the data structure holding the gkno specific data.
