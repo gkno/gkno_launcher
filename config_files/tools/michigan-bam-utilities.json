@@ -430,6 +430,39 @@
           "description" : "Default instance requires the users input for all files."
         }
       }
+    },
+
+    "bam2FastQ" : {
+      "description" : "Convert the specified BAM file to fastQ files.",
+      "path" : "bamUtil/bin",
+      "executable" : "bam",
+      "modifier" : "bam2FastQ",
+      "help" : "--help|-h",
+      "arguments" : {
+        "--in" : {
+          "description" : "The SAM/BAM file to convert to FastQ.",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "dependent" : true,
+          "type" : "string",
+          "extension" : "bam|sam"
+        },
+        "--out" : {
+          "description" : "Output name for generated output files.",
+          "input" : false,
+          "output" : true,
+          "required" : false,
+          "dependent" : false,
+          "type" : "string",
+          "extension" : "no extension"
+        }
+      },
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
+        }
+      }
     }
   }
 }
