@@ -55,14 +55,10 @@ class gknoConfigurationFiles:
   def addGknoSpecificNodes(self, graph, config):
     for nodeID in self.gknoConfigurationData['gkno options']:
 
-      # Determine the node type and generate a node.
+      # Generate a node.
       argument = self.gknoConfigurationData['gkno options'][nodeID]['argument']
-      nodeType = self.gknoConfigurationData['gkno options'][nodeID]['node type']
-      if nodeType == 'file':
-        graph.add_node(nodeID, attributes = fileNodeAttributes())
-      elif nodeType == 'option':
-        graph.add_node(nodeID, attributes = optionNodeAttributes())
-        config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'dataType', self.gknoConfigurationData['gkno options'][nodeID]['data type'])
+      graph.add_node(nodeID, attributes = optionNodeAttributes())
+      config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'dataType', self.gknoConfigurationData['gkno options'][nodeID]['data type'])
 
       config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'argument', self.gknoConfigurationData['gkno options'][nodeID]['argument'])
       config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'description', self.gknoConfigurationData['gkno options'][nodeID]['description'])

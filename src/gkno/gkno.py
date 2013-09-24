@@ -255,6 +255,16 @@ def main():
   workflow = []
   if (isPipeline or isTool) and not gknoHelp.pipelineHelp:
 
+    # Find all of the tasks to be used in the pipeline.
+    tasks = config.pipeline.getTasks()
+
+    # For each task in the pipeline, build an individual graph consisting of a task node, input
+    # option nodes (all input and output file arguments are treated as option nodes) and finally
+    # all input and output files are given file nodes.  Nodes are merged later to generate the
+    # final pipeline.
+    for task in tasks: config.buildTaskGraph(task)
+    exit(0)
+
     # Construct the pipeline graph using the information contained in the pipeline configuration
     # file.
     config.addNodesAndEdges(pipelineGraph, config.pipeline.configurationData)
