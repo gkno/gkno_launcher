@@ -53,16 +53,19 @@ class gknoConfigurationFiles:
   # Add the nodes from the gkno configuration file to the graph.  These nodes will not be conected to any
   # other nodes.
   def addGknoSpecificNodes(self, graph, config):
+
+    # Add a task node representing gkno.
+    attributes = taskNodeAttributes()
+    attributes.description = 'gkno task'
+    attributes.tool        = 'gkno'
+    graph.add_node('gkno', attributes = attributes)
+
     for nodeID in self.gknoConfigurationData['gkno options']:
 
       # Generate a node.
-      argument = self.gknoConfigurationData['gkno options'][nodeID]['argument']
       graph.add_node(nodeID, attributes = optionNodeAttributes())
       config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'dataType', self.gknoConfigurationData['gkno options'][nodeID]['data type'])
-
-      config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'argument', self.gknoConfigurationData['gkno options'][nodeID]['argument'])
       config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'description', self.gknoConfigurationData['gkno options'][nodeID]['description'])
-      config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'shortForm', self.gknoConfigurationData['gkno options'][nodeID]['short form'])
       if 'value' in self.gknoConfigurationData['gkno options'][nodeID]:
 
         # Convert unicode values from the configuration file into strings.
@@ -72,6 +75,12 @@ class gknoConfigurationFiles:
         config.nodeMethods.addValuestoGraphNodeAttribute(graph, nodeID, self.gknoConfigurationData['gkno options'][nodeID]['value'], overwrite = True)
         config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'hasValue', True)
     
+      # Join the option node to the gkno task node.
+      attributes = edgeAttributes()
+      attributes.argument  = self.gknoConfigurationData['gkno options'][nodeID]['argument']
+      attributes.shortForm = self.gknoConfigurationData['gkno options'][nodeID]['short form']
+      graph.add_edge(nodeID, 'gkno', attributes = attributes)
+
   # Clear the data structure holding the gkno specific data.
   def eraseConfigurationData(self):
     self.gknoConfigurationData = {}

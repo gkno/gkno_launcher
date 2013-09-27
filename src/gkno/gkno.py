@@ -183,7 +183,9 @@ def main():
     # describe its operation, purpose etc.  These are contained in
     # config_files/tools.  Find all of the config files and create a hash
     # table with all available tools.
-    gknoConfig.getJsonFiles(sourcePath + '/config_files/')
+    # FIXME REMOVE TEMP
+    #gknoConfig.getJsonFiles(sourcePath + '/config_files/')
+    gknoConfig.getJsonFiles(sourcePath + '/config_files/temp/')
 
     # FIXME THESE NEED TO BE ADDED TO THE GRAPH AS NODES.
     # Add some necessary commands to the pipeline arguments structure.
@@ -210,7 +212,9 @@ def main():
     phoneHomeID = ''
     if isPipeline and not gknoHelp.pipelineHelp:
       phoneHomeID               = 'pipes/' + pipelineName
-      pipelineFile              = sourcePath + '/config_files/pipes/' + pipelineName + '.json'
+      #FIXME REMOVE TEMP
+      #pipelineFile              = sourcePath + '/config_files/pipes/' + pipelineName + '.json'
+      pipelineFile              = sourcePath + '/config_files/temp/pipes/' + pipelineName + '.json'
       pipelineConfigurationData = config.fileOperations.readConfigurationFile(pipelineFile)
   
       #FIXME REMOVE LINE
@@ -238,14 +242,17 @@ def main():
 
   # Process all of the tool configuration files.
   for tool in gknoConfig.jsonFiles['tools']:
-    toolFile              = sourcePath + '/config_files/tools/' + tool
+
+    # FIXME TEMPORARY LOCATION OF CONFIG FILES.  REMOVE TEMP WHEN COMPLETE.
+    toolFile              = sourcePath + '/config_files/temp/tools/' + tool
     toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
 
     # TODO TOOL CONFIGURATION FILE VALIDATION HAS NOT YET BEEN HANDLED IN THE
     # CONFIGURATIONCLASS.
     # Ensure that the tool configuration file is well constructed and put all of the data
     # in data structures.  Each tool in each configuration file gets its own data structure.
-    config.tools.processConfigurationFile(toolConfigurationData, toolFile)
+    toolName = tool.split('.json')
+    config.tools.processConfigurationData(toolName[0], toolConfigurationData)
 
   # TODO Deal with individual tool operation.
   if isTool:
@@ -262,7 +269,16 @@ def main():
     # option nodes (all input and output file arguments are treated as option nodes) and finally
     # all input and output files are given file nodes.  Nodes are merged later to generate the
     # final pipeline.
-    for task in tasks: config.buildTaskGraph(task)
+    for task in tasks:
+      tool = config.pipeline.configurationData['tasks'][task]['tool']
+      config.buildTaskGraph(pipelineGraph, task, tool, config.pipeline.configurationData['tasks'][task], config.tools.configurationData[tool])
+
+    # Set pipeline arguments.
+    config.identifyNodesLinkedToCommandLine(pipelineGraph, config.pipeline.configurationData['arguments'])
+
+    # Now that every task in the pipeline has an individual graph built, use the information
+    # in the pipeline configuration file to merge nodes and build the final pipeline graph.
+    config.mergeNodes(pipelineGraph, config.pipeline.configurationData['common nodes'])
     exit(0)
 
     # Construct the pipeline graph using the information contained in the pipeline configuration
