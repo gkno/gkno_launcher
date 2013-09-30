@@ -273,12 +273,18 @@ def main():
       tool = config.pipeline.configurationData['tasks'][task]['tool']
       config.buildTaskGraph(pipelineGraph, task, tool, config.pipeline.configurationData['tasks'][task], config.tools.configurationData[tool])
 
-    # Set pipeline arguments.
-    config.identifyNodesLinkedToCommandLine(pipelineGraph, config.pipeline.configurationData['arguments'])
-
     # Now that every task in the pipeline has an individual graph built, use the information
     # in the pipeline configuration file to merge nodes and build the final pipeline graph.
+    for task in tasks:
+      print(task)
+      for nodeID in pipelineGraph.predecessors(task):
+        print('\t', nodeID, pipelineGraph[nodeID][task]['attributes'].argument, pipelineGraph[nodeID][task]['attributes'].shortForm)
     config.mergeNodes(pipelineGraph, config.pipeline.configurationData['common nodes'])
+    print('\n')
+    for task in tasks:
+      print(task)
+      for nodeID in pipelineGraph.predecessors(task):
+        print('\t', nodeID, pipelineGraph[nodeID][task]['attributes'].argument, pipelineGraph[nodeID][task]['attributes'].shortForm)
     exit(0)
 
     # Construct the pipeline graph using the information contained in the pipeline configuration
