@@ -279,12 +279,16 @@ def main():
       print(task)
       for nodeID in pipelineGraph.predecessors(task):
         print('\t', nodeID, pipelineGraph[nodeID][task]['attributes'].argument, pipelineGraph[nodeID][task]['attributes'].shortForm)
+      for nodeID in pipelineGraph.successors(task):
+        print('\t', nodeID, pipelineGraph[task][nodeID]['attributes'].argument, pipelineGraph[task][nodeID]['attributes'].shortForm)
     config.mergeNodes(pipelineGraph, config.pipeline.configurationData['common nodes'])
     print('\n')
     for task in tasks:
       print(task)
       for nodeID in pipelineGraph.predecessors(task):
         print('\t', nodeID, pipelineGraph[nodeID][task]['attributes'].argument, pipelineGraph[nodeID][task]['attributes'].shortForm)
+      for nodeID in pipelineGraph.successors(task):
+        print('\t', nodeID, pipelineGraph[task][nodeID]['attributes'].argument, pipelineGraph[task][nodeID]['attributes'].shortForm)
     exit(0)
 
     # Construct the pipeline graph using the information contained in the pipeline configuration
