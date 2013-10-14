@@ -74,91 +74,91 @@ class commandLine:
       try: argument = sys.argv[count]
       except: break
 
-      # Check the next argument on the command line.  If it does not begin with a '-', then this
-      # is assumed to be a value that goes with the current arguments.  Add the pair to the list
-      # of arguments as a tuple.
-      try: nextArgument = sys.argv[count + 1]
-      except: nextArgument = '-'
-
-      # If arguments for a task within the pipeline are being set on the command line, all of the
-      # task specific arguments must be contained within square brackets.  If the nextArgument is
-      # identified as beginning with a square bracket, find the end of the task specific commands.
-      if nextArgument.startswith('['):
-
-        # First check if nextArgument ends with a ']'.  If there is only a single command in the
-        # square brackets, the command is a flag and no spaces are included, this woule be the case.
-        if nextArgument.endswith(']'):
-          nextArgument = nextArgument[1:len(nextArgument) - 1]
-
-        else:
-          taskArgumentCounter = 2
-          while True:
-            try: buildTaskArguments = sys.argv[count + taskArgumentCounter]
-            except: self.errors.hasError = True
-  
-            # If the square brackets aren't closed, terminate.
-            if self.errors.hasError:
-              self.errors.unterminatedTaskSpecificOptions(verbose, argument)
-              self.errors.terminate()
-  
-            nextArgument += ' ' + buildTaskArguments
-            if not buildTaskArguments.endswith(']'): taskArgumentCounter += 1
-            else:
-             count += taskArgumentCounter - 1
-  
-             # Strip off the square brackets.
-             nextArgument = nextArgument[1:len(nextArgument) - 1]
-             break
-
       # The command line will include an instruction on whether to run a pipe or the name of the
       # tool.  Ignore this argument.
       if argument != tool and argument != 'pipe' and argument != 'run-test':
-        for node in graph.nodes(data = False):
-          if config.nodeMethods.getGraphNodeAttribute(graph, node, 'nodeType') != 'task':
-            if config.nodeMethods.getGraphNodeAttribute(graph, node, 'isPipelineArgument'):
-              if argument == config.nodeMethods.getGraphNodeAttribute(graph, node, 'shortForm'):
-                argument = config.nodeMethods.getGraphNodeAttribute(graph, node, 'argument')
-                break
 
-        if argument not in self.argumentDictionary: self.argumentDictionary[argument] = []
-        # FIXME DELETE REFERENCE TO uniqueArguments.
-        #if argument not in self.uniqueArguments: self.uniqueArguments[argument] = 1
-        #else: self.uniqueArguments[argument] += 1
-
-      # Check if the next argument starts with a '-'.  If so, the next argument on the command line
-      # is not a value to accompany this argument, but is a new argument.  This is either because
-      # the current argument is a flag or the argument is the name of a task within the pipeline.
-      # If the argument is the name of a task in the workflow, the next entry on the command line
-      # should be the value for this argument.
-      if nextArgument.startswith('-'):
-
-        # Check if the argument is the name of a task.
-        task = ''
-        if argument.startswith('-'): task = argument[1:]
-        if argument.startswith('--'): task = argument[2:]
-
-        isTask = False
-        if task in graph.nodes(data = False):
-
-          # The task is a node in the pipeline, but check that the node is a task node.
-          if config.nodeMethods.getGraphNodeAttribute(graph, task, 'nodeType') == 'task':
-
+        # Check the next argument on the command line.  If it does not begin with a '-', then this
+        # is assumed to be a value that goes with the current arguments.  Add the pair to the list
+        # of arguments as a tuple.
+        try: nextArgument = sys.argv[count + 1]
+        except: nextArgument = '-'
+  
+        # If arguments for a task within the pipeline are being set on the command line, all of the
+        # task specific arguments must be contained within square brackets.  If the nextArgument is
+        # identified as beginning with a square bracket, find the end of the task specific commands.
+        if nextArgument.startswith('['):
+  
+          # First check if nextArgument ends with a ']'.  If there is only a single command in the
+          # square brackets, the command is a flag and no spaces are included, this woule be the case.
+          if nextArgument.endswith(']'):
+            nextArgument = nextArgument[1:len(nextArgument) - 1]
+  
+          else:
+            taskArgumentCounter = 2
+            while True:
+              try: buildTaskArguments = sys.argv[count + taskArgumentCounter]
+              except: self.errors.hasError = True
+    
+              # If the square brackets aren't closed, terminate.
+              if self.errors.hasError:
+                self.errors.unterminatedTaskSpecificOptions(verbose, argument)
+                self.errors.terminate()
+    
+              nextArgument += ' ' + buildTaskArguments
+              if not buildTaskArguments.endswith(']'): taskArgumentCounter += 1
+              else:
+               count += taskArgumentCounter - 1
+    
+               # Strip off the square brackets.
+               nextArgument = nextArgument[1:len(nextArgument) - 1]
+               break
+  
+          # FIXME DELETE REFERENCE TO uniqueArguments.
+          #if argument not in self.uniqueArguments: self.uniqueArguments[argument] = 1
+          #else: self.uniqueArguments[argument] += 1
+  
+        # Check if the next argument starts with a '-'.  If so, the next argument on the command line
+        # is not a value to accompany this argument, but is a new argument.  This is either because
+        # the current argument is a flag or the argument is the name of a task within the pipeline.
+        # If the argument is the name of a task in the workflow, the next entry on the command line
+        # should be the value for this argument.
+        if nextArgument.startswith('-'):
+  
+          # Check if the argument is the name of a task.
+          task = ''
+          if argument.startswith('-'): task = argument[1:]
+          if argument.startswith('--'): task = argument[2:]
+  
+          isTask = False
+          if task in graph.nodes(data = False):
+  
+            # The task is a node in the pipeline, but check that the node is a task node.
+            if config.nodeMethods.getGraphNodeAttribute(graph, task, 'nodeType') == 'task':
+  
+              # FIXME DELETE REFERENCE TO argumentList.
+              #self.argumentList.append((argument, nextArgument))
+              if argument not in self.argumentDictionary: self.argumentDictionary[argument] = []
+              self.argumentDictionary[argument].append(nextArgument)
+              count += 1
+              isTask = True
+  
+          if not isTask:
             # FIXME DELETE REFERENCE TO argumentList.
-            #self.argumentList.append((argument, nextArgument))
-            self.argumentDictionary[argument].append(nextArgument)
-            count += 1
-            isTask = True
+            #if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, ''))
 
-        if not isTask:
+            # Get the long form argument.
+            longForm = config.pipeline.getLongFormArgument(graph, argument)
+            if longForm not in self.argumentDictionary: self.argumentDictionary[longForm] = []
+            self.argumentDictionary[longForm].append('')
+  
+        else:
           # FIXME DELETE REFERENCE TO argumentList.
-          #if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, ''))
-          if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentDictionary[argument].append('')
-
-      else:
-        # FIXME DELETE REFERENCE TO argumentList.
-        #if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, nextArgument))
-        if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentDictionary[argument].append(nextArgument)
-        count += 1
+          #if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, nextArgument))
+          longForm = config.pipeline.getLongFormArgument(graph, argument)
+          if longForm not in self.argumentDictionary: self.argumentDictionary[longForm] = []
+          self.argumentDictionary[longForm].append(nextArgument)
+          count += 1
       count += 1
 
   # Check if help has been requested on the command line.  Search for the '--help'
@@ -222,21 +222,26 @@ class commandLine:
   # Attach the values supplied on the command line to the nodes.
   def attachPipelineArgumentsToNodes(self, graph, config, gknoConfig):
     for argument in self.argumentDictionary:
-      node = config.nodeMethods.getNodeForPipelineArgument(graph, argument)
-      if node == None:
+      print('\n', argument)
+
+      # The argument supplied can either be an argument defined in the pipeline configuration
+      # file, or the name of a task in the pipeline.  First check to see if the argument is
+      # defined in the pipeline configuration, then if it is a task and if neither, fail.
+      nodeID = config.pipeline.isArgumentAPipelineArgument(argument)
+      if nodeID == None:
 
         # Check if this argument is a gkno argument defined in the gkno configuration file.  If
         # so, there exists a 'floating' node in the graph for this argument.
-        node = gknoConfig.getNodeForGknoArgument(graph, config, argument)
+        nodeID = gknoConfig.getNodeForGknoArgument(graph, config, argument)
 
-        if node == None:
+        if nodeID == None:
           taskArgument = argument            
           if taskArgument.startswith('--'): taskArgument = argument[2:len(argument)]
           if taskArgument.startswith('-'): taskArgument = argument[1:len(argument)]
-          if taskArgument in graph.nodes(data = False): node = taskArgument
+          if taskArgument in graph.nodes(data = False): nodeID = taskArgument
 
       # If the command line argument does not correspond to a node, fail.
-      if node == None:
+      if nodeID == None:
         print('unknown command:', argument)
       else:
 
@@ -246,66 +251,58 @@ class commandLine:
         if hasMultipleRuns or hasParallelExecution:
           print('Not yet handled multiple runs or parallel execution.')
 
-        # There is only a single set of data for the pipeline, so only a single set of values
-        # is required.
+        # Handle command line arguments that correspond to a data node first.  Deal with arguments
+        # pointing to a task node afterwards.
+        print(argument, nodeID)
+        print(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'nodeType'))
+        if not config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'nodeType') == 'task':
+          config.nodeMethods.addValuestoGraphNodeAttribute(graph, nodeID, self.argumentDictionary[argument], overwrite = True)
+
+        # Now deal with arguments pointing to task nodes.
         else:
 
-          # Handle command line arguments that correspond to a data node first.  Deal with arguments
-          # pointing to a task node afterwards.
-          if not config.nodeMethods.getGraphNodeAttribute(graph, node, 'nodeType') == 'task':
-            config.nodeMethods.addValuestoGraphNodeAttribute(graph, node, self.argumentDictionary[argument], overwrite = True)
+          # Join together all of the arguments for this task into a string.
+          argumentString = self.argumentDictionary[argument].pop(0)
+          for argumentList in self.argumentDictionary[argument]: argumentString += ' ' + argumentList
+          taskArguments = argumentString.split(' ')
+          while True:
+  
+            # Get the first entry in the list.  Terminate the loop if there is nothing left in the list.
+            try: taskArgument = taskArguments.pop(0)
+            except: break
+  
+            # Get the next value in the list if one exists.
+            try: nextTaskArgument = taskArguments[0]
+            except: nextTaskArgument = '-'
 
-          # Now deal with arguments pointing to task nodes.
-          else:
+            # Ensure that we are using the long form argument.
+            task           = nodeID
+            associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+            longForm       = config.tools.getLongFormArgument(associatedTool, taskArgument)
+            shortForm      = config.tools.getArgumentData(associatedTool, taskArgument, 'short form argument')
 
-            # Join together all of the arguments for this task into a string.
-            argumentString = self.argumentDictionary[argument].pop(0)
-            for argumentList in self.argumentDictionary[argument]: argumentString += ' ' + argumentList
-            taskArguments = argumentString.split(' ')
-            while True:
-    
-              # Get the first entry in the list.  Terminate the loop if there is nothing left in the list.
-              try: taskArgument = taskArguments.pop(0)
-              except: break
-    
-              # Get the next value in the list if one exists.
-              try: nextTaskArgument = taskArguments[0]
-              except: nextTaskArgument = '-'
+            # Determine if an edge exists for this argument.  If so, get the node associated with the
+            # data for this edge.  If not, create the node.
+            sourceNodeID = config.nodeMethods.getNodeForTaskArgument(graph, nodeID, longForm)
+            if sourceNodeID == None:
+              sourceNodeID = 'OPTION_' + str(config.optionNodeID)
+              config.optionNodeID += 1
+              attributes   = config.tools.buildNodeFromToolConfiguration(associatedTool, longForm)
+              graph.add_node(sourceNodeID, attributes = attributes)
 
-              # Ensure that we are using the long form argument.
-              task           = node
-              associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-              longForm       = config.tools.getLongFormArgument(associatedTool, taskArgument)
-    
-              # If the argument is a flag, the next argument will start with a '-'.
-              if nextTaskArgument.startswith('-'):
+            # If the argument is a flag, the next argument will start with a '-'.
+            if not nextTaskArgument.startswith('-'): taskArguments.pop(0)
 
-                # Determine if an edge exists for this argument.  If so, get the node associated with the
-                # data for this edge.  If not, create the node.
-                sourceNode = config.nodeMethods.getNodeForTaskArgument(graph, node, longForm)
-                if sourceNode == None:
-                  sourceNode = 'NODE' + str(config.pipeline.nodeIDInteger)
-                  config.pipeline.nodeIDInteger += 1
-                  graph.add_node(sourceNode, attributes = config.tools.attributes[associatedTool].arguments[longForm])
-              else:
+            # Add an edge from the source node to the task.
+            edge          = edgeAttributes()
+            edge.argument = longForm
+            graph.add_edge(sourceNodeID, task, attributes = edge)
 
-                #if task not in self.linkedArguments: self.linkedArguments[task] = []
-                #self.linkedArguments[task].append(('pipeline task', taskArgument, taskArgument, nextTaskArgument))
-                sourceNode = config.nodeMethods.getNodeForTaskArgument(graph, node, longForm)
-
-                # If there is no edge for this argument, there is no node containing the data.  Generate
-                # a new node, populate it with the supplied value and connect the node to the task.
-                if sourceNode == None:
-                  sourceNode = 'NODE' + str(config.pipeline.nodeIDInteger)
-                  config.pipeline.nodeIDInteger += 1
-                  graph.add_node(sourceNode, attributes = config.tools.attributes[associatedTool].arguments[longForm])
-                  
-                taskArguments.pop(0)
-
-              # Add an edge from the source node to the task.
-              edge          = edgeAttributes()
-              edge.argument = longForm
-              graph.add_edge(sourceNode, task, attributes = edge)
+            # Check if this option defines a file.  If so, create a file node for this option.
+            if config.tools.getArgumentData(associatedTool, taskArgument, 'input'):
+              config.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'input')
+            elif config.tools.getArgumentData(associatedTool, taskArgument, 'output'):
+              config.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'output')
 
   # Parse through all of the commands stored in the argumentList and check that they are all valid.
   # If they are, put them in a new structure that groups all of the arguments with their respective

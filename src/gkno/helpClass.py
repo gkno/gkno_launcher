@@ -354,7 +354,7 @@ class helpClass:
     arguments         = {}
     requiredArguments = {}
     for node in graph.nodes(data = False):
-      if config.nodeMethods.getGraphNodeAttribute(graph, node, 'nodeType') != 'task':
+      if config.nodeMethods.getGraphNodeAttribute(graph, node, 'nodeType') == 'option':
         if config.nodeMethods.getGraphNodeAttribute(graph, node, 'isPipelineArgument'):
           description = config.nodeMethods.getGraphNodeAttribute(graph, node, 'description')
           shortForm   = config.nodeMethods.getGraphNodeAttribute(graph, node, 'shortForm')

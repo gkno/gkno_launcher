@@ -92,7 +92,11 @@ class instances:
   # Attach the values supplied on the command line to the nodes.
   def attachPipelineArgumentsToNodes(self, graph, config, gknoConfig):
     for node in self.instanceData['nodes']:
-      nodeID = node['id']
+
+      # Get the ID of the node in the graph that this argument points to.  Since nodes were merged in
+      # the generation of the pipeline graph, the dictionary config.nodeIDs retains information about
+      # which node this value refers to.
+      nodeID = config.nodeIDs[node['id']]
 
       # All of the values extracted from the instance json file are unicode.  Convert them to strings.
       for counter, value in enumerate(node['values']): node['values'][counter] = str(value)

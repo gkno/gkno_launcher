@@ -251,8 +251,8 @@ def main():
     # CONFIGURATIONCLASS.
     # Ensure that the tool configuration file is well constructed and put all of the data
     # in data structures.  Each tool in each configuration file gets its own data structure.
-    toolName = tool.split('.json')
-    config.tools.processConfigurationData(toolName[0], toolConfigurationData)
+    toolName = tool.split('.json')[0]
+    config.tools.processConfigurationData(toolName, toolConfigurationData)
 
   # TODO Deal with individual tool operation.
   if isTool:
@@ -269,53 +269,32 @@ def main():
     # option nodes (all input and output file arguments are treated as option nodes) and finally
     # all input and output files are given file nodes.  Nodes are merged later to generate the
     # final pipeline.
-    for task in tasks:
-      tool = config.pipeline.configurationData['tasks'][task]['tool']
-      config.buildTaskGraph(pipelineGraph, task, tool, config.pipeline.configurationData['tasks'][task], config.tools.configurationData[tool])
+    config.buildTaskGraph(pipelineGraph)
+
+    # Add the pipeline arguments to the nodeIDs dictionary.
+    config.pipeline.getPipelineArgumentNodes(pipelineGraph)
 
     # Now that every task in the pipeline has an individual graph built, use the information
     # in the pipeline configuration file to merge nodes and build the final pipeline graph.
-    for task in tasks:
-      print(task)
-      for nodeID in pipelineGraph.predecessors(task):
-        print('\t', nodeID, pipelineGraph[nodeID][task]['attributes'].argument, pipelineGraph[nodeID][task]['attributes'].shortForm)
-      for nodeID in pipelineGraph.successors(task):
-        print('\t', nodeID, pipelineGraph[task][nodeID]['attributes'].argument, pipelineGraph[task][nodeID]['attributes'].shortForm)
-    config.mergeNodes(pipelineGraph, config.pipeline.configurationData['common nodes'])
-    print('\n')
-    for task in tasks:
-      print(task)
-      for nodeID in pipelineGraph.predecessors(task):
-        print('\t', nodeID, pipelineGraph[nodeID][task]['attributes'].argument, pipelineGraph[nodeID][task]['attributes'].shortForm)
-      for nodeID in pipelineGraph.successors(task):
-        print('\t', nodeID, pipelineGraph[task][nodeID]['attributes'].argument, pipelineGraph[task][nodeID]['attributes'].shortForm)
-    exit(0)
+    config.mergeNodes(pipelineGraph)
 
     # Construct the pipeline graph using the information contained in the pipeline configuration
     # file.
-    config.addNodesAndEdges(pipelineGraph, config.pipeline.configurationData)
-    config.pipeline.eraseConfigurationData()
+    #config.addNodesAndEdges(pipelineGraph, config.pipeline.configurationData)
+    #config.pipeline.eraseConfigurationData()
 
     # Populate the nodes with necessary information.  Return a list of all of the tools used by the
     # pipelines.
-    requiredTools = config.getRequiredTools(pipelineGraph)
+    #requiredTools = config.getRequiredTools(pipelineGraph)
 
     # Generate the workflow using a topological sort of the pipeline graph.
     workflow = config.generateWorkflow(pipelineGraph)
-
-    # All edges to successor nodes (from tasks) are outputs, so set them as such.
-    config.setSuccessorsAsOutputs(pipelineGraph, workflow)
 
     # Loop over all of the nodes and determine which require a value.  Also check to see if there
     # are missing edges.  For example, if a tool has an argument that is required, but is not included
     # in the pipeline configuration file (as a pipeline argument or via connections), the graph cannot
     # be completely defined.
     config.setRequiredNodes(pipelineGraph)
-    config.setTaskNodes(pipelineGraph)
-    missingEdges = config.checkRequiredTaskConnections(pipelineGraph)
-    if len(missingEdges) != 0:
-      print('missing required edges for task:', missingEdges)
-      #error.terminate()
 
   # For help messages the helpClass needs a list of all available tools and all available pipelines.  These
   # lists are generated here.
@@ -335,7 +314,8 @@ def main():
 
   # Parse the command line and put all of the arguments into a list.
   if verbose: gettingCommandLineArguments()
-  commands.getCommandLineArguments(pipelineGraph, config, toolName, isPipeline, verbose)
+  if isPipeline: commands.getCommandLineArguments(pipelineGraph, config, pipelineName, isPipeline, verbose)
+  else: commands.getCommandLineArguments(pipelineGraph, config, toolName, isPipeline, verbose)
 
   if verbose:
     writeDone()
@@ -385,6 +365,20 @@ def main():
   if verbose: writeAssignPipelineArgumentsToNodes()
   commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
   if verbose: writeDone()
+  for task in workflow:
+    print(task, '\n\tOptions nodes:')
+    nodeIDs = config.nodeMethods.getPredecessorOptionNodes(pipelineGraph, task)
+    for nodeID in nodeIDs:
+      print('\t\t', nodeID, pipelineGraph[nodeID][task]['attributes'].argument)
+
+    print('\tFile nodes:')
+    nodeIDs = config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task)
+    for nodeID in nodeIDs:
+      print('\t\t', nodeID, pipelineGraph[nodeID][task]['attributes'].argument)
+    nodeIDs = config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task)
+    for nodeID in nodeIDs:
+      print('\t\t', nodeID, pipelineGraph[task][nodeID]['attributes'].argument)
+  exit(0)
 
   #cl.assignArgumentsToTasks(tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
   #commands.assignArgumentsToTasks()#tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)

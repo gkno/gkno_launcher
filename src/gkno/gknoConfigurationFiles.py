@@ -58,12 +58,14 @@ class gknoConfigurationFiles:
     attributes = taskNodeAttributes()
     attributes.description = 'gkno task'
     attributes.tool        = 'gkno'
+    attributes.nodeType    = 'gkno'
     graph.add_node('gkno', attributes = attributes)
 
     for nodeID in self.gknoConfigurationData['gkno options']:
 
       # Generate a node.
       graph.add_node(nodeID, attributes = optionNodeAttributes())
+      config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'nodeType', 'general')
       config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'dataType', self.gknoConfigurationData['gkno options'][nodeID]['data type'])
       config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'description', self.gknoConfigurationData['gkno options'][nodeID]['description'])
       if 'value' in self.gknoConfigurationData['gkno options'][nodeID]:
@@ -87,14 +89,13 @@ class gknoConfigurationFiles:
 
   # Return the node for a gkno argument contained in the gkno configuration file.
   def getNodeForGknoArgument(self, graph, config, argument):
-    for node in graph.nodes(data = False):
-      nodeType = config.nodeMethods.getGraphNodeAttribute(graph, node, 'nodeType')
-      if nodeType != 'task':
+    for nodeID in graph.nodes(data = False):
+      if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'nodeType') == 'general':
 
         # Check if the supplied argument is the same as the argument given for this node.
-        if argument == config.nodeMethods.getGraphNodeAttribute(graph, node, 'argument'): return node
+        if argument == graph[nodeID]['gkno']['attributes'].argument: return nodeID
 
         # Check if the supplied argument is the same as the short formargument given for this node.
-        if argument == config.nodeMethods.getGraphNodeAttribute(graph, node, 'shortForm'): return node
+        if argument == graph[nodeID]['gkno']['attributes'].shortForm: return nodeID
 
     return None
