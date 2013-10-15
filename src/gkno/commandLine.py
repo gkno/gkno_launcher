@@ -222,7 +222,6 @@ class commandLine:
   # Attach the values supplied on the command line to the nodes.
   def attachPipelineArgumentsToNodes(self, graph, config, gknoConfig):
     for argument in self.argumentDictionary:
-      print('\n', argument)
 
       # The argument supplied can either be an argument defined in the pipeline configuration
       # file, or the name of a task in the pipeline.  First check to see if the argument is
@@ -253,8 +252,6 @@ class commandLine:
 
         # Handle command line arguments that correspond to a data node first.  Deal with arguments
         # pointing to a task node afterwards.
-        print(argument, nodeID)
-        print(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'nodeType'))
         if not config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'nodeType') == 'task':
           config.nodeMethods.addValuestoGraphNodeAttribute(graph, nodeID, self.argumentDictionary[argument], overwrite = True)
 
@@ -291,7 +288,9 @@ class commandLine:
               graph.add_node(sourceNodeID, attributes = attributes)
 
             # If the argument is a flag, the next argument will start with a '-'.
-            if not nextTaskArgument.startswith('-'): taskArguments.pop(0)
+            if not nextTaskArgument.startswith('-'):
+              value = taskArguments.pop(0)
+              config.nodeMethods.addValuestoGraphNodeAttribute(graph, sourceNodeID, value, overwrite = True)
 
             # Add an edge from the source node to the task.
             edge          = edgeAttributes()
@@ -303,6 +302,27 @@ class commandLine:
               config.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'input')
             elif config.tools.getArgumentData(associatedTool, taskArgument, 'output'):
               config.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'output')
+
+  # Assign values to the file nodes using the option nodes.
+  def mirrorFileNodeValues(self, graph, config, workflow):
+    for task in workflow:
+      fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(graph, task)
+      for fileNodeID in fileNodeIDs:
+        optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+        values       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
+        config.nodeMethods.addValuestoGraphNodeAttribute(graph, fileNodeID, values, overwrite = True)
+
+      # Now deal with output files.
+      fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(graph, task)
+      for fileNodeID in fileNodeIDs:
+        optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+        values       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
+        config.nodeMethods.addValuestoGraphNodeAttribute(graph, fileNodeID, values, overwrite = True)
+
+
+
+
+
 
   # Parse through all of the commands stored in the argumentList and check that they are all valid.
   # If they are, put them in a new structure that groups all of the arguments with their respective

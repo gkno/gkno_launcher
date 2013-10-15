@@ -278,15 +278,6 @@ def main():
     # in the pipeline configuration file to merge nodes and build the final pipeline graph.
     config.mergeNodes(pipelineGraph)
 
-    # Construct the pipeline graph using the information contained in the pipeline configuration
-    # file.
-    #config.addNodesAndEdges(pipelineGraph, config.pipeline.configurationData)
-    #config.pipeline.eraseConfigurationData()
-
-    # Populate the nodes with necessary information.  Return a list of all of the tools used by the
-    # pipelines.
-    #requiredTools = config.getRequiredTools(pipelineGraph)
-
     # Generate the workflow using a topological sort of the pipeline graph.
     workflow = config.generateWorkflow(pipelineGraph)
 
@@ -364,21 +355,11 @@ def main():
   # Attach the values of the pipeline arguments to the relevant nodes.
   if verbose: writeAssignPipelineArgumentsToNodes()
   commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
-  if verbose: writeDone()
-  for task in workflow:
-    print(task, '\n\tOptions nodes:')
-    nodeIDs = config.nodeMethods.getPredecessorOptionNodes(pipelineGraph, task)
-    for nodeID in nodeIDs:
-      print('\t\t', nodeID, pipelineGraph[nodeID][task]['attributes'].argument)
 
-    print('\tFile nodes:')
-    nodeIDs = config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task)
-    for nodeID in nodeIDs:
-      print('\t\t', nodeID, pipelineGraph[nodeID][task]['attributes'].argument)
-    nodeIDs = config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task)
-    for nodeID in nodeIDs:
-      print('\t\t', nodeID, pipelineGraph[task][nodeID]['attributes'].argument)
-  exit(0)
+  # Now that the command line argument has been parsed, all of the values supplied have been added to the
+  # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
+  commands.mirrorFileNodeValues(pipelineGraph, config, workflow)
+  if verbose: writeDone()
 
   #cl.assignArgumentsToTasks(tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
   #commands.assignArgumentsToTasks()#tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
@@ -473,23 +454,29 @@ def main():
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
-  print(workflow)
   for task in workflow:
     print(task)
-    nodes = config.getInputOutputNodes(pipelineGraph, task, isInput = True)
-    for node in nodes:
-      print('\tA', node)
-      isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'isRequired')
-      isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'hasValue')
+
+    # Input files are predecessor nodes to the task.  Deal with the input files first.
+    fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task)
+    for fileNodeID in fileNodeIDs:
+      argument     = config.edgeMethods.getEdgeAttribute(pipelineGraph, fileNodeID, task, 'argument')
+      optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+
+      # Use the argument yo get information about the argument.
+      isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
+      isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
+      print(fileNodeID, argument, isRequired, isSet, config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'values'))
       if isRequired and not isSet:
         print('\t\tINPUT:', node)
     exit(0)
 
-    nodes = config.getInputOutputNodes(pipelineGraph, task, isInput = False)
-    for node in nodes:
+    # Now deal with output files,  These are all successor nodes.
+    fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task)
+    for fileNodeID in fileNodeIDs:
       print('\tB', node)
-      isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'isRequired')
-      isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'hasValue')
+      isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, fileNodeID, 'isRequired')
+      isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, fileNodeID, 'hasValue')
       if isRequired and not isSet:
         print('\t\tOUTPUT:', node)
 #    for node in config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task):
