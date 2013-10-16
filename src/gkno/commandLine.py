@@ -282,14 +282,14 @@ class commandLine:
             # data for this edge.  If not, create the node.
             sourceNodeID = config.nodeMethods.getNodeForTaskArgument(graph, nodeID, longForm)
             if sourceNodeID == None:
-              sourceNodeID = 'OPTION_' + str(config.optionNodeID)
-              config.optionNodeID += 1
-              attributes   = config.tools.buildNodeFromToolConfiguration(associatedTool, longForm)
+              sourceNodeID = 'OPTION_' + str(config.nodeMethods.optionNodeID)
+              config.nodeMethods.optionNodeID += 1
+              attributes   = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longForm)
               graph.add_node(sourceNodeID, attributes = attributes)
 
             # If the argument is a flag, the next argument will start with a '-'.
             if not nextTaskArgument.startswith('-'):
-              value = taskArguments.pop(0)
+              value = [taskArguments.pop(0)]
               config.nodeMethods.addValuestoGraphNodeAttribute(graph, sourceNodeID, value, overwrite = True)
 
             # Add an edge from the source node to the task.
@@ -299,9 +299,9 @@ class commandLine:
 
             # Check if this option defines a file.  If so, create a file node for this option.
             if config.tools.getArgumentData(associatedTool, taskArgument, 'input'):
-              config.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'input')
+              config.nodeMethods.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'input')
             elif config.tools.getArgumentData(associatedTool, taskArgument, 'output'):
-              config.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'output')
+              config.nodeMethods.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'output')
 
   # Assign values to the file nodes using the option nodes.
   def mirrorFileNodeValues(self, graph, config, workflow):
