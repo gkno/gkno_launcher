@@ -99,3 +99,72 @@ class gknoConfigurationFiles:
         if argument == graph[nodeID]['gkno']['attributes'].shortForm: return nodeID
 
     return None
+
+  # If a filename is not defined, check to see if there are instructions on how to 
+  # construct the filename.
+  def constructionInstructions(self, graph, config, task, argument, fileNodeID):
+    optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+    instructions = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'construct filename')
+    if instructions == None: return None
+    else: return instructions['id']
+
+  # Construct a filename from instructions.
+  def constructFilename(self, graph, config, method, task, fileNodeID):
+    if method == 'from tool argument':
+      self.constructFilenameFromToolArgument(graph, config, task, fileNodeID)
+
+    # TODO ERRORS
+    else:
+      print('UNKNOWN CINSTRUCTION METHOD: gknoConfig.constructFilename')
+      self.errors.terminate()
+
+  # Construct a filename using another tool argument.
+  def constructFilenameFromToolArgument(self, graph, config, task, fileNodeID):
+    optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+    argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
+    instructions     = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'construct filename')
+    baseArgument     = instructions['use argument']
+    replaceExtension = instructions['replace extension']
+
+    # Get the ID of the node corresponding to the baseArgument.
+    baseNodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument)
+    values     = config.nodeMethods.getGraphNodeAttribute(graph, baseNodeID, 'values')
+
+    # If the extension is to be replaced, do that here.
+    if replaceExtension:
+      originalExtension = config.tools.getArgumentData(config.pipeline.tasks[task], baseArgument, 'extension')
+      newExtension      = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'extension')
+      modifiedValues    = self.modifyExtensions(values, originalExtension, newExtension)
+
+    else: modifiedValues = values
+
+    # Reset the node values for the option and the file node.
+    config.nodeMethods.setGraphNodeAttribute(graph, optionNodeID, 'values', modifiedValues)
+    config.nodeMethods.setGraphNodeAttribute(graph, fileNodeID, 'values', modifiedValues)
+
+  # Modify the extensions for files.
+  def modifyExtensions(self, values, extA, extB):
+    modifiedValues = {}
+
+    # The extensions may be a list of allowed extension separated by '|'.  Break the extensions
+    # into lists of allowed extensions.
+    extAList = extA.split('|')
+
+    # The replacement extension may also be a list of allowed values.  Choose the first value in
+    # this list as the extension to use.
+    replaceExtension = '.' + str(extB.split('|')[0])
+
+    # Loop over all values and change the extension.
+    for valueID in values:
+      newValuesList = []
+      for value in values[valueID]:
+        for extension in extAList:
+          if value.endswith(extension):
+            string   = '.' + str(extension)
+            newValuesList.append(value.replace(string, replaceExtension))
+            break
+
+      # Update the modifiedValues dictionary to reflect the modified extensions.
+      modifiedValues[valueID] = newValuesList
+
+    return modifiedValues

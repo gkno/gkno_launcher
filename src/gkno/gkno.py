@@ -62,7 +62,7 @@ __date__ = "July 2013"
 def main():
 
   # Define the errors class.
-  error = gknoErrors()
+  errors = gknoErrors()
 
   # Define the source path of all the gkno machinery.
   sourcePath = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno/gkno.py')]
@@ -176,8 +176,8 @@ def main():
     # Make sure we've actually been "built" before doing any real processing.
     # Skip this requirement if we're only going to be printing a help message later.
     if not gknoHelp.printHelp and not admin.isBuilt():
-      error.gknoNotBuilt()
-      error.terminate()
+      errors.gknoNotBuilt()
+      errors.terminate()
 
     # Each of the tools available to gkno should have a config file to
     # describe its operation, purpose etc.  These are contained in
@@ -285,7 +285,7 @@ def main():
     # are missing edges.  For example, if a tool has an argument that is required, but is not included
     # in the pipeline configuration file (as a pipeline argument or via connections), the graph cannot
     # be completely defined.
-    config.setRequiredNodes(pipelineGraph)
+    config.nodeMethods.setRequiredNodes(pipelineGraph, config.tools)
 
   # For help messages the helpClass needs a list of all available tools and all available pipelines.  These
   # lists are generated here.
@@ -295,7 +295,8 @@ def main():
   # Check for an additional instance file associated with this tool/pipeline and add the information
   # to the relevant data structure.
   if isPipeline:
-    instanceData = ins.checkInstanceFile(sourcePath, 'pipes', pipelineName, gknoConfig.jsonFiles['pipeline instances'])
+    #FIXME RESET THE DIRECTORY TO REMOVE 'temp'
+    instanceData = ins.checkInstanceFile(sourcePath, 'temp/pipes', pipelineName, gknoConfig.jsonFiles['pipeline instances'])
     if len(instanceData) != 0: ins.checkInstanceInformation(instanceData, config.pipeline.instances, config.pipeline.pipelineName + '_instances.json')
 
   # TODO DEAL WITH INSTANCES FOR TOOLS.
@@ -340,7 +341,11 @@ def main():
   # Set up an array to contain the names of the Makefiles created.
   make.initialiseNames()
 
-  # TODO SORT OUT INSTANCES
+  # Attach the values of the pipeline arguments to the relevant nodes.
+  if verbose: writeAssignPipelineArgumentsToNodes()
+  commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
+  if verbose: writeDone()
+
   # Check if an instance was selected.  If so, read the specific instance parameters and attach the values
   # to the nodes.  This is the first assignment of values to the nodes.  These are added in a hierarchy, such
   # that commands entered on the command line supercede those contained in the instance.
@@ -352,27 +357,16 @@ def main():
     ins.getInstanceArguments(sourcePath + '/config_files/pipes/', config.pipeline.pipelineName, config.pipeline.instances, verbose)
     ins.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
 
-  # Attach the values of the pipeline arguments to the relevant nodes.
-  if verbose: writeAssignPipelineArgumentsToNodes()
-  commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
-
-  print('\n')
-  for task in workflow:
-    print(task)
-    nodeIDs = config.nodeMethods.getPredecessorOptionNodes(pipelineGraph, task)
-    for nodeID in nodeIDs:
-      print('\t', nodeID, config.edgeMethods.getEdgeAttribute(pipelineGraph, nodeID, task, 'argument'), config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values'))
-  exit(0)
   # Now that the command line argument has been parsed, all of the values supplied have been added to the
   # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
   commands.mirrorFileNodeValues(pipelineGraph, config, workflow)
-  if verbose: writeDone()
 
+  #TODO REMOVE
   #cl.assignArgumentsToTasks(tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
   #commands.assignArgumentsToTasks()#tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
   #cl.parseCommandLine(tl.tool, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.argumentInformation, pl.shortForms, pl.taskToTool, verbose)
 
-  #TODO DEAL WITH TOOL INSTANCES.
+  #TODO REMOVE
   #else:
   #  ins.getInstanceArguments(sourcePath + '/config_files/tools/', tl.tool, tl.instances[tl.tool], verbose)
   #  ins.setToolArguments(tl.tool, verbose)
@@ -458,13 +452,6 @@ def main():
     # Makefile is generated and nothing is executed.
     #exit(0)
 
-  for task in workflow:
-    print(task)
-    nodeIDs = config.nodeMethods.getPredecessorOptionNodes(pipelineGraph, task)
-    for nodeID in nodeIDs:
-      print('\t', nodeID, config.edgeMethods.getEdgeAttribute(pipelineGraph, nodeID, task, 'argument'), config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values'))
-  exit(0)
-
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
@@ -477,12 +464,11 @@ def main():
       argument     = config.edgeMethods.getEdgeAttribute(pipelineGraph, fileNodeID, task, 'argument')
       optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
 
-      # Use the argument yo get information about the argument.
+      # Use the argument to get information about the argument.
       isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
       isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
-      print('\t', fileNodeID, argument, isRequired, isSet, config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'values'))
       if isRequired and not isSet:
-        print('\t\tINPUT:', fileNodeID)
+        print('\tMISSING INPUT:', fileNodeID, task, argument)
 
     # Now deal with output files,  These are all successor nodes.
     fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task)
@@ -492,39 +478,39 @@ def main():
 
       isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
       isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
-      print('\t', fileNodeID, argument, isRequired, isSet, config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'values'))
+      print('TESTING:', task, argument, isRequired, isSet)
       if isRequired and not isSet:
-        print('\t\tOUTPUT:', fileNodeID)
-#    for node in config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task):
-#
-#      # Check if the file node is required and has a value.
-#      isInput    = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'isInput')
-#      isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'isRequired')
-#      hasValue   = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'hasValue')
-#      if isRequired and not hasValue:
-#        print('MISSING FILE', node)
-#        error.terminate()
-#
-#    for node in config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task):
-#
-#      # Check if the file node is required and has a value.
-#      isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'isRequired')
-#      hasValue   = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, node, 'hasValue')
-#      if isRequired and not hasValue:
-#        print('\tOUTPUT', node)
+        method = gknoConfig.constructionInstructions(pipelineGraph, config, task, argument, fileNodeID)
+        if method == None:
 
-  exit(0)
+          # TODO ERROR MESSAGE
+          print('\tMISSING OUTPUT:', fileNodeID, task, config.pipeline.tasks[task], argument)
+          errors.terminate()
+
+        # If the tool configuration file has instructions on how to construct the filename,
+        # built it using these instructions.
+        else: filename = gknoConfig.constructFilename(pipelineGraph, config, method, task, fileNodeID)
 
   # Check that all of the required values are set.  This is simply a case of stepping through each node
   # in turn, checking the isRequired flag and if this is set to true, checking that the values dictionary
   # is not empty.
-  checkParameters()
+  # TODO Check.
+  print('\n\nNODE VALUES')
+  for task in workflow:
+    print(task)
+    for nodeID in config.nodeMethods.getPredecessorOptionNodes(pipelineGraph, task):
+      print('\t', nodeID, config.edgeMethods.getEdgeAttribute(pipelineGraph, nodeID, task, 'argument'), config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values'))
+    for nodeID in config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task):
+      print('\t', nodeID, config.edgeMethods.getEdgeAttribute(pipelineGraph, nodeID, task, 'argument'), config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values'))
+    for nodeID in config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task):
+      print('\t', nodeID, config.edgeMethods.getEdgeAttribute(pipelineGraph, task, nodeID, 'argument'), config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values'))
+  exit(0)
+  config.checkParameters(pipelineGraph)
 
   # Now that all of the information has been gathered and stored, start a loop over the remainder of 
   # the gkno subroutines.  Each iteration (there is only a single iteration in the absence of the
   # multiple runs command), the arguments for that run are set up and the makefile generated and
   # executed (unless, no execution was requested).
-  exit(0)
   while True:
 
     # Define the name of the Makefile.  If there are multiple runs, append an intefer
