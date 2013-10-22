@@ -19,6 +19,7 @@ class commandLine:
     self.arguments          = {}
     self.argumentDictionary = {}
     self.argumentList       = []
+    self.argumentsToNodes   = []
     self.errors             = gknoErrors()
     self.linkedArguments    = {}
     self.uniqueArguments    = {}
@@ -241,6 +242,7 @@ class commandLine:
 
       # If the command line argument does not correspond to a node, fail.
       if nodeID == None:
+        #TODO DAEL WITH ERROR
         print('unknown command:', argument)
       else:
 
@@ -253,7 +255,10 @@ class commandLine:
         # Handle command line arguments that correspond to a data node first.  Deal with arguments
         # pointing to a task node afterwards.
         if not config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'nodeType') == 'task':
-          config.nodeMethods.addValuestoGraphNodeAttribute(graph, nodeID, self.argumentDictionary[argument], overwrite = True)
+
+          #TODO ASSUMING THAT CREATING ADDITIONAL NODES FOR ARGUMENTS POINTING TO NODES WITH PREDECESSORS
+          # WORKED, IMPLEMENT HERE ASWELL.
+          config.nodeMethods.addValuesToGraphNode(graph, nodeID, self.argumentDictionary[argument], overwrite = True)
 
         # Now deal with arguments pointing to task nodes.
         else:
@@ -290,7 +295,24 @@ class commandLine:
             # If the argument is a flag, the next argument will start with a '-'.
             if not nextTaskArgument.startswith('-'):
               value = [taskArguments.pop(0)]
-              config.nodeMethods.addValuestoGraphNodeAttribute(graph, sourceNodeID, value, overwrite = True)
+
+              #TODO LOOK INTO THIS.
+              # If the node is connected to a file node, check if the file node has already been created.  If
+              # it has, determine if the file node has any predecessors.  If so, generate a new input node for 
+              # this task  It does not make sense to modify options that act backwards in the pipeline.  For
+              # example, the output of a sorting routine may feed into variant calling in Freebayes.  On the 
+              # command line, input bam files  may be defined to feed into Freebayes, but adding these to the
+              # merge node containing this data makes no sense, since these input bam files have no connection to
+              # tasks prior to freebayes.  This is clearly only allowed for options where multiple values are
+              # allowed (there will now be two nodes associated with the same argument, so this argument must
+              # allow multiple definitions.)
+              if config.nodeMethods.getGraphNodeAttribute(graph, sourceNodeID, 'isFile'):
+                fileNodeID = sourceNodeID + '_FILE'
+                if fileNodeID in graph.nodes(data = False):
+                  if graph.predecessors(fileNodeID):
+                    attributes   = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longForm)
+                    sourceNodeID = config.nodeMethods.buildOptionNode(graph, config.tools, task, associatedTool, longForm, attributes)
+              config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, overwrite = False, append = True)
 
             # Add an edge from the source node to the task.
             edge          = edgeAttributes()
@@ -298,9 +320,9 @@ class commandLine:
             graph.add_edge(sourceNodeID, task, attributes = edge)
 
             # Check if this option defines a file.  If so, create a file node for this option.
-            if config.tools.getArgumentData(associatedTool, taskArgument, 'input'):
+            if config.tools.getArgumentData(associatedTool, longForm, 'input'):
               config.nodeMethods.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'input')
-            elif config.tools.getArgumentData(associatedTool, taskArgument, 'output'):
+            elif config.tools.getArgumentData(associatedTool, longForm, 'output'):
               config.nodeMethods.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'output')
 
   # Assign values to the file nodes using the option nodes.
@@ -310,14 +332,32 @@ class commandLine:
       for fileNodeID in fileNodeIDs:
         optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
         values       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
-        config.nodeMethods.addValuestoGraphNodeAttribute(graph, fileNodeID, values, overwrite = True)
+        config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
 
       # Now deal with output files.
       fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(graph, task)
       for fileNodeID in fileNodeIDs:
         optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
         values       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
-        config.nodeMethods.addValuestoGraphNodeAttribute(graph, fileNodeID, values, overwrite = True)
+        config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

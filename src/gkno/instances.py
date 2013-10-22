@@ -101,7 +101,7 @@ class instances:
       # All of the values extracted from the instance json file are unicode.  Convert them to strings.
       for counter, value in enumerate(node['values']): node['values'][counter] = str(value)
 
-      config.nodeMethods.addValuestoGraphNodeAttribute(graph, nodeID, node['values'], overwrite = False)
+      config.nodeMethods.addValuesToGraphNode(graph, nodeID, node['values'], overwrite = False, append = False)
 
   # If the instance is for a pipeline, all of the commands appearing in the instance will be pipeline commands.
   # These need to be converted to command line arguments for the individual tools.

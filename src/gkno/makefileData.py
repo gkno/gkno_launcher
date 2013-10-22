@@ -16,6 +16,7 @@ class makefileData:
     self.coreArguments          = {}
     self.dependencies           = {}
     self.finalArguments         = {}
+    self.ID                     = 1
     self.hasPipes               = False
     self.intermediateFiles      = []
     self.outputs                = {}
@@ -25,17 +26,54 @@ class makefileData:
     self.taskBlocksOutputs      = []
     self.taskBlocksDependencies = []
 
-  # Initialise a list to contain the names of the makefiles.
-  def initialiseNames(self):
-    self.id        = 0
-    self.filenames = []
-
   # Set the names of the makefiles to be created.  If this is a single run, a single name
   # is required, otherwise, there will be a list of names for each of the created makefiles.
-  def getFilename(self, multiple, pipeline):
-    self.id += 1
-    if multiple: pipeline += '_' + str(self.id)
-    self.filenames.append(pipeline + '.make')
+  def getFilename(self, text, multiple = True):
+    if multiple: text += '_' + str(self.ID)
+    filename = text + '.make'
+    self.ID += 1
+
+    return filename
+
+  # Open the makefile and write the initial information to the file.
+  def openMakefile(self, filename):
+
+    # Open a script file.
+    self.makeFilehandle = open(filename, 'w')
+    self.filename       = os.path.abspath(filename)
+
+  # Write initial information to the makefile.
+  def writeHeaderInformation(self, sourcePath, pipelineName):
+    print('### gkno Makefile', file = self.makeFilehandle)
+    print('### Running pipeline:', pipelineName, file = self.makeFilehandle)
+    print(file = self.makeFilehandle)
+    print('GKNO_PATH=', sourcePath, "/src/gkno", sep = '', file = self.makeFilehandle)
+    print('TOOL_BIN=', sourcePath, "/tools", sep = '', file = self.makeFilehandle)
+    print('RESOURCES=', sourcePath + '/resources', sep = '', file = self.makeFilehandle)
+    print('MAKEFILE_ID=', self.filename.split('/')[-1].split('.')[0], sep = '', file = self.makeFilehandle)
+    print(file = self.makeFilehandle)
+    print('.DELETE_ON_ERROR:', file = self.makeFilehandle)
+    print('.PHONY: all', end = ' ', file = self.makeFilehandle)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # Parse through the arguments in the different data structures to build up the list of
   # arguments to be applied.  Each set of arguments overwrites previous arguments in the
@@ -84,33 +122,6 @@ class makefileData:
         if argumentInformation[tool][argument]['required']:
           if argument not in self.coreArguments[task]:
             self.coreArguments[task][argument] = []
-
-  # Open the makefile and write the initial information to the file.
-  def openMakefile(self, sourcePath, isPipeline):
-
-    # Open a script file.
-    self.makeFilehandle = open(self.filenames[self.id - 1], 'w')
-    self.filename       = os.path.abspath(self.filenames[self.id - 1])
-
-    print('### gkno Makefile', file = self.makeFilehandle)
-    print(file = self.makeFilehandle)
-    print('GKNO_PATH=', sourcePath, "/src/gkno", sep = '', file = self.makeFilehandle)
-    print('TOOL_BIN=', sourcePath, "/tools", sep = '', file = self.makeFilehandle)
-    print('RESOURCES=', sourcePath + '/resources', sep = '', file = self.makeFilehandle)
-    print('MAKEFILE_ID=', self.filename.split('/')[-1].split('.')[0], sep = '', file = self.makeFilehandle)
-    print(file = self.makeFilehandle)
-    print('.DELETE_ON_ERROR:', file = self.makeFilehandle)
-    print('.PHONY: all', end = ' ', file = self.makeFilehandle)
-
-    # Check if any of the recipes require phony targets.
-    phonyCounter = 1
-    for outputs in self.taskBlockOutputs:
-      for counter in range(0, len(outputs)):
-        if len(outputs[counter]) == 0:
-          print('phonyTarget_' + str(phonyCounter), end = ' ', file = self.makeFilehandle)
-          self.phonyTargets.append('phonyTarget_' + str(phonyCounter))
-          phonyCounter += 1
-    print(file = self.makeFilehandle)
 
   # Build up the command lines in the makefile.
   def setIntermediateFiles(self, workflow, taskToTool):

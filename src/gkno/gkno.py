@@ -113,6 +113,9 @@ def main():
   # Generate a class for handling instances.
   ins = instances()
 
+  # Generate a multiple runs object.
+  multiRuns = multipleRuns()
+
   # Generate a class for handling internal loops.
   iLoop = internalLoop()
 
@@ -338,9 +341,6 @@ def main():
   # Print information about the pipeline to screen.
   if isPipeline and verbose: writePipelineWorkflow(pipelineGraph, config, workflow, gknoHelp)
 
-  # Set up an array to contain the names of the Makefiles created.
-  make.initialiseNames()
-
   # Attach the values of the pipeline arguments to the relevant nodes.
   if verbose: writeAssignPipelineArgumentsToNodes()
   commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
@@ -394,7 +394,6 @@ def main():
   # input files.  Check to see if this value is set.  If the --multiple-runs argument
   # was set in the instance, this will be stored in the pl.arguments, so also check
   # this value.
-  #mr = multipleRuns()
   #mr.checkForMultipleRuns(cl.uniqueArguments, cl.argumentList, pl.arguments['--multiple-runs'], sourcePath + '/resources', verbose)
   #if verbose: writeCheckingMultipleRunsInformation()
   #if mr.hasMultipleRuns:
@@ -402,6 +401,9 @@ def main():
   #  if pl.isPipeline: mr.checkInformation(tl.tool, pl.argumentInformation, pl.shortForms, verbose)
   #  else: mr.checkInformation(tl.tool, tl.argumentInformation[tl.tool], tl.shortForms[tl.tool], verbose)
   #if verbose: writeDone()
+
+  # TODO CHECK ALL PARAMETERS
+  #config.checkParameters(pipelineGraph)
 
   # Generate the make.arguments structure.  This is built from the arguments collected from the
   # configuration files, the command line, instances and the multiple runs file where applicable.
@@ -452,11 +454,16 @@ def main():
     # Makefile is generated and nothing is executed.
     #exit(0)
 
+  # Prior to filling in missing filenames, check that all of the supplied data is consistent with
+  # expectations.  This includes ensuring that the inputted data types are correct (for example, if
+  # an argument expects an integer, check that the values are integers), filename extensions are valid
+  # and that multiple values aren't given to arguments that are only allowed a single value.
+  config.checkData(pipelineGraph)
+
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
   for task in workflow:
-    print(task)
 
     # Input files are predecessor nodes to the task.  Deal with the input files first.
     fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task)
@@ -467,8 +474,13 @@ def main():
       # Use the argument to get information about the argument.
       isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
       isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
+
+      # If input files aren't set, gkno should terminate.  If the input is linked to the output of
+      # another task, the nodes are merged and so the input is set.  Thus, an empty value cannot be
+      # filled without command line (or instance) information.
       if isRequired and not isSet:
-        print('\tMISSING INPUT:', fileNodeID, task, argument)
+        print('MISSING INPUT FILE:', task, argument)
+        errors.terminate()
 
     # Now deal with output files,  These are all successor nodes.
     fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task)
@@ -478,7 +490,6 @@ def main():
 
       isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
       isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
-      print('TESTING:', task, argument, isRequired, isSet)
       if isRequired and not isSet:
         method = gknoConfig.constructionInstructions(pipelineGraph, config, task, argument, fileNodeID)
         if method == None:
@@ -491,22 +502,48 @@ def main():
         # built it using these instructions.
         else: filename = gknoConfig.constructFilename(pipelineGraph, config, method, task, fileNodeID)
 
+  #nx.write_dot(pipelineGraph, 'graphviz.gkno.graph.dot')
   # Check that all of the required values are set.  This is simply a case of stepping through each node
   # in turn, checking the isRequired flag and if this is set to true, checking that the values dictionary
   # is not empty.
-  # TODO Check.
-  print('\n\nNODE VALUES')
+  # TODO CHECK THAT ALL PARAMETERS ARE SET
+
   for task in workflow:
     print(task)
-    for nodeID in config.nodeMethods.getPredecessorOptionNodes(pipelineGraph, task):
-      print('\t', nodeID, config.edgeMethods.getEdgeAttribute(pipelineGraph, nodeID, task, 'argument'), config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values'))
-    for nodeID in config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task):
-      print('\t', nodeID, config.edgeMethods.getEdgeAttribute(pipelineGraph, nodeID, task, 'argument'), config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values'))
-    for nodeID in config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task):
-      print('\t', nodeID, config.edgeMethods.getEdgeAttribute(pipelineGraph, task, nodeID, 'argument'), config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values'))
-  exit(0)
-  config.checkParameters(pipelineGraph)
+    for nodeID in pipelineGraph.predecessors(task):
+      argument = config.edgeMethods.getEdgeAttribute(pipelineGraph, nodeID, task, 'argument')
+      values = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values')
+      print('\tPRE', nodeID, argument, values)
+    for nodeID in pipelineGraph.successors(task):
+      argument = config.edgeMethods.getEdgeAttribute(pipelineGraph, task, nodeID, 'argument')
+      values = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values')
+      print('\tSUC', nodeID, argument, values)
 
+  # If there are multiple runs, multiple make files are created, using only the values for individual
+  # iterations.
+  #TODO SORT OUT MULTIPLE RUNS.
+  if multiRuns.hasMultipleRuns:
+    print('Haven\'t handled multiple runs')
+    errors.terminate()
+
+  # Otherwise, all of the values are included in the same makefile.
+  else:
+    makeFilename = make.getFilename(pipelineName, multiple = False)
+    make.openMakefile(makeFilename)
+    make.writeHeaderInformation(sourcePath, pipelineName)
+    graphDependencies  = config.determineGraphDependencies(pipelineGraph, key = 'all')
+    graphOutputs       = config.determineGraphOutputs(pipelineGraph, key = 'all')
+    graphIntermediates = config.determineGraphIntermediateFiles(pipelineGraph, key = 'all')
+
+    print('DEPENDENCIES')
+    for filename in graphDependencies: print('\t', filename)
+    print('\nOUTPUTs')
+    for filename in graphOutputs: print('\t', filename)
+    print('\nINTERMEDIATES')
+    for filename in graphIntermediates: print('\t', filename)
+  exit(0)
+
+  # FIXME REMOVE OLD METHODS
   # Now that all of the information has been gathered and stored, start a loop over the remainder of 
   # the gkno subroutines.  Each iteration (there is only a single iteration in the absence of the
   # multiple runs command), the arguments for that run are set up and the makefile generated and
