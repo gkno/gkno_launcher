@@ -490,6 +490,7 @@ def main():
 
       isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
       isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
+      print(task, fileNodeID, optionNodeID, argument, isRequired, isSet)
       if isRequired and not isSet:
         method = gknoConfig.constructionInstructions(pipelineGraph, config, task, argument, fileNodeID)
         if method == None:
@@ -500,8 +501,9 @@ def main():
 
         # If the tool configuration file has instructions on how to construct the filename,
         # built it using these instructions.
-        else: filename = gknoConfig.constructFilename(pipelineGraph, config, method, task, fileNodeID)
+        else: gknoConfig.constructFilename(pipelineGraph, config, method, task, fileNodeID)
 
+  exit(0)
   #nx.write_dot(pipelineGraph, 'graphviz.gkno.graph.dot')
   # Check that all of the required values are set.  This is simply a case of stepping through each node
   # in turn, checking the isRequired flag and if this is set to true, checking that the values dictionary
