@@ -294,19 +294,6 @@ def main():
   # lists are generated here.
   gknoHelp.setAvailableToolsAndPipelines(config.tools.attributes.keys(), gknoConfig.jsonFiles['pipelines'])
 
-  # TODO DEAL WITH INSTANCES
-  # Check for an additional instance file associated with this tool/pipeline and add the information
-  # to the relevant data structure.
-  if isPipeline:
-    #FIXME RESET THE DIRECTORY TO REMOVE 'temp'
-    instanceData = ins.checkInstanceFile(sourcePath, 'temp/pipes', pipelineName, gknoConfig.jsonFiles['pipeline instances'])
-    if len(instanceData) != 0: ins.checkInstanceInformation(instanceData, config.pipeline.instances, config.pipeline.pipelineName + '_instances.json')
-
-  # TODO DEAL WITH INSTANCES FOR TOOLS.
-  #else:
-  #  instanceData = ins.checkInstanceFile(sourcePath, 'tools', tl.tool, io.jsonToolInstances)
-  #  if len(instanceData) != 0: ins.checkInstanceInformation(instanceData, tl.instances[tl.tool], tl.tool + '_instances.json')
-
   # Parse the command line and put all of the arguments into a list.
   if verbose: gettingCommandLineArguments()
   if isPipeline: commands.getCommandLineArguments(pipelineGraph, config, pipelineName, isPipeline, verbose)
@@ -341,21 +328,21 @@ def main():
   # Print information about the pipeline to screen.
   if isPipeline and verbose: writePipelineWorkflow(pipelineGraph, config, workflow, gknoHelp)
 
+  # TODO DEAL WITH TOOL INSTANCES
+  #FIXME RESET THE DIRECTORY TO REMOVE 'temp'
+  # Check if an instance was requested by the user.  If so, get the data and add the values to the data nodes.
+  if verbose: writeCheckingInstanceInformation()
+  instanceName = commands.getInstanceName()
+  instanceData = config.getInstanceData(sourcePath, isPipeline, pipelineName, instanceName, gknoConfig.jsonFiles['pipeline instances'])
+  config.attachInstanceArgumentsToNodes(pipelineGraph, instanceData)
+  if verbose: writeDone()
+
   # Attach the values of the pipeline arguments to the relevant nodes.
   if verbose: writeAssignPipelineArgumentsToNodes()
   commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
   if verbose: writeDone()
 
-  # Check if an instance was selected.  If so, read the specific instance parameters and attach the values
-  # to the nodes.  This is the first assignment of values to the nodes.  These are added in a hierarchy, such
-  # that commands entered on the command line supercede those contained in the instance.
-  if verbose: writeCheckingInstanceInformation()
-  ins.getInstanceName(pipelineGraph, config, verbose)
-  if verbose: writeDone()
-
-  if isPipeline:
-    ins.getInstanceArguments(sourcePath + '/config_files/pipes/', config.pipeline.pipelineName, config.pipeline.instances, verbose)
-    ins.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
+  #TODO DEAL WITH MULTIPLE RUNS AND INTERNAL LOOP VALUES NOW.
 
   # Now that the command line argument has been parsed, all of the values supplied have been added to the
   # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
@@ -464,8 +451,10 @@ def main():
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
   for task in workflow:
+    print('\n', task, sep = '')
 
     # Input files are predecessor nodes to the task.  Deal with the input files first.
+    print('\tINPUTS', sep = '')
     fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task)
     for fileNodeID in fileNodeIDs:
       argument     = config.edgeMethods.getEdgeAttribute(pipelineGraph, fileNodeID, task, 'argument')
@@ -481,16 +470,17 @@ def main():
       if isRequired and not isSet:
         print('MISSING INPUT FILE:', task, argument)
         errors.terminate()
+      print('\t\t', optionNodeID, fileNodeID, argument, isRequired, config.nodeMethods.getGraphNodeAttribute(pipelineGraph, fileNodeID, 'values'))
 
     # Now deal with output files,  These are all successor nodes.
     fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task)
+    print('\tOUTPUTS', sep = '')
     for fileNodeID in fileNodeIDs:
       argument     = config.edgeMethods.getEdgeAttribute(pipelineGraph, task, fileNodeID, 'argument')
       optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
 
       isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
       isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
-      print(task, fileNodeID, optionNodeID, argument, isRequired, isSet)
       if isRequired and not isSet:
         method = gknoConfig.constructionInstructions(pipelineGraph, config, task, argument, fileNodeID)
         if method == None:
@@ -502,9 +492,8 @@ def main():
         # If the tool configuration file has instructions on how to construct the filename,
         # built it using these instructions.
         else: gknoConfig.constructFilename(pipelineGraph, config, method, task, fileNodeID)
+      print('\t\t', optionNodeID, fileNodeID, argument, isRequired, config.nodeMethods.getGraphNodeAttribute(pipelineGraph, fileNodeID, 'values'), method)
 
-  exit(0)
-  #nx.write_dot(pipelineGraph, 'graphviz.gkno.graph.dot')
   # Check that all of the required values are set.  This is simply a case of stepping through each node
   # in turn, checking the isRequired flag and if this is set to true, checking that the values dictionary
   # is not empty.
@@ -520,6 +509,7 @@ def main():
       argument = config.edgeMethods.getEdgeAttribute(pipelineGraph, task, nodeID, 'argument')
       values = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values')
       print('\tSUC', nodeID, argument, values)
+  exit(0)
 
   # If there are multiple runs, multiple make files are created, using only the values for individual
   # iterations.

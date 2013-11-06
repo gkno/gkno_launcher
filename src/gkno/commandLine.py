@@ -220,6 +220,21 @@ class commandLine:
       
     return verbose
 
+  # Check if an instance was defined and return the instance name.  If no instance was requested,
+  # return 'default'.
+  def getInstanceName(self):
+    if '--instance' in self.argumentDictionary:
+
+      # If multiple instances were specified, fail.
+      if len(self.argumentDictionary['--instance']) != 1:
+        # TODO SORT ERRORS
+        print('Multiple instances specified on the command line.')
+        self.errors.terminate()
+
+      return self.argumentDictionary['--instance'][0]
+
+    else: return 'default'
+
   # Attach the values supplied on the command line to the nodes.
   def attachPipelineArgumentsToNodes(self, graph, config, gknoConfig):
     for argument in self.argumentDictionary:
@@ -258,7 +273,7 @@ class commandLine:
 
           #TODO ASSUMING THAT CREATING ADDITIONAL NODES FOR ARGUMENTS POINTING TO NODES WITH PREDECESSORS
           # WORKED, IMPLEMENT HERE ASWELL.
-          config.nodeMethods.addValuesToGraphNode(graph, nodeID, self.argumentDictionary[argument], overwrite = True)
+          config.nodeMethods.addValuesToGraphNode(graph, nodeID, self.argumentDictionary[argument], write = 'replace')
 
         # Now deal with arguments pointing to task nodes.
         else:
@@ -282,42 +297,74 @@ class commandLine:
             associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
             longForm       = config.tools.getLongFormArgument(associatedTool, taskArgument)
             shortForm      = config.tools.getArgumentData(associatedTool, taskArgument, 'short form argument')
+            isFilenameStub = config.tools.getArgumentData(associatedTool, taskArgument, 'is filename stub')
 
-            # Determine if an edge exists for this argument.  If so, get the node associated with the
-            # data for this edge.  If not, create the node.
-            sourceNodeID = config.nodeMethods.getNodeForTaskArgument(graph, nodeID, longForm)
-            if sourceNodeID == None:
-              sourceNodeID = 'OPTION_' + str(config.nodeMethods.optionNodeID)
-              config.nodeMethods.optionNodeID += 1
-              attributes   = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longForm)
+            # Determine if this is a flag or a value. If the argument is a flag, the next argument on the
+            # command line will be a '-'
+            if nextTaskArgument.startswith('-'): value = ['set']
+            else: value = [taskArguments.pop(0)]
+
+            # Prepare the edge to be added.
+            edge                = edgeAttributes()
+            edge.argument       = longForm
+            edge.shortForm      = shortForm
+            edge.isFilenameStub = isFilenameStub
+
+            # If there is no node available for this task argument, create the node and add the edge.
+            sourceNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, nodeID, longForm)
+            if not sourceNodeIDs:
+              sourceNodeID  = 'OPTION_' + str(config.nodeMethods.optionNodeID)
+              attributes    = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longForm)
               graph.add_node(sourceNodeID, attributes = attributes)
+              config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'replace')
+              graph.add_edge(sourceNodeID, task, attributes = edge)
+              config.nodeMethods.optionNodeID += 1
 
-            # If the argument is a flag, the next argument will start with a '-'.
-            if not nextTaskArgument.startswith('-'):
-              value = [taskArguments.pop(0)]
+            # If there are already nodes for this task argument, determine how to proceed.
+            else:
 
               #TODO LOOK INTO THIS.
               # If the node is connected to a file node, check if the file node has already been created.  If
               # it has, determine if the file node has any predecessors.  If so, generate a new input node for 
-              # this task  It does not make sense to modify options that act backwards in the pipeline.  For
-              # example, the output of a sorting routine may feed into variant calling in Freebayes.  On the 
-              # command line, input bam files  may be defined to feed into Freebayes, but adding these to the
-              # merge node containing this data makes no sense, since these input bam files have no connection to
-              # tasks prior to freebayes.  This is clearly only allowed for options where multiple values are
-              # allowed (there will now be two nodes associated with the same argument, so this argument must
+              # this task that will exist alongside the original node - in effect creating two nodes that both
+              # feed into the task using the same argument.  The reason for this is that it does not make sense
+              # to modify options that act backwards in the pipeline.  For example, the output of a sorting
+              # routine is a file node that feed into a variant calling task (as directed in the pipeline
+              # configuration file). In addition, tha command line might have input bam files defined to feed 
+              # directly into the variant calling task node.  It doesn't make sense to add these files to the
+              # node that has been merged with the sort routine since these input bam files have no connection to
+              # tasks prior to the variant calling.  This is clearly only allowed for options where multiple values
+              # are permitted (there will now be two nodes associated with the same argument, so this argument must
               # allow multiple definitions.)
-              if config.nodeMethods.getGraphNodeAttribute(graph, sourceNodeID, 'isFile'):
-                fileNodeID = sourceNodeID + '_FILE'
-                if fileNodeID in graph.nodes(data = False):
-                  if graph.predecessors(fileNodeID):
-                    attributes   = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longForm)
-                    sourceNodeID = config.nodeMethods.buildOptionNode(graph, config.tools, task, associatedTool, longForm, attributes)
-              config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, overwrite = False, append = True)
 
-            # Add an edge from the source node to the task.
-            edge          = edgeAttributes()
-            edge.argument = longForm
-            graph.add_edge(sourceNodeID, task, attributes = edge)
+              # It is possible that a new node has already been created, in which case sourceNodeIDs will have
+              # multiple values.  Check if any of them are files and have no predecssors.  If there is one such
+              # node, add values to this.  If not, create a new node.
+              availableNodeIDs = []
+              for sourceNodeID in sourceNodeIDs:
+                if config.nodeMethods.getGraphNodeAttribute(graph, sourceNodeID, 'isFile'):
+                  fileNodeID = sourceNodeID + '_FILE'
+                  if fileNodeID in graph.nodes(data = False):
+                    if not graph.predecessors(fileNodeID): availableNodeIDs.append(sourceNodeID)
+
+              # No nodes were found with no predecessors, so a new node should be created.
+              if not availableNodeIDs:
+                attributes   = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longForm)
+                sourceNodeID = config.nodeMethods.buildOptionNode(graph, config.tools, task, associatedTool, longForm, attributes)
+                config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'replace')
+                graph.add_edge(sourceNodeID, task, attributes = edge)
+
+              # A node was found with no predecssors, so add values to this node.
+              elif len(availableNodeIDs) == 1:
+                sourceNodeID = availableNodeIDs[0]
+                config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'append', iteration = 1)
+                graph.add_edge(sourceNodeID, task, attributes = edge)
+
+              # Multiple previous nodes were found. This should not have occured, so gkno canno proceed.
+              else:
+                #TODO ERROR
+                print('too many available nodes, attachPipelineArgumentsToNodes - commandLine.py')
+                self.errors.terminate()
 
             # Check if this option defines a file.  If so, create a file node for this option.
             if config.tools.getArgumentData(associatedTool, longForm, 'input'):

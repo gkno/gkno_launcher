@@ -24,6 +24,9 @@ class gknoConfigurationFiles:
     self.jsonFiles['pipelines']          = {}
     self.jsonFiles['pipeline instances'] = {}
 
+    # Errors class.
+    self.errors = gknoErrors()
+
     # Define a dictionary to hold information contained in the gkno configuration file.
     self.gknoConfigurationData = {}
 
@@ -77,7 +80,7 @@ class gknoConfigurationFiles:
         for counter, value in enumerate(self.gknoConfigurationData['gkno options'][nodeID]['value']):
           if type(value) != bool: self.gknoConfigurationData['gkno options'][nodeID]['value'][counter] = str(value)
 
-        config.nodeMethods.addValuesToGraphNode(graph, nodeID, self.gknoConfigurationData['gkno options'][nodeID]['value'], overwrite = True)
+        config.nodeMethods.addValuesToGraphNode(graph, nodeID, self.gknoConfigurationData['gkno options'][nodeID]['value'], write = 'replace')
         config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'hasValue', True)
     
       # Join the option node to the gkno task node.
@@ -122,10 +125,10 @@ class gknoConfigurationFiles:
 
   # Construct a filename using another tool argument.
   def constructFilenameFromToolArgument(self, graph, config, task, fileNodeID):
-
-    # Check if the filename is a filename stub.  If so, the 
     optionNodeID   = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-    isFilenameStub = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isFilenameStub')
+
+    # Check if the filename is a filename stub.
+    isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'isFilenameStub')
     if isFilenameStub: self.constructFilenameFromToolArgumentStub(graph, config, task, fileNodeID)
     else: self.constructFilenameFromToolArgumentNotStub(graph, config, task, fileNodeID)
 
@@ -138,7 +141,12 @@ class gknoConfigurationFiles:
     replaceExtension = instructions['replace extension']
 
     # Get the ID of the node corresponding to the baseArgument.
-    baseNodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument)
+    # TODO SORT OUT THE CASE WHERE THERE ARE MULTIPLE VALUES
+    baseNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument)
+    if len(baseNodeIDs) != 1:
+      print('Not yet handled constructFilenameFromToolArgumentStub')
+      self.errors.terminate()
+    else: baseNodeID = baseNodeIDs[0]
     values     = config.nodeMethods.getGraphNodeAttribute(graph, baseNodeID, 'values')
 
     # Generate the filename for the option node.  Since this is a filename stub, this will not have any
@@ -156,7 +164,14 @@ class gknoConfigurationFiles:
       for taskArgument in instructions['add argument values']:
 
         # Find the option node that provides information for this argument.
-        argumentNodeID     = config.nodeMethods.getNodeForTaskArgument(graph, task, taskArgument)
+        # TODO HANDLE THE CASE OF MULTIPLE VALUES
+        argumentNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, taskArgument)
+        if len(argumentNodeIDs) != 1:
+          print('not yet handled - constructFilenameFromToolArgumentStub mark2')
+          self.errors.terminate()
+        else: argumentNodeID = argumentNodeIDs[0]
+
+
         argumentNodeValues = config.nodeMethods.getGraphNodeAttribute(graph, argumentNodeID, 'values')
         numberOfNodeValues = len(argumentNodeValues)
 
@@ -190,7 +205,7 @@ class gknoConfigurationFiles:
     if len(fileNodeIDs) != len(extensions):
       #TODO SORT ERROR
       print('Number of file nodes != number of extensions - gknoConfigurationFiles.constructFilenameFromToolArgumentStub')
-      self.terminate()
+      self.errors.terminate()
 
     for nodeID in fileNodeIDs:
       fileValues = {}
@@ -208,9 +223,33 @@ class gknoConfigurationFiles:
     baseArgument     = instructions['use argument']
     replaceExtension = instructions['replace extension']
 
-    # Get the ID of the node corresponding to the baseArgument.
-    baseNodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument)
-    values     = config.nodeMethods.getGraphNodeAttribute(graph, baseNodeID, 'values')
+    # Get the ID of the node corresponding to the baseArgument. If there are multiple nodes
+    # available, pick one that has a predecessor node itself. TODO SORT THIS OUT
+    baseNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument)
+    if len(baseNodeIDs) == 1: baseNodeID = baseNodeIDs[0]
+    elif len(baseNodeIDs) == 0:
+      #TODO Sort error
+      print('No basenode - constructFilenameFromToolArgumentNotStub')
+      self.errors.terminate()
+    else: baseNodeID = config.nodeMethods.getNodeIDWithPredecessor(graph, baseNodeIDs, task)
+
+    # Find all predecessor file nodes and then identify the file associated with the baseNodeID.
+    # Get the values from this file node.  Some of the values associated with option nodes are
+    # for filename stubs, but those attached to file nodes will always be a full file name as
+    # required here.
+    predecessorFileNodeIDs = config.nodeMethods.getPredecessorFileNodes(graph, task)
+    fileNodeExists         = False
+    for nodeID in predecessorFileNodeIDs:
+      if nodeID.startswith(baseNodeID + '_'):
+        values         = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
+        fileNodeExists = True
+        break
+
+    # If no file node was found, terminate.
+    if not fileNodeExists:
+      #TODO ERROR
+      print('constructFilenameFromToolArgumentNotStub')
+      self.errors.terminate()
 
     # If the extension is to be replaced, do that here.
     if replaceExtension:
