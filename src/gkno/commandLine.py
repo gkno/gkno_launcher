@@ -323,54 +323,71 @@ class commandLine:
             # If there are already nodes for this task argument, determine how to proceed.
             else:
 
-              #TODO LOOK INTO THIS.
-              # If the node is connected to a file node, check if the file node has already been created.  If
-              # it has, determine if the file node has any predecessors.  If so, generate a new input node for 
-              # this task that will exist alongside the original node - in effect creating two nodes that both
-              # feed into the task using the same argument.  The reason for this is that it does not make sense
-              # to modify options that act backwards in the pipeline.  For example, the output of a sorting
-              # routine is a file node that feed into a variant calling task (as directed in the pipeline
-              # configuration file). In addition, tha command line might have input bam files defined to feed 
-              # directly into the variant calling task node.  It doesn't make sense to add these files to the
-              # node that has been merged with the sort routine since these input bam files have no connection to
-              # tasks prior to the variant calling.  This is clearly only allowed for options where multiple values
-              # are permitted (there will now be two nodes associated with the same argument, so this argument must
-              # allow multiple definitions.)
+              # Check if this argument defines a file/files. If so, all of the possible source nodes must be
+              # referencing a file.
+              isFile = config.nodeMethods.getGraphNodeAttribute(graph, sourceNodeIDs[0], 'isFile')
 
-              # It is possible that a new node has already been created, in which case sourceNodeIDs will have
-              # multiple values.  Check if any of them are files and have no predecssors.  If there is one such
-              # node, add values to this.  If not, create a new node.
-              availableNodeIDs = []
-              for sourceNodeID in sourceNodeIDs:
-                if config.nodeMethods.getGraphNodeAttribute(graph, sourceNodeID, 'isFile'):
-                  fileNodeID = sourceNodeID + '_FILE'
-                  if fileNodeID in graph.nodes(data = False):
-                    if not graph.predecessors(fileNodeID): availableNodeIDs.append(sourceNodeID)
+              # For option nodes not corresponding to files, check that there is only a single source node
+              # and set its value.
+              if not isFile:
+                if len(sourceNodeIDs) == 1:
+                  config.nodeMethods.addValuesToGraphNode(graph, sourceNodeIDs[0], value, write = 'replace')
+                  graph.add_edge(sourceNodeIDs[0], task, attributes = edge)
+                else:
+                  #TODO ERROR
+                  print('MULTIPLE SOURCE NODES FOR NON FILE NODE. - attachPipelineArgumentsToNodes')
+                  self.errors.terminate()
 
-              # No nodes were found with no predecessors, so a new node should be created.
-              if not availableNodeIDs:
-                attributes   = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longForm)
-                sourceNodeID = config.nodeMethods.buildOptionNode(graph, config.tools, task, associatedTool, longForm, attributes)
-                config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'replace')
-                graph.add_edge(sourceNodeID, task, attributes = edge)
-
-              # A node was found with no predecssors, so add values to this node.
-              elif len(availableNodeIDs) == 1:
-                sourceNodeID = availableNodeIDs[0]
-                config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'append', iteration = 1)
-                graph.add_edge(sourceNodeID, task, attributes = edge)
-
-              # Multiple previous nodes were found. This should not have occured, so gkno canno proceed.
+              # Option nodes dealing with files are a little more complex.
               else:
-                #TODO ERROR
-                print('too many available nodes, attachPipelineArgumentsToNodes - commandLine.py')
-                self.errors.terminate()
-
-            # Check if this option defines a file.  If so, create a file node for this option.
-            if config.tools.getArgumentData(associatedTool, longForm, 'input'):
-              config.nodeMethods.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'input')
-            elif config.tools.getArgumentData(associatedTool, longForm, 'output'):
-              config.nodeMethods.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'output')
+                #TODO LOOK INTO THIS.
+                # If the node is connected to a file node, check if the file node has already been created.  If
+                # it has, determine if the file node has any predecessors.  If so, generate a new input node for 
+                # this task that will exist alongside the original node - in effect creating two nodes that both
+                # feed into the task using the same argument.  The reason for this is that it does not make sense
+                # to modify options that act backwards in the pipeline.  For example, the output of a sorting
+                # routine is a file node that feed into a variant calling task (as directed in the pipeline
+                # configuration file). In addition, tha command line might have input bam files defined to feed 
+                # directly into the variant calling task node.  It doesn't make sense to add these files to the
+                # node that has been merged with the sort routine since these input bam files have no connection to
+                # tasks prior to the variant calling.  This is clearly only allowed for options where multiple values
+                # are permitted (there will now be two nodes associated with the same argument, so this argument must
+                # allow multiple definitions.)
+  
+                # It is possible that a new node has already been created, in which case sourceNodeIDs will have
+                # multiple values.  Check if any of them are files and have no predecssors.  If there is one such
+                # node, add values to this.  If not, create a new node.
+                availableNodeIDs = []
+                for sourceNodeID in sourceNodeIDs:
+                  if config.nodeMethods.getGraphNodeAttribute(graph, sourceNodeID, 'isFile'):
+                    fileNodeID = sourceNodeID + '_FILE'
+                    if fileNodeID in graph.nodes(data = False):
+                      if not graph.predecessors(fileNodeID): availableNodeIDs.append(sourceNodeID)
+  
+                # No nodes were found with no predecessors, so a new node should be created.
+                if not availableNodeIDs:
+                  attributes   = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longForm)
+                  sourceNodeID = config.nodeMethods.buildOptionNode(graph, config.tools, task, associatedTool, longForm, attributes)
+                  config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'replace')
+                  graph.add_edge(sourceNodeID, task, attributes = edge)
+  
+                # A node was found with no predecssors, so add values to this node.
+                elif len(availableNodeIDs) == 1:
+                  sourceNodeID = availableNodeIDs[0]
+                  config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'append', iteration = 1)
+                  graph.add_edge(sourceNodeID, task, attributes = edge)
+  
+                # Multiple previous nodes were found. This should not have occured, so gkno canno proceed.
+                else:
+                  #TODO ERROR
+                  print('too many available nodes, attachPipelineArgumentsToNodes - commandLine.py')
+                  self.errors.terminate()
+  
+              # Check if this option defines a file.  If so, create a file node for this option.
+              if config.tools.getArgumentData(associatedTool, longForm, 'input'):
+                config.nodeMethods.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'input')
+              elif config.tools.getArgumentData(associatedTool, longForm, 'output'):
+                config.nodeMethods.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'output')
 
   # Assign values to the file nodes using the option nodes.
   def mirrorFileNodeValues(self, graph, config, workflow):
