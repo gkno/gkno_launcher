@@ -58,8 +58,19 @@ class makefileData:
   # Write out all of the intermediate files.
   def writeIntermediateFiles(self, intermediates):
     print('.INTERMEDIATE:', end = ' ', file = self.makeFilehandle)
-    for intermediateFile in intermediates:
-      print(intermediateFile, end = ' ', file = self.makeFilehandle)
+    if intermediates:
+      for intermediateFile in intermediates:
+        print(intermediateFile, end = ' ', file = self.makeFilehandle)
+    print(file = self.makeFilehandle)
+    print(file = self.makeFilehandle)
+
+  # Write out all of the output files.
+  def writeOutputFiles(self, outputs):
+    print('all:', end = ' ', file = self.makeFilehandle)
+    if outputs:
+      for outputFile in outputs:
+        print(outputFile, end = ' ', file = self.makeFilehandle)
+    print(file = self.makeFilehandle)
     print(file = self.makeFilehandle)
 
 

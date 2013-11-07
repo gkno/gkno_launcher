@@ -55,12 +55,13 @@ def writeAssignPipelineArgumentsToNodes():
   print('Assigning command line arguments to graph nodes...', end = '', file = sys.stdout)
   sys.stdout.flush()
 
-def writeCheckingInstanceInformation():
-  print('Checking instance information...', end = '', file = sys.stdout)
+def writeAssignLoopArguments(hasMultipleRuns):
+  if hasMultipleRuns: print('Assigning multiple runs information to graph nodes...', end = '', file = sys.stdout)
+  else: print('Assigning internal loop information to graph nodes...', end = '', file = sys.stdout)
   sys.stdout.flush()
 
-def writeCheckingMultipleRunsInformation():
-  print('Checking multiple runs information...', end = '', file = sys.stdout)
+def writeCheckingInstanceInformation():
+  print('Checking instance information...', end = '', file = sys.stdout)
   sys.stdout.flush()
 
 def writeTracking(ID):

@@ -16,6 +16,20 @@ import json
 import os
 import sys
 
+# Define a data structure for holding information about multiple runs/internal loops.
+class loopData:
+  def __init__(self):
+
+    # Define a list of arguments. The order is important since the values in the loop file are
+    # in the same order as the arguments.
+    self.arguments = []
+
+    # Define the number of data sets in the file.
+    self.numberOfDataSets = 0
+
+    # Define a dictionary that will hold the values.
+    self.values = {}
+
 class gknoConfigurationFiles:
   def __init__(self):
     self.jsonFiles                       = {}
@@ -32,6 +46,9 @@ class gknoConfigurationFiles:
 
     #TODO FILL IN TEXT
     self.delimiter = '_'
+
+    # Define the data structure for loop data.
+    self.loopData = loopData()
 
   # Search a directory for json files and return a reference
   # to a list.
@@ -92,6 +109,81 @@ class gknoConfigurationFiles:
   # Clear the data structure holding the gkno specific data.
   def eraseConfigurationData(self):
     self.gknoConfigurationData = {}
+
+  # Check if multiple runs or internal loops have been requested. If so, check that only one file
+  # has been provided.
+  def hasLoop(self, graph, config):
+    multipleRuns = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-MULTIPLE-RUNS', 'values')
+    internalLoop = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-LOOP', 'values')
+
+    # Either multiple runs or internal loops are allowed, but not both.
+    if multipleRuns and internalLoop:
+      #TODO ERROR
+      print('CANNOT DEFINE MULTIPLE RUN AND INTERNAL LOOP SIMULTANEOUSLY - hasMultipleRunsOrLoop')
+      self.errors.terminate()
+
+    # If no multiple runs or internal loops are requested, return.
+    if not multipleRuns and not internalLoop: return False, False
+
+    # If a file is provided, check the format.
+    hasMultipleRuns = False
+    hasInternalLoop = False
+    if multipleRuns:
+      files           = multipleRuns[1]
+      hasMultipleRuns = True
+    elif internalLoop:
+      files = internalLoop[1]
+      hasInternalLoop = True
+
+    # There can only be a single file specified
+    if len(files) != 1:
+      # TODO ERROR
+      print('ONLY A SINGLE FILE CAN BE SPECIFIED FOR MULTIPLE RUN/INTERNAL LOOP - hasMultipleRunsOrLoop')
+      self.errors.terminate()
+
+    # TODO IMPLEMENT
+    # Validate the file and import the information into a data structure.
+    data = config.fileOperations.readConfigurationFile(files[0])
+    self.validateMultipleRunsFiles(data)
+    self.processMultipleRunFileData(data)
+    return hasMultipleRuns, hasInternalLoop
+
+  # TODO
+  # Validate the contents of a multiple run or internal loop file.
+  def validateMultipleRunsFiles(self, data):
+    pass
+
+  # Parse the information from the multiple runs/internal loop file into data structures.
+  def processMultipleRunFileData(self, data):
+ 
+    # Store the arguments contained in the loop file in the correct order.
+    for argument in data['arguments']: self.loopData.arguments.append(argument)
+
+    # Loop over the sets of values and add to the data structure. Keep track of the number of
+    # data sets.
+    for iteration in data['values']:
+      self.loopData.numberOfDataSets += 1
+      self.loopData.values[iteration] = []
+      for value in data['values'][iteration]: self.loopData.values[iteration].append(value)
+
+  # Assign loop values to the graph.
+  def addLoopValuesToGraph(self, graph, config):
+
+    # TODO EXPLAIN
+    for iteration in range(1, self.loopData.numberOfDataSets + 1):
+      for argument, values in zip(self.loopData.arguments, self.loopData.values[str(iteration)]):
+
+        # Find the node for this argument.
+        nodeID = config.pipeline.argumentData[argument].nodeID
+
+        # TODO Check if a node has been deleted as part of the merge process, that the pipeline
+        # has the argumentData updated to reflect the change.
+        if nodeID not in graph.nodes():
+          print('ERROR - node not in graph - addLoopValuesToGraph')
+          self.errors.terminate()
+
+        if iteration == 1: config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'replace')
+        else: config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'iteration', iteration = str(iteration))
 
   # Return the node for a gkno argument contained in the gkno configuration file.
   def getNodeForGknoArgument(self, graph, config, argument):
@@ -171,7 +263,6 @@ class gknoConfigurationFiles:
           self.errors.terminate()
         else: argumentNodeID = argumentNodeIDs[0]
 
-
         argumentNodeValues = config.nodeMethods.getGraphNodeAttribute(graph, argumentNodeID, 'values')
         numberOfNodeValues = len(argumentNodeValues)
 
@@ -191,6 +282,7 @@ class gknoConfigurationFiles:
               modifiedValues[iteration] = modifiedList
 
         else:
+          print('HI', optionNodeID, argument, baseArgument, baseNodeIDs, numberOfValues, numberOfNodeValues)
           print('NOT YET HANDLED - constructFilenameFromToolArgumentStub')
           self.errors.terminate()
 

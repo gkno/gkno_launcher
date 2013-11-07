@@ -348,47 +348,13 @@ def main():
   # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
   commands.mirrorFileNodeValues(pipelineGraph, config, workflow)
 
-  #TODO REMOVE
-  #cl.assignArgumentsToTasks(tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
-  #commands.assignArgumentsToTasks()#tl.tool, tl.shortForms, pl.isPipeline, pl.arguments, pl.argumentInformation, pl.shortForms, pl.workflow, verbose)
-  #cl.parseCommandLine(tl.tool, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.argumentInformation, pl.shortForms, pl.taskToTool, verbose)
-
-  #TODO REMOVE
-  #else:
-  #  ins.getInstanceArguments(sourcePath + '/config_files/tools/', tl.tool, tl.instances[tl.tool], verbose)
-  #  ins.setToolArguments(tl.tool, verbose)
-  #ins.checkInstanceArguments(pl.taskToTool, tl.argumentInformation, tl.shortForms, verbose)
-  #if verbose: writeDone()
-
-  # TODO SORT OUT INTERNAL LOOPS.
-  # If this is a pipeline and internal loops are permitted, check if the user has requested use of
-  # the internal loop.  If so, check that the supplied file exists and read in the information.  First,
-  # check if an internal loop was specified on the command line, but the pipeline does not have any
-  # internal loop information in the configuration file.
-  #if pl.arguments['--internal-loop'] != ''  and not pl.hasInternalLoop:
-  #  er.internalLoopRequestedButUndefined(verbose, pl.pipelineName, pl.arguments['--internal-loop'])
-  #  er.terminate()
-  #if pl.isPipeline and pl.hasInternalLoop:
-  #  iLoop.checkLoopFile(sourcePath + '/resources', pl.arguments)
-  #  if iLoop.usingInternalLoop: iLoop.checkInformation(pl.argumentInformation, pl.shortForms, verbose)
-  #  else: iLoop.numberOfIterations = 1
-  #else: iLoop.numberOfIterations = 1
-
-  # TODO SORT OUT MULTIPLE RUNS
-  # If the pipeline is going to be run multiple times for a different set of input
-  # files, the '--multiple-runs (-mr)' argument can be set.  If this is set, the
-  # whole pipeline needs to be looped over with each iteration built from the new
-  # input files.  Check to see if this value is set.  If the --multiple-runs argument
-  # was set in the instance, this will be stored in the pl.arguments, so also check
-  # this value.
-  #mr.checkForMultipleRuns(cl.uniqueArguments, cl.argumentList, pl.arguments['--multiple-runs'], sourcePath + '/resources', verbose)
-  #if verbose: writeCheckingMultipleRunsInformation()
-  #if mr.hasMultipleRuns:
-  #  mr.getInformation(verbose)
-  #  if pl.isPipeline: mr.checkInformation(tl.tool, pl.argumentInformation, pl.shortForms, verbose)
-  #  else: mr.checkInformation(tl.tool, tl.argumentInformation[tl.tool], tl.shortForms[tl.tool], verbose)
-  #if verbose: writeDone()
-
+  # Check if multiple runs or internal loops have been requested.
+  hasMultipleRuns, hasInternalLoop = gknoConfig.hasLoop(pipelineGraph, config)
+  if hasMultipleRuns or hasInternalLoop:
+    if verbose: writeAssignLoopArguments(hasMultipleRuns)
+    gknoConfig.addLoopValuesToGraph(pipelineGraph, config)
+    if verbose: writeDone()
+    
   # TODO CHECK ALL PARAMETERS
   #config.checkParameters(pipelineGraph)
 
@@ -516,7 +482,10 @@ def main():
     graphIntermediates = config.determineGraphIntermediateFiles(pipelineGraph, key = 'all')
 
     # Write the intermediate files to the makefile.
-    if graphIntermediates: make.writeIntermediateFiles(graphIntermediates)
+    make.writeIntermediateFiles(graphIntermediates)
+
+    # Write the pipeline outputs to the makefile.
+    make.writeOutputFiles(graphOutputs)
 
   # FIXME REMOVE OLD METHODS
   # Now that all of the information has been gathered and stored, start a loop over the remainder of 
