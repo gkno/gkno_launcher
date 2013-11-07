@@ -451,10 +451,8 @@ def main():
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
   for task in workflow:
-    print('\n', task, sep = '')
 
     # Input files are predecessor nodes to the task.  Deal with the input files first.
-    print('\tINPUTS', sep = '')
     fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task)
     for fileNodeID in fileNodeIDs:
       argument     = config.edgeMethods.getEdgeAttribute(pipelineGraph, fileNodeID, task, 'argument')
@@ -470,11 +468,9 @@ def main():
       if isRequired and not isSet:
         print('MISSING INPUT FILE:', task, argument)
         errors.terminate()
-      print('\t\t', optionNodeID, fileNodeID, argument, isRequired, config.nodeMethods.getGraphNodeAttribute(pipelineGraph, fileNodeID, 'values'))
 
     # Now deal with output files,  These are all successor nodes.
     fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task)
-    print('\tOUTPUTS', sep = '')
     for fileNodeID in fileNodeIDs:
       argument     = config.edgeMethods.getEdgeAttribute(pipelineGraph, task, fileNodeID, 'argument')
       optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
@@ -492,24 +488,11 @@ def main():
         # If the tool configuration file has instructions on how to construct the filename,
         # built it using these instructions.
         else: gknoConfig.constructFilename(pipelineGraph, config, method, task, fileNodeID)
-      print('\t\t', optionNodeID, fileNodeID, argument, isRequired, config.nodeMethods.getGraphNodeAttribute(pipelineGraph, fileNodeID, 'values'), method)
 
   # Check that all of the required values are set.  This is simply a case of stepping through each node
   # in turn, checking the isRequired flag and if this is set to true, checking that the values dictionary
   # is not empty.
   # TODO CHECK THAT ALL PARAMETERS ARE SET
-
-  for task in workflow:
-    print(task)
-    for nodeID in pipelineGraph.predecessors(task):
-      argument = config.edgeMethods.getEdgeAttribute(pipelineGraph, nodeID, task, 'argument')
-      values = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values')
-      print('\tPRE', nodeID, argument, values)
-    for nodeID in pipelineGraph.successors(task):
-      argument = config.edgeMethods.getEdgeAttribute(pipelineGraph, task, nodeID, 'argument')
-      values = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values')
-      print('\tSUC', nodeID, argument, values)
-  exit(0)
 
   # If there are multiple runs, multiple make files are created, using only the values for individual
   # iterations.
@@ -523,74 +506,74 @@ def main():
     makeFilename = make.getFilename(pipelineName, multiple = False)
     make.openMakefile(makeFilename)
     make.writeHeaderInformation(sourcePath, pipelineName)
+
+    # Detemine which files are dependencies, outputs and intermediate files. Begin by marking all
+    # intermediate file nodes. If a file node has both a predecessor and a successor, it is an
+    # intermediate file. Mark the file node as such unless the pipeline configuration file specifically
+    # states that the file should be kept.
     graphDependencies  = config.determineGraphDependencies(pipelineGraph, key = 'all')
     graphOutputs       = config.determineGraphOutputs(pipelineGraph, key = 'all')
     graphIntermediates = config.determineGraphIntermediateFiles(pipelineGraph, key = 'all')
 
-    print('DEPENDENCIES')
-    for filename in graphDependencies: print('\t', filename)
-    print('\nOUTPUTs')
-    for filename in graphOutputs: print('\t', filename)
-    print('\nINTERMEDIATES')
-    for filename in graphIntermediates: print('\t', filename)
-  exit(0)
+    # Write the intermediate files to the makefile.
+    if graphIntermediates: make.writeIntermediateFiles(graphIntermediates)
 
   # FIXME REMOVE OLD METHODS
   # Now that all of the information has been gathered and stored, start a loop over the remainder of 
   # the gkno subroutines.  Each iteration (there is only a single iteration in the absence of the
   # multiple runs command), the arguments for that run are set up and the makefile generated and
   # executed (unless, no execution was requested).
-  while True:
+  #while True:
 
     # Define the name of the Makefile.  If there are multiple runs, append an intefer
     # ID to the end of the name.  This will be incremented for each subsequent Makefile.
-    make.getFilename(mr.hasMultipleRuns, pl.pipelineName)
-    make.arguments = deepcopy(make.coreArguments)
-    if mr.hasMultipleRuns:
-      mr.getArguments()
-      make.getMultipleArguments(tl.argumentInformation, pl.workflow, pl.taskToTool, mr.arguments)
+    #make.getFilename(mr.hasMultipleRuns, pl.pipelineName)
+    #make.arguments = deepcopy(make.coreArguments)
+    #if mr.hasMultipleRuns:
+    #  mr.getArguments()
+    #  make.getMultipleArguments(tl.argumentInformation, pl.workflow, pl.taskToTool, mr.arguments)
 
-    make.arguments = checkInputLists(tl.argumentInformation, pl.workflow, pl.taskToTool, make.arguments, verbose) # dataChecking.py
-    make.prepareForInternalLoop(iLoop.tasks, iLoop.arguments, iLoop.numberOfIterations)
+    #make.arguments = checkInputLists(tl.argumentInformation, pl.workflow, pl.taskToTool, make.arguments, verbose) # dataChecking.py
+    #make.prepareForInternalLoop(iLoop.tasks, iLoop.arguments, iLoop.numberOfIterations)
 
     # Some of the variables use the value MAKEFILE_ID in their names.  This is often used in
     # the names of temporary files etc and is intended to ensure that if multiple scripts are
     # generated, these values are all different in each script.  If there are parameters in the
     # internal loop that use this value, then they need to be modified to include the iteration
     # number to ensure that the values are still unique.
-    if iLoop.usingInternalLoop: checkMakefileID(make.arguments, iLoop.tasks, iLoop.numberOfIterations)
+    #if iLoop.usingInternalLoop: checkMakefileID(make.arguments, iLoop.tasks, iLoop.numberOfIterations)
 
     # Loop over each of the tools in turn and set all of the parameters.  Each
     # task in turn may depend on parameters/outputs of previous tasks and so
     # handling in each task in the order it appears in the pipeline is necessary.
-    for task in pl.workflow:
-      tool = pl.taskToTool[task]
+    #for task in pl.workflow:
+    #  tool = pl.taskToTool[task]
 
       # Check all of the options for each tool and determine if the values are
       # linked to any other tool.  If so, set the values as necessary.
-      if pl.isPipeline:
-        pl.toolLinkage(task, tool, tl.argumentInformation[tool], make.arguments, iLoop.usingInternalLoop, iLoop.tasks, iLoop.numberOfIterations, verbose)
+    #  if pl.isPipeline:
+    #    pl.toolLinkage(task, tool, tl.argumentInformation[tool], make.arguments, iLoop.usingInternalLoop, iLoop.tasks, iLoop.numberOfIterations, verbose)
 
         # If the tool is listed as only outputting to a stream, check if it appears within or
         # at the end of piped tasks.  If it appears at the end and an output file has been
         # specified (or instructtions on how to construct it have been included), set the output.
-        if tool in tl.toolsDemandingOutputStream: checkStreamedOutput(task, tool, tl.argumentInformation, pl.taskToTool, pl.constructFilenames, pl.toolsOutputtingToStream, make.arguments, verbose)
+    #    if tool in tl.toolsDemandingOutputStream: checkStreamedOutput(task, tool, tl.argumentInformation, pl.taskToTool, pl.constructFilenames, pl.toolsOutputtingToStream, make.arguments, verbose)
 
         # Check all input and output files.  If there are instructions on how to construct
         # filenames, construct them.
-        constructFilenames(task, tool, make.arguments, tl.argumentInformation, pl.constructFilenames, pl.toolArgumentLinks, pl.taskToTool, verbose)
+    #    constructFilenames(task, tool, make.arguments, tl.argumentInformation, pl.constructFilenames, pl.toolArgumentLinks, pl.taskToTool, verbose)
 
       # Check that all required files and parameters have been set.
-      checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.argumentInformation, pl.toolsOutputtingToStream, pl.toolArgumentLinks, pl.linkage, True, verbose)
+    #  checkParameters(gknoHelp, task, tool, tl.argumentInformation, make.arguments, pl.isPipeline, pl.workflow, pl.argumentInformation, pl.toolsOutputtingToStream, pl.toolArgumentLinks, pl.linkage, True, verbose)
 
       # For all files, check that a path has been given.  If a path is set, leave the file
       # as is.  If no path has been set, check if the file is an input or output
       # file and use the --input-path and --output-path values
       # respectively.
-      setPaths(task, tool, tl.argumentInformation, tl.shortForms, pl.argumentInformation, pl.arguments, pl.toolArgumentLinks, make.arguments, verbose)
+    #  setPaths(task, tool, tl.argumentInformation, tl.shortForms, pl.argumentInformation, pl.arguments, pl.toolArgumentLinks, make.arguments, verbose)
 
     # Determine each tools dependencies for building the makefile.
-    make.dependencies, make.outputs = determineDependencies(tl.argumentInformation, tl.generatedFiles, pl.workflow, pl.taskToTool, pl.toolsOutputtingToStream, make.arguments)
+    #make.dependencies, make.outputs = determineDependencies(tl.argumentInformation, tl.generatedFiles, pl.workflow, pl.taskToTool, pl.toolsOutputtingToStream, make.arguments)
   
     # There may be files that are required by the tool to run (e.g. files to
     # appear in the dependency list) that are not listed in the input arguments.
@@ -600,7 +583,7 @@ def main():
     # Similarly, each tool produces output files.  These are listed in the
     # Makefile in order to ensure that tools are only run if their outputs
     # don't already exist.
-    determineAdditionalFiles(tl.additionalFiles, pl.workflow, pl.taskToTool, pl.additionalFileDependencies, make.arguments, make.dependencies, make.outputs, verbose)
+    #determineAdditionalFiles(tl.additionalFiles, pl.workflow, pl.taskToTool, pl.additionalFileDependencies, make.arguments, make.dependencies, make.outputs, verbose)
   
     # If there are any explicit dependencies included in the pipeline configuration file, 
     # include them.
@@ -611,7 +594,7 @@ def main():
     # generated along the way should be deleted.  The pipeline configuration
     # file segment 'delete files' identifies which files should be deleted and
     # when in the pipeline they can be removed.
-    make.deleteFiles = determineFilesToDelete(make.arguments, pl.deleteFiles, iLoop.tasks, iLoop.numberOfIterations, verbose)
+    #make.deleteFiles = determineFilesToDelete(make.arguments, pl.deleteFiles, iLoop.tasks, iLoop.numberOfIterations, verbose)
   
     # The list of files to be produced by the script is all of the files created
     # by each individual task in the pipeline.  However, if some of the files
@@ -624,7 +607,7 @@ def main():
     # output to the stream are listed in the pipeline configuration file, so check
     # if there are any and if so, check that the tools allow outputting to the
     # stream.
-    make.hasPipes, make.addedInformation = determinePiping(make.arguments, tl.argumentInformation, tl.toolsDemandingInputStream, tl.toolsDemandingOutputStream, pl.workflow, pl.taskToTool, pl.toolsOutputtingToStream, verbose)
+    #make.hasPipes, make.addedInformation = determinePiping(make.arguments, tl.argumentInformation, tl.toolsDemandingInputStream, tl.toolsDemandingOutputStream, pl.workflow, pl.taskToTool, pl.toolsOutputtingToStream, verbose)
   
     # The basic order of the Makefile is to start with the final tool and write
     # out the rules to build the final output file.  If the prerequisites for this
@@ -632,67 +615,67 @@ def main():
     # Makefile proceeds in this manner all the way to the first task.  If any of the
     # tasks are piped together, then these need to be output in order, not reverse
     # order.
-    make.taskBlocks = determineToolWriteOrder(pl.workflow, pl.toolsOutputtingToStream, make.hasPipes)
+    #make.taskBlocks = determineToolWriteOrder(pl.workflow, pl.toolsOutputtingToStream, make.hasPipes)
   
     # Determine the outputs and dependencies for each block of tasks.
-    make.taskBlockOutputs, make.taskBlockDependencies = getTaskBlockOutputsAndDependencies(make.taskBlocks, make.outputs, make.dependencies, iLoop.tasks, iLoop.numberOfIterations)
-    determineFinalOutputs(make.deleteFiles, make.outputs)
+    #make.taskBlockOutputs, make.taskBlockDependencies = getTaskBlockOutputsAndDependencies(make.taskBlocks, make.outputs, make.dependencies, iLoop.tasks, iLoop.numberOfIterations)
+    #determineFinalOutputs(make.deleteFiles, make.outputs)
 
     # Generate scripts to run the selected pipeline.
-    make.openMakefile(sourcePath, pl.isPipeline)
-    make.setIntermediateFiles(pl.workflow, pl.taskToTool)
-    make.writeAllOutputs()
+    #make.openMakefile(sourcePath, pl.isPipeline)
+    #make.setIntermediateFiles(pl.workflow, pl.taskToTool)
+    #make.writeAllOutputs()
 
     # Loop over all of the task blocks in the pipeline.
-    for tasks, outputs, dependencies in zip(reversed(make.taskBlocks), reversed(make.taskBlockOutputs), reversed(make.taskBlockDependencies)):
+    #for tasks, outputs, dependencies in zip(reversed(make.taskBlocks), reversed(make.taskBlockOutputs), reversed(make.taskBlockDependencies)):
 
       # For this taskBlock, determine if the tasks are included in an internal loop.  If
       # so, loop over the internal loop parameter sets, generating a command for each of
       # them.
-      for counter in range(0, len(outputs)):
-        make.writeInitialInformation(pl.taskToTool, tasks, counter)
-        make.getExecutablePath(sourcePath, tl.paths, pl.taskToTool, tasks, counter)
-        make.writeOutputsToMakefile(outputs[counter])
-        make.writeDependenciesToMakefile(dependencies[counter])
-        make.checkStdout(tasks, pl.arguments['--task-stdout'], mr.hasMultipleRuns)
-        make.generateCommand(tl.argumentInformation, tl.argumentDelimiters, tl.precommands, tl.executables, tl.modifiers, tl.argumentOrder, pl.taskToTool, pl.linkage, pl.arguments['--timing'], tasks, verbose, counter)
-        make.addFileDeletion(tasks, counter)
-        make.handleAdditionalOutputs(outputs[counter], dependencies[counter])
-      print(file = make.makeFilehandle)
-    make.closeMakefile()
+      #for counter in range(0, len(outputs)):
+        #make.writeInitialInformation(pl.taskToTool, tasks, counter)
+        #make.getExecutablePath(sourcePath, tl.paths, pl.taskToTool, tasks, counter)
+        #make.writeOutputsToMakefile(outputs[counter])
+        #make.writeDependenciesToMakefile(dependencies[counter])
+        #make.checkStdout(tasks, pl.arguments['--task-stdout'], mr.hasMultipleRuns)
+        #make.generateCommand(tl.argumentInformation, tl.argumentDelimiters, tl.precommands, tl.executables, tl.modifiers, tl.argumentOrder, pl.taskToTool, pl.linkage, pl.arguments['--timing'], tasks, verbose, counter)
+        #make.addFileDeletion(tasks, counter)
+        #make.handleAdditionalOutputs(outputs[counter], dependencies[counter])
+      #print(file = make.makeFilehandle)
+    #make.closeMakefile()
 
     # Having completed the makefile for one set of parameters, reset the tl.toolArguments
     # structure to the original values before running the pipeline again.
-    make.arguments        = make.coreArguments
-    make.addedInformation = {}
+    #make.arguments        = make.coreArguments
+    #make.addedInformation = {}
 
     # Terminate the loop when all the required Makefiles have been produced.
-    if make.id == mr.numberDataSets: break
+    #if make.id == mr.numberDataSets: break
 
   # Check that all of the executable files exist.
-  checkExecutables(sourcePath, tl.paths, tl.executables, pl.workflow, pl.taskToTool, verbose)
+  #checkExecutables(sourcePath, tl.paths, tl.executables, pl.workflow, pl.taskToTool, verbose)
 
   # Having established the mode of operation and checked that the command lines are
   # valid etc., ping the website to log use of gkno.
-  if pl.arguments['--do-not-log-usage'] == 'unset':
-    if verbose: writeTracking(phoneHomeID)
-    phoneHome(sourcePath, phoneHomeID)
-    if verbose: writeDone()
-  writeBlankLine()
+  #if pl.arguments['--do-not-log-usage'] == 'unset':
+  #  if verbose: writeTracking(phoneHomeID)
+  #  phoneHome(sourcePath, phoneHomeID)
+  #  if verbose: writeDone()
+  #writeBlankLine()
 
   # Execute the generated script unless the execute flag has been unset.
-  success = 0
-  if pl.arguments['--execute']:
-    for makefile in make.filenames:
-      if verbose: writeExecuting(makefile)
+  #success = 0
+  #if pl.arguments['--execute']:
+  #  for makefile in make.filenames:
+  #    if verbose: writeExecuting(makefile)
 
       # Check if the '--number-jobs' option is set.  If so, request this number of jobs.
-      if pl.arguments['--number-jobs'] != '': execute = 'make -j ' + str(pl.arguments['--number-jobs'])
-      else: execute = 'make'
-      execute += ' --file ' + makefile
-      print('Executing command:', execute, '\n')
-      success = subprocess.call(execute.split())
-      if verbose: writeComplete(success)
+  #    if pl.arguments['--number-jobs'] != '': execute = 'make -j ' + str(pl.arguments['--number-jobs'])
+  #    else: execute = 'make'
+  #    execute += ' --file ' + makefile
+  #    print('Executing command:', execute, '\n')
+  #    success = subprocess.call(execute.split())
+  #    if verbose: writeComplete(success)
 
   # If the makefile was succesfully run, finish gkno with the exit condition of 0.
   # If the makefile failed to run, finish with the exit condition 3.  A failure

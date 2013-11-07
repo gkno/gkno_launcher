@@ -53,8 +53,14 @@ class makefileData:
     print('MAKEFILE_ID=', self.filename.split('/')[-1].split('.')[0], sep = '', file = self.makeFilehandle)
     print(file = self.makeFilehandle)
     print('.DELETE_ON_ERROR:', file = self.makeFilehandle)
-    print('.PHONY: all', end = ' ', file = self.makeFilehandle)
+    print('.PHONY: all', file = self.makeFilehandle)
 
+  # Write out all of the intermediate files.
+  def writeIntermediateFiles(self, intermediates):
+    print('.INTERMEDIATE:', end = ' ', file = self.makeFilehandle)
+    for intermediateFile in intermediates:
+      print(intermediateFile, end = ' ', file = self.makeFilehandle)
+    print(file = self.makeFilehandle)
 
 
 
