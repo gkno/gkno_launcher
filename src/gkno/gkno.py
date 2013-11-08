@@ -342,12 +342,6 @@ def main():
   commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
   if verbose: writeDone()
 
-  #TODO DEAL WITH MULTIPLE RUNS AND INTERNAL LOOP VALUES NOW.
-
-  # Now that the command line argument has been parsed, all of the values supplied have been added to the
-  # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
-  commands.mirrorFileNodeValues(pipelineGraph, config, workflow)
-
   # Check if multiple runs or internal loops have been requested.
   hasMultipleRuns, hasInternalLoop = gknoConfig.hasLoop(pipelineGraph, config)
   if hasMultipleRuns or hasInternalLoop:
@@ -355,6 +349,10 @@ def main():
     gknoConfig.addLoopValuesToGraph(pipelineGraph, config)
     if verbose: writeDone()
     
+  # Now that the command line argument has been parsed, all of the values supplied have been added to the
+  # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
+  commands.mirrorFileNodeValues(pipelineGraph, config, workflow)
+
   # TODO CHECK ALL PARAMETERS
   #config.checkParameters(pipelineGraph)
 
@@ -455,6 +453,12 @@ def main():
         # built it using these instructions.
         else: gknoConfig.constructFilename(pipelineGraph, config, method, task, fileNodeID)
 
+  for task in workflow:
+    print(task)
+    nodeIDs = pipelineGraph.predecessors(task)
+    for nodeID in nodeIDs:
+      print('\t', nodeID, config.edgeMethods.getEdgeAttribute(pipelineGraph, nodeID, task, 'argument'), config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values'))
+  exit(0)
   # Check that all of the required values are set.  This is simply a case of stepping through each node
   # in turn, checking the isRequired flag and if this is set to true, checking that the values dictionary
   # is not empty.

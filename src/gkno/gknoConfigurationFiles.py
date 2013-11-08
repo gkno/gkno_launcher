@@ -239,7 +239,7 @@ class gknoConfigurationFiles:
       print('Not yet handled constructFilenameFromToolArgumentStub')
       self.errors.terminate()
     else: baseNodeID = baseNodeIDs[0]
-    values     = config.nodeMethods.getGraphNodeAttribute(graph, baseNodeID, 'values')
+    values = config.nodeMethods.getGraphNodeAttribute(graph, baseNodeID, 'values')
 
     # Generate the filename for the option node.  Since this is a filename stub, this will not have any
     # extension.
@@ -266,24 +266,13 @@ class gknoConfigurationFiles:
         argumentNodeValues = config.nodeMethods.getGraphNodeAttribute(graph, argumentNodeID, 'values')
         numberOfNodeValues = len(argumentNodeValues)
 
-        # If both data structures have the same number of values.
-        if numberOfValues == numberOfNodeValues:
-          for iteration in modifiedValues:
-
-            # Check that there is only a single value in the list for this iteration in 'argumentNodeValues'.
-            if len(argumentNodeValues[iteration]) != 1:
-              print('CANNOT CONSTRUCT FILENAMES IF THERE IS MORE THAN ONE PARAMETER VALUE.')
-              print('constructFilenameFromToolArgumentStub')
-              self.errors.terminate()
-
-            else:
-              modifiedList = []
-              for value in modifiedValues[iteration]: modifiedList.append(value + self.delimiter + argumentNodeValues[iteration][0])
-              modifiedValues[iteration] = modifiedList
-
+        # If both data structures have the same number of values, or one list is larger than the other,
+        # update the modifiedValues dictionary accordingly.
+        if numberOfValues == numberOfNodeValues: self.setModifiedValuesA(modifiedValues, argumentNodeValues)
+        elif numberOfValues == 1 and numberOfNodeValues > 1: self.setModifiedValuesB(modifiedValues, argumentNodeValues)
+        elif numberOfValues > 1 and numberOfNodeValues == 1: self.setModifiedValuesC(modifiedValues, argumentNodeValues)
         else:
-          print('HI', optionNodeID, argument, baseArgument, baseNodeIDs, numberOfValues, numberOfNodeValues)
-          print('NOT YET HANDLED - constructFilenameFromToolArgumentStub')
+          print('NOT HANDLED VALUES - constructFilenameFromToolArgumentStub')
           self.errors.terminate()
 
     # Reset the node values for the option and the file node.
@@ -306,6 +295,41 @@ class gknoConfigurationFiles:
         fileValues[iteration] = []
         for value in modifiedValues[iteration]: fileValues[iteration].append(value + extension)
       config.nodeMethods.replaceGraphNodeValues(graph, nodeID, fileValues)
+
+  # Update the modifiedValues dictionary.
+  def setModifiedValuesA(self, modifiedValues, argumentNodeValues):
+    for iteration in modifiedValues:
+
+      # Check that there is only a single value in the list for this iteration in 'argumentNodeValues'.
+      if len(argumentNodeValues[iteration]) != 1:
+        print('CANNOT CONSTRUCT FILENAMES IF THERE IS MORE THAN ONE PARAMETER VALUE.')
+        print('constructFilenameFromToolArgumentStub')
+        self.errors.terminate()
+
+      else:
+        modifiedList = []
+        for value in modifiedValues[iteration]: modifiedList.append(value + self.delimiter + argumentNodeValues[iteration][0])
+        modifiedValues[iteration] = modifiedList
+
+  def setModifiedValuesB(self, modifiedValues, argumentNodeValues):
+    numberOfValues     = len(modifiedValues)
+    numberOfNodeValues = len(argumentNodeValues)
+    values             = modifiedValues[1]
+
+    for iteration in range(1, numberOfNodeValues + 1):
+      modifiedList = []
+      for value in values: modifiedList.append(value + self.delimiter + argumentNodeValues[iteration][0])
+      modifiedValues[iteration] = modifiedList
+
+  def setModifiedValuesC(self, modifiedValues, argumentNodeValues):
+    numberOfValues     = len(modifiedValues)
+    numberOfNodeValues = len(argumentNodeValues)
+    values             = modifiedValues
+
+    for iteration in range(1, numberOfValues + 1):
+      modifiedList = []
+      for value in values[iteration]: modifiedList.append(value + self.delimiter + argumentNodeValues[1][0])
+      modifiedValues[iteration] = modifiedList
 
   # Construct the filenames for non-filename stub arguments.
   def constructFilenameFromToolArgumentNotStub(self, graph, config, task, fileNodeID):
