@@ -88,36 +88,7 @@ class commandLine:
         # If arguments for a task within the pipeline are being set on the command line, all of the
         # task specific arguments must be contained within square brackets.  If the nextArgument is
         # identified as beginning with a square bracket, find the end of the task specific commands.
-        if nextArgument.startswith('['):
-  
-          # First check if nextArgument ends with a ']'.  If there is only a single command in the
-          # square brackets, the command is a flag and no spaces are included, this woule be the case.
-          if nextArgument.endswith(']'):
-            nextArgument = nextArgument[1:len(nextArgument) - 1]
-  
-          else:
-            taskArgumentCounter = 2
-            while True:
-              try: buildTaskArguments = sys.argv[count + taskArgumentCounter]
-              except: self.errors.hasError = True
-    
-              # If the square brackets aren't closed, terminate.
-              if self.errors.hasError:
-                self.errors.unterminatedTaskSpecificOptions(verbose, argument)
-                self.errors.terminate()
-    
-              nextArgument += ' ' + buildTaskArguments
-              if not buildTaskArguments.endswith(']'): taskArgumentCounter += 1
-              else:
-               count += taskArgumentCounter - 1
-    
-               # Strip off the square brackets.
-               nextArgument = nextArgument[1:len(nextArgument) - 1]
-               break
-  
-          # FIXME DELETE REFERENCE TO uniqueArguments.
-          #if argument not in self.uniqueArguments: self.uniqueArguments[argument] = 1
-          #else: self.uniqueArguments[argument] += 1
+        if nextArgument.startswith('['): count, nextArgument = self.checkForTaskCommands(count, nextArgument)
   
         # Check if the next argument starts with a '-'.  If so, the next argument on the command line
         # is not a value to accompany this argument, but is a new argument.  This is either because
@@ -137,30 +108,65 @@ class commandLine:
             # The task is a node in the pipeline, but check that the node is a task node.
             if config.nodeMethods.getGraphNodeAttribute(graph, task, 'nodeType') == 'task':
   
-              # FIXME DELETE REFERENCE TO argumentList.
-              #self.argumentList.append((argument, nextArgument))
               if argument not in self.argumentDictionary: self.argumentDictionary[argument] = []
               self.argumentDictionary[argument].append(nextArgument)
               count += 1
               isTask = True
   
+          # Deal with arguments that are not the names of tasks.
           if not isTask:
-            # FIXME DELETE REFERENCE TO argumentList.
-            #if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, ''))
 
-            # Get the long form argument.
-            longForm = config.pipeline.getLongFormArgument(graph, argument)
+            # If a pipeline is being run, check the arguments against those allowed by the
+            # pipeline confuguration file.
+            if isPipeline: longForm = config.pipeline.getLongFormArgument(graph, argument)
+
+            # If gkno is being run in tool mode, check the arguments against those allowed by
+            # the tool.
+            else: longForm = config.tools.getLongFormArgument(tool, argument)
+
+            # Update the argumentDictionary.
             if longForm not in self.argumentDictionary: self.argumentDictionary[longForm] = []
             self.argumentDictionary[longForm].append('')
   
         else:
-          # FIXME DELETE REFERENCE TO argumentList.
-          #if argument != tool and argument != 'pipe' and argument != 'run-test': self.argumentList.append((argument, nextArgument))
-          longForm = config.pipeline.getLongFormArgument(graph, argument)
+          if isPipeline: longForm = config.pipeline.getLongFormArgument(graph, argument)
+          else: longForm = config.tools.getLongFormArgument(tool, argument)
+
+          # Update the argumentDictionary.
           if longForm not in self.argumentDictionary: self.argumentDictionary[longForm] = []
           self.argumentDictionary[longForm].append(nextArgument)
           count += 1
       count += 1
+
+  # Check for arguments for tasks within the pipeline.
+  def checkForTaskCommands(self, count, nextArgument):
+  
+    # First check if nextArgument ends with a ']'.  If there is only a single command in the
+    # square brackets, the command is a flag and no spaces are included, this woule be the case.
+    if nextArgument.endswith(']'):
+      nextArgument = nextArgument[1:len(nextArgument) - 1]
+  
+    else:
+      taskArgumentCounter = 2
+      while True:
+        try: buildTaskArguments = sys.argv[count + taskArgumentCounter]
+        except: self.errors.hasError = True
+    
+        # If the square brackets aren't closed, terminate.
+        if self.errors.hasError:
+          self.errors.unterminatedTaskSpecificOptions(verbose, argument)
+          self.errors.terminate()
+    
+        nextArgument += ' ' + buildTaskArguments
+        if not buildTaskArguments.endswith(']'): taskArgumentCounter += 1
+        else:
+         count += taskArgumentCounter - 1
+    
+         # Strip off the square brackets.
+         nextArgument = nextArgument[1:len(nextArgument) - 1]
+         break
+
+    return count, nextArgument
 
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
@@ -296,8 +302,8 @@ class commandLine:
             task           = nodeID
             associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
             longForm       = config.tools.getLongFormArgument(associatedTool, taskArgument)
-            shortForm      = config.tools.getArgumentData(associatedTool, taskArgument, 'short form argument')
-            isFilenameStub = config.tools.getArgumentData(associatedTool, taskArgument, 'is filename stub')
+            shortForm      = config.tools.getArgumentData(associatedTool, longForm, 'short form argument')
+            isFilenameStub = config.tools.getArgumentData(associatedTool, longForm, 'is filename stub')
 
             # Determine if this is a flag or a value. If the argument is a flag, the next argument on the
             # command line will be a '-'

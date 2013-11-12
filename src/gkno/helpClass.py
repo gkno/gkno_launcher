@@ -40,16 +40,14 @@ class helpClass:
   def printUsage(self, graph, config, workflow, admin, version, date, path):
 
     # General gkno usage.
-    if self.generalHelp:
-      self.usage(graph, config, admin, path)
+    if self.generalHelp: self.usage(graph, config, admin, path)
 
     # gkno tool mode usage.
     elif self.toolHelp:
       if self.unknownTool:
         self.printToolModeUsage(config)
         self.unknownToolMessage(graph, config.pipeline.pipelineName)
-      else:
-        self.toolUsage(graph, config.pipeline.pipelineName)
+      else: self.toolUsage(graph, config.pipeline.pipelineName)
 
     # General pipeline help.
     elif self.pipelineHelp:
@@ -57,12 +55,10 @@ class helpClass:
       if self.unknownPipeline: self.unknownPipelineMessage()
 
     # Specific pipeline help.
-    elif self.specificPipelineHelp:
-      self.specificPipelineUsage(graph, config, workflow)
+    elif self.specificPipelineHelp: self.specificPipelineUsage(graph, config, workflow)
 
     # Admin mode help.
-    elif self.adminHelp:
-      self.adminModeUsage(admin)
+    elif self.adminHelp: self.adminModeUsage(admin)
 
     # Terminate.
     exit(0)
@@ -171,7 +167,8 @@ class helpClass:
     for pipeline in sortedKeys:
 
       # Open the json file and get the pipeline description.
-      pipelineFile = path + '/config_files/pipes/' + pipeline + '.json'
+      #TODO REMOVE temp
+      pipelineFile = path + '/config_files/temp/pipes/' + pipeline + '.json'
 
       # Create a pipieline configuration file object.
       config       = configurationClass()
@@ -183,11 +180,13 @@ class helpClass:
     sys.stdout.flush()
 
   # Print out tool usage.
-  def toolUsage(self):
+  def toolUsage(self, graph, pipelineName):
     print('===================', file = sys.stdout)
     print('  gkno tool usage', file = sys.stdout)
     print('===================', file = sys.stdout)
     print(file = sys.stdout)
+    print(pipelineName)
+    exit(0)
     print('Usage: gkno ', tool, ' [options]', sep = '', file = sys.stdout)
     print(file = sys.stdout)
 
@@ -296,8 +295,9 @@ class helpClass:
     for pipeline in sortedKeys:
 
       # For each available pipeline, open the json and get the pipeline description.
-      pipelineFile = path + '/config_files/pipes/' + pipeline
-      pipeline     = pipeline + ':'
+      #TODO remove temp
+      pipelineFile = path + '/config_files/temp/pipes/' + pipeline
+      pipeline     = pipeline + ': '
       if pipeline[-10:-1] != 'instances':
         data         = config.fileOperations.readConfigurationFile(pipelineFile + '.json')
         description  = data['description'] if 'description' in data else 'No description provided'
@@ -352,17 +352,22 @@ class helpClass:
     # the length of the combined '--argument (-a)' text.
     length            = 0
     arguments         = {}
+    optionNodeIDs     = config.nodeMethods.getNodes(graph, 'option')
     requiredArguments = {}
-    for node in graph.nodes(data = False):
-      if config.nodeMethods.getGraphNodeAttribute(graph, node, 'nodeType') == 'option':
-        if config.nodeMethods.getGraphNodeAttribute(graph, node, 'isPipelineArgument'):
-          description = config.nodeMethods.getGraphNodeAttribute(graph, node, 'description')
-          shortForm   = config.nodeMethods.getGraphNodeAttribute(graph, node, 'shortForm')
-          text        = config.nodeMethods.getGraphNodeAttribute(graph, node, 'argument') + ' (' + shortForm + '):'
-          length      = len(text) if (len(text) > length) else length
-          isRequired  = config.nodeMethods.getGraphNodeAttribute(graph, node, 'isRequired')
-          if isRequired: requiredArguments[text] = description
-          else: arguments[text] = description
+    for argument in config.pipeline.argumentData:
+        description = config.pipeline.argumentData[argument].description
+        shortForm   = config.pipeline.argumentData[argument].shortForm
+        text        = argument + ' (' + shortForm + '):'
+        length      = len(text) if (len(text) > length) else length
+
+        # First check if the pipeline requires the argument. If not, check if the tool
+        # requires the argument.
+        isRequired  = config.pipeline.argumentData[argument].isRequired
+        if not isRequired:
+          nodeID     = config.pipeline.argumentData[argument].nodeID
+          isRequired = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isRequired')
+        if isRequired: requiredArguments[text] = description
+        else: arguments[text] = description
     length += 4
 
     if len(requiredArguments) != 0:

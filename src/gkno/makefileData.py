@@ -214,6 +214,9 @@ class makefileData:
         # makefile to check on their existence.
         if len(taskOutputs) != 0: self.writeRuleForAdditionalOutputs(makefileName, fileHandle, taskOutputs, primaryOutput, taskDependencies)
 
+        # Write that the task complete successfully.
+        self.writeComplete(fileHandle)
+
   # Write an additional rule in the makefile to check for outputs from a task. Only a single
   # output is included in the rule for the additional task.
   def writeRuleForAdditionalOutputs(self, makefileName, fileHandle, outputs, primaryOutput, dependencies):
@@ -246,7 +249,10 @@ class makefileData:
 
     # Write the arguments to the makefile.
     for argument in argumentOrder:
-      for isFlag, values in arguments[argument]:
+      for nodeID, values in arguments[argument]:
+
+        # Determine if this argument is a flag.
+        isFlag = True if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag' else False
 
         # If the iteration does not exist, use the value from the first iteration.
         if iteration in values: valueList = values[iteration]
@@ -256,8 +262,27 @@ class makefileData:
           print('error in make.writeCommand', task, argument)
           self.errors.terminate()
 
+        # The argument in the tool configuration file is not necessarily the same command that
+        # the tool itself expects. This is because gkno attempts to standardise the command line
+        # arguments across the tools. The argument to be used is also attached to the edge, so
+        # get and use this value,
+        commandLineArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'commandLineArgument')
+
+        # Some arguments are included with the tools in order to help track the files, but do not
+        # actually get written to the command line. For example, bamtools-index requires an input
+        # bam file, but the output index file is created based on the name of the input file and
+        # is not specified by the user. Check to see if this is the case.
+        includeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'includeOnCommandLine')
+
         for value in valueList:
-          if not isFlag: print('\t', argument, ' ', value, ' \\', sep = '', file = fileHandle)
+          if includeArgument:
+            if not isFlag: print('\t', commandLineArgument, ' ', value, ' \\', sep = '', file = fileHandle)
+
+  def writeComplete(self, fileHandle):
+
+    # Write out that the task completed successfully.
+    print('\t@echo -e "completed successfully.', sep = '', file = fileHandle)
+    print(file = fileHandle)
 
   # Define the order in which to write out the command line arguments.
   def defineArgumentOrder(self, config, tool, arguments):
@@ -278,9 +303,8 @@ class makefileData:
     for nodeID in config.nodeMethods.getPredecessorOptionNodes(graph, task):
       argument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'argument')
       values   = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
-      isFlag   = True if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag' else False
       if argument not in arguments: arguments[argument] = []
-      arguments[argument].append((isFlag, values))
+      arguments[argument].append((nodeID, values))
 
     return arguments
 

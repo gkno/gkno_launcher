@@ -208,52 +208,67 @@ def main():
     # If a single tool is being run, check that it is a valid tool.
     #if not pl.isPipeline: tl.checkTool(gknoHelp)
 
-  # Process all of the tool configuration files.
-  for tool in gknoConfig.jsonFiles['tools']:
+  # Define the list to hole the pipeline workflow.
+  workflow = []
 
+  # Process all of the tool configuration files that are used.
+  if isPipeline and not gknoHelp.pipelineHelp:
+
+    # Find all of the tasks to be used in the pipeline.
+    tasks = config.pipeline.getTasks()
+    for task in tasks:
+      tool = tasks[task]
+
+      # FIXME TEMPORARY LOCATION OF CONFIG FILES.  REMOVE TEMP WHEN COMPLETE.
+      toolFile              = sourcePath + '/config_files/temp/tools/' + tool + '.json'
+      toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
+
+      # TODO TOOL CONFIGURATION FILE VALIDATION HAS NOT YET BEEN HANDLED IN THE
+      # CONFIGURATIONCLASS.
+      # Ensure that the tool configuration file is well constructed and put all of the data
+      # in data structures.  Each tool in each configuration file gets its own data structure.
+      config.tools.processConfigurationData(tool, toolConfigurationData)
+
+    # For each task in the pipeline, build an individual graph consisting of a task node, input
+    # option nodes (all input and output file arguments are treated as option nodes) and finally
+    # all input and output files are given file nodes.  Nodes are merged later to generate the
+    # final pipeline.
+    config.buildTaskGraph(pipelineGraph, tasks)
+
+    # Add the pipeline arguments to the nodeIDs dictionary.
+    config.nodeMethods.getPipelineArgumentNodes(pipelineGraph, config.pipeline, config.tools)
+  
+    # Now that every task in the pipeline has an individual graph built, use the information
+    # in the pipeline configuration file to merge nodes and build the final pipeline graph.
+    config.mergeNodes(pipelineGraph)
+  
+    # Generate the workflow using a topological sort of the pipeline graph.
+    workflow = config.generateWorkflow(pipelineGraph)
+  
+    # Loop over all of the nodes and determine which require a value.  Also check to see if there
+    # are missing edges.  For example, if a tool has an argument that is required, but is not included
+    # in the pipeline configuration file (as a pipeline argument or via connections), the graph cannot
+    # be completely defined.
+    config.nodeMethods.setRequiredNodes(pipelineGraph, config.tools)
+
+  else:
+    print('Delaing with tool', toolName)
     # FIXME TEMPORARY LOCATION OF CONFIG FILES.  REMOVE TEMP WHEN COMPLETE.
-    toolFile              = sourcePath + '/config_files/temp/tools/' + tool
+    toolFile              = sourcePath + '/config_files/temp/tools/' + toolName + '.json'
     toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
 
     # TODO TOOL CONFIGURATION FILE VALIDATION HAS NOT YET BEEN HANDLED IN THE
     # CONFIGURATIONCLASS.
     # Ensure that the tool configuration file is well constructed and put all of the data
     # in data structures.  Each tool in each configuration file gets its own data structure.
-    toolName = tool.split('.json')[0]
     config.tools.processConfigurationData(toolName, toolConfigurationData)
 
-  # TODO Deal with individual tool operation.
-  if isTool:
-    print('Not yet handled individual tool')
-    exit(0)
-
-  workflow = []
-  if (isPipeline or isTool) and not gknoHelp.pipelineHelp:
-
-    # Find all of the tasks to be used in the pipeline.
-    tasks = config.pipeline.getTasks()
-
-    # For each task in the pipeline, build an individual graph consisting of a task node, input
-    # option nodes (all input and output file arguments are treated as option nodes) and finally
-    # all input and output files are given file nodes.  Nodes are merged later to generate the
-    # final pipeline.
-    config.buildTaskGraph(pipelineGraph)
-
-    # Add the pipeline arguments to the nodeIDs dictionary.
-    config.nodeMethods.getPipelineArgumentNodes(pipelineGraph, config.pipeline, config.tools)
-
-    # Now that every task in the pipeline has an individual graph built, use the information
-    # in the pipeline configuration file to merge nodes and build the final pipeline graph.
-    config.mergeNodes(pipelineGraph)
-
-    # Generate the workflow using a topological sort of the pipeline graph.
-    workflow = config.generateWorkflow(pipelineGraph)
-
-    # Loop over all of the nodes and determine which require a value.  Also check to see if there
-    # are missing edges.  For example, if a tool has an argument that is required, but is not included
-    # in the pipeline configuration file (as a pipeline argument or via connections), the graph cannot
-    # be completely defined.
-    config.nodeMethods.setRequiredNodes(pipelineGraph, config.tools)
+    # Define the tasks structure. Since a single tool is being run, this is simply the name
+    # of the tool.
+    tasks           = {}
+    tasks[toolName] = toolName
+    workflow.append(toolName)
+    config.buildTaskGraph(pipelineGraph, tasks)
 
   # For help messages the helpClass needs a list of all available tools and all available pipelines.  These
   # lists are generated here.
@@ -261,8 +276,7 @@ def main():
 
   # Parse the command line and put all of the arguments into a list.
   if verbose: gettingCommandLineArguments()
-  if isPipeline: commands.getCommandLineArguments(pipelineGraph, config, pipelineName, isPipeline, verbose)
-  else: commands.getCommandLineArguments(pipelineGraph, config, toolName, isPipeline, verbose)
+  commands.getCommandLineArguments(pipelineGraph, config, pipelineName, isPipeline, verbose)
 
   if verbose:
     writeDone()
@@ -270,7 +284,6 @@ def main():
 
   # If help was requested or there were problems (e.g. the tool name or pipeline
   # name did not exist), print out the required usage information.
-  #if gknoHelp.printHelp: gknoHelp.printUsage(io, tl, pl, admin, __version__, __date__, sourcePath)
   if gknoHelp.printHelp: gknoHelp.printUsage(pipelineGraph, config, workflow, admin, __version__, __date__, sourcePath)
 
   # Populate the tl.arguments structure with the arguments with defaults from the tool configuration files.
@@ -292,6 +305,7 @@ def main():
   
   # Print information about the pipeline to screen.
   if isPipeline and verbose: writePipelineWorkflow(pipelineGraph, config, workflow, gknoHelp)
+  exit(0)
 
   # TODO DEAL WITH TOOL INSTANCES
   #FIXME RESET THE DIRECTORY TO REMOVE 'temp'
