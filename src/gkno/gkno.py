@@ -40,14 +40,8 @@ from helpClass import *
 import instances
 from instances import *
 
-import internalLoop
-from internalLoop import *
-
 import makefileData
 from makefileData import *
-
-import multipleRuns
-from multipleRuns import *
 
 import tracking
 from tracking import *
@@ -83,41 +77,12 @@ def main():
   # nodes.  The edges between the nodes define the command line argument for the data and tool.
   pipelineGraph = nx.DiGraph()
 
-  # TODO REMOVE THIS.  PART OF CONFIG.
-  # Each task in the pipeline (if a single tool is being run, the graph consists of a single
-  # task node, but is still represented by a graph) is represented by a node.  The task is
-  # then associated with a tool.  Each unique tool in the pipeline has a configuration file
-  # associated with it and the information for each tool is store in the toolObjects structure.
-  # Each tool configuration will have its own data structure in this object.
-  #toolData = toolConfiguration()
-
-  # FIXME REMOVE. REPLACED WITH TOOLOBJECTS
-  # Define a tools object.  This stores all information specific to individual
-  # tools.
-  #tl = tools()
-
   # Define a command line options, get the first command line argument
   # and proceed as required.
   commands = commandLine()
 
-  # FIXME REMOVE. REPLACED WITH PIPE
-  # Define a pipeline object.  Even if a single tool is all that is required,
-  # some of the routines in the pipelines.py are still used.  A single tool
-  # is essentially treated as a pipeline with a single element.
-  #pl = pipeline()
-
-  # FIXME. REMOVE AND REMOVE FILES.PY.  HANDLED IN THE CONFIGURATIONCLASS
-  # Generate a class for handling files.
-  #io = files()
-
   # Generate a class for handling instances.
   ins = instances()
-
-  # Generate a multiple runs object.
-  multiRuns = multipleRuns()
-
-  # Generate a class for handling internal loops.
-  iLoop = internalLoop()
 
   # Generate a class for storing details for use in the makefile.
   make = makefileData()
@@ -353,22 +318,6 @@ def main():
   # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
   commands.mirrorFileNodeValues(pipelineGraph, config, workflow)
 
-  # TODO CHECK ALL PARAMETERS
-  #config.checkParameters(pipelineGraph)
-
-  # Generate the make.arguments structure.  This is built from the arguments collected from the
-  # configuration files, the command line, instances and the multiple runs file where applicable.
-  # The order of precedence is:
-  #
-  # 1. Configuration file defaults,
-  # 2. Instance information,
-  # 3. Command line information,
-  # 4. Multiple runs file (these are added later).
-  #
-  # So, parameters appearing in (4) overwrite those in (3) which overwrote those from (2) etc where
-  # conflicts occur.
-  #make.getCoreArguments(tl.argumentInformation, pl.workflow, pl.taskToTool, tl.arguments, ins.arguments, cl.arguments)
-
   # TODO HANDLE INPUT LISTS
   # Some of the tools included in gkno can have multiple input files set on the
   # command line.  When many files are to be included, it can be more convenient
@@ -376,11 +325,6 @@ def main():
   # tools have input lists specified and if so, add these to the actual command line
   # argument list that should be used.
   #make.coreArguments = checkInputLists(tl.argumentInformation, pl.workflow, pl.taskToTool, make.coreArguments, verbose) # dataChecking.py
-
-  # TODO CHECK THAT THIS IS STILL NECESSARY
-  # Ensure that all of the required arguments are present (even if their value is blank) in the coreArguments.
-  # These should be filled in later using linkage information, otherwise gkno will terminate.
-  #make.setAllRequiredArguments(pl.workflow, pl.taskToTool, tl.argumentInformation)
 
   # TODO DEAL WITH INSTANCE EXPORTS
   # If the --export-config has been set, then the user is attempting to create a
@@ -414,82 +358,60 @@ def main():
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
-  for task in workflow:
+  gknoConfig.constructFilenames(pipelineGraph, config, workflow)
 
-    # Input files are predecessor nodes to the task.  Deal with the input files first.
-    fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task)
-    for fileNodeID in fileNodeIDs:
-      argument     = config.edgeMethods.getEdgeAttribute(pipelineGraph, fileNodeID, task, 'argument')
-      optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-
-      # Use the argument to get information about the argument.
-      isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
-      isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
-
-      # If input files aren't set, gkno should terminate.  If the input is linked to the output of
-      # another task, the nodes are merged and so the input is set.  Thus, an empty value cannot be
-      # filled without command line (or instance) information.
-      if isRequired and not isSet:
-        print('MISSING INPUT FILE:', task, argument)
-        errors.terminate()
-
-    # Now deal with output files,  These are all successor nodes.
-    fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task)
-    for fileNodeID in fileNodeIDs:
-      argument     = config.edgeMethods.getEdgeAttribute(pipelineGraph, task, fileNodeID, 'argument')
-      optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-
-      isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
-      isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
-      if isRequired and not isSet:
-        method = gknoConfig.constructionInstructions(pipelineGraph, config, task, argument, fileNodeID)
-        if method == None:
-
-          # TODO ERROR MESSAGE
-          print('\tMISSING OUTPUT:', fileNodeID, task, config.pipeline.tasks[task], argument)
-          errors.terminate()
-
-        # If the tool configuration file has instructions on how to construct the filename,
-        # built it using these instructions.
-        else: gknoConfig.constructFilename(pipelineGraph, config, method, task, fileNodeID)
-
-  for task in workflow:
-    print(task)
-    nodeIDs = pipelineGraph.predecessors(task)
-    for nodeID in nodeIDs:
-      print('\t', nodeID, config.edgeMethods.getEdgeAttribute(pipelineGraph, nodeID, task, 'argument'), config.nodeMethods.getGraphNodeAttribute(pipelineGraph, nodeID, 'values'))
-  exit(0)
-  # Check that all of the required values are set.  This is simply a case of stepping through each node
-  # in turn, checking the isRequired flag and if this is set to true, checking that the values dictionary
-  # is not empty.
-  # TODO CHECK THAT ALL PARAMETERS ARE SET
+  # Find the maximum number of datasets for each task.
+  config.getNumberOfDataSets(pipelineGraph, workflow)
 
   # If there are multiple runs, multiple make files are created, using only the values for individual
   # iterations.
   #TODO SORT OUT MULTIPLE RUNS.
-  if multiRuns.hasMultipleRuns:
-    print('Haven\'t handled multiple runs')
-    errors.terminate()
+  make.determineMakefileStructure(pipelineGraph, config, workflow, hasMultipleRuns)
+  makeFilename = make.getFilename(pipelineName)
+  for phaseID in make.makefileNames:
+    for iteration, makefileName in enumerate(make.makefileNames[phaseID]):
 
-  # Otherwise, all of the values are included in the same makefile.
-  else:
-    makeFilename = make.getFilename(pipelineName, multiple = False)
-    make.openMakefile(makeFilename)
-    make.writeHeaderInformation(sourcePath, pipelineName)
+      # If multiple runs are being performed, the iteration needs to be sent to the various following
+      # routines in order to pick the files necessary for the particular makefile. Otherwise, all
+      # iterations of data should be used in the makefile (there is either only one iteration or
+      # internal loops are required in which case, all of the iterations are used in the same file).
+      # Set the 'key' to the iteration or 'all' depending on the run type.
+      if hasMultipleRuns: key = iteration + 1
+      else: key = 'all'
 
-    # Detemine which files are dependencies, outputs and intermediate files. Begin by marking all
-    # intermediate file nodes. If a file node has both a predecessor and a successor, it is an
-    # intermediate file. Mark the file node as such unless the pipeline configuration file specifically
-    # states that the file should be kept.
-    graphDependencies  = config.determineGraphDependencies(pipelineGraph, key = 'all')
-    graphOutputs       = config.determineGraphOutputs(pipelineGraph, key = 'all')
-    graphIntermediates = config.determineGraphIntermediateFiles(pipelineGraph, key = 'all')
+      # Open the makefile.
+      makefileHandle = make.openMakefile(makefileName)
 
-    # Write the intermediate files to the makefile.
-    make.writeIntermediateFiles(graphIntermediates)
+      # Write header information to all of the makefiles.
+      make.writeHeaderInformation(sourcePath, pipelineName, makefileName, makefileHandle, phaseID, key)
 
-    # Write the pipeline outputs to the makefile.
-    make.writeOutputFiles(graphOutputs)
+      # Write out the executable paths for all of the tools being used in the makefile.
+      make.writeExecutablePaths(makefileHandle, make.tasksInPhase[phaseID], config.pipeline.tasks, config.tools)
+
+      # Detemine which files are dependencies, outputs and intermediate files. Begin by marking all
+      # intermediate file nodes. If a file node has both a predecessor and a successor, it is an
+      # intermediate file. Mark the file node as such unless the pipeline configuration file specifically
+      # states that the file should be kept.
+      graphDependencies  = config.determineGraphDependencies(pipelineGraph, make.tasksInPhase[phaseID], key = key)
+      graphOutputs       = config.determineGraphOutputs(pipelineGraph, make.tasksInPhase[phaseID], key = key)
+      graphIntermediates = config.determineGraphIntermediateFiles(pipelineGraph, make.tasksInPhase[phaseID], key = key)
+
+      # Write the intermediate files to the makefile.
+      make.writeIntermediateFiles(makefileHandle, graphIntermediates)
+
+      # Write the pipeline outputs to the makefile.
+      make.writeOutputFiles(makefileHandle, graphOutputs)
+
+      # Determine the task in which each intermediate file is last used. This will allow the files to
+      # be deleted as early as possible in the pipeline.
+      deleteList = config.setWhenToDeleteFiles(pipelineGraph, graphIntermediates, workflow)
+
+      # Write out the information for running each task.
+      make.writeTasks(pipelineGraph, config, makefileName, makefileHandle, make.tasksInPhase[phaseID], key)
+  exit(0)
+
+
+
 
   # FIXME REMOVE OLD METHODS
   # Now that all of the information has been gathered and stored, start a loop over the remainder of 

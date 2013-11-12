@@ -304,12 +304,6 @@ class commandLine:
             if nextTaskArgument.startswith('-'): value = ['set']
             else: value = [taskArguments.pop(0)]
 
-            # Prepare the edge to be added.
-            edge                = edgeAttributes()
-            edge.argument       = longForm
-            edge.shortForm      = shortForm
-            edge.isFilenameStub = isFilenameStub
-
             # If there is no node available for this task argument, create the node and add the edge.
             sourceNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, nodeID, longForm)
             if not sourceNodeIDs:
@@ -317,7 +311,7 @@ class commandLine:
               attributes    = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longForm)
               graph.add_node(sourceNodeID, attributes = attributes)
               config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'replace')
-              graph.add_edge(sourceNodeID, task, attributes = edge)
+              config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeID, task, longForm)
               config.nodeMethods.optionNodeID += 1
 
             # If there are already nodes for this task argument, determine how to proceed.
@@ -332,7 +326,7 @@ class commandLine:
               if not isFile:
                 if len(sourceNodeIDs) == 1:
                   config.nodeMethods.addValuesToGraphNode(graph, sourceNodeIDs[0], value, write = 'replace')
-                  graph.add_edge(sourceNodeIDs[0], task, attributes = edge)
+                  config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeIDs[0], task, longForm)
                 else:
                   #TODO ERROR
                   print('MULTIPLE SOURCE NODES FOR NON FILE NODE. - attachPipelineArgumentsToNodes')
@@ -369,13 +363,13 @@ class commandLine:
                   attributes   = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longForm)
                   sourceNodeID = config.nodeMethods.buildOptionNode(graph, config.tools, task, associatedTool, longForm, attributes)
                   config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'replace')
-                  graph.add_edge(sourceNodeID, task, attributes = edge)
+                  config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeID, task, longForm)
   
                 # A node was found with no predecssors, so add values to this node.
                 elif len(availableNodeIDs) == 1:
                   sourceNodeID = availableNodeIDs[0]
                   config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'append', iteration = 1)
-                  graph.add_edge(sourceNodeID, task, attributes = edge)
+                  config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeID, task, longForm)
   
                 # Multiple previous nodes were found. This should not have occured, so gkno canno proceed.
                 else:
@@ -385,9 +379,9 @@ class commandLine:
   
               # Check if this option defines a file.  If so, create a file node for this option.
               if config.tools.getArgumentData(associatedTool, longForm, 'input'):
-                config.nodeMethods.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'input')
+                config.nodeMethods.buildTaskFileNodes(graph, config.tools, sourceNodeID, task, longForm, shortForm, 'input')
               elif config.tools.getArgumentData(associatedTool, longForm, 'output'):
-                config.nodeMethods.buildTaskFileNodes(graph, sourceNodeID, task, longForm, shortForm, 'output')
+                config.nodeMethods.buildTaskFileNodes(graph, config.tools, sourceNodeID, task, longForm, shortForm, 'output')
 
   # Assign values to the file nodes using the option nodes.
   def mirrorFileNodeValues(self, graph, config, workflow):

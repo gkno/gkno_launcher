@@ -198,6 +198,49 @@ class gknoConfigurationFiles:
 
     return None
 
+  # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
+  # defined by the user.  If there is a required input or output file and it does not have its value set, 
+  # determine how to construct the filename and populate the node with the value.
+  def constructFilenames(self, pipelineGraph, config, workflow):
+    for task in workflow:
+                                 
+      # Input files are predecessor nodes to the task.  Deal with the input files first.
+      fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task)
+      for fileNodeID in fileNodeIDs:
+        argument     = config.edgeMethods.getEdgeAttribute(pipelineGraph, fileNodeID, task, 'argument')
+        optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+                                 
+        # Use the argument to get information about the argument.
+        isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
+        isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
+                                 
+        # If input files aren't set, gkno should terminate.  If the input is linked to the output of
+        # another task, the nodes are merged and so the input is set.  Thus, an empty value cannot be
+        # filled without command line (or instance) information.
+        if isRequired and not isSet:
+          print('MISSING INPUT FILE:', task, argument)
+          self.errors.terminate()
+                                 
+      # Now deal with output files,  These are all successor nodes.
+      fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task)
+      for fileNodeID in fileNodeIDs:
+        argument     = config.edgeMethods.getEdgeAttribute(pipelineGraph, task, fileNodeID, 'argument')
+        optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+                                 
+        isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
+        isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
+        if isRequired and not isSet:
+          method = self.constructionInstructions(pipelineGraph, config, task, argument, fileNodeID)
+          if method == None:     
+  
+            # TODO ERROR MESSAGE
+            print('\tMISSING OUTPUT:', fileNodeID, task, config.pipeline.tasks[task], argument)
+            self.errors.terminate()
+  
+          # If the tool configuration file has instructions on how to construct the filename,
+          # built it using these instructions.
+          else: self.constructFilename(pipelineGraph, config, method, task, fileNodeID)
+
   # If a filename is not defined, check to see if there are instructions on how to 
   # construct the filename.
   def constructionInstructions(self, graph, config, task, argument, fileNodeID):
@@ -366,6 +409,13 @@ class gknoConfigurationFiles:
       #TODO ERROR
       print('constructFilenameFromToolArgumentNotStub')
       self.errors.terminate()
+
+    # Determine if the baseArgument is greedy. If so, the values associated with each iteration
+    # will be used as input for a single iteration of this task. In this case, even if the values
+    # have multiple iterations, this argument should only have one iteration of values.
+    isBaseGreedy = config.edgeMethods.getEdgeAttribute(graph, baseNodeID, task, 'isGreedy')
+    if isBaseGreedy:
+      for i in range(2, len(values) + 1): del values[i]
 
     # If the extension is to be replaced, do that here.
     if replaceExtension:
