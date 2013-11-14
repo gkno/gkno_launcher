@@ -327,6 +327,7 @@ def main():
   if verbose: writeDone()
 
   # Attach the values of the pipeline arguments to the relevant nodes.
+  #TODO USE attachToolArgumentsToNodes in attachPipelineArgumentsToNodes when dealing with tasks.
   if verbose: writeAssignPipelineArgumentsToNodes()
   if isPipeline: commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
   else: commands.attachToolArgumentsToNodes(pipelineGraph, config, gknoConfig)

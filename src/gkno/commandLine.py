@@ -252,6 +252,24 @@ class commandLine:
 
     else: return 'default'
 
+  # Check for lists of input files and add any to the argumentDictionary structure.
+  def checkForInputLists(self, config):
+    for argument in self.argumentDictionary:
+      filename = './' + self.argumentDictionary[argument][0]
+
+      # Read in all of the files, check that they end with the correct extension and
+      # add to the argumentDictionary.
+      try: filenames = [filename.strip() for filename in open(filename)]
+      except:
+        print('failed to open ', filename)
+        self.errors.terminate()
+
+      # Get the argument that is to be used for these filenames.
+      extension = config.tools.getArgumentData(tool, argument, '')
+      for filename in filenames:
+        print(filename)
+    exit(0)
+
   # Attach the values supplied on the command line to the nodes.
   def attachPipelineArgumentsToNodes(self, graph, config, gknoConfig):
     for argument in self.argumentDictionary:
@@ -403,6 +421,13 @@ class commandLine:
   # Attach the tool arguments to the graph nodes.
   def attachToolArgumentsToNodes(self, graph, config, gknoConfig):
 
+    # Define the argumentValues structure. The argumentDictionary structure is parsed and
+    # the values for each argument are stored in argumentValues. After all entries in
+    # argumentDictionary have been processed, the values are added to the graph nodes.
+    # The reason for this is that the same argument may appear on the command line multiple
+    # times and these should all be collated before being assigned to the node.
+    argumentValues = {}
+
     # Get the task node.
     task = config.nodeMethods.getNodes(graph, 'task')[0]
 
@@ -412,9 +437,45 @@ class commandLine:
       # Get the nodeID of the option node for this argument.
       try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, argument)[0]
 
-      # If no nodes were found, the argument must be a gkno specific argument.
-      except: nodeID = gknoConfig.getNodeForGknoArgument(graph, config, argument)
-      config.nodeMethods.addValuesToGraphNode(graph, nodeID, self.argumentDictionary[argument], write = 'replace')
+      # If no nodes were found, the argument must be a gkno specific argument or not have
+      # been created in the graph yet,
+      except:
+
+        # See if this is a gkno specific argument.
+        nodeID = gknoConfig.getNodeForGknoArgument(graph, config, argument)
+
+        # If not, this is an argument that hasn't yet had a node created. Before creating a new node,
+        # check to see if this is an input list. If so, determine which argument the values in the list
+        # refer to and add the values to the relevant node.
+        if not nodeID:
+
+          # If this is a list of arguments, get the argument to use for the values.
+          if config.tools.getArgumentData(task, argument, 'list of input files'):
+            assignedArgument = config.tools.getArgumentData(task, argument, 'apply by repeating this argument')
+            try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, assignedArgument)[0]
+            except:
+              #TODO
+              print("NODE DOESN'T EXIST. CREATE - attachToolArgumentsToNodes")
+              self.errors.terminate()
+
+          else:
+            #TODO CHECK NON REQUIRED ARGUMENTS
+            print('SORT OUT - attachToolArgumentsToNodes')
+            self.errors.terminate()
+
+          # Parse the list and modify the value in argumentDictionary from the list to the files
+          # in the list.
+          filename = './' + self.argumentDictionary[argument][0]
+          names    = [name.strip() for name in open(filename)]
+          values   = []
+          for name in names: values.append(name)
+          self.argumentDictionary[argument] = values
+      
+      if nodeID not in argumentValues: argumentValues[nodeID] = self.argumentDictionary[argument]
+      else:
+        for value in self.argumentDictionary[argument]: argumentValues[nodeID].append(value)
+      
+    for nodeID in argumentValues: config.nodeMethods.addValuesToGraphNode(graph, nodeID, argumentValues[nodeID], write = 'replace')
 
   # Assign values to the file nodes using the option nodes.
   def mirrorFileNodeValues(self, graph, config, workflow):
