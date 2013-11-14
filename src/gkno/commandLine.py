@@ -433,6 +433,7 @@ class commandLine:
 
     # Parse the command line arguments.
     for argument in self.argumentDictionary:
+      isGknoArgument = False
 
       # Get the nodeID of the option node for this argument.
       try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, argument)[0]
@@ -458,19 +459,30 @@ class commandLine:
               print("NODE DOESN'T EXIST. CREATE - attachToolArgumentsToNodes")
               self.errors.terminate()
 
+            # Parse the list and modify the value in argumentDictionary from the list to the files
+            # in the list.
+            filename = './' + self.argumentDictionary[argument][0]
+            names    = [name.strip() for name in open(filename)]
+            values   = []
+            for name in names: values.append(name)
+            self.argumentDictionary[argument] = values
+          
+          # The node doesn't exist.
           else:
-            #TODO CHECK NON REQUIRED ARGUMENTS
-            print('SORT OUT - attachToolArgumentsToNodes')
-            self.errors.terminate()
+            nodeID     = 'OPTION_' + str(config.nodeMethods.optionNodeID)
+            attributes = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, task, argument)
+            graph.add_node(nodeID, attributes = attributes)
+            config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, nodeID, task, argument)
+            config.nodeMethods.optionNodeID += 1
 
-          # Parse the list and modify the value in argumentDictionary from the list to the files
-          # in the list.
-          filename = './' + self.argumentDictionary[argument][0]
-          names    = [name.strip() for name in open(filename)]
-          values   = []
-          for name in names: values.append(name)
-          self.argumentDictionary[argument] = values
-      
+        else: isGknoArgument = True
+
+      # Check if the argument is a flag. If so, the value needs to be set to 'set'.
+      if isGknoArgument:
+        if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag': self.argumentDictionary[argument] = ['set']
+      else:
+        if config.tools.getArgumentData(task, argument, 'data type') == 'flag': self.argumentDictionary[argument] = ['set']
+
       if nodeID not in argumentValues: argumentValues[nodeID] = self.argumentDictionary[argument]
       else:
         for value in self.argumentDictionary[argument]: argumentValues[nodeID].append(value)

@@ -518,3 +518,50 @@ class gknoConfigurationFiles:
       modifiedValues[valueID] = newValuesList
 
     return modifiedValues
+
+  # Set file paths for all of the files.
+  def setFilePaths(self, graph, config):
+
+    # Get the path of the input and the output directories.
+    inputPath  = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-INPUT-PATH', 'values')
+    outputPath = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-OUTPUT-PATH', 'values')
+
+    # Make sure the path is well formed.
+    if not inputPath: inputPath = '$(PWD)'
+    else: inputPath = inputPath[1][0]
+    if not inputPath.endswith('/'): inputPath += '/'
+
+    if not outputPath: outputPath = '$(PWD)'
+    else: outputPath = outputPath[1][0]
+    if not outputPath.endswith('/'): outputPath += '/'
+
+    # Parse all of the option nodes.
+    for optionNodeID in config.nodeMethods.getNodes(graph, 'option'):
+      if config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isFile'):
+
+        # Loop over each iteration of lists of files.
+        values = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
+        for iteration in values:
+          modifiedValues = []
+          for filename in values[iteration]:
+
+            # If the filename already has a '/' in it, assume that the path is already defined.
+            # In this case, leave the path as defined.
+            if '/' not in filename:
+
+              # Determine if the file is an input or output file. Since the node could be feeding
+              # into or from multiple tasks, a file is an input, if and only if, the file nodes
+              # associated with the option node have no predecessors.
+              fileNodeIDs = config.nodeMethods.getAssociatedFileNodeIDs(graph, optionNodeID)
+              isInput     = True
+              for fileNodeID in fileNodeIDs:
+                if graph.predecessors(fileNodeID): isInput = False
+              if isInput: filename = inputPath + filename
+              else: filename = outputPath + filename
+
+              modifiedValues.append(filename)
+
+            else: modifiedValues.append(filename)
+
+          # Reset the stored values.
+          values[iteration] = modifiedValues

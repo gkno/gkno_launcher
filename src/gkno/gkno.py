@@ -340,6 +340,9 @@ def main():
     gknoConfig.addLoopValuesToGraph(pipelineGraph, config)
     if verbose: writeDone()
     
+  # Check that all files have a path set.
+  gknoConfig.setFilePaths(pipelineGraph, config)
+
   # Now that the command line argument has been parsed, all of the values supplied have been added to the
   # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
   commands.mirrorFileNodeValues(pipelineGraph, config, workflow)
