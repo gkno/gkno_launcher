@@ -236,9 +236,16 @@ class makefileData:
 
   # Write the command line for the current task.
   def writeCommand(self, graph, config, fileHandle, task, iteration):
-    tool = config.pipeline.tasks[task]
+
+    # Define some tool attributes. These are extracted from the task node.
+    #tool     = config.pipeline.tasks[task]
+    tool     = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+    modifier = config.nodeMethods.getGraphNodeAttribute(graph, task, 'modifier')
+
     print('\t@$(', (task + '_path').upper(), ')/', sep = '', end = '', file = fileHandle)
-    print(config.tools.getConfigurationData(tool, 'executable'), ' \\', sep = '', file = fileHandle)
+    print(config.nodeMethods.getGraphNodeAttribute(graph, task, 'executable'), end = ' ', file = fileHandle)
+    if modifier: print(modifier, end = ' ', file = fileHandle)
+    print('\\', sep = '', file = fileHandle)
     arguments = self.getCommandLineInformation(graph, config, task)
 
     # Check if the argument need to be written in any particular order. If not, generate the
@@ -277,6 +284,10 @@ class makefileData:
         for value in valueList:
           if includeArgument:
             if not isFlag: print('\t', commandLineArgument, ' ', value, ' \\', sep = '', file = fileHandle)
+
+            # If the argument is a flag, check that the value is 'set' and if so, just write the argument.
+            else:
+              if value == 'set': print('\t', commandLineArgument, ' \\', sep = '', file = fileHandle)
 
   def writeComplete(self, fileHandle):
 

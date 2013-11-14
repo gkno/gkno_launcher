@@ -69,7 +69,7 @@ class commandLine:
     return isAdmin
 
   # Parse through the command line and put all of the arguments into a list.
-  def getCommandLineArguments(self, graph, config, tool, isPipeline, verbose):
+  def getCommandLineArguments(self, graph, config, gknoConfig, tool, isPipeline, verbose):
     count = 1
     while True:
       try: argument = sys.argv[count]
@@ -90,52 +90,63 @@ class commandLine:
         # identified as beginning with a square bracket, find the end of the task specific commands.
         if nextArgument.startswith('['): count, nextArgument = self.checkForTaskCommands(count, nextArgument)
   
-        # Check if the next argument starts with a '-'.  If so, the next argument on the command line
-        # is not a value to accompany this argument, but is a new argument.  This is either because
-        # the current argument is a flag or the argument is the name of a task within the pipeline.
-        # If the argument is the name of a task in the workflow, the next entry on the command line
-        # should be the value for this argument.
-        if nextArgument.startswith('-'):
-  
-          # Check if the argument is the name of a task.
-          task = ''
-          if argument.startswith('-'): task = argument[1:]
-          if argument.startswith('--'): task = argument[2:]
-  
-          isTask = False
-          if task in graph.nodes(data = False):
-  
-            # The task is a node in the pipeline, but check that the node is a task node.
-            if config.nodeMethods.getGraphNodeAttribute(graph, task, 'nodeType') == 'task':
-  
-              if argument not in self.argumentDictionary: self.argumentDictionary[argument] = []
-              self.argumentDictionary[argument].append(nextArgument)
-              count += 1
-              isTask = True
-  
-          # Deal with arguments that are not the names of tasks.
-          if not isTask:
+        # Check if the argument is a gkno specific argument.
+        pipelineArgument = gknoConfig.checkPipelineArgument(graph, config, argument)
+        if pipelineArgument != None:
+          if pipelineArgument not in self.argumentDictionary: self.argumentDictionary[pipelineArgument] = []
+          if nextArgument.startswith('-'): self.argumentDictionary[pipelineArgument].append('')
+          else:
+            self.argumentDictionary[pipelineArgument].append(nextArgument)
+            count += 1
 
-            # If a pipeline is being run, check the arguments against those allowed by the
-            # pipeline confuguration file.
+        else:
+
+          # Check if the next argument starts with a '-'.  If so, the next argument on the command line
+          # is not a value to accompany this argument, but is a new argument.  This is either because
+          # the current argument is a flag or the argument is the name of a task within the pipeline.
+          # If the argument is the name of a task in the workflow, the next entry on the command line
+          # should be the value for this argument.
+          if nextArgument.startswith('-'):
+    
+            # Check if the argument is the name of a task.
+            task = ''
+            if argument.startswith('-'): task = argument[1:]
+            if argument.startswith('--'): task = argument[2:]
+    
+            isTask = False
+            if task in graph.nodes(data = False):
+    
+              # The task is a node in the pipeline, but check that the node is a task node.
+              if config.nodeMethods.getGraphNodeAttribute(graph, task, 'nodeType') == 'task':
+    
+                if argument not in self.argumentDictionary: self.argumentDictionary[argument] = []
+                self.argumentDictionary[argument].append(nextArgument)
+                count += 1
+                isTask = True
+    
+            # Deal with arguments that are not the names of tasks.
+            if not isTask:
+  
+              # If a pipeline is being run, check the arguments against those allowed by the
+              # pipeline confuguration file.
+              if isPipeline: longForm = config.pipeline.getLongFormArgument(graph, argument)
+  
+              # If gkno is being run in tool mode, check the arguments against those allowed by
+              # the tool.
+              else: longForm = config.tools.getLongFormArgument(tool, argument)
+  
+              # Update the argumentDictionary.
+              if longForm not in self.argumentDictionary: self.argumentDictionary[longForm] = []
+              self.argumentDictionary[longForm].append('')
+    
+          else:
             if isPipeline: longForm = config.pipeline.getLongFormArgument(graph, argument)
-
-            # If gkno is being run in tool mode, check the arguments against those allowed by
-            # the tool.
             else: longForm = config.tools.getLongFormArgument(tool, argument)
-
+  
             # Update the argumentDictionary.
             if longForm not in self.argumentDictionary: self.argumentDictionary[longForm] = []
-            self.argumentDictionary[longForm].append('')
-  
-        else:
-          if isPipeline: longForm = config.pipeline.getLongFormArgument(graph, argument)
-          else: longForm = config.tools.getLongFormArgument(tool, argument)
-
-          # Update the argumentDictionary.
-          if longForm not in self.argumentDictionary: self.argumentDictionary[longForm] = []
-          self.argumentDictionary[longForm].append(nextArgument)
-          count += 1
+            self.argumentDictionary[longForm].append(nextArgument)
+            count += 1
       count += 1
 
   # Check for arguments for tasks within the pipeline.
@@ -388,6 +399,22 @@ class commandLine:
                 config.nodeMethods.buildTaskFileNodes(graph, config.tools, sourceNodeID, task, longForm, shortForm, 'input')
               elif config.tools.getArgumentData(associatedTool, longForm, 'output'):
                 config.nodeMethods.buildTaskFileNodes(graph, config.tools, sourceNodeID, task, longForm, shortForm, 'output')
+
+  # Attach the tool arguments to the graph nodes.
+  def attachToolArgumentsToNodes(self, graph, config, gknoConfig):
+
+    # Get the task node.
+    task = config.nodeMethods.getNodes(graph, 'task')[0]
+
+    # Parse the command line arguments.
+    for argument in self.argumentDictionary:
+
+      # Get the nodeID of the option node for this argument.
+      try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, argument)[0]
+
+      # If no nodes were found, the argument must be a gkno specific argument.
+      except: nodeID = gknoConfig.getNodeForGknoArgument(graph, config, argument)
+      config.nodeMethods.addValuesToGraphNode(graph, nodeID, self.argumentDictionary[argument], write = 'replace')
 
   # Assign values to the file nodes using the option nodes.
   def mirrorFileNodeValues(self, graph, config, workflow):

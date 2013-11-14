@@ -37,6 +37,7 @@ from gknoConfigurationFiles import *
 import helpClass
 from helpClass import *
 
+#TODO REMOVE
 import instances
 from instances import *
 
@@ -82,7 +83,8 @@ def main():
   commands = commandLine()
 
   # Generate a class for handling instances.
-  ins = instances()
+  #TODO REMOVE
+  #ins = instances()
 
   # Generate a class for storing details for use in the makefile.
   make = makefileData()
@@ -190,7 +192,7 @@ def main():
 
       # TODO VALIDATION MODULE IS INCOMPLETE.  CONFIGURATIONCLASS NEEDS TO BE
       # MODIFIED TO INCLUDE THIS.
-      success = config.pipeline.processConfigurationData(pipelineConfigurationData, pipelineFile)
+      instances = config.pipeline.processConfigurationData(pipelineConfigurationData, pipelineFile)
 
       #iLoop.tasks     = pl.checkConfigurationFile(gknoHelp, pipelineData, io.jsonPipelineFiles, tl.availableTools, tl.argumentInformation, verbose)
       #pipelineData    = '' # Clear the data structure as it is no longer necessary.
@@ -252,7 +254,6 @@ def main():
     config.nodeMethods.setRequiredNodes(pipelineGraph, config.tools)
 
   else:
-    print('Delaing with tool', toolName)
     # FIXME TEMPORARY LOCATION OF CONFIG FILES.  REMOVE TEMP WHEN COMPLETE.
     toolFile              = sourcePath + '/config_files/temp/tools/' + toolName + '.json'
     toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
@@ -261,12 +262,13 @@ def main():
     # CONFIGURATIONCLASS.
     # Ensure that the tool configuration file is well constructed and put all of the data
     # in data structures.  Each tool in each configuration file gets its own data structure.
-    config.tools.processConfigurationData(toolName, toolConfigurationData)
+    instances = config.tools.processConfigurationData(toolName, toolConfigurationData)
 
     # Define the tasks structure. Since a single tool is being run, this is simply the name
-    # of the tool.
-    tasks           = {}
-    tasks[toolName] = toolName
+    # of the tool. Set the tasks structure in the pipeline configuration object as well.
+    tasks                 = {}
+    tasks[toolName]       = toolName
+    config.pipeline.tasks = tasks
     workflow.append(toolName)
     config.buildTaskGraph(pipelineGraph, tasks)
 
@@ -276,7 +278,7 @@ def main():
 
   # Parse the command line and put all of the arguments into a list.
   if verbose: gettingCommandLineArguments()
-  commands.getCommandLineArguments(pipelineGraph, config, pipelineName, isPipeline, verbose)
+  commands.getCommandLineArguments(pipelineGraph, config, gknoConfig, pipelineName, isPipeline, verbose)
 
   if verbose:
     writeDone()
@@ -284,7 +286,7 @@ def main():
 
   # If help was requested or there were problems (e.g. the tool name or pipeline
   # name did not exist), print out the required usage information.
-  if gknoHelp.printHelp: gknoHelp.printUsage(pipelineGraph, config, workflow, admin, __version__, __date__, sourcePath)
+  if gknoHelp.printHelp: gknoHelp.printUsage(pipelineGraph, config, workflow, admin, __version__, __date__, sourcePath, pipelineName)
 
   # Populate the tl.arguments structure with the arguments with defaults from the tool configuration files.
   # The x.arguments structures for each of the classes used in gkno has the same format (a dictionary whose
@@ -305,20 +307,29 @@ def main():
   
   # Print information about the pipeline to screen.
   if isPipeline and verbose: writePipelineWorkflow(pipelineGraph, config, workflow, gknoHelp)
-  exit(0)
 
   # TODO DEAL WITH TOOL INSTANCES
   #FIXME RESET THE DIRECTORY TO REMOVE 'temp'
   # Check if an instance was requested by the user.  If so, get the data and add the values to the data nodes.
   if verbose: writeCheckingInstanceInformation()
   instanceName = commands.getInstanceName()
-  instanceData = config.getInstanceData(sourcePath, isPipeline, pipelineName, instanceName, gknoConfig.jsonFiles['pipeline instances'])
+  if isPipeline:
+    #TODO REMOVE temp
+    path               = sourcePath + '/config_files/temp/pipes/'
+    availableInstances = gknoConfig.jsonFiles['pipeline instances']
+  else:
+    #TODO REMOVE temp
+    path               = sourcePath + '/config_files/temp/tools/'
+    availableInstances = gknoConfig.jsonFiles['tool instances']
+  instanceData = config.getInstanceData(path, pipelineName, instanceName, instances, availableInstances)
+  # TODO Validate instance data. Check that tool instances have the argument field.
   config.attachInstanceArgumentsToNodes(pipelineGraph, instanceData)
   if verbose: writeDone()
 
   # Attach the values of the pipeline arguments to the relevant nodes.
   if verbose: writeAssignPipelineArgumentsToNodes()
-  commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
+  if isPipeline: commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
+  else: commands.attachToolArgumentsToNodes(pipelineGraph, config, gknoConfig)
   if verbose: writeDone()
 
   # Check if multiple runs or internal loops have been requested.

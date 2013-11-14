@@ -106,6 +106,19 @@ class gknoConfigurationFiles:
       attributes.shortForm = self.gknoConfigurationData['gkno options'][nodeID]['short form']
       graph.add_edge(nodeID, 'gkno', attributes = attributes)
 
+  # Check if a command line argument is a gkno specific argument.
+  def checkPipelineArgument(self, graph, config, argument):
+
+    # Next, check if the argument is a gkno specific pipeline argument.
+    for nodeID in graph.nodes(data = False):
+      if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'nodeType') == 'general':
+        edgeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'argument')
+        shortForm    = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'shortForm')
+        if edgeArgument == argument: return edgeArgument
+        elif shortForm == argument: return edgeArgument
+
+    return None
+
   # Clear the data structure holding the gkno specific data.
   def eraseConfigurationData(self):
     self.gknoConfigurationData = {}
@@ -288,35 +301,13 @@ class gknoConfigurationFiles:
     # extension.
     originalExtension = config.tools.getArgumentData(config.pipeline.tasks[task], baseArgument, 'extension')
     modifiedValues    = self.modifyExtensions(values, originalExtension, '')
-    if 'add argument values' in instructions:
-      numberOfValues  = len(modifiedValues)
 
-      # The modifiedValues structure is a dictionary.  This contains values for each iteration of the
-      # pipeline to be executed.  It must be the case that the modifiedValues dictionary has the same
-      # number of iterations as the values structure associated with the node for the argument from
-      # which the filenames are to be constructed, or one of the structured must have only one iteration.
-      additionalArguments = []
-      for taskArgument in instructions['add argument values']:
+    # If the construction instructions indicate that values from another argument should be included
+    # in the filename, include them here.
+    if 'add argument values' in instructions: modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues, hasExtension = False)
 
-        # Find the option node that provides information for this argument.
-        # TODO HANDLE THE CASE OF MULTIPLE VALUES
-        argumentNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, taskArgument)
-        if len(argumentNodeIDs) != 1:
-          print('not yet handled - constructFilenameFromToolArgumentStub mark2')
-          self.errors.terminate()
-        else: argumentNodeID = argumentNodeIDs[0]
-
-        argumentNodeValues = config.nodeMethods.getGraphNodeAttribute(graph, argumentNodeID, 'values')
-        numberOfNodeValues = len(argumentNodeValues)
-
-        # If both data structures have the same number of values, or one list is larger than the other,
-        # update the modifiedValues dictionary accordingly.
-        if numberOfValues == numberOfNodeValues: self.setModifiedValuesA(modifiedValues, argumentNodeValues)
-        elif numberOfValues == 1 and numberOfNodeValues > 1: self.setModifiedValuesB(modifiedValues, argumentNodeValues)
-        elif numberOfValues > 1 and numberOfNodeValues == 1: self.setModifiedValuesC(modifiedValues, argumentNodeValues)
-        else:
-          print('NOT HANDLED VALUES - constructFilenameFromToolArgumentStub')
-          self.errors.terminate()
+    # If the instructions indicate that additional text should be added to the filename, add it.
+    if 'add additional text' in instructions: modifiedValues = self.addAdditionalText(instructions, modifiedValues, hasExtension = False)
 
     # Reset the node values for the option and the file node.
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)
@@ -338,6 +329,40 @@ class gknoConfigurationFiles:
         fileValues[iteration] = []
         for value in modifiedValues[iteration]: fileValues[iteration].append(value + extension)
       config.nodeMethods.replaceGraphNodeValues(graph, nodeID, fileValues)
+
+  # Add additional argument values to the filename.
+  def addArgumentValues(self, graph, config, instructions, task, modifiedValues, hasExtension):
+    numberOfValues = len(modifiedValues)
+
+    # The modifiedValues structure is a dictionary.  This contains values for each iteration of the
+    # pipeline to be executed.  It must be the case that the modifiedValues dictionary has the same
+    # number of iterations as the values structure associated with the node for the argument from
+    # which the filenames are to be constructed, or one of the structured must have only one iteration.
+    additionalArguments = []
+    for taskArgument in instructions['add argument values']:
+
+      # Find the option node that provides information for this argument.
+      # TODO HANDLE THE CASE OF MULTIPLE VALUES
+      argumentNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, taskArgument)
+      if len(argumentNodeIDs) != 1:
+        print('not yet handled - constructFilenameFromToolArgumentStub mark2')
+        self.errors.terminate()
+      else: argumentNodeID = argumentNodeIDs[0]
+
+      argumentNodeValues = config.nodeMethods.getGraphNodeAttribute(graph, argumentNodeID, 'values')
+      numberOfNodeValues = len(argumentNodeValues)
+
+      # If both data structures have the same number of values, or one list is larger than the other,
+      # update the modifiedValues dictionary accordingly.
+      if numberOfValues == numberOfNodeValues: self.setModifiedValuesA(modifiedValues, argumentNodeValues)
+      elif numberOfValues == 1 and numberOfNodeValues > 1: self.setModifiedValuesB(modifiedValues, argumentNodeValues)
+      elif numberOfValues > 1 and numberOfNodeValues == 1: self.setModifiedValuesC(modifiedValues, argumentNodeValues)
+      else:
+        print('NOT HANDLED VALUES - constructFilenameFromToolArgumentStub')
+        print(taskArgument, modifiedValues)
+        self.errors.terminate()
+
+    return modifiedValues
 
   # Update the modifiedValues dictionary.
   def setModifiedValuesA(self, modifiedValues, argumentNodeValues):
@@ -373,6 +398,28 @@ class gknoConfigurationFiles:
       modifiedList = []
       for value in values[iteration]: modifiedList.append(value + self.delimiter + argumentNodeValues[1][0])
       modifiedValues[iteration] = modifiedList
+
+  # Add additional text to the constructed filename.
+  def addAdditionalText(self, instructions, values, hasExtension = False, extension = ''):
+    text = instructions['add additional text']
+    for iteration in values:
+      modifiedValues = []
+      for value in values[iteration]:
+
+        # If the value has an extension, remove it, then replace it.
+        if hasExtension:
+          if not value.endswith('.' + extension):
+            #TODO ERROR
+            print('Unexpected extension - addAdditionalText')
+            self.errors.terminate()
+
+          newValue = str(value.split('.' + extension)[0] + '.' + str(text) + '.' + extension)
+          modifiedValues.append(newValue)
+
+        else: modifiedValues.append(value + str(text))
+      values[iteration] = modifiedValues
+
+    return values
 
   # Construct the filenames for non-filename stub arguments.
   def constructFilenameFromToolArgumentNotStub(self, graph, config, task, fileNodeID):
@@ -417,13 +464,28 @@ class gknoConfigurationFiles:
     if isBaseGreedy:
       for i in range(2, len(values) + 1): del values[i]
 
-    # If the extension is to be replaced, do that here.
-    if replaceExtension:
-      originalExtension = config.tools.getArgumentData(config.pipeline.tasks[task], baseArgument, 'extension')
-      newExtension      = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'extension')
-      modifiedValues    = self.modifyExtensions(values, originalExtension, newExtension)
-
+    # Check if the argument being created allowed to have multiple values. If not, check each iteration
+    # and ensure that the modifiedValues dictionary only has one entry per iteration.
+    if not config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowMultipleValues'):
+      modifiedValues = {}
+      for iteration in values: modifiedValues[iteration] = [values[iteration][0]]
     else: modifiedValues = values
+
+    # If the extension is to be replaced, do that here.
+    originalExtension = config.tools.getArgumentData(config.pipeline.tasks[task], baseArgument, 'extension')
+    if replaceExtension:
+      newExtension      = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'extension')
+      modifiedValues    = self.modifyExtensions(modifiedValues, originalExtension, newExtension)
+
+    # If the construction instructions indicate that values from another argument should be included
+    # in the filename, include them here.
+    #modifiedValues = deepcopy(values)
+    if 'add argument values' in instructions:
+      modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues, hasExtension = True, extension = originalExtension)
+
+    # If the instructions indicate that additional text should be added to the filename, add it.
+    if 'add additional text' in instructions:
+      modifiedValues = self.addAdditionalText(instructions, modifiedValues, hasExtension = True, extension = originalExtension)
 
     # Reset the node values for the option and the file node.
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)

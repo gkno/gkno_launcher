@@ -37,7 +37,7 @@ class helpClass:
 
   # If usage information needs to be printed out, determine the exact level
   # of usage information to provide, write to screen and then terminate.
-  def printUsage(self, graph, config, workflow, admin, version, date, path):
+  def printUsage(self, graph, config, workflow, admin, version, date, path, pipelineName):
 
     # General gkno usage.
     if self.generalHelp: self.usage(graph, config, admin, path)
@@ -47,7 +47,7 @@ class helpClass:
       if self.unknownTool:
         self.printToolModeUsage(config)
         self.unknownToolMessage(graph, config.pipeline.pipelineName)
-      else: self.toolUsage(graph, config.pipeline.pipelineName)
+      else: self.toolUsage(graph, config)
 
     # General pipeline help.
     elif self.pipelineHelp:
@@ -180,19 +180,21 @@ class helpClass:
     sys.stdout.flush()
 
   # Print out tool usage.
-  def toolUsage(self, graph, pipelineName):
+  def toolUsage(self, graph, config):
     print('===================', file = sys.stdout)
     print('  gkno tool usage', file = sys.stdout)
     print('===================', file = sys.stdout)
     print(file = sys.stdout)
-    print(pipelineName)
-    exit(0)
+
+    # Get the nodeID of the task. This will also be the tool name.
+    tool = config.nodeMethods.getNodes(graph, 'task')[0]
+
     print('Usage: gkno ', tool, ' [options]', sep = '', file = sys.stdout)
     print(file = sys.stdout)
 
     # Print out the tool description.
     print('     Description:', file = sys.stdout)
-    self.writeFormattedText(tl.descriptions[tool], ' ', 2, 2, ' ')
+    self.writeFormattedText(config.nodeMethods.getGraphNodeAttribute(graph, tool, 'description'), ' ', 2, 2, ' ')
     print(file = sys.stdout)
     sys.stdout.flush()
 
