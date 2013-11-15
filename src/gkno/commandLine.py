@@ -22,51 +22,71 @@ class commandLine:
     self.argumentsToNodes   = []
     self.errors             = gknoErrors()
     self.linkedArguments    = {}
+    self.mode               = 'help'
     self.uniqueArguments    = {}
+
+  # If an admin operation has been requested, check which admin mode is required.
+  def isAdminMode(self, adminModes):
+    try:
+      if sys.argv[1] in adminModes: return True
+    except: return False
 
   # Check if a mode has been defined.  The mode is either 'pipe', 'run-test' or
   # a tool name.  If nothing is set, then no mode is chosen and the general help
   # message will be displayed.
-  def isModeSet(self):
-    isSet = True
-    try:
-      argument = sys.argv[1]
+  def setMode(self, isAdmin):
+    isPipeline = False
 
-      # If help is requested, a mode isn't set.
-      if argument == '-h' or argument == '--help': isSet = False
+    try: argument = sys.argv[1]
+    except: return False
 
-    except: isSet = False
+    # If help is requested, a mode isn't set.
+    if isAdmin: self.mode = 'admin'
+    elif argument == '-h' or argument == '--help': self.mode = 'help'
+    elif argument == 'pipe':
+      self.mode  = 'pipeline'
+      isPipeline = True
+    elif argument == 'run-test':
+      self.mode = 'test'
+      isPipeline = True
+    else: self.mode = 'tool'
 
-    return isSet
+    return isPipeline
 
-  # Check the first entry on the command line is valid.
-  def isPipelineMode(self):
-    isPipeline   = False
-    hasName      = False
-    pipelineName = ''
+  # If gkno is being run in pipeline mode, get the name of the pipeline.
+  def getPipelineName(self, isPipeline):
+    if isPipeline:
+      try: return sys.argv[2]
+      except: return None
 
-    # If a pipeline has been selected set the mode to pipe and get the name of
-    # the pipeline.
-    if sys.argv[1] == 'pipe':
-      isPipeline   = True
-      hasName      = True
-      try: pipelineName = sys.argv[2]
-      except: hasName = False
+    # If running in tool mode, return the name of the tool.
+    else:
+      try: return sys.argv[1]
+      except: return None
 
-    # If the pipeline being run is run-test, the 'pipe' command is not required.
-    elif sys.argv[1] == 'run-test':
-      isPipeline   = True
-      hasName      = True
-      pipelineName = 'run-test'
+  # Check to see if the verbose argument is set.
+  def checkVerbose(self, graph, config, admin):
+    for count, argument in enumerate(sys.argv[1:]):
+      if argument == '--verbose' or argument == '-vb':
+        try: value = sys.argv[count + 2]
+        except: value = ''
 
-    return isPipeline, hasName, pipelineName
+        # Check the supplied value.
+        if value == 'false' or value == 'False': isVerbose = False
+        elif value == 'true' or value == 'True':
+          isVerbose       = True
+          admin.isVerbose = True
+        else:
+          # TODO ERROR
+          print('ERROR GETTING VERBOSE - commands.checkVerbose')
+          self.errors.terminate()
 
-  # If an admin operation has been requested, check which admin mode is required.
-  def isAdminMode(self, adminModes):
-    isAdmin = False
-    if sys.argv[1] in adminModes: isAdmin = True
+        # Update the 'GKNO-VERBOSE' node.
+        config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-VERBOSE', [isVerbose], 'replace')
 
-    return isAdmin
+        return isVerbose
+
+    return True
 
   # Parse through the command line and put all of the arguments into a list.
   def getCommandLineArguments(self, graph, config, gknoConfig, tool, isPipeline, verbose):
@@ -178,64 +198,6 @@ class commandLine:
          break
 
     return count, nextArgument
-
-  # Check if help has been requested on the command line.  Search for the '--help'
-  # or '-h' arguments on the command line.
-  def checkForHelp(self, gknoHelp, isPipeline, pipelineName, admin):
-
-    # Check if '--help' or '-h' were included in the command line.  If so, determine what help
-    # was requested.  Pipeilne, tool, admin or general help.
-    helpSet    = False
-    verboseSet = False
-    for argument in sys.argv[1:]:
-      if argument == '--help' or argument == '-h': helpSet = True
-      if argument == '--verbose' or argument == '-vb': verboseSet = True
-
-    if helpSet:
-
-      # If '--help' is the only argument on the command line, there are only two unique arguments:
-      # the path and '--help'.  This case calls for general help.
-      if len(sys.argv) == 2:
-        gknoHelp.generalHelp  = True
-        gknoHelp.printHelp    = True
-      else:
-
-        # If a pipeline is being run, check if help is required on general pipelines, or on a specific
-        # pipeline.
-        if isPipeline:
-          if pipelineName == '--help' or pipelineName == '-h':
-            gknoHelp.pipelineHelp = True
-            gknoHelp.printHelp    = True
-          else:
-            gknoHelp.specificPipelineHelp = True
-            gknoHelp.printHelp            = True
-  
-        # Help with admin.
-        elif admin.isRequested:
-          gknoHelp.adminHelp = True
-          gknoHelp.printHelp = True
-  
-        # If pipeline or admin help wasn't requested, then tool help is required.
-        else:
-          gknoHelp.toolHelp   = True
-          gknoHelp.printHelp  = True
-
-    # Check if the verbose argument was included.
-    verbose = True
-    if verboseSet:
-      value = ''
-      for count, argument in enumerate(sys.argv[1:]):
-        if argument == '--verbose' or argument == '-vb':
-          try: value = sys.argv[count + 2]
-          except: value = ''
-          break
-      if value == 'false' or value == 'False': verbose = False
-      elif value == 'true' or value == 'True': admin.isVerbose = True
-      else:
-        self.errors.incorrectBooleanValue(False, '', 'pipeline', argument, '', '', '', value)
-        self.errors.terminate()
-      
-    return verbose
 
   # Check if an instance was defined and return the instance name.  If no instance was requested,
   # return 'default'.

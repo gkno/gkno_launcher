@@ -68,6 +68,26 @@ class gknoConfigurationFiles:
       if files.endswith('_instances.json'): self.jsonFiles['pipeline instances'][files] = False
       elif files.endswith('.json'): self.jsonFiles['pipelines'][files] = True
 
+  # Check if the pipeline/tool name is valid.
+  def checkPipelineName(self, gknoHelp, isPipeline, name):
+
+    # If this is a tool, check against the available tools.
+    if (not isPipeline) and name:
+      if name + '.json' not in self.jsonFiles['tools']:
+        gknoHelp.printHelp   = True
+        gknoHelp.toolHelp    = True
+        gknoHelp.invalidTool = True
+
+    # Now check for pipelines.
+    else:
+      if not name:
+        gknoHelp.printHelp       = True
+        gknoHelp.pipelineHelp    = True
+      elif name + '.json' not in self.jsonFiles['pipelines']:
+        gknoHelp.printHelp       = True
+        gknoHelp.pipelineHelp    = True
+        gknoHelp.invalidPipeline = True
+
   #TODO SORT THIS OUT
   # Validate the gkno configuration file.
   def validateConfigurationFile(self):
@@ -259,7 +279,7 @@ class gknoConfigurationFiles:
   def constructionInstructions(self, graph, config, task, argument, fileNodeID):
     instructions = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'construct filename')
     if instructions == None: return None
-    else: return instructions['id']
+    else: return instructions['ID']
 
   # Construct a filename from instructions.
   def constructFilename(self, graph, config, method, task, fileNodeID):
@@ -408,10 +428,22 @@ class gknoConfigurationFiles:
 
         # If the value has an extension, remove it, then replace it.
         if hasExtension:
-          if not value.endswith('.' + extension):
-            #TODO ERROR
-            print('Unexpected extension - addAdditionalText')
-            self.errors.terminate()
+
+          # The supplied extension can be a list of extensions separated by a '|'. Check
+          # if the file finishes with any of these extensions. Store the specific extension.
+          if '|' in extension:
+            extensions = extension.split('|')
+            fileHasExtension = False
+            for specificExtension in extensions:
+              if value.endswith('.' + specificExtension):
+                fileHasExtension = True
+                break
+            extension = specificExtension
+
+            if not fileHasExtension:
+              #TODO ERROR
+              print('Unexpected extension - addAdditionalText')
+              self.errors.terminate()
 
           newValue = str(value.split('.' + extension)[0] + '.' + str(text) + '.' + extension)
           modifiedValues.append(newValue)

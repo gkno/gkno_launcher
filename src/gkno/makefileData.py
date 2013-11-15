@@ -20,6 +20,7 @@ class makefileData:
     self.hasPipes               = False
     self.intermediateFiles      = []
     self.outputs                = {}
+    self.outputPath             = ''
     self.phonyTargetID          = 1
     self.phonyTargets           = []
     self.taskBlocks             = []
@@ -114,6 +115,16 @@ class makefileData:
           for count in range(1, self.makefilesInPhase[phaseID] + 1):
             self.makefileNames[phaseID].append(text + str(phaseID) + '_' + str(count) + '.make')
 
+  # Get the output path for use with generating the makefiles.
+  def getOutputPath(self, graph, config):
+
+    # The output path is stored with the gkno specific nodes. Since the valiues are treated as all other
+    # arguments, the value itself is the first (and only) value in the list associated with the first (and
+    # only iteration).
+    outputPath = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-OUTPUT-PATH', 'values')
+    if not outputPath: self.outputPath = '$(PWD)'
+    else: self.outputPath = outputPath[1][0]
+
   # Open the makefile and write the initial information to the file.
   def openMakefile(self, makefileName):
     makefileHandle = open(makefileName, 'w')
@@ -133,10 +144,15 @@ class makefileData:
     if self.makefilesInPhase[phaseID] > 1: print('### Data set ', str(iteration), ' of ', self.makefilesInPhase[phaseID], sep = '', file = fileHandle)
 
     print(file = fileHandle)
+    print('### Paths to tools and resources.', file = fileHandle)
     print('GKNO_PATH=', sourcePath, "/src/gkno", sep = '', file = fileHandle)
     print('TOOL_BIN=', sourcePath, "/tools", sep = '', file = fileHandle)
     print('RESOURCES=', sourcePath + '/resources', sep = '', file = fileHandle)
     print('MAKEFILE_ID=', makefileName.split('/')[-1].split('.')[0], sep = '', file = fileHandle)
+    print(file = fileHandle)
+    print('### Standard output and errors files.', file = fileHandle)
+    print('STDOUT=', self.outputPath, '/', pipelineName, ',stdout', sep = '', file = fileHandle)
+    print('STDERR=', self.outputPath, '/', pipelineName, '.stderr', sep = '', file = fileHandle)
     print(file = fileHandle)
 
   # Write out all of the intermediate files.
@@ -204,11 +220,10 @@ class makefileData:
         print('\t@echo -e "Executing task: ', task, '...\c"', sep = '', file = fileHandle)
   
         # Write the executable command.
-        #self.writeCommand(graph, config, fileHandle, task, iteration)
-        self.writeCommand(graph, config, fileHandle, task, counter)
-  
-        # Print a blank line to separate rules.
-        print(file = fileHandle)
+        stdoutUsed = self.writeCommand(graph, config, fileHandle, task, counter)
+
+        # Write output and errors to the stdout and stderr files.
+        self.writeStdouts(stdoutUsed, fileHandle)
   
         # If there are additional output files from this task, include an additional rule in the
         # makefile to check on their existence.
@@ -221,6 +236,7 @@ class makefileData:
   # output is included in the rule for the additional task.
   def writeRuleForAdditionalOutputs(self, makefileName, fileHandle, outputs, primaryOutput, dependencies):
     lastOutput = outputs.pop(0)
+    print(file = fileHandle)
     print('### Rule for checking that all outputs of previous task exist.', file = fileHandle)
     for counter in range(0, len(outputs)): print(outputs[counter], end = ' ', file = fileHandle)
     print(lastOutput, end = ': ', file = fileHandle)
@@ -236,6 +252,7 @@ class makefileData:
 
   # Write the command line for the current task.
   def writeCommand(self, graph, config, fileHandle, task, iteration):
+    stdoutUsed = False
 
     # Define some tool attributes. These are extracted from the task node.
     #tool     = config.pipeline.tasks[task]
@@ -274,6 +291,7 @@ class makefileData:
         # arguments across the tools. The argument to be used is also attached to the edge, so
         # get and use this value,
         commandLineArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'commandLineArgument')
+        if not commandLineArgument: commandLineArgument = argument
 
         # Some arguments are included with the tools in order to help track the files, but do not
         # actually get written to the command line. For example, bamtools-index requires an input
@@ -283,12 +301,27 @@ class makefileData:
 
         for value in valueList:
           if includeArgument:
-            if not isFlag: print('\t', commandLineArgument, ' ', value, ' \\', sep = '', file = fileHandle)
+
+            # Check if the argument is an output that writes to standard out.
+            if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout':
+              print('\t>> ', value, ' \\', sep = '', file = fileHandle)
+              stdoutUsed = True
+
+            # Check if the argument is a flag.
+            elif not isFlag: print('\t', commandLineArgument, ' ', value, ' \\', sep = '', file = fileHandle)
 
             # If the argument is a flag, check that the value is 'set' and if so, just write the argument.
             else:
               if value == 'set': print('\t', commandLineArgument, ' \\', sep = '', file = fileHandle)
 
+    return stdoutUsed
+
+  # Write outputs and errors to the stdout and stderr files.
+  def writeStdouts(self, stdoutUsed, fileHandle):
+    if not stdoutUsed: print('\t>> $(STDOUT) \\', file = fileHandle)
+    print('\t2>> $(STDERR)', file = fileHandle)
+
+  # Indicate that the task ran successfully.
   def writeComplete(self, fileHandle):
 
     # Write out that the task completed successfully.
