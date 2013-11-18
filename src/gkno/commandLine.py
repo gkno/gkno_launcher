@@ -451,18 +451,62 @@ class commandLine:
   # Assign values to the file nodes using the option nodes.
   def mirrorFileNodeValues(self, graph, config, workflow):
     for task in workflow:
-      fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(graph, task)
-      for fileNodeID in fileNodeIDs:
-        optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-        values       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
-        config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
 
-      # Now deal with output files.
-      fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(graph, task)
-      for fileNodeID in fileNodeIDs:
-        optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-        values       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
-        config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
+      # Loop over all option nodes and pick out those that correspond to files.
+      for optionNodeID in config.nodeMethods.getPredecessorOptionNodes(graph, task):
+        if config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isFile'):
+
+          # Get the file nodes associated with the option node.
+          fileNodeIDs = config.nodeMethods.getAssociatedFileNodeIDs(graph, optionNodeID)
+
+          # Determine if this node refers to a filename stub and whether it is an input or
+          # an output.
+          isInput = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'isInput')
+          if isInput: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, fileNodeIDs[0], task, 'isFilenameStub')
+          else: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeIDs[0], 'isFilenameStub')
+
+          # If the file is a filename stub, find the extensions to add to the base value and
+          # define the file node values.
+          if isFilenameStub:
+            tool       = config.pipeline.tasks[task]
+            if isInput: argument = config.edgeMethods.getEdgeAttribute(graph, fileNodeIDs[0], task, 'argument')
+            else: argument = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeIDs[0], 'argument')
+            extensions = config.tools.getArgumentData(tool, argument, 'filename extensions')
+
+            # Check that the number of file nodes is the same as the number of extensions.
+            if len(extensions) != len(fileNodeIDs):
+              #TODO ERROR
+              print('1 - commands.mirrorFileNodeValues')
+              self.errors.terminate()
+
+            for fileNodeID, extension in zip(fileNodeIDs, extensions):
+              values          = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
+              modifiedValues = {}
+              for iteration in values:
+                updatedValues = []
+                for value in values[iteration]: updatedValues.append(str(value) + str(extension))
+                modifiedValues[iteration] = updatedValues
+              config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, modifiedValues)
+
+          # If the file is not a filename stub, just add the values to the node.
+          else:
+            for fileNodeID in fileNodeIDs:
+              values = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
+              config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
+
+#      # Begin with handling input files.
+#      fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(graph, task)
+#      for fileNodeID in fileNodeIDs:
+#        optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+#        values         = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
+#        config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
+#
+#      # Now deal with output files.
+#      fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(graph, task)
+#      for fileNodeID in fileNodeIDs:
+#        optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+#        values       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
+#        config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
 
 
 

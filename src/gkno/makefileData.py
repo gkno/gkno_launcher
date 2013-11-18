@@ -200,7 +200,6 @@ class makefileData:
         minIteration = iteration
         maxIteration = iteration
       for counter in range(minIteration, maxIteration + 1):
-
         taskOutputs      = config.getTaskOutputs(graph, task, iteration = counter)
         taskDependencies = config.getTaskDependencies(graph, task, iteration = counter)
         print('### Command line information for ', task, ' (', config.pipeline.tasks[task], ').', sep = '', file = fileHandle)
@@ -313,9 +312,7 @@ class makefileData:
               # associated with a filename stub, not all of the associated files are necessarily required by
               # this task.
               if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isInput'):
-                isAssociated = True
-                try: config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'argument')
-                except: isAssociated = False
+                isAssociated = config.edgeMethods.checkIfEdgeExists(graph, fileNodeID, task)
 
                 # Check that the iteration exists in the values of associated file nodes.
                 if isAssociated:
