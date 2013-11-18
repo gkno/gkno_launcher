@@ -410,7 +410,7 @@ class adminUtils:
     
     # For each dependency
     allChecksPassed = True
-    for dependency in gkno.conf.dependencies:
+    for dependency in conf.dependencies:
 
       # If check failed, store in respective list 
       if not dependency.check():

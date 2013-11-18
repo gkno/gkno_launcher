@@ -24,9 +24,8 @@ class commandLine:
 
   # If an admin operation has been requested, check which admin mode is required.
   def isAdminMode(self, adminModes):
-    try:
-      if sys.argv[1] in adminModes: return True
-    except: return False
+    if sys.argv[1] in adminModes: return True, sys.argv[1]
+    else: return False, None
 
   # Check if a mode has been defined.  The mode is either 'pipe', 'run-test' or
   # a tool name.  If nothing is set, then no mode is chosen and the general help

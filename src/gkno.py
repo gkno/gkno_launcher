@@ -92,9 +92,9 @@ def main():
 
   # Get information on the mode being run. The pipelineName is the name of the pipeline
   # or the tool if being run in tool mode.
-  admin.isRequested = commands.isAdminMode(admin.allModes)
-  isPipeline        = commands.setMode(admin.isRequested)
-  runName           = commands.getPipelineName(isPipeline)
+  admin.isRequested, admin.mode = commands.isAdminMode(admin.allModes)
+  isPipeline                    = commands.setMode(admin.isRequested)
+  runName                       = commands.getPipelineName(isPipeline)
 
   # Read in information from the gkno specific configuration file.
   gknoConfig.gknoConfigurationData = config.fileOperations.readConfigurationFile(sourcePath + '/config_files/gknoConfiguration.json')
@@ -153,7 +153,7 @@ def main():
   workflow = []
 
   # Process all of the tool configuration files that are used.
-  if isPipeline:
+  if commands.mode == 'pipeline':
 
     # Find all of the tasks to be used in the pipeline.
     tasks = config.pipeline.getTasks()
@@ -197,7 +197,7 @@ def main():
     if gknoHelp.specificPipelineHelp: gknoHelp.specificPipelineUsage(pipelineGraph, config, gknoConfig, runName, workflow, sourcePath)
 
   # If being run in the tool mode.
-  else:
+  elif commands.mode == 'tool':
     # FIXME TEMPORARY LOCATION OF CONFIG FILES.  REMOVE TEMP WHEN COMPLETE.
     toolFile              = sourcePath + '/config_files/temp/tools/' + runName + '.json'
     toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
@@ -211,7 +211,7 @@ def main():
     # Define the tasks structure. Since a single tool is being run, this is simply the name
     # of the tool. Set the tasks structure in the pipeline configuration object as well.
     tasks                 = {}
-    tasks[runName]       = runName
+    tasks[runName]        = runName
     config.pipeline.tasks = tasks
     workflow.append(runName)
     config.buildTaskGraph(pipelineGraph, tasks)
@@ -282,7 +282,13 @@ def main():
 
   # Now that the command line argument has been parsed, all of the values supplied have been added to the
   # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
+  #for fileNodeID in config.nodeMethods.getNodes(pipelineGraph, 'file'):
+  #  print(fileNodeID, config.nodeMethods.getGraphNodeAttribute(pipelineGraph, fileNodeID, 'values'))
   commands.mirrorFileNodeValues(pipelineGraph, config, workflow)
+  #print('AFTER')
+  #for fileNodeID in config.nodeMethods.getNodes(pipelineGraph, 'file'):
+  #  print(fileNodeID, config.nodeMethods.getGraphNodeAttribute(pipelineGraph, fileNodeID, 'values'))
+  #exit(0)
 
   # TODO DEAL WITH INSTANCE EXPORTS
   # If the --export-config has been set, then the user is attempting to create a
@@ -380,7 +386,6 @@ def main():
 
       # Check that all of the input files exist.
       gknoConfig.checkFilesExist(pipelineGraph, config, graphDependencies)
-      print('TEST', graphDependencies)
 
   # If there are files required for the makefiles to run and theu don't exist, write a warning to the
   # screen and ensure that the makefiles aren't executed.
