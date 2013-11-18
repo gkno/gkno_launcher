@@ -390,25 +390,6 @@ class VcfLib(GknoTool):
   def doUpdate(self):
     return self.make()
 
-###########
-##########
-# vcflib
-class configurationClass(GknoTool):
-  def __init__(self):
-    super(configurationClass, self).__init__()
-    self.name       = "configurationClass"
-    self.installDir = "../configurationClass"
-
-  # $ make -j N  
-  #def doBuild(self):    
-#    if not self.makeClean():
-#      return False
-    #return self.doUpdate()
-
-  # $ make -j N
-  #def doUpdate(self):
-    #return self.make()
-
 ##############################################################
 # Add any new built-in gkno tools to the list below.
 
@@ -420,7 +401,6 @@ class configurationClass(GknoTool):
 
 List = [ 
         BamTools(),
-        configurationClass(),
         Freebayes(),
         Gatk(),
         LibStatGen(),
