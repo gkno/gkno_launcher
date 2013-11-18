@@ -1,0 +1,70 @@
+{
+  "description" : "Sort a BAM file",
+  "path" : "bamtools/bin",
+  "executable" : "bamtools",
+  "modifier" : "sort",
+  "help" : "--help|-h",
+  "arguments" : {
+    "--in" : {
+      "description" : "the input BAM file.",
+      "short form argument" : "-i",
+      "command line argument" : "-in",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "bam"
+    },
+    "--out" : {
+      "description" : "the output BAM file.",
+      "short form argument" : "-o",
+      "command line argument" : "-out",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "bam",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "replace extension" : true,
+        "add additional text" : "sorted"
+      }
+    },
+    "--sort-by-name" : {
+      "description" : "sort by alignment name.  Default is to sort by position.",
+      "short form argument" : "-s",
+      "command line argument" : "-byname",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    "--number-of-alignments-per-temp-file" : {
+      "description" : "max number of alignments per temp file. Default: 500,000",
+      "short form argument" : "-n",
+      "command line argument" : "-n",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    "--memory" : {
+      "description" : "max memory to use. Default: 1,024",
+      "short form argument" : "-m",
+      "command line argument" : "-mem",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

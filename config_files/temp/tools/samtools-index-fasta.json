@@ -1,0 +1,38 @@
+{
+  "description" : "Generate an index for a reference fasta file.",
+  "path" : "samtools",
+  "executable" : "samtools",
+  "modifier" : "faidx",
+  "hide tool" : true,
+  "help" : "--help|-h",
+  "additional files" : {
+    "from input arguments" : [
+      {
+        "type" : "output",
+        "link to this argument" : "--in",
+        "remove extension" : false,
+        "add extension" : true,
+        "output extension" : "fai",
+        "stub" : false
+      }
+    ]
+  },
+  "arguments" : {
+    "--in" : {
+      "short form argument" : "-i",
+      "description" : "Input FASTA file.",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "fasta|fa",
+      "modify argument name on command line" : "hide"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

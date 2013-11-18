@@ -1,0 +1,30 @@
+{
+  "instances": {
+    "test": {
+      "description" : "test instance for graph-pipeline.",
+      "nodes" : [
+        {
+          "ID" : "hash size",
+          "values" : ["20"]
+        },
+        {
+          "ID": "reference fasta",
+          "values" : ["test_reference.fa"]
+        }
+      ]
+    },
+    "test2": {
+      "description" : "second test instance for graph-pipeline.",
+      "nodes" : [
+        {
+          "ID" : "hash size",
+          "values" : ["50"]
+        },
+        {
+          "ID": "reference fasta",
+          "values" : ["test2_reference.fa"]
+        }
+      ]
+    }
+  }
+}

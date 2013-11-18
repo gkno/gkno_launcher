@@ -1,0 +1,92 @@
+{
+  "description" : "Mark duplicate reads in a BAM file (University of Michigan).",
+  "path" : "bamUtil/bin",
+  "executable" : "bam",
+  "modifier" : "dedup",
+  "help" : "--help|-h",
+  "arguments" : {
+    "--in" : {
+      "description" : "Input BAM file name (must be sorted).",
+      "short form argument" : "-i",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "bam"
+    },
+    "--out" : {
+      "description" : "Output BAM file name (same order with original file).",
+      "short form argument" : "-o",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "bam",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "replace extension" : true,
+        "add additional text" : "dupmarked"
+      }
+    },
+    "--minQual" : {
+      "description" : "Only add scores over this phred quality when determining a read's quality (default: 15)",
+      "short form argument" : "-m",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    "--log" : {
+      "description" : "Log and summary statistics (default: [outfile].log, or stderr if --out starts with '-').",
+      "short form argument" : "-l",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : "log"
+    },
+    "--oneChrom" : {
+      "description" : "Treat reads with mates on different chromosomes as single-ended.",
+      "short form argument" : "-oc",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    "--rmDups" : {
+      "description" : "Remove duplicates (default is to mark duplicates).",
+      "short form argument" : "-rd",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    "--force" : {
+      "description" : "Allow an already mark-duplicated BAM file, unmarking any previously marked duplicates and apply this duplicate marking logic.  Default is to throw errors and exit when trying to run on an already mark-duplicated BAM.",
+      "short form argument" : "-f",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    "--noeof" : {
+      "description" : "Do not expect an EOF block on a bam file.",
+      "short form argument" : "-n",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

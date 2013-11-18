@@ -1,0 +1,45 @@
+{
+  "description" : "Sort a vcf file.",
+  "path" : "vcflib",
+  "executable" : "vcfsort",
+  "hide tool" : false,
+  "help" : "--help|-h",
+  "arguments" : {
+    "--in" : {
+      "description" : "The input vcf file.",
+      "short form argument" : "-i",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "extension" : "vcf|vcf.gz",
+      "if input is stream" : "do not include",
+      "data type" : "string"
+    },
+    "--out" : {
+      "description" : "The output sorted VCF file.",
+      "short form argument" : "-o",
+      "output" : true,
+      "input" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "vcf",
+      "if output to stream" : "do not include",
+      "modify argument name on command line" : "stdout",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "replace extension" : true,
+        "add additional text" : "sorted"
+      }
+    }
+  },
+  "argument order" : [
+    "--in",
+    "--out"
+  ],
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

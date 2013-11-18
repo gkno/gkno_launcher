@@ -1,0 +1,47 @@
+{
+  "description" : "Left-aligns and merges the insertions and deletions in all alignments in stdin.  Iterates until each alignment is stable through a left-realignment step.",
+  "path" : "freebayes/bin",
+  "executable" : "bamleftalign",
+  "hide tool" : true,
+  "input is stream" : true,
+  "output is stream" : true,
+  "help" : "--help|-h",
+  "arguments" : {
+    "--fasta-reference" : {
+      "description" : "FASTA reference file to use for realignment (required)",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "short form argument" : "-f",
+      "extension" : "fa|fasta",
+      "type" : "string"
+    },
+    "--max-iterations" : {
+      "description" : "Iterate the left-realignment no more than this many times.",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "extension" : "no extension",
+      "short form argument" : "-m",
+      "type" : "integer"
+    },
+    "--out" : {
+      "description" : "The output BAM file.",
+      "input" : false,
+      "output" : true,
+      "required" : false,
+      "dependent" : false,
+      "extension" : "left_aligned.bam",
+      "short form argument" : "-o",
+      "type" : "string",
+      "if not output to stream" : "stdout"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

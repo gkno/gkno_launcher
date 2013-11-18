@@ -1,0 +1,72 @@
+{
+  "description" : "Parse a 1000 Genomes sequence index file and generate a json file for use with the align-se and align-pe pipelines.",
+  "path" : "scripts",
+  "executable" : "sequence-index-1000G.sh",
+  "help" : "--help|-h",
+  "additional files" : {
+    "defined filenames" : {
+      "type" : "output",
+      "filenames" : [
+        "single_end_reads.json",
+        "paired_end_reads.json"
+      ]
+    }
+  },
+  "arguments" : {
+    "--index-file" : {
+      "short form argument" : "-i",
+      "description" : "Sequence index file to parse.",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "type" : "string",
+      "extension" : "sequence.index",
+      "modify argument name on command line" : "hide"
+    },
+    "--read-type" : {
+      "short form argument" : "-r",
+      "description" : "Read types to process: 's' - single end reads, 'p' - paired end reads or 'b' - both.",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "no extension",
+      "modify argument name on command line" : "hide"
+    },
+    "--merge-samples" : {
+      "short form argument" : "-m",
+      "description" : "Merge all alignments for the same sample.",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "dependent" : false,
+      "type" : "bool",
+      "extension" : "no extension",
+      "modify argument name on command line" : "hide"
+    },
+    "--fastq-path" : {
+      "short form argument" : "-f",
+      "description" : "Path to the fastq files. Default: current working directory.",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "no extension",
+      "modify argument name on command line" : "hide"
+    }
+  },
+  "argument order" : [
+    "--read-type",
+    "--index-file",
+    "--merge-samples",
+    "--fastq-path"
+  ],
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

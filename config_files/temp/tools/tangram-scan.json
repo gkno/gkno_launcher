@@ -1,0 +1,73 @@
+{
+  "description" : "Generate a histogram of the fragment length distributions of the input libraries.",
+  "path" : "Tangram/bin",
+  "executable" : "tangram_scan",
+  "help" : "--help|-h",
+  "arguments" : {
+    "-in" : {
+      "description" : "The list of input BAM files.",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "type" : "string",
+      "extension" : "no extension"
+    },
+    "-dir" : {
+      "description" : "Path of the output directory.  This must be empty or non-existent.",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "no extension",
+      "do not construct filename from input" : true,
+      "directory" : true,
+      "generated files" : [
+        "lib_table.dat",
+        "hist.dat"
+      ]
+    },
+    "-cf" : {
+      "description" : "Threshold for determining consistency with the fragment length distribution [0.01]",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "float",
+      "extension" : "no extension"
+    },
+    "-tr" : {
+      "description" : "Trim rate for the fragment length distribution [0.02]",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "float",
+      "extension" : "no extension"
+    },
+    "-mq" : {
+      "description" : "Minimum mapping quality for a normal read pair",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "integer",
+      "extension" : "no extension"
+    },
+    "-mf" : {
+      "description" : "The minimum number of normal fragments in a library [10000].",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "integer",
+      "extension" : "no extension"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

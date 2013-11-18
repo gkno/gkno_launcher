@@ -1,0 +1,187 @@
+{
+  "description" : "Pairwise alignment of a read archive",
+  "path" : "MOSAIK/bin",
+  "executable" : "MosaikAligner",
+  "help" : "--help|-h",
+  "arguments" : {
+    "--in" : {
+      "description" : "The input read file",
+      "short form argument" : "-i",
+      "command line argument" : "-in",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "mkb"
+    },
+    "--reference" : {
+      "description" : "The input reference file (Mosaik native dat file)",
+      "short form argument" : "-r",
+      "command line argument" : "-ia",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "dat"
+    },
+    "--jump-database" : {
+      "description" : "The Mosaik jump database",
+      "short form argument" : "-j",
+      "command line argument" : "-j",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "is filename stub" : true,
+      "filename extensions" : [
+        "_keys.jmp",
+        "_meta.jmp",
+        "_positions.jmp"
+      ]
+    },
+    "--out" : {
+      "description" : "The output alignment file",
+      "short form argument" : "-o",
+      "command line argument" : "-out",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "is filename stub" : true,
+      "filename extensions" : [
+        ".bam",
+        ".multiple.bam"
+      ],
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "replace extension" : false
+      }
+    },
+    "--ann-single-end" : {
+      "description" : "Neural network file for single end read mapping qualities",
+      "short form argument" : "-as",
+      "command line argument" : "-annse",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "ann"
+    },
+    "--ann-paired-end" : {
+      "description" : "Neural network file for paired end read mapping qualities",
+      "short form argument" : "-ap",
+      "command line argument" : "-annpe",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "ann"
+    },
+    "--alignment-algorithm" : {
+      "description" : "Alignment algorithm: [fast, single, multi, all]. def: all",
+      "short form argument" : "-aa",
+      "command line argument" : "-a",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    "--alignment-mode" : {
+      "description" : "Alignment mode: [unique, all]. def: all",
+      "short form argument" : "-am",
+      "command line argument" : "-m",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : "no extension"
+    },
+    "--hash-size" : {
+      "description" : "Hash size [4 - 32].",
+      "short form argument" : "-hs",
+      "command line argument" : "-hs",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    "--mismatch-percentage" : {
+      "description" : "The percentage of mismatches allowed [0.0 - 1.0]",
+      "short form argument" : "-mmp",
+      "command line argument" : "-mmp",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "float",
+      "extension" : "no extension"
+    },
+    "--alignment-candidate-threshold" : {
+      "description" : "The alignment candidate threshold (length)",
+      "short form argument" : "-act",
+      "command line argument" : "-act",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    "--bandwidth" : {
+      "description" : "Specifies the Smith-Waterman bandwidth.  Default: 9",
+      "short form argument" : "-b",
+      "command line argument" : "-bw",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    "--maximum-hashes-per-seed" : {
+      "description" : "The maximum number of positions stored per seed",
+      "short form argument" : "-mhp",
+      "command line argument" : "-mhp",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    "--processors" : {
+      "description" : "Uses the specified number of processors",
+      "short form argument" : "-p",
+      "command line argument" : "-p",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    "--special-reference-prefix" : {
+      "description" : "Specifies the prefixes of 'special' reference sequences.",
+      "short form argument" : "-s",
+      "command line argument" : "-sref",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : "no extension"
+    },
+    "--special-reference-hashes" : {
+      "description" : "Specifies the maximum number of hashes for the special reference sequences.",
+      "short form argument" : "-sh",
+      "command line argument" : "-srefn",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

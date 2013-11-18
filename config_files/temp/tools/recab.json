@@ -1,0 +1,158 @@
+{
+  "description" : "Recalibrate base qualities in a BAM file (University of Michigan).",
+  "path" : "bamUtil/bin",
+  "executable" : "bam",
+  "modifier" : "recab",
+  "help" : "--help|-h",
+  "arguments" : {
+    "--in" : {
+      "description" : "Input BAM file name.",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "type" : "string",
+      "extension" : "bam"
+    },
+    "--out" : {
+      "description" : "Output recalibrated BAM file name.",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "bam"
+    },
+    "--log" : {
+      "description" : "Log and summary statistics (default: [outfile].log, or stderr if --out starts with '-').",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "log"
+    },
+    "--noeof" : {
+      "description" : "Do not expect an EOF block on a bam file.",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "flag",
+      "extension" : "no extension"
+    },
+    "--refFile" : {
+      "description" : "Reference file name.",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "fa|fasta"
+    },
+    "--dbsnp" : {
+      "description" : "dbsnp file of positions.",
+      "input" : true,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "vcf"
+    },
+    "--minBaseQual" : {
+      "description" : "Minimum base quality of bases to recalibrate (default: 5).",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "integer",
+      "extension" : "no extension"
+    },
+    "--maxBaseQual" : {
+      "description" : "Maximum recalibrated base quality (default: 50).",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "integer",
+      "extension" : "no extension"
+    },
+    "--blended" : {
+      "description" : "Blended model weight.",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "integer",
+      "extension" : "no extension"
+    },
+    "--fitModel" : {
+      "description" : "Check if the logistic regression model fits the data overriden by fast, but automatically applied by useLogReg.",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "flag",
+      "extension" : "no extension"
+    },
+    "--fast" : {
+      "description" : "use a compact representation that only allows:|* at most 256 Read Groups|* maximum quality 63|* at most 127 cycles|overrides fitModel, but is overridden by useLogReg uses up to about 2.25G more memory than running without --fast.",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "flag",
+      "extension" : "no extension"
+    },
+    "--keepPrevDbsnp" : {
+      "description" : "Do not exclude entries where the previous base is in dbsnp when building the recalibration table. By default they are excluded from the table.",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "flag",
+      "extension" : "no extension"
+    },
+    "--keepPrevNonAdjacent" : {
+      "description" : "Do not exclude entries where the previous base is not adjacent (not a Cigar M/X/=) when building the recalibration table.  By default they are excluded from the table (except the first cycle).",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "flag",
+      "extension" : "no extension"
+    },
+    "--useLogReg" : {
+      "description" : "Use logistic regression calculated quality for the new quality automatically applies fitModel and overrides fast.",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "flag",
+      "extension" : "no extension"
+    },
+    "--qualField" : {
+      "description" : "Tag to get the starting base quality (default is to get it from the Quality field).",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "no extension"
+    },
+    "--storeQualTag" : {
+      "description" : "Tag to store the previous quality into.",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "no extension"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

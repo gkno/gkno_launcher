@@ -1,0 +1,78 @@
+{
+  "description" : "Recalibrate base qualities",
+  "path" : "gatk/dist",
+  "executable" : "GenomeAnalysisTK.jar",
+  "precommand" : "java -Xmx2g -jar",
+  "help" : "--help|-h",
+  "arguments" : {
+    "--reference_sequence" : {
+      "description" : "the reference fasta file",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "type" : "string",
+      "short form argument" : "-R",
+      "extension" : "fasta|fa"
+    },
+    "--input_file" : {
+      "description" : "input SAM or BAM file(s)",
+      "input" : true,
+      "use for filenames" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "type" : "string",
+      "short form argument" : "-I",
+      "extension" : "sam|bam"
+    },
+    "--BQSR" : {
+      "description" : "input covariates table recalibration file",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "type" : "string",
+      "short form argument" : "-BQSR",
+      "extension" : "csv"
+    },
+    "--analysis_type" : {
+      "description" : "type of analysis to run",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "string",
+      "short form argument" : "-T",
+      "extension" : "no extension",
+      "default" : [
+        "PrintReads"
+      ]
+    },
+    "--out" : {
+      "description" : "the output recalibrated BAM file",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "recal.bam",
+      "short form argument" : "-o"
+    },
+    "--doNotWriteOriginalQuals" : {
+      "description" : "Do not write out the original qualities as an extra tag in the BAM file",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "flag",
+      "extension" : "no extension",
+      "short form argument" : "-noOQs"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

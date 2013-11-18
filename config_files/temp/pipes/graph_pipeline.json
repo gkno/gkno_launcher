@@ -1,0 +1,144 @@
+{
+  "description" : "Test pipeline for graph based GKNO.",
+
+  "tasks" : {
+    "build-reference" : {
+      "tool" : "mosaik-build-reference"
+    },
+    "build-jump-database" : {
+      "tool" : "mosaik-jump"
+    },
+    "build" : {
+      "tool" : "mosaik-build-fastq"
+    },
+    "align" : {
+      "tool" : "mosaik-aligner"
+    },
+    "sort" : {
+      "tool" : "bamtools-sort"
+    },
+    "index" : {
+      "tool" : "bamtools-index"
+    },
+    "call" : {
+      "tool" : "freebayes"
+    },
+    "filter-variants" : {
+      "tool" : "vcflib-filter"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "fastq1",
+      "description" : "first mate",
+      "long form argument" : "--fastq",
+      "short form argument" : "-q",
+      "tasks" : {
+        "build" : "--fastq"
+      }
+    },
+    {
+      "ID" : "fastq2",
+      "description" : "second mate",
+      "long form argument" : "--fastq2",
+      "short form argument" : "-q2",
+      "required" : true,
+      "tasks" : {
+        "build" : "--fastq2"
+      }
+    },
+    {
+      "ID" : "reference fasta",
+      "description" : "reference",
+      "long form argument" : "--ref",
+      "short form argument" : "-i",
+      "tasks" : {
+        "build-reference" : "--in",
+        "call" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "mosaik native reference",
+      "tasks" : {
+        "build-reference" : "--out",
+        "build-jump-database" : "--in",
+        "align" : "--reference"
+      },
+      "keep files" : true
+    },
+    {
+      "ID" : "hash size",
+      "description" : "hash-size",
+      "long form argument" : "--hash-size",
+      "short form argument" : "-hs",
+      "tasks" : {
+        "build-jump-database" : "--hash-size",
+        "align" : "--hash-size"
+      }
+    },
+    {
+      "ID" : "jump database",
+      "tasks" : {
+        "build-jump-database" : "--out",
+        "align" : "--jump-database"
+      },
+      "keep files" : true
+    },
+    {
+      "ID" : "mosaik read archive",
+      "tasks" : {
+        "build" : "--out",
+        "align" : "--in"
+      }
+    },
+    {
+      "ID" : "alignment",
+      "tasks" : {
+        "align" : "--out",
+        "sort" : "--in"
+      }
+    },
+    {
+      "ID" : "sorted alignment",
+      "tasks" : {
+        "sort" : "--out",
+        "index" : "--in"
+      },
+      "greedy tasks" : {
+        "call" : "--bam"
+      },
+      "keep files" : true
+    },
+    {
+      "ID" : "variants",
+      "tasks" : {
+        "call" : "--vcf"
+      },
+      "greedy tasks" : {
+        "filter-variants" : "--in"
+      },
+      "keep files" : true
+    },
+    {
+      "ID" : "test",
+      "tasks" : {
+        "align" : "--alignment-algorithm",
+        "call" : "--no-complex"
+      }
+    }
+  ],
+
+  "instances": {
+    "default" : {
+      "description" : "Default instance for graph-pipeline.",
+      "nodes" : [
+        {
+          "ID" : "hash size",
+          "argument" : "--hash-size",
+          "values" : [15]
+        }
+      ]
+    }
+  }
+}

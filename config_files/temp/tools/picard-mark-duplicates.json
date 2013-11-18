@@ -1,0 +1,59 @@
+{
+  "description" : "Mark duplicate reads.",
+  "hide tool" : true,
+  "path" : "picard/dist",
+  "executable" : "MarkDuplicates.jar",
+  "precommand" : "java -Xmx8g -jar",
+  "argument delimiter" : "=",
+  "help" : "--help|-h",
+  "arguments" : {
+    "INPUT" : {
+      "description" : "the input BAM file.",
+      "input" : true,
+      "use for filenames" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "short form argument" : "I",
+      "type" : "string",
+      "extension" : "bam"
+    },
+    "OUTPUT" : {
+      "description" : "the output BAM file.",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "dependent" : false,
+      "short form argument" : "O",
+      "type" : "string",
+      "extension" : "dup.bam"
+    },
+    "METRICS_FILE" : {
+      "description" : "File to write duplication metrics to.",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "dependent" : false,
+      "short form argument" : "M",
+      "type" : "string",
+      "extension" : "metrics"
+    },
+    "TMP_DIR" : {
+      "description" : "Temporary directory for storing temporary data.",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "no extension",
+      "default" : [
+        "$(PWD)"
+      ]
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

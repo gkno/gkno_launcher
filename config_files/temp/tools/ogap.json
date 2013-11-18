@@ -1,0 +1,101 @@
+{
+  "description" : "Realigns alignments optimized to open gaps in low-entropy sequence.",
+  "path" : "ogap",
+  "executable" : "ogap",
+  "help" : "--help|-h",
+  "hide tool" : true,
+  "input is stream" : true,
+  "output is stream" : true,
+  "arguments" : {
+    "--fasta-reference" : {
+      "description" : "FASTA reference file to use for realignment (required)",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "short form argument" : "-f",
+      "extension" : "fa|fasta",
+      "type" : "string"
+    },
+    "--flanking-window" : {
+      "description" : "The number of bases on the left and right to attempt to align to (default 50bp).  This limits the maximum detectable indel length.",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "short form argument" : "-w",
+      "extension" : "no extension",
+      "type" : "integer"
+    },
+    "--mismatch-qsum" : {
+      "description" : "Trigger realignment if the sum of quality scores of mismatched bases is >= N",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "short form argument" : "-C",
+      "type" : "integer",
+      "extension" : "no extension",
+      "default" : [
+        "20"
+      ]
+    },
+    "--soft-clip-qsum" : {
+      "description" : "Trigger realignment if the sum of quality scores of soft clipped bases is >= N",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "short form argument" : "-Q",
+      "type" : "integer",
+      "extension" : "no extension",
+      "default" : [
+        "20"
+      ]
+    },
+    "--soft-clip-limit" : {
+      "description" : "Only accept realignments if they have <= N soft clips",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "short form argument" : "-S",
+      "type" : "integer",
+      "extension" : "no extension",
+      "default" : [
+        "0"
+      ]
+    },
+    "--entropy-gap-open" : {
+      "description" : "use entropy scaling for the gap open penalty",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "short form argument" : "-z",
+      "type" : "flag",
+      "extension" : "no extension",
+      "default" : [
+        "set"
+      ]
+    },
+    "--repeat-gap-extend" : {
+      "description" : "penalize non-repeat-unit gaps in repeat sequence (default 15.0, set to 0 to disable)",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "short form argument" : "-R",
+      "type" : "integer",
+      "extension" : "no extension",
+      "default" : [
+        "25"
+      ]
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

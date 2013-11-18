@@ -1,0 +1,40 @@
+{
+  "description" : "Create an indexed reference file including the mobile elements",
+  "path" : "Tangram/bin",
+  "executable" : "tangram_index",
+  "help" : "--help|-h",
+  "arguments" : {
+    "-ref" : {
+      "description" : "The input reference file.",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "type" : "string",
+      "extension" : "fa|fasta"
+    },
+    "-sp" : {
+      "description" : "The input reference file containing the insertion sequences.",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "fa|fasta"
+    },
+    "-out" : {
+      "description" : "The output reference file.",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "dat"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

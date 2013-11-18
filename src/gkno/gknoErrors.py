@@ -75,9 +75,7 @@ class gknoErrors:
   def missingArgument(self, graph, config, argument, shortForm, description):
     if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
     self.text = ['The required command line argument ' + argument + ' (' + shortForm + ') is missing.']
-    self.text.append('This argument is described as:')
-    self.text.append('\t')
-    self.text.append(description)
+    self.text.append('This argument is described as the following: ' + description)
     self.text.append('\t')
     self.text.append('Check the usage information for all required arguments.')
     self.writeFormattedText(errorType = 'error')
@@ -87,9 +85,7 @@ class gknoErrors:
   def unsetRequiredOption(self, graph, config, task, argument, shortForm, description):
     if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
     self.text = ['The required command line argument ' + argument + ' (' + shortForm + ') is missing.']
-    self.text.append('This argument is described as:')
-    self.text.append('\t')
-    self.text.append(description)
+    self.text.append('This argument is described as the following: ' + description)
     self.text.append('\t')
     self.text.append('Check the usage information for all required arguments.')
     self.writeFormattedText(errorType = 'error')

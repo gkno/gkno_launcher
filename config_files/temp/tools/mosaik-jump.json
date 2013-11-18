@@ -1,0 +1,87 @@
+{
+  "description" : "Generate the jump database for a Mosaik reference",
+  "path" : "MOSAIK/bin",
+  "executable" : "MosaikJump",
+  "help" : "--help|-h",
+  "arguments" : {
+    "--in" : {
+      "description" : "Input reference file",
+      "short form argument" : "-i",
+      "command line argument" : "-ia",
+      "input" : true,
+      "use for filenames" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "dat"
+    },
+    "--out" : {
+      "description" : "Output filename stub",
+      "short form argument" : "-o",
+      "command line argument" : "-out",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "is filename stub" : true,
+      "filename extensions" : [
+        "_keys.jmp",
+        "_meta.jmp",
+        "_positions.jmp"
+      ],
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "replace extension" : false,
+        "add argument values" : [
+          "--hash-size"
+        ]
+      }
+    },
+    "--hash-size" : {
+      "description" : "Hash size [4 - 32]",
+      "short form argument" : "-hs",
+      "command line argument" : "-hs",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    "--keep-keys-on-disk" : {
+      "description" : "Keeps the key database on disk",
+      "short form argument" : "-k",
+      "command line argument" : "-kd",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    "--memory" : {
+      "description" : "The amount memory used when sorting <Gb>",
+      "short form argument" : "-m",
+      "command line argument" : "-mem",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "integer"
+    },
+    "--iupac" : {
+      "description" : "Considers IUPAC codes",
+      "short form argument" : "-u",
+      "command line argument" : "-iupac",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

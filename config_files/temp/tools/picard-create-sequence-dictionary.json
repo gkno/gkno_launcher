@@ -1,0 +1,37 @@
+{
+  "description" : "Generate a dictionary containing all of the sequences in the input reference fasta.",
+  "hide tool" : true,
+  "path" : "picard/dist",
+  "executable" : "CreateSequenceDictionary.jar",
+  "precommand" : "java -jar",
+  "argument delimiter" : "=",
+  "help" : "--help|-h",
+  "arguments" : {
+    "REFERENCE" : {
+      "description" : "the input reference FASTA file.",
+      "input" : true,
+      "use for filenames" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "short form argument" : "R",
+      "type" : "string",
+      "extension" : "fa|fasta"
+    },
+    "OUTPUT" : {
+      "description" : "the output sequence dictionary.",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "dependent" : false,
+      "short form argument" : "O",
+      "type" : "string",
+      "extension" : "dict"
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

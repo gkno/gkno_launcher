@@ -1,0 +1,55 @@
+{
+  "description" : "Prints general alignment statistics.",
+  "path" : "bamtools/bin",
+  "executable" : "bamtools",
+  "modifier" : "stats",
+  "help" : "--help|-h",
+  "arguments" : {
+    "--in" : {
+      "description" : "the input BAM file.",
+      "short form argument" : "-i",
+      "command line argument" : "-in",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "bam"
+    },
+    "--insert" : {
+      "description" : "summarize insert size data.",
+      "short form argument" : "-n",
+      "command line argument" : "-insert",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    "--out" : {
+      "description" : "the output stats file.",
+      "short form argument" : "-o",
+      "command line argument" : "-out",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "stats",
+      "modify argument name on command line" : "stdout",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "replace extension" : true
+      }
+    }
+  },
+  "argument order" : [
+    "--in",
+    "--insert",
+    "--out"
+  ],
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}

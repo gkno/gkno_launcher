@@ -1,0 +1,137 @@
+{
+  "description" : "Count covariates",
+  "path" : "gatk/dist",
+  "executable" : "GenomeAnalysisTK.jar",
+  "precommand" : "java -Xmx2g -jar",
+  "help" : "--help|-h",
+  "additional files" : {
+    "from input arguments" : [
+      {
+        "type" : "dependency",
+        "link to this argument" : "--input_file",
+        "remove extension" : false,
+        "add extension" : true,
+        "output extension" : "bai",
+        "stub" : false
+      },
+      {
+        "type" : "dependency",
+        "link to this argument" : "--reference_sequence",
+        "remove extension" : false,
+        "add extension" : true,
+        "output extension" : "fai",
+        "stub" : false
+      },
+      {
+        "type" : "dependency",
+        "link to this argument" : "--reference_sequence",
+        "remove extension" : true,
+        "add extension" : true,
+        "output extension" : "dict",
+        "stub" : false
+      }
+    ]
+  },
+  "arguments" : {
+    "--reference_sequence" : {
+      "description" : "the reference fasta file",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "type" : "string",
+      "short form argument" : "-R",
+      "extension" : "fasta|fa"
+    },
+    "--input_file" : {
+      "description" : "input SAM or BAM file(s)",
+      "input" : true,
+      "use for filenames" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "type" : "string",
+      "short form argument" : "-I",
+      "extension" : "sam|bam"
+    },
+    "--out" : {
+      "short form argument" : "-o",
+      "description" : "output covariates table recalibration file",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "csv"
+    },
+    "-knownSites" : {
+      "description" : "vcf file containing known variant sites",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "dependent" : true,
+      "type" : "string",
+      "extension" : "vcf|vcf.gz"
+    },
+    "--logging_level" : {
+      "description" : "minimum level of logging",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "string",
+      "short form argument" : "-l",
+      "extension" : "vcf",
+      "default" : [
+        "INFO"
+      ]
+    },
+    "--analysis_type" : {
+      "description" : "type of analysis to run",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "string",
+      "extension" : "no extension",
+      "short form argument" : "-T",
+      "default" : [
+        "BaseRecalibrator"
+      ]
+    },
+    "--covariate" : {
+      "description" : "covariates to be used",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "string",
+      "short form argument" : "-cov",
+      "extension" : "no extension",
+      "default" : [
+        "ReadGroupCovariate",
+        "QualityScoreCovariate",
+        "CycleCovariate",
+        "ContextCovariate"
+      ]
+    },
+    "--disable_indel_quals" : {
+      "description" : "disable indel recalibration (not available in GATK-Lite)",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "dependent" : false,
+      "type" : "flag",
+      "short form argument" : "-DIQ",
+      "extension" : "no extension",
+      "default" : [
+        "set"
+      ]
+    }
+  },
+  "instances" : {
+    "default" : {
+      "description" : "Default instance requires the users input for all files."
+    }
+  }
+}
