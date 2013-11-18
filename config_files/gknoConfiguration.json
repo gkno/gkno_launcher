@@ -1,0 +1,89 @@
+{
+  "gkno options" : {
+    "GKNO-HELP" : {
+      "argument" : "--help",
+      "data type" : "flag",
+      "description" : "Do not log this run of gkno.",
+      "short form" : "-h",
+      "value" : ["unset"]
+    },
+    "GKNO-DNL" : {
+      "argument" : "--do-not-log-usage",
+      "data type" : "flag",
+      "description" : "Do not log this run of gkno.",
+      "short form" : "-dnl",
+      "value" : ["unset"]
+    },
+    "GKNO-EXECUTE" : {
+      "argument" : "--execute",
+      "data type" : "bool",
+      "description" : "Boolean to determine if the Makefile should be executed.  Default: True.",
+      "short form" : "-ex",
+      "value" : [true]
+    },
+    "GKNO-EXPORT-INSTANCE" : {
+      "argument" : "--export-instance",
+      "data type" : "string",
+      "description" : "Export instance information to a new configuration file of this name.",
+      "short form" : "-ei"
+    },
+    "GKNO-INPUT-PATH" : {
+      "argument" : "--input-path",
+      "data type" : "string",
+      "description" : "Path for input files if not defined.  Default: current directory.",
+      "short form" : "-ip"
+    },
+    "GKNO-INSTANCE" : {
+      "argument" : "--instance",
+      "data type" : "string",
+      "description" : "Generate a stdout and stderr for each task.",
+      "short form" : "-is",
+      "value" : ["default"]
+    },
+    "GKNO-LOOP" : {
+      "argument" : "--internal-loop",
+      "data type" : "string",
+      "description" : "Loop over a subsection of the pipeline.",
+      "short form" : "-il"
+    },
+    "GKNO-MULTIPLE-RUNS" : {
+      "argument" : "--multiple-runs",
+      "data type" : "string",
+      "description" : "Run the pipeline multiple times using the inputs defined in this file.",
+      "short form" : "-mr"
+    },
+    "GKNO-JOBS" : {
+      "argument" : "--number-jobs",
+      "data type" : "integer",
+      "description" : "The number of parallel jobs to be used (only valid in conjunction with the --internal-loop option).",
+      "short form" : "-nj",
+      "value" : ["1"]
+    },
+    "GKNO-OUTPUT-PATH" : {
+      "argument" : "--output-path",
+      "data type" : "string",
+      "description" : "Path for output files if not defined.  Default: current directory.",
+      "short form" : "-op"
+    },
+    "GKNO-TASK-STDOUT" : {
+      "argument" : "--task-stdout", 
+      "data type" : "bool",
+      "description" : "Generate a stdout and stderr for each task.",
+      "short form" : "-ts"
+    },
+    "GKNO-TIMING" : {
+      "argument" : "--timing",
+      "data type" : "flag",
+      "description" : "Generate timing information for all tasks.",
+      "short form" : "-tm",
+      "value" : ["unset"]
+    },
+    "GKNO-VERBOSE" : {
+      "argument" : "--verbose",
+      "data type" : "bool",
+      "description" : "Boolean to determine if verbose information should be output.  Default: True.",
+      "short form" : "-vb",
+      "value" : [false]
+    }
+  }
+}
