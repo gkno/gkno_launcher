@@ -3,6 +3,9 @@
 from __future__ import print_function
 from copy import deepcopy
 
+import configurationClass.configurationClass
+from configurationClass.configurationClass import *
+
 import dataChecking
 from dataChecking import checkDataType
 
@@ -50,6 +53,9 @@ class gknoConfigurationFiles:
     # Define the data structure for loop data.
     self.loopData = loopData()
 
+    # Define a structure to hold missing files.
+    self.missingFiles = []
+
   # Search a directory for json files and return a reference
   # to a list.
   def getJsonFiles(self, path):
@@ -95,12 +101,12 @@ class gknoConfigurationFiles:
 
   # Add the nodes from the gkno configuration file to the graph.  These nodes will not be conected to any
   # other nodes.
-  def addGknoSpecificNodes(self, graph, config):
+  def addGknoSpecificNodes(self, graph, config, isPipeline):
 
     # Add a task node representing gkno.
-    attributes = taskNodeAttributes()
+    attributes             = taskNodeAttributes()
     attributes.description = 'gkno task'
-    attributes.tool        = 'gkno'
+    attributes.tool        = 'pipeline' if isPipeline else 'tool'
     attributes.nodeType    = 'gkno'
     graph.add_node('gkno', attributes = attributes)
 
@@ -234,36 +240,44 @@ class gknoConfigurationFiles:
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
-  def constructFilenames(self, pipelineGraph, config, workflow):
+  def constructFilenames(self, graph, config, workflow):
     for task in workflow:
                                  
       # Input files are predecessor nodes to the task.  Deal with the input files first.
-      fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(pipelineGraph, task)
+      fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(graph, task)
       for fileNodeID in fileNodeIDs:
-        argument     = config.edgeMethods.getEdgeAttribute(pipelineGraph, fileNodeID, task, 'argument')
+        argument     = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'argument')
+        shortForm    = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'shortForm')
         optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
                                  
         # Use the argument to get information about the argument.
-        isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
-        isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
+        isRequired = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
+        isSet      = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'hasValue')
                                  
         # If input files aren't set, gkno should terminate.  If the input is linked to the output of
         # another task, the nodes are merged and so the input is set.  Thus, an empty value cannot be
         # filled without command line (or instance) information.
         if isRequired and not isSet:
-          print('MISSING INPUT FILE:', task, argument)
-          self.errors.terminate()
+          description = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
+
+          # Check if this argument is a pipeline argument.
+          if task in config.pipeline.pipelineArgument:
+            if argument in config.pipeline.pipelineArgument[task]:
+              pipelineLongForm  = config.pipeline.pipelineArgument[task][argument]
+              pipelineShortForm = config.pipeline.argumentData[pipelineLongForm].shortForm
+              self.errors.missingArgument(graph, config, pipelineLongForm, pipelineShortForm, description)
+          self.errors.missingArgument(graph, config, argument, shortForm, description)
                                  
       # Now deal with output files,  These are all successor nodes.
-      fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(pipelineGraph, task)
+      fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(graph, task)
       for fileNodeID in fileNodeIDs:
-        argument     = config.edgeMethods.getEdgeAttribute(pipelineGraph, task, fileNodeID, 'argument')
+        argument     = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'argument')
         optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
                                  
-        isRequired = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'isRequired')
-        isSet      = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, optionNodeID, 'hasValue')
+        isRequired = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
+        isSet      = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'hasValue')
         if isRequired and not isSet:
-          method = self.constructionInstructions(pipelineGraph, config, task, argument, fileNodeID)
+          method = self.constructionInstructions(graph, config, task, argument, fileNodeID)
           if method == None:     
   
             # TODO ERROR MESSAGE
@@ -272,7 +286,7 @@ class gknoConfigurationFiles:
   
           # If the tool configuration file has instructions on how to construct the filename,
           # built it using these instructions.
-          else: self.constructFilename(pipelineGraph, config, method, task, fileNodeID)
+          else: self.constructFilename(graph, config, method, task, fileNodeID)
 
   # If a filename is not defined, check to see if there are instructions on how to 
   # construct the filename.
@@ -362,9 +376,19 @@ class gknoConfigurationFiles:
     for taskArgument in instructions['add argument values']:
 
       # Find the option node that provides information for this argument.
-      # TODO HANDLE THE CASE OF MULTIPLE VALUES
       argumentNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, taskArgument)
-      if len(argumentNodeIDs) != 1:
+
+      # If there is no node defined, the argument required to construct the filename has not been
+      # defined. As such, it is impossible to construct the filename, so terminate gkno with an error
+      # message.
+      if len(argumentNodeIDs) == 0:
+        if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'pipeline':
+          self.errors.missingArgumentInFilenameConstructionNotPipelineArgument(graph, config, task, taskArgument)
+        self.errors.missingArgumentInFilenameConstruction(graph, config, taskArgument)
+
+      # TODO HANDLE THE CASE OF MULTIPLE VALUES
+      elif len(argumentNodeIDs) != 1:
+        print(taskArgument, numberOfValues, len(argumentNodeIDs))
         print('not yet handled - constructFilenameFromToolArgumentStub mark2')
         self.errors.terminate()
       else: argumentNodeID = argumentNodeIDs[0]
@@ -377,9 +401,27 @@ class gknoConfigurationFiles:
       if numberOfValues == numberOfNodeValues: self.setModifiedValuesA(modifiedValues, argumentNodeValues)
       elif numberOfValues == 1 and numberOfNodeValues > 1: self.setModifiedValuesB(modifiedValues, argumentNodeValues)
       elif numberOfValues > 1 and numberOfNodeValues == 1: self.setModifiedValuesC(modifiedValues, argumentNodeValues)
+      elif numberOfNodeValues == 0:
+
+        # If gkno is being run in pipeline mode, check if this argument is a pipeline argument.
+        if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'pipeline':
+          isPipelineArgument = False
+          if task in config.pipeline.pipelineArgument:
+            if taskArgument in config.pipeline.pipelineArgument[task]:
+               isPipelineArgument = True
+               longForm           = config.pipeline.pipelineArgument[task][taskArgument]
+               self.errors.missingArgumentInFilenameConstruction(graph, config, longForm)
+
+          # Running in pipeline mode, but the argument required for filename construction is not a
+          # pipeline argument. Fail, but recommend that the pipeline configurtaion file be modified
+          # to include this argument.
+          if not isPipelineArgument:
+            self.errors.missingArgumentInFilenameConstructionNotPipelineArgument(graph, config, task, taskArgument)
+
+        # If gkno is being run in tool mode, write the correct error message.
+        self.errors.missingArgumentInFilenameConstruction(graph, config, taskArgument)
       else:
-        print('NOT HANDLED VALUES - constructFilenameFromToolArgumentStub')
-        print(taskArgument, modifiedValues)
+        print('NOT HANDLED VALUES - gknoConfig.addArgumentValues')
         self.errors.terminate()
 
     return modifiedValues
@@ -577,9 +619,13 @@ class gknoConfigurationFiles:
           modifiedValues = []
           for filename in values[iteration]:
 
+            # If the filename is missing, leave this blank. This will be caught as an error later, 
+            # if the file is required.
+            if not filename: modifiedValues.append('')
+
             # If the filename already has a '/' in it, assume that the path is already defined.
             # In this case, leave the path as defined.
-            if '/' not in filename:
+            elif '/' not in filename:
 
               # Determine if the file is an input or output file. Since the node could be feeding
               # into or from multiple tasks, a file is an input, if and only if, the file nodes
@@ -593,7 +639,141 @@ class gknoConfigurationFiles:
 
               modifiedValues.append(filename)
 
-            else: modifiedValues.append(filename)
+            else: modifiedValues.append(os.path.abspath(filename))
 
           # Reset the stored values.
           values[iteration] = modifiedValues
+
+  # Check all of tha provided information.
+  def checkData(self, graph, config):
+    for optionNodeID in config.nodeMethods.getNodes(graph, 'option'):
+
+      # Check if there are any values associated with this node and if it is required.
+      values            = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
+      isRequired        = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
+      task              = graph.successors(optionNodeID)[0]
+      argument          = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
+      shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'shortForm')
+      description       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
+
+      # If the option is required but unset, terminate.
+      if isRequired and not values:
+
+        # If gkno is being run in pipeline mode, check if this argument is a pipeline argument.
+        if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'pipeline':
+          longForm, shortForm = config.pipeline.getPipelineArgument(task, argument)
+
+          # If the required argument is not a pipeline argument, recommend that the configuration should be
+          # amended to include one.
+          if longForm == None:
+            self.errors.unsetRequiredOptionNoPipelineArgument(graph, config, task, argument, shortFormArgument, description)
+
+          # If the pipeline argument exists, just terminate.
+          else:
+            description = config.pipeline.argumentData[longForm]['description']
+            self.errors.unsetRequiredOption(graph, config, task, longForm, shortForm, description)
+
+        # If gkno is being run in tool mode, terminate.
+        self.errors.unsetRequiredOption(graph, config, task, argument, shortFormArgument, description)
+
+      # Loop over the remaining values.
+      if values:
+        for iteration in values:
+
+          # First check to see if multiple values have been given erroneously.
+          numberOfValues      = len(values[iteration])
+          allowMultipleValues = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowMultipleValues')
+
+          #TODO SORT OUT ERRORS.
+          if not allowMultipleValues and numberOfValues != 1:
+            print('GIVEN MULTIPLE VALUES WHEN NOT ALLOWED', values[iteration])
+            self.errors.terminate()
+
+          # Determine the expected data type
+          expectedDataType = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'dataType')
+          for value in values[iteration]:
+
+            # Get the data type for the value and check that it is as expected.
+            if not self.checkDataType(expectedDataType, value):
+              #TODO SORT ERROR.
+              print('Unexpected data type:', value, expectedDataType)
+              self.errors.terminate()
+
+            # If the value refers to a file, check that the extension is valid. This is not necessary
+            # for arguments representing a filename stub.
+            if config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isFile'):
+              if not config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isFilenameStub'):
+                for fileNodeID in config.nodeMethods.getAssociatedFileNodeIDs(graph, optionNodeID):
+
+                  # Loop over the file names contained in the file nodes.
+                  for fileValue in config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')[iteration]:
+                    if not self.checkFileExtension(graph, config, optionNodeID, fileValue):
+                      extensions = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowedExtensions')
+      
+                      # If gkno is being run in tool mode, get the arguments.
+                      if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'tool':
+                        self.errors.invalidExtension(fileValue, extensions, argument, shortFormArgument, task, '', '')
+      
+                      # If gkno is being run in pipeline, mode, determine if the argument with the
+                      # incorrect extension is a pipeline argument.
+                      else:
+                        longForm, shortForm = config.pipeline.getPipelineArgument(task, argument)
+                        self.errors.invalidExtension(fileValue, extensions, longForm, shortForm, task, argument, shortFormArgument)
+
+  # Check if data types agree.
+  def checkDataType(self, expectedType, value):
+    success = True
+
+    # Check that flags have the value "set" or "unset".
+    if expectedType == 'flag':
+      if value != 'set' and value != 'unset': success = False
+
+    # Boolean values should be set to 'true', 'True', 'false' or 'False'.
+    elif expectedType == 'bool':
+      if value != 'true' and value != 'True' and value != 'false' and value != 'False': success = False
+
+    # Check integers...
+    elif expectedType == 'integer':
+      try: test = int(value)
+      except: success = False
+
+    # Check floats...
+    elif expectedType == 'float':
+      try: test = float(value)
+      except: success = False
+
+    # and strings.
+    elif expectedType == 'string':
+      try: test = str(value)
+      except: success = False
+
+    # If the data type is unknown.
+    else:
+      success = False
+
+    return success
+
+  #TODO FINISH
+  # Check that a file extension is valid.
+  def checkFileExtension(self, graph, config, nodeID, value):
+    for extension in config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'allowedExtensions'):
+      if value.endswith(extension):
+        return True
+
+    return False
+
+  # Check that all required files exist prior to executing any makefiles.
+  def checkFilesExist(self, graph, config, filenames):
+    for nodeID, filename in filenames:
+
+      # If the filename starts with the path $(PWD), replace this with the current directory.
+      if filename.startswith('$(PWD)'):
+        filename = os.getcwd() + filename.split('$(PWD)')[1]
+      if not os.path.exists(filename): self.missingFiles.append(filename)
+
+  def writeMissingFiles(self, graph, config):
+
+    # If there were files missing, write a warning and ensure that gkno will not execute.
+    if self.missingFiles:
+      self.errors.missingFiles(graph, config, self.missingFiles)
+      config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-EXECUTE', [False], write = 'replace')

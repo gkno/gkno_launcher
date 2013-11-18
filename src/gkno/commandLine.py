@@ -6,9 +6,6 @@ import sys
 import gknoErrors
 from gknoErrors import *
 
-import configurationClass
-from configurationClass import *
-
 import files
 from files import *
 

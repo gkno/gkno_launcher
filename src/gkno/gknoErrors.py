@@ -9,11 +9,10 @@ class gknoErrors:
   # Initialise.
   def __init__(self):
     self.hasError  = False
-    self.errorType = 'ERROR'
     self.text      = []
 
   # Format the error message and write to screen.
-  def writeFormattedText(self):
+  def writeFormattedText(self, errorType):
       firstLine = True
       secondLine = False
       maxLength = 93 - 5
@@ -38,9 +37,9 @@ class gknoErrors:
         line = textList.pop(0)
         while line.startswith(' '): line = line[1:]
 
-        if firstLine and self.errorType == 'ERROR':
+        if firstLine and errorType == 'error':
           print('ERROR:   %-*s' % (1, line), file=sys.stderr)
-        elif firstLine and self.errorType == 'WARNING':
+        elif firstLine and errorType == 'warning':
           print('WARNING:   %-*s' % (1, line), file=sys.stderr)
         elif secondLine:
           print('DETAILS: %-*s' % (1, line), file=sys.stderr)
@@ -57,6 +56,151 @@ class gknoErrors:
           print(file=sys.stderr)
           firstLine = False
           secondLine = True
+
+  ##################
+  # Terminate gkno #
+  ##################
+  def terminate(self):
+    print(file=sys.stderr)
+    print('================================================================================================', file=sys.stderr)
+    print('  TERMINATED: Errors found in running gkno.  See specific error messages above for resolution.', file=sys.stderr)
+    print('================================================================================================', file=sys.stderr)
+    exit(2)
+
+  #################################
+  # Errors with the command line. #
+  #################################
+
+  # A required argument is missing.
+  def missingArgument(self, graph, config, argument, shortForm, description):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text = ['The required command line argument ' + argument + ' (' + shortForm + ') is missing.']
+    self.text.append('This argument is described as:')
+    self.text.append('\t')
+    self.text.append(description)
+    self.text.append('\t')
+    self.text.append('Check the usage information for all required arguments.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # A required option is unset.
+  def unsetRequiredOption(self, graph, config, task, argument, shortForm, description):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text = ['The required command line argument ' + argument + ' (' + shortForm + ') is missing.']
+    self.text.append('This argument is described as:')
+    self.text.append('\t')
+    self.text.append(description)
+    self.text.append('\t')
+    self.text.append('Check the usage information for all required arguments.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # As above, except, for the specific case where gkno is running in pipeline mode and the required argument is
+  # not a pipeline argument.
+  def unsetRequiredOptionNoPipelineArgument(self, graph, config, task, argument, shortForm, description):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text = ['An required option is missing.']
+    self.text.append('All required options need to be set on the command line or included in a selected instance. The argument \'' + argument + \
+'\' for task \'' + task + '\' is not set and there is no pipeline argument that sets this value. The value can be set using the syntax \'--' + \
+task + ' [' + argument + ' <value>]\', however it would be preferable if a pipeline argument existed to set this value. Please see the \
+documentation to see how to include this in the pipeline configuration file.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # A file extension is invalid.
+  def invalidExtension(self, filename, extensions, longForm, shortForm, task, argument, shortFormArgument):
+    self.text.append('Incorrect extension on file: ' + filename)
+
+    # If this file can be set with a pipeline argument, indicate the values.
+    if longForm != None:
+      self.text.append('The file defined for argument \'' + longForm + ' (' + shortForm + ')\' must take one of the following extensions:')
+
+    # If this file is associated with an argument set directly to the tool using the syntax:
+    # 'gkno pipe <pipeline name> --task [argument value]', indicate the task and argument and
+    # the allowed extensions.
+    else:
+      self.text.append('The file defined for task \'' + task + '\', argument \'' + argument + ' (' + shortFormArgument + ')\' must take one \
+of the following extensions:')
+
+    # List the allowed extensions and write the error message.
+    for counter, extension in enumerate(extensions): self.text.append('\t' + str(counter + 1) + ': ' + extension)
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  ##########################################
+  # Errors with required files/executables #
+  ##########################################
+
+  # If input files are missing, warn the user, but don't terminate gkno.
+  def missingFiles(self, graph, config, files):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    tool = 'tool' if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'tool' else 'pipeline'
+    self.text = ['Required files are missing.']
+    self.text.append('The following files are required for this ' + tool + ' to run:')
+    self.text.append('\t')
+    for filename in files: self.text.append('\t' + filename)
+    self.writeFormattedText(errorType = 'warning')
+
+  #######################################
+  # Errors with constructing filenames. #
+  #######################################
+
+  # A argument required for building a filename is missing.
+  def missingArgumentInFilenameConstruction(self, graph, config, argument):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text = ['An argument required for constructing a filename is missing.']
+    self.text.append('gkno is attempting to the generate a filename using instructions from the tool configuration file. An argument required \
+to do this is missing, however. Please ensure that the argument \'' + argument + '\' is set.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+  
+  # As above, except, for the specific case where gkno is running in pipeline mode and the required argument is
+  # not a pipeline argument.
+  def missingArgumentInFilenameConstructionNotPipelineArgument(self, graph, config, task, argument):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text = ['An argument required for constructing a filename is missing.']
+    self.text.append('gkno is attempting to generate a filename using instructions from the tool configuration file. An argument required \
+to do this is missing. The required argument is \'' + argument + '\' for task \'' + task + '\' and there is no pipeline argument that sets this \
+value. The value can be set using the syntax \'--' + task + ' [' + argument + ' <value>]\', however it would be preferable if a pipeline \
+argument existed to set this value. Please see the documentation to see how to include this in the pipeline configuration file.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   #############
   # File errors
@@ -1662,14 +1806,3 @@ class gknoErrors:
       print("", file=dest)
       print("----------------------------------------", file=dest)
       print("", file=dest)
-
-  ################
-  # Terminate gkno
-  ################
-
-  def terminate(self):
-    print(file=sys.stderr)
-    print('================================================================================================', file=sys.stderr)
-    print('  TERMINATED: Errors found in running gkno.  See specific error messages above for resolution.', file=sys.stderr)
-    print('================================================================================================', file=sys.stderr)
-    exit(2)

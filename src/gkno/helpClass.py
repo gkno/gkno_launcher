@@ -2,8 +2,8 @@
 
 from __future__ import print_function
 
-import configurationClass
-from configurationClass import *
+#import configurationClass
+#from configurationClass import *
 
 import os
 import sys
@@ -12,7 +12,6 @@ class helpClass:
   def __init__(self):
     self.adminHelp            = False
     self.generalHelp          = False
-    self.nodeMethods          = nodeClass()
     self.pipelineHelp         = False
     self.printHelp            = False
     self.specificPipelineHelp = False

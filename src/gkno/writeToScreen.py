@@ -2,13 +2,16 @@
 
 from __future__ import print_function
 
-import nodeAttributes
-from nodeAttributes import *
+import gknoErrors
+from gknoErrors import *
 
 import os
 import sys
 
 class writeToScreen:
+  def __init__(self):
+    self.errors = gknoErrors()
+
   # For most of the usage requests, the version number and date are printed out
   # at the start of the message.  Print these here.
   def printHeader(self, version, date):
@@ -82,10 +85,13 @@ class writeToScreen:
     sys.stdout.flush()
   
   def writeExecuting(self, filename):
-    print('Executing makefile: ', filename, sep = '', file = sys.stdout)
+    print('Executing makefile: ', filename, '...', sep = '', file = sys.stdout)
     sys.stdout.flush()
   
   def writeComplete(self, success):
-    if success == 0:print("\ngkno completed tasks successfully.", file = sys.stdout)
-    else: print("\ngkno failed to complete successfully.  Check operation and repair.", file = sys.stderr)
+    if success == 0: pass
+    else:
+      print('.failed', file = sys.stdout)
+      print('\ngkno failed to complete successfully.  Please check the output files to identify the cause of the problem.', file = sys.stderr)
+      self.errors.terminate()
     sys.stdout.flush()

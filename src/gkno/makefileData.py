@@ -151,7 +151,7 @@ class makefileData:
     print('MAKEFILE_ID=', makefileName.split('/')[-1].split('.')[0], sep = '', file = fileHandle)
     print(file = fileHandle)
     print('### Standard output and errors files.', file = fileHandle)
-    print('STDOUT=', self.outputPath, '/', pipelineName, ',stdout', sep = '', file = fileHandle)
+    print('STDOUT=', self.outputPath, '/', pipelineName, '.stdout', sep = '', file = fileHandle)
     print('STDERR=', self.outputPath, '/', pipelineName, '.stderr', sep = '', file = fileHandle)
     print(file = fileHandle)
 
@@ -224,13 +224,13 @@ class makefileData:
 
         # Write output and errors to the stdout and stderr files.
         self.writeStdouts(stdoutUsed, fileHandle)
+
+        # Write that the task complete successfully.
+        self.writeComplete(fileHandle)
   
         # If there are additional output files from this task, include an additional rule in the
         # makefile to check on their existence.
         if len(taskOutputs) != 0: self.writeRuleForAdditionalOutputs(makefileName, fileHandle, taskOutputs, primaryOutput, taskDependencies)
-
-        # Write that the task complete successfully.
-        self.writeComplete(fileHandle)
 
   # Write an additional rule in the makefile to check for outputs from a task. Only a single
   # output is included in the rule for the additional task.
@@ -259,7 +259,7 @@ class makefileData:
     tool     = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
     modifier = config.nodeMethods.getGraphNodeAttribute(graph, task, 'modifier')
 
-    print('\t@$(', (task + '_path').upper(), ')/', sep = '', end = '', file = fileHandle)
+    print('\t@$(', (tool + '_path').upper(), ')/', sep = '', end = '', file = fileHandle)
     print(config.nodeMethods.getGraphNodeAttribute(graph, task, 'executable'), end = ' ', file = fileHandle)
     if modifier: print(modifier, end = ' ', file = fileHandle)
     print('\\', sep = '', file = fileHandle)
@@ -275,8 +275,9 @@ class makefileData:
     for argument in argumentOrder:
       for nodeID, values in arguments[argument]:
 
-        # Determine if this argument is a flag.
+        # Determine if this argument is a flag or a file.
         isFlag = True if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag' else False
+        isFile = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile')
 
         # If the iteration does not exist, use the value from the first iteration.
         if iteration in values: valueList = values[iteration]
@@ -299,9 +300,34 @@ class makefileData:
         # is not specified by the user. Check to see if this is the case.
         includeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'includeOnCommandLine')
 
+        # If the option refers to a file, then check, whether the option is a filename stub. Since the same
+        # option can point to multiple tasks and the option can be a filename stub for one task, but a file
+        # for another, determine this using the edge describing the individual argument. If the option is a
+        # filename stub, use the values attached to the option node. If it isn't, find the associated file
+        # node and use the values from there.
+        if isFile:
+          if not config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFilenameStub'):
+            for fileNodeID in config.nodeMethods.getAssociatedFileNodeIDs(graph, nodeID):
+
+              # Check that this file node points into or from the current task. Since this option may have been
+              # associated with a filename stub, not all of the associated files are necessarily required by
+              # this task.
+              if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isInput'):
+                isAssociated = True
+                try: config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'argument')
+                except: isAssociated = False
+
+                # Check that the iteration exists in the values of associated file nodes.
+                if isAssociated:
+                  try: valueList = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')[iteration]
+                  except:
+                    # TODO ERROR
+                    print('Iteration not associated with file node values - make.writeCommand')
+                    self.errors.terminate()
+
         for value in valueList:
           if includeArgument:
-
+                    
             # Check if the argument is an output that writes to standard out.
             if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout':
               print('\t>> ', value, ' \\', sep = '', file = fileHandle)
@@ -325,8 +351,12 @@ class makefileData:
   def writeComplete(self, fileHandle):
 
     # Write out that the task completed successfully.
-    print('\t@echo -e "completed successfully.', sep = '', file = fileHandle)
+    print('\t@echo -e "completed successfully."', sep = '', file = fileHandle)
     print(file = fileHandle)
+
+  # Close the Makefile.
+  def closeMakefile(self, fileHandle):
+    fileHandle.close()
 
   # Define the order in which to write out the command line arguments.
   def defineArgumentOrder(self, config, tool, arguments):
@@ -351,7 +381,6 @@ class makefileData:
       arguments[argument].append((nodeID, values))
 
     return arguments
-
 
 
 
@@ -784,6 +813,3 @@ class makefileData:
         for fileToDelete in self.deleteFiles[task][iLoopIteration]:
           print("\t@rm -f ", fileToDelete, sep = '', file = self.makeFilehandle)
 
-  # Close the Makefile.
-  def closeMakefile(self):
-    self.makeFilehandle.close()
