@@ -241,7 +241,7 @@ def main():
   if admin.isRequested:
     success = admin.run(sys.argv)
     if success: exit(0)
-    else: er.terminate()
+    else: errors.terminate()
   
   # Print information about the pipeline to screen.
   if isPipeline and isVerbose: write.writePipelineWorkflow(pipelineGraph, config, workflow, gknoHelp)
