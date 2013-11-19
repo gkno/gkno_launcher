@@ -159,6 +159,93 @@
           "description" : "Default instance requires the users input for all files."
         }
       }
+    },
+
+    "vcflib-intersect" : {
+      "description" : "Intersect vcf files.",
+      "path" : "vcflib",
+      "executable" : "vcfintersect",
+      "hide tool" : false,
+      "help" : "--help|-h",
+      "arguments" : {
+        "--in" : {
+          "description" : "The input vcf file.",
+          "short form argument" : "-i",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "dependent" : false,
+          "extension" : "vcf|vcf.gz",
+          "if input is stream" : "do not include",
+          "modify argument name on command line" : "hide",
+          "type" : "string"
+        },
+        "--out" : {
+          "description" : "The output VCF file.",
+          "short form argument" : "-o",
+          "output" : true,
+          "input" : false,
+          "required" : true,
+          "dependent" : false,
+          "type" : "string",
+          "extension" : "vcf",
+          "if output to stream" : "do not include",
+          "modify argument name on command line" : "stdout"
+        },
+        "--intersect-vcf" : {
+          "description" : "Vcf file to intersect with.",
+          "short form argument" : "-f",
+          "input" : true,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "vcf|vcf.gz",
+          "type" : "string"
+        },
+        "--union-vcf" : {
+          "description" : "Vcf file to perform union with.",
+          "short form argument" : "-u",
+          "input" : true,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "vcf|vcf.gz",
+          "type" : "string"
+        },
+        "--invert" : {
+          "description" : "Invert the selection, e.g. print out the opposite of the selection.",
+          "short form argument" : "-v",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "extension" : "no extension",
+          "type" : "flag"
+        },
+        "--reference" : {
+          "description" : "The reference fasta file.",
+          "short form argument" : "-r",
+          "input" : true,
+          "output" : false,
+          "required" : true,
+          "dependent" : true,
+          "extension" : "fa|fasta",
+          "type" : "string"
+        }
+      },
+      "argument order" : [
+        "--intersect-vcf",
+        "--union-vcf",
+        "--invert",
+        "--reference",
+        "--in",
+        "--out"
+      ],
+      "instances" : {
+        "default" : {
+          "description" : "Default instance requires the users input for all files."
+        }
+      }
     }
   }
 }
