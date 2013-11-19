@@ -23,7 +23,7 @@
           "required" : true,
           "dependent" : false,
           "type" : "string",
-          "extension" : "bam"
+          "extension" : "marked.bam"
         },
         "--minQual" : {
           "description" : "Only add scores over this phred quality when determining a read's quality (default: 15)",
