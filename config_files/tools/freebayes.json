@@ -238,6 +238,16 @@
           "dependent" : true,
           "type" : "string",
           "extension" : "bed"
+        },
+        "--use-duplicate-reads" : {
+          "short form argument" : "-4",
+          "description" : "Include duplicate-marked alignments in the analysis. Default: exclude duplicates marked as such in alignments.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "extension"
         }
       },
       "instances" : {
