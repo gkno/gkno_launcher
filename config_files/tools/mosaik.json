@@ -314,10 +314,7 @@
           "required" : false,
           "dependent" : false,
           "type" : "integer",
-          "extension" : "no extension",
-          "default" : [
-            "15"
-          ]
+          "extension" : "no extension"
         },
         "-mmp" : {
           "description" : "The percentage of mismatches allowed [0.0 - 1.0]",

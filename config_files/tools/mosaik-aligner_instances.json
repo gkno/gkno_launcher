@@ -6,7 +6,8 @@
       "-annpe": "./pe.100.01.ann",
       "-ia" : "./chr20.dat",
       "-j" : "./chr20_15",
-      "-p" : "8"
+      "-p" : "8",
+      "-hs" : "14"
     },
     "mei": {
       "description": "Instance for CSHL course",
@@ -14,7 +15,8 @@
       "-annpe": "./pe.100.01.ann",
       "-ia" : "./chr20_moblist.dat",
       "-j" : "./chr20_moblist_15",
-      "-p" : "8"
+      "-p" : "8",
+      "-hs" : "14"
     }
   }
 }
