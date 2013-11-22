@@ -91,7 +91,11 @@
       },
       "-j" : {
         "link to this task" : "build-jump-database",
-        "link to this argument" : "-out"
+        "link to this argument" : "-hs"
+      },
+      "-hs" : {
+        "link to this task" : "build-jump-database",
+        "link to this argument" : "-hs"
       }
     },
     "sort-primary-bam" : {
