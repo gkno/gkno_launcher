@@ -313,7 +313,7 @@
   "instances" : {
     "default" : {
       "description" : "The default instance requires the user to input all parameters and files.",
-      "--hash-size" : "15",
+      "--hash-size" : "14",
       "--sequencing-technology" : "illumina",
       "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
       "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
