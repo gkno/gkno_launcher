@@ -91,7 +91,7 @@
       },
       "-j" : {
         "link to this task" : "build-jump-database",
-        "link to this argument" : "-hs"
+        "link to this argument" : "-out"
       },
       "-hs" : {
         "link to this task" : "build-jump-database",
