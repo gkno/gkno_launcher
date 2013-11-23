@@ -179,7 +179,7 @@
           "type" : "integer",
           "extension" : "no extension",
           "default" : [
-            "15"
+            "14"
           ]
         },
         "-kd" : {
