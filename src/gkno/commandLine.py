@@ -24,9 +24,13 @@ class commandLine:
 
   # If an admin operation has been requested, check which admin mode is required.
   def isAdminMode(self, adminModes):
-    try:
-      if sys.argv[1] in adminModes: return True, sys.argv[1]
+    #try:
+    #  if sys.argv[1] in adminModes: return True, sys.argv[1]
+    #except: return False, None
+    try: test = adminModes[sys.argv[1]]
     except: return False, None
+
+    return True, sys.argv[1]
 
   # Check if a mode has been defined.  The mode is either 'pipe', 'run-test' or
   # a tool name.  If nothing is set, then no mode is chosen and the general help
@@ -493,20 +497,6 @@ class commandLine:
             for fileNodeID in fileNodeIDs:
               values = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
               config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
-
-#      # Begin with handling input files.
-#      fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(graph, task)
-#      for fileNodeID in fileNodeIDs:
-#        optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-#        values         = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
-#        config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
-#
-#      # Now deal with output files.
-#      fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(graph, task)
-#      for fileNodeID in fileNodeIDs:
-#        optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-#        values       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
-#        config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
 
 
 

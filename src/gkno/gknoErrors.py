@@ -124,7 +124,7 @@ of the following extensions:')
     self.terminate()
 
   ##########################################
-  # Errors with required files/executables #
+  # Errors with required files/directories/executables #
   ##########################################
 
   # If input files are missing, warn the user, but don't terminate gkno.
@@ -135,6 +135,14 @@ of the following extensions:')
     self.text.append('The following files are required for this ' + tool + ' to run:')
     self.text.append('\t')
     for filename in files: self.text.append('\t' + filename)
+    self.writeFormattedText(errorType = 'warning')
+
+  # If input files are missing, warn the user, but don't terminate gkno.
+  def missingOutputDirectory(self, graph, config, directory):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text = ['Output directory does not exist.']
+    self.text.append('The output directory was defined as \'' + directory + '\'. This directory does not exist. Please check that the specified \
+directory is correct, or create prior to execution of gkno. Automatic execution has been disabled.')
     self.writeFormattedText(errorType = 'warning')
 
   #######################################

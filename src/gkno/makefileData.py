@@ -123,7 +123,13 @@ class makefileData:
     # only iteration).
     outputPath = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-OUTPUT-PATH', 'values')
     if not outputPath: self.outputPath = '$(PWD)'
-    else: self.outputPath = outputPath[1][0]
+    else:
+      self.outputPath = outputPath[1][0]
+
+      # If the chosen output path is not the current directory, check to see if the directory exists.
+      if not os.path.isdir(self.outputPath):
+        self.errors.missingOutputDirectory(graph, config, self.outputPath)
+        config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-EXECUTE', [False], write = 'replace')
 
   # Open the makefile and write the initial information to the file.
   def openMakefile(self, makefileName):

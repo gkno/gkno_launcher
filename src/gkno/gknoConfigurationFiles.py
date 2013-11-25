@@ -53,6 +53,10 @@ class gknoConfigurationFiles:
     # Define the data structure for loop data.
     self.loopData = loopData()
 
+    # Define dictionaries to hold argument information.
+    self.validLongFormArguments  = {}
+    self.validShortFormArguments = {}
+
     # Define a structure to hold missing files.
     self.missingFiles = []
 
@@ -132,6 +136,10 @@ class gknoConfigurationFiles:
       attributes.shortForm = self.gknoConfigurationData['gkno options'][nodeID]['short form']
       graph.add_edge(nodeID, 'gkno', attributes = attributes)
 
+      # Add the arguments to the list of valid gkno specific arguments.
+      self.validLongFormArguments[attributes.argument]   = attributes.shortForm
+      self.validShortFormArguments[attributes.shortForm] = attributes.argument
+
   # Check if a command line argument is a gkno specific argument.
   def checkPipelineArgument(self, graph, config, argument):
 
@@ -205,6 +213,27 @@ class gknoConfigurationFiles:
       self.loopData.values[iteration] = []
       for value in data['values'][iteration]: self.loopData.values[iteration].append(value)
 
+  # Attach the instance arguments to the relevant nodes.
+  def attachInstanceArgumentsToNodes(self, graph, config, data):
+    if 'nodes' in data:
+      for counter in range(len(data['nodes']) -1, -1, -1):
+        argument = data['nodes'][counter]['argument']
+        if argument in self.validShortFormArguments: argument = self.validShortFormArguments[argument]
+
+        # Check to see if the argument is a gkno specific argument.
+        if argument in self.validLongFormArguments:
+
+          # Get the nodeID, for this argument.
+          for nodeID in config.nodeMethods.getNodes(graph, 'general'):
+            nodeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, graph.successors(nodeID)[0], 'argument')
+            if argument == nodeArgument: break
+
+          # Update the values in the node.
+          config.nodeMethods.addValuesToGraphNode(graph, nodeID, data['nodes'][counter]['values'], write = 'replace')
+
+          # Remove the information from the instance data.
+          data['nodes'].pop(counter)
+
   # Assign loop values to the graph.
   def addLoopValuesToGraph(self, graph, config):
 
@@ -242,7 +271,7 @@ class gknoConfigurationFiles:
   # determine how to construct the filename and populate the node with the value.
   def constructFilenames(self, graph, config, workflow):
     for task in workflow:
-                                 
+
       # Input files are predecessor nodes to the task.  Deal with the input files first.
       fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(graph, task)
       for fileNodeID in fileNodeIDs:
@@ -335,6 +364,7 @@ class gknoConfigurationFiles:
     # extension.
     originalExtension = config.tools.getArgumentData(config.pipeline.tasks[task], baseArgument, 'extension')
     modifiedValues    = self.modifyExtensions(values, originalExtension, '')
+    for iteration in modifiedValues: modifiedValues[iteration] = [value.split('/')[-1] for value in modifiedValues[iteration]]
 
     # If the construction instructions indicate that values from another argument should be included
     # in the filename, include them here.
@@ -538,12 +568,22 @@ class gknoConfigurationFiles:
     if isBaseGreedy:
       for i in range(2, len(values) + 1): del values[i]
 
-    # Check if the argument being created allowed to have multiple values. If not, check each iteration
+    # Check if the argument being created is allowed to have multiple values. If not, check each iteration
     # and ensure that the modifiedValues dictionary only has one entry per iteration.
     if not config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowMultipleValues'):
       modifiedValues = {}
-      for iteration in values: modifiedValues[iteration] = [values[iteration][0]]
-    else: modifiedValues = values
+      for iteration in values:
+
+        # Add the value to the modifiedValues list, but only include the filename and no path.
+        modifiedValues[iteration] = [values[iteration][0].split('/')[-1]]
+
+    # If multiple values are allowed, cycle through them all and add them to the modifiedValues
+    # list.
+    else:
+      for iteration in values:
+        tempList = []
+        for value in values[iteration]: tempList.append(value.split('/')[-1])
+        modifiedValues[iteration] = tempList
 
     # If the extension is to be replaced, do that here.
     originalExtension = config.tools.getArgumentData(config.pipeline.tasks[task], baseArgument, 'extension')
@@ -553,7 +593,6 @@ class gknoConfigurationFiles:
 
     # If the construction instructions indicate that values from another argument should be included
     # in the filename, include them here.
-    #modifiedValues = deepcopy(values)
     if 'add argument values' in instructions:
       modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues, hasExtension = True, extension = originalExtension)
 
@@ -722,36 +761,45 @@ class gknoConfigurationFiles:
 
   # Check if data types agree.
   def checkDataType(self, expectedType, value):
-    success = True
 
     # Check that flags have the value "set" or "unset".
     if expectedType == 'flag':
-      if value != 'set' and value != 'unset': success = False
+      if value != 'set' and value != 'unset': return False, value
 
     # Boolean values should be set to 'true', 'True', 'false' or 'False'.
     elif expectedType == 'bool':
-      if value != 'true' and value != 'True' and value != 'false' and value != 'False': success = False
+
+      # Check if the value is already a Boolean.
+      if isinstance(value, bool): return True, value
+      else:
+        if value == 'true' or value == 'True': return True, True
+        elif value == 'false' or value == 'False': return True, False
+        else: return False, value
 
     # Check integers...
     elif expectedType == 'integer':
-      try: test = int(value)
-      except: success = False
+      if isinstance(value, int): return True, value
+      else: return False, value
 
     # Check floats...
     elif expectedType == 'float':
-      try: test = float(value)
-      except: success = False
+      if isinstance(value, float): return True, value
+      else: return False, value
 
     # and strings.
     elif expectedType == 'string':
-      try: test = str(value)
-      except: success = False
+
+      # First check if the value is a string.
+      if isinstance(value, str): return True, value
+
+      # If the value is not a string, check to see if it is unicode. If so, return a string.
+      elif isinstance(value, str): return True, str(value)
+      else: return False, value
 
     # If the data type is unknown.
-    else:
-      success = False
+    else: return False, value
 
-    return success
+    return True, value
 
   #TODO FINISH
   # Check that a file extension is valid.
@@ -761,6 +809,17 @@ class gknoConfigurationFiles:
         return True
 
     return False
+
+  # Loop over all of the gkno specific nodes and check that the values are valid.
+  def checkNodeValues(self, graph, config):
+    for nodeID in config.nodeMethods.getNodes(graph, 'general'):
+      values   = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
+      dataType = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType')
+      for iteration in values:
+        if not self.checkDataTypes(dataType, values[iteration]):
+          # TODO ERROR
+          print('gknoConfig.checkNodeValues - wrong data type', nodeID, values[iteration], dataType)
+          self.errors.terminate()
 
   # Check that all required files exist prior to executing any makefiles.
   def checkFilesExist(self, graph, config, filenames):
@@ -777,3 +836,45 @@ class gknoConfigurationFiles:
     if self.missingFiles:
       self.errors.missingFiles(graph, config, self.missingFiles)
       config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-EXECUTE', [False], write = 'replace')
+
+  # Check if data types agree.
+  def checkDataTypes(self, expectedType, values):
+
+    # First check flags.
+    if expectedType == 'flag':
+      for counter, value in enumerate(values):
+        if value != 'set' and value != 'unset': return False
+  
+    # Next check Booleans.
+    elif expectedType == 'bool':
+      for counter, value in enumerate(values):
+        if not isinstance(value, bool):
+          if value == 'true' or value == 'True': values[counter] = True
+          elif value == 'false' or value == 'False': values[counter] = False
+          else: return False
+  
+    # Check integers...
+    elif expectedType == 'integer':
+      for counter, value in enumerate(values):
+        if not isinstance(int(value), int): return False
+        else: values[counter] = int(value)
+  
+    # Check floats...
+    elif expectedType == 'float':
+      for counter, value in enumerate(values):
+        if not isinstance(value, float): return False
+  
+    # and strings.
+    elif expectedType == 'string':
+      for counter, value in enumerate(values):
+  
+        # First check if the value is unicode.
+        if isinstance(value, unicode): values[counter] = str(value)
+
+        # Check if the value is a string.
+        elif not isinstance(value, str): return False
+  
+    # If the data type is unknown.
+    else: return False
+  
+    return True

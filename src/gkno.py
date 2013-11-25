@@ -260,6 +260,11 @@ def main():
   #TODO CHECK IF HELPCLASS FUNCTIONS ALREADY GET WHAT IS NEEDED.
   instanceData = config.getInstanceData(path, runName, instanceName, instances, availableInstances)
   # TODO Validate instance data. Check that tool instances have the argument field.
+
+  # Check to see if any of the instance arguments are gkno specific arguments.
+  gknoConfig.attachInstanceArgumentsToNodes(pipelineGraph, config, instanceData)
+
+  # Now handle the rest of the instance arguments.
   config.attachInstanceArgumentsToNodes(pipelineGraph, instanceData)
   if isVerbose: write.writeDone()
 
@@ -276,19 +281,6 @@ def main():
     if isVerbose: write.writeAssignLoopArguments(hasMultipleRuns)
     gknoConfig.addLoopValuesToGraph(pipelineGraph, config)
     if isVerbose: write.writeDone()
-   
-  # Check that all files have a path set.
-  gknoConfig.setFilePaths(pipelineGraph, config)
-
-  # Now that the command line argument has been parsed, all of the values supplied have been added to the
-  # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
-  #for fileNodeID in config.nodeMethods.getNodes(pipelineGraph, 'file'):
-  #  print(fileNodeID, config.nodeMethods.getGraphNodeAttribute(pipelineGraph, fileNodeID, 'values'))
-  commands.mirrorFileNodeValues(pipelineGraph, config, workflow)
-  #print('AFTER')
-  #for fileNodeID in config.nodeMethods.getNodes(pipelineGraph, 'file'):
-  #  print(fileNodeID, config.nodeMethods.getGraphNodeAttribute(pipelineGraph, fileNodeID, 'values'))
-  #exit(0)
 
   # TODO DEAL WITH INSTANCE EXPORTS
   # If the --export-config has been set, then the user is attempting to create a
@@ -312,22 +304,32 @@ def main():
     # After the configuration file has been exported, terminate the script.  No
     # Makefile is generated and nothing is executed.
     #exit(0)
-
-  # If flags are linked in a pipeline configuration file, but none of them were set on the command line,
-  # the nodes will have no values. This will cause problems when generating the makefiles. Search all
-  # option nodes looking for flags and set any unset nodes to 'unset'.
-  config.searchForUnsetFlags(pipelineGraph)
+ 
+  # Now that the command line argument has been parsed, all of the values supplied have been added to the
+  # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
+  commands.mirrorFileNodeValues(pipelineGraph, config, workflow)
 
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
   gknoConfig.constructFilenames(pipelineGraph, config, workflow)
 
+  # Check that all files have a path set.
+  gknoConfig.setFilePaths(pipelineGraph, config)
+
+  # If flags are linked in a pipeline configuration file, but none of them were set on the command line,
+  # the nodes will have no values. This will cause problems when generating the makefiles. Search all
+  # option nodes looking for flags and set any unset nodes to 'unset'.
+  config.searchForUnsetFlags(pipelineGraph)
+
   # Prior to filling in missing filenames, check that all of the supplied data is consistent with
   # expectations.  This includes ensuring that the inputted data types are correct (for example, if
   # an argument expects an integer, check that the values are integers), filename extensions are valid
   # and that multiple values aren't given to arguments that are only allowed a single value.
   gknoConfig.checkData(pipelineGraph, config)
+
+  # Check that all of the supplied values for the gkno specific nodes are valid.
+  gknoConfig.checkNodeValues(pipelineGraph, config)
 
   # Find the maximum number of datasets for each task.
   config.getNumberOfDataSets(pipelineGraph, workflow)
@@ -337,7 +339,7 @@ def main():
   make.determineMakefileStructure(pipelineGraph, config, workflow, hasMultipleRuns)
   makeFilename = make.getFilename(runName)
 
-  # Set the output path foe use in the makefile generation.
+  # Set the output path for use in the makefile generation.
   make.getOutputPath(pipelineGraph, config)
 
   for phaseID in make.makefileNames:
