@@ -24,9 +24,9 @@
       "data type" : "string",
       "extension" : "fastq|fq|fastq.gz|fq.gz"
     },
-    "--out" : {
+    "--read-archive" : {
       "description" : "The output read file",
-      "short form argument" : "-o",
+      "short form argument" : "-a",
       "command line argument" : "-out",
       "input" : false,
       "output" : true,
@@ -36,7 +36,7 @@
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--fastq",
-        "replace extension" : true
+        "modify extension" : "replace"
       }
     },
     "--read-group-id" : {
@@ -110,9 +110,31 @@
       "data type" : "string"
     }
   },
+
   "instances" : {
     "default" : {
       "description" : "Default instance requires the users input for all files."
+    },
+
+    "test" : {
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "fastq",
+          "values" : ["../resources/tutorial/current/simulated_reads_1.fq"],
+          "argument" : "--fastq"
+        },
+        {
+          "ID" : "fastq2",
+          "values" : ["../resources/tutorial/current/simulated_reads_2.fq"],
+          "argument" : "--fastq2"
+        },
+        {
+          "ID" : "tech",
+          "values" : ["illumina"],
+          "argument" : "--sequencing-technology"
+        }
+      ]
     }
   }
 }

@@ -42,7 +42,7 @@
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--bam",
-        "replace extension" : true
+        "modify extension" : "replace"
       }
     },
     "--fasta-reference" : {
@@ -217,9 +217,31 @@
       "extension" : "bed"
     }
   },
+
   "instances" : {
     "default" : {
       "description" : "test description"
+    },
+
+    "test" : {
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "BAM1",
+          "values" : ["../resources/tutorial/current/simulated_reads.bam", "../resources/tutorial/current/simulated_reads.marked.bam"],
+          "argument" : "--bam"
+        },
+        {
+          "ID" : "reference",
+          "values" : ["../resources/tutorial/current/test_genome.fa"],
+          "argument" : "--fasta-reference"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
     }
   }
 }

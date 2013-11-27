@@ -1,59 +1,89 @@
 {
   "description" : "Mark duplicate reads.",
-  "hide tool" : true,
   "path" : "picard/dist",
   "executable" : "MarkDuplicates.jar",
   "precommand" : "java -Xmx8g -jar",
   "argument delimiter" : "=",
   "help" : "--help|-h",
   "arguments" : {
-    "INPUT" : {
+    "--in" : {
       "description" : "the input BAM file.",
+      "short form argument" : "-i",
+      "command line argument" : "INPUT",
       "input" : true,
-      "use for filenames" : true,
       "output" : false,
       "required" : true,
-      "dependent" : true,
-      "short form argument" : "I",
-      "type" : "string",
+      "data type" : "string",
       "extension" : "bam"
     },
-    "OUTPUT" : {
+    "--output" : {
       "description" : "the output BAM file.",
+      "short form argument" : "-o",
+      "command line argument" : "OUTPUT",
       "input" : false,
       "output" : true,
       "required" : true,
       "dependent" : false,
-      "short form argument" : "O",
-      "type" : "string",
-      "extension" : "dup.bam"
+      "data type" : "string",
+      "extension" : "bam",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "replace",
+        "add additional text" : "marked"
+      }
     },
-    "METRICS_FILE" : {
+    "--metrics" : {
       "description" : "File to write duplication metrics to.",
+      "short form argument" : "-m",
+      "command line argument" : "METRICS_FILE",
       "input" : false,
       "output" : true,
       "required" : true,
-      "dependent" : false,
-      "short form argument" : "M",
-      "type" : "string",
-      "extension" : "metrics"
+      "data type" : "string",
+      "extension" : "metrics",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "replace"
+      }
     },
-    "TMP_DIR" : {
+    "--temp-dir" : {
       "description" : "Temporary directory for storing temporary data.",
+      "short form argument" : "-t",
+      "command line argument" : "TMP_DIR",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "string",
-      "extension" : "no extension",
-      "default" : [
-        "$(PWD)"
-      ]
+      "data type" : "string",
+      "extension" : "no extension"
     }
   },
+
   "instances" : {
     "default" : {
       "description" : "Default instance requires the users input for all files."
+    },
+
+    "test" : {
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "bam",
+          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
+          "argument" : "--in"
+        },
+        {
+          "ID" : "temp dir",
+          "values" : ["./"],
+          "argument" : "--temp-dir"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
     }
   }
 }

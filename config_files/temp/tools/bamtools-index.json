@@ -23,12 +23,12 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "bam.bai",
+      "extension" : "bai",
       "include on command line" : false,
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--in",
-        "replace extension" : true
+        "modify extension" : "append"
       }
     },
     "--depth-based-index" : {
@@ -42,9 +42,21 @@
       "extension" : "no extension"
     }
   },
+
   "instances" : {
     "default" : {
       "description" : "Default instance requires the users input for all files."
+    },
+
+    "test" : {
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "Input BAM file",
+          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
+          "argument" : "--in"
+        }
+      ]
     }
   }
 }

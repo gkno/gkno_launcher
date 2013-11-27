@@ -41,7 +41,7 @@
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--in",
-        "replace extension" : true,
+        "modify extension" : "replace",
         "add additional text" : "filtered"
       }
     },
@@ -66,9 +66,21 @@
       "data type" : "string"
     }
   },
+
   "instances" : {
     "default" : {
       "description" : "Default instance requires the users input for all files."
+    },
+
+    "test" : {
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "Input BAM file",
+          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
+          "argument" : "--in"
+        }
+      ]
     }
   }
 }

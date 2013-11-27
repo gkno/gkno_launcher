@@ -35,6 +35,9 @@ class makefileData:
     self.numberOfPhases    = 1
     self.tasksInPhase      = {}
 
+    # Store the paths of all executable files.
+    self.executablePaths = {}
+
   def determineMakefileStructure(self, graph, config, workflow, hasMultipleRuns):
 
     # If the pipeline is not being run with multiple runs, there is a single makefile generated,
@@ -185,10 +188,13 @@ class makefileData:
   def writeExecutablePaths(self, fileHandle, taskList, tasks, tools):
     print('### Executable paths.', file = fileHandle)
     for task in taskList:
-      tool         = tasks[task]
-      pathVariable = (tool.replace(" ", "_")  + '_PATH').upper()
-      path         = tools.getConfigurationData(tool, 'path')
-      print(pathVariable, "=$(TOOL_BIN)/", path, sep = "" , file = fileHandle)
+      tool                       = tasks[task]
+      pathVariable               = (tool.replace(" ", "_")  + '_PATH').upper()
+      self.executablePaths[tool] = tools.getConfigurationData(tool, 'path')
+
+      # Some tools (e.g. UNIX commands) have no path and shouldn't be given an executable.
+      if self.executablePaths[tool] != 'no path':
+        print(pathVariable, "=$(TOOL_BIN)/", self.executablePaths[tool], sep = "" , file = fileHandle)
     print(file = fileHandle)
 
   # Loop over all of the tasks in the workflow and write out all of the information for
@@ -261,12 +267,22 @@ class makefileData:
 
     # Define some tool attributes. These are extracted from the task node.
     #tool     = config.pipeline.tasks[task]
-    tool     = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-    modifier = config.nodeMethods.getGraphNodeAttribute(graph, task, 'modifier')
+    tool       = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+    precommand = config.nodeMethods.getGraphNodeAttribute(graph, task, 'precommand')
+    modifier   = config.nodeMethods.getGraphNodeAttribute(graph, task, 'modifier')
 
-    print('\t@$(', (tool + '_path').upper(), ')/', sep = '', end = '', file = fileHandle)
+    # Add the precommand if one exists.
+    print('\t@', end = '', file = fileHandle)
+    if precommand: print(precommand, end = ' ', file = fileHandle)
+
+    if self.executablePaths[tool] != 'no path': print('$(', (tool + '_path').upper(), ')/', sep = '', end = '', file = fileHandle)
+    else: print('\t@', end = '', file = fileHandle)
+
     print(config.nodeMethods.getGraphNodeAttribute(graph, task, 'executable'), end = ' ', file = fileHandle)
+
+    # Add the command modifier if one exists.
     if modifier: print(modifier, end = ' ', file = fileHandle)
+
     print('\\', sep = '', file = fileHandle)
     arguments = self.getCommandLineInformation(graph, config, task)
 
@@ -330,14 +346,25 @@ class makefileData:
 
         for value in valueList:
           if includeArgument:
+
+            # Determine the argument delimiter for this tool.
+            delimiter = config.nodeMethods.getGraphNodeAttribute(graph, task, 'delimiter')
                     
             # Check if the argument is an output that writes to standard out.
             if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout':
               print('\t>> ', value, ' \\', sep = '', file = fileHandle)
               stdoutUsed = True
 
+            # If the argument should be hidden, only write the value.
+            elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'hide':
+              print('\t', value, ' \\', sep = '', file = fileHandle)
+
+            # If the argument and value should be hidden, don't write anything.
+            elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'omit':
+              pass
+
             # Check if the argument is a flag.
-            elif not isFlag: print('\t', commandLineArgument, ' ', value, ' \\', sep = '', file = fileHandle)
+            elif not isFlag: print('\t', commandLineArgument, delimiter, value, ' \\', sep = '', file = fileHandle)
 
             # If the argument is a flag, check that the value is 'set' and if so, just write the argument.
             else:

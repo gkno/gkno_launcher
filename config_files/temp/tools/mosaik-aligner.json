@@ -4,9 +4,9 @@
   "executable" : "MosaikAligner",
   "help" : "--help|-h",
   "arguments" : {
-    "--in" : {
+    "--read-archive" : {
       "description" : "The input read file",
-      "short form argument" : "-i",
+      "short form argument" : "-a",
       "command line argument" : "-in",
       "input" : true,
       "output" : false,
@@ -14,7 +14,7 @@
       "data type" : "string",
       "extension" : "mkb"
     },
-    "--reference" : {
+    "--mosaik-reference" : {
       "description" : "The input reference file (Mosaik native dat file)",
       "short form argument" : "-r",
       "command line argument" : "-ia",
@@ -54,8 +54,8 @@
       ],
       "construct filename" : {
         "ID": "from tool argument",
-        "use argument" : "--in",
-        "replace extension" : false
+        "use argument" : "--read-archive",
+        "modify extension" : "omit"
       }
     },
     "--ann-single-end" : {
@@ -179,9 +179,46 @@
       "extension" : "no extension"
     }
   },
+
   "instances" : {
     "default" : {
       "description" : "Default instance requires the users input for all files."
+    },
+
+    "test" : {
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "values" : ["../resources/tutorial/current/test_genome.dat"],
+          "argument" : "--mosaik-reference"
+        },
+        {
+          "ID" : "jump-database",
+          "values" : ["../resources/tutorial/current/test_genome_10"],
+          "argument" : "--jump-database"
+        },
+        {
+          "ID" : "read archive",
+          "values" : ["../resources/tutorial/current/simulated_reads_1.mkb"],
+          "argument" : "--read-archive"
+        },
+        {
+          "ID" : "hash-size",
+          "values" : ["10"],
+          "argument" : "--hash-size"
+        },
+        {
+          "ID" : "single end neural net file.",
+          "values" : ["../resources/tutorial/current/se.100.005.ann"],
+          "argument" : "--ann-single-end"
+        },
+        {
+          "ID" : "paired end neural net file.",
+          "values" : ["../resources/tutorial/current/pe.100.01.ann"],
+          "argument" : "--ann-paired-end"
+        }
+      ]
     }
   }
 }

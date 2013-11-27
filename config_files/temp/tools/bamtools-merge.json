@@ -41,7 +41,7 @@
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--in",
-        "replace extension" : true,
+        "modify extension" : "replace",
         "add additional text" : "merged"
       }
     },
@@ -56,9 +56,26 @@
       "data type" : "string"
     }
   },
+
   "instances" : {
     "default" : {
       "description" : "Default instance requires the users input for all files."
+    },
+
+    "test" : {
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "BAM1",
+          "values" : ["../resources/tutorial/current/simulated_reads.bam", "../resources/tutorial/current/simulated_reads.marked.bam"],
+          "argument" : "--in"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
     }
   }
 }

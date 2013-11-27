@@ -287,15 +287,20 @@ class gknoConfigurationFiles:
         # another task, the nodes are merged and so the input is set.  Thus, an empty value cannot be
         # filled without command line (or instance) information.
         if isRequired and not isSet:
-          description = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
+          method = self.constructionInstructions(graph, config, task, argument, fileNodeID)
+          if method == None:
+            description = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
+  
+            # Check if this argument is a pipeline argument.
+            if task in config.pipeline.pipelineArgument:
+              if argument in config.pipeline.pipelineArgument[task]:
+                pipelineLongForm  = config.pipeline.pipelineArgument[task][argument]
+                pipelineShortForm = config.pipeline.argumentData[pipelineLongForm].shortForm
+                self.errors.missingArgument(graph, config, pipelineLongForm, pipelineShortForm, description)
+            self.errors.missingArgument(graph, config, argument, shortForm, description)
 
-          # Check if this argument is a pipeline argument.
-          if task in config.pipeline.pipelineArgument:
-            if argument in config.pipeline.pipelineArgument[task]:
-              pipelineLongForm  = config.pipeline.pipelineArgument[task][argument]
-              pipelineShortForm = config.pipeline.argumentData[pipelineLongForm].shortForm
-              self.errors.missingArgument(graph, config, pipelineLongForm, pipelineShortForm, description)
-          self.errors.missingArgument(graph, config, argument, shortForm, description)
+          # Build the input filename using the described method.
+          else: self.constructFilename(graph, config, method, task, fileNodeID, isInput = True)
                                  
       # Now deal with output files,  These are all successor nodes.
       fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(graph, task)
@@ -315,7 +320,7 @@ class gknoConfigurationFiles:
   
           # If the tool configuration file has instructions on how to construct the filename,
           # built it using these instructions.
-          else: self.constructFilename(graph, config, method, task, fileNodeID)
+          else: self.constructFilename(graph, config, method, task, fileNodeID, isInput = False)
 
   # If a filename is not defined, check to see if there are instructions on how to 
   # construct the filename.
@@ -325,9 +330,9 @@ class gknoConfigurationFiles:
     else: return instructions['ID']
 
   # Construct a filename from instructions.
-  def constructFilename(self, graph, config, method, task, fileNodeID):
+  def constructFilename(self, graph, config, method, task, fileNodeID, isInput):
     if method == 'from tool argument':
-      self.constructFilenameFromToolArgument(graph, config, task, fileNodeID)
+      self.constructFilenameFromToolArgument(graph, config, task, fileNodeID, isInput)
 
     # TODO ERRORS
     else:
@@ -335,21 +340,20 @@ class gknoConfigurationFiles:
       self.errors.terminate()
 
   # Construct a filename using another tool argument.
-  def constructFilenameFromToolArgument(self, graph, config, task, fileNodeID):
+  def constructFilenameFromToolArgument(self, graph, config, task, fileNodeID, isInput):
     optionNodeID   = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
 
     # Check if the filename is a filename stub.
     isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'isFilenameStub')
-    if isFilenameStub: self.constructFilenameFromToolArgumentStub(graph, config, task, fileNodeID)
-    else: self.constructFilenameFromToolArgumentNotStub(graph, config, task, fileNodeID)
+    if isFilenameStub: self.constructFilenameFromToolArgumentStub(graph, config, task, fileNodeID, isInput)
+    else: self.constructFilenameFromToolArgumentNotStub(graph, config, task, fileNodeID, isInput)
 
   # Construct the filenames for filename stub arguments.
-  def constructFilenameFromToolArgumentStub(self, graph, config, task, fileNodeID):
+  def constructFilenameFromToolArgumentStub(self, graph, config, task, fileNodeID, isInput):
     optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
     argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
     instructions     = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'construct filename')
     baseArgument     = instructions['use argument']
-    replaceExtension = instructions['replace extension']
 
     # Get the ID of the node corresponding to the baseArgument.
     # TODO SORT OUT THE CASE WHERE THERE ARE MULTIPLE VALUES
@@ -363,7 +367,7 @@ class gknoConfigurationFiles:
     # Generate the filename for the option node.  Since this is a filename stub, this will not have any
     # extension.
     originalExtension = config.tools.getArgumentData(config.pipeline.tasks[task], baseArgument, 'extension')
-    modifiedValues    = self.modifyExtensions(values, originalExtension, '')
+    modifiedValues    = self.modifyExtensions(values, originalExtension, '', replace = True)
     for iteration in modifiedValues: modifiedValues[iteration] = [value.split('/')[-1] for value in modifiedValues[iteration]]
 
     # If the construction instructions indicate that values from another argument should be included
@@ -526,12 +530,12 @@ class gknoConfigurationFiles:
     return values
 
   # Construct the filenames for non-filename stub arguments.
-  def constructFilenameFromToolArgumentNotStub(self, graph, config, task, fileNodeID):
+  def constructFilenameFromToolArgumentNotStub(self, graph, config, task, fileNodeID, isInput):
     optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
     argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
     instructions     = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'construct filename')
     baseArgument     = instructions['use argument']
-    replaceExtension = instructions['replace extension']
+    modifyExtension  = instructions['modify extension']
 
     # Get the ID of the node corresponding to the baseArgument. If there are multiple nodes
     # available, pick one that has a predecessor node itself. TODO SORT THIS OUT
@@ -572,24 +576,31 @@ class gknoConfigurationFiles:
     # and ensure that the modifiedValues dictionary only has one entry per iteration.
     if not config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowMultipleValues'):
       modifiedValues = {}
-      for iteration in values:
 
-        # Add the value to the modifiedValues list, but only include the filename and no path.
-        modifiedValues[iteration] = [values[iteration][0].split('/')[-1]]
+      # Add the value to the modifiedValues list, but only include the filename and no path if the
+      # file is an output. For input files being constructed, assume that the path is the same as
+      # the file from which they are being derived.
+      for iteration in values:
+        if isInput: modifiedValues[iteration] = [values[iteration][0]]
+        else: modifiedValues[iteration] = [values[iteration][0].split('/')[-1]]
 
     # If multiple values are allowed, cycle through them all and add them to the modifiedValues
     # list.
     else:
       for iteration in values:
-        tempList = []
-        for value in values[iteration]: tempList.append(value.split('/')[-1])
-        modifiedValues[iteration] = tempList
+        if isInput: modifiedValues[iteration] = [value for value in values[iteration]]
+        else: modifiedValues[iteration] = [value.split('/')[-1] for value in values[iteration]]
 
-    # If the extension is to be replaced, do that here.
+    # If the extension is to be replaced, do that here. First check if the file has an extension.
     originalExtension = config.tools.getArgumentData(config.pipeline.tasks[task], baseArgument, 'extension')
-    if replaceExtension:
+    if modifyExtension == 'replace':
       newExtension      = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'extension')
-      modifiedValues    = self.modifyExtensions(modifiedValues, originalExtension, newExtension)
+      modifiedValues    = self.modifyExtensions(modifiedValues, originalExtension, newExtension, replace = True)
+
+    # If the new extension should be appended to the end of the original file.
+    elif modifyExtension == 'append':
+      newExtension      = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'extension')
+      modifiedValues    = self.modifyExtensions(modifiedValues, originalExtension, newExtension, replace = False)
 
     # If the construction instructions indicate that values from another argument should be included
     # in the filename, include them here.
@@ -605,7 +616,7 @@ class gknoConfigurationFiles:
     config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, modifiedValues)
 
   # Modify the extensions for files.
-  def modifyExtensions(self, values, extA, extB):
+  def modifyExtensions(self, values, extA, extB, replace):
     modifiedValues = {}
 
     # The extensions may be a list of allowed extension separated by '|'.  Break the extensions
@@ -622,9 +633,17 @@ class gknoConfigurationFiles:
       newValuesList = []
       for value in values[valueID]:
         for extension in extAList:
-          if value.endswith(extension):
+
+          # If the value ends with the given extension, or the extension is not known.
+          if value.endswith(extension) or extension == 'no extension':
+
+            # If the extension wasn't provided, just use the extension that is on the
+            # file.
+            if extension == 'no extension': extension = value.split('.')[-1]
             string  = '.' + str(extension)
-            newValuesList.append(value.replace(string, replaceExtension))
+
+            if replace: newValuesList.append(value.replace(string, replaceExtension))
+            else: newValuesList.append(value + replaceExtension)
             break
 
       # Update the modifiedValues dictionary to reflect the modified extensions.
@@ -748,16 +767,20 @@ class gknoConfigurationFiles:
                   for fileValue in config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')[iteration]:
                     if not self.checkFileExtension(graph, config, optionNodeID, fileValue):
                       extensions = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowedExtensions')
+
+                      # Check if the extension is listed as 'no extension'. If so, any extension is allowed, so do not
+                      # fail.
+                      if extensions[0] != 'no extension':
       
-                      # If gkno is being run in tool mode, get the arguments.
-                      if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'tool':
-                        self.errors.invalidExtension(fileValue, extensions, argument, shortFormArgument, task, '', '')
-      
-                      # If gkno is being run in pipeline, mode, determine if the argument with the
-                      # incorrect extension is a pipeline argument.
-                      else:
-                        longForm, shortForm = config.pipeline.getPipelineArgument(task, argument)
-                        self.errors.invalidExtension(fileValue, extensions, longForm, shortForm, task, argument, shortFormArgument)
+                        # If gkno is being run in tool mode, get the arguments.
+                        if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'tool':
+                          self.errors.invalidExtension(fileValue, extensions, argument, shortFormArgument, task, '', '')
+        
+                        # If gkno is being run in pipeline, mode, determine if the argument with the
+                        # incorrect extension is a pipeline argument.
+                        else:
+                          longForm, shortForm = config.pipeline.getPipelineArgument(task, argument)
+                          self.errors.invalidExtension(fileValue, extensions, longForm, shortForm, task, argument, shortFormArgument)
 
   # Check if data types agree.
   def checkDataType(self, expectedType, value):

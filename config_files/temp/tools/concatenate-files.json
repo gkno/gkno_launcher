@@ -11,8 +11,7 @@
       "input" : true,
       "output" : false,
       "required" : true,
-      "dependent" : true,
-      "type" : "string",
+      "data type" : "string",
       "extension" : "no extension",
       "allow multiple values" : true,
       "modify argument name on command line" : "hide"
@@ -23,20 +22,41 @@
       "input" : false,
       "output" : true,
       "required" : true,
-      "dependent" : false,
-      "type" : "string",
+      "data type" : "string",
       "extension" : "no extension",
-      "do not construct filename from input" : true,
       "modify argument name on command line" : "stdout"
     }
   },
+
   "argument order" : [
     "--in",
     "--out"
   ],
+
   "instances" : {
     "default" : {
       "description" : "Default instance requires the users input for all files."
+    },
+
+    "test" : {
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "input",
+          "values" : ["../resources/tutorial/current/test_genome.fa", "../resources/tutorial/current/mobile_element_sequences.fa"],
+          "argument" : "--in"
+        },
+        {
+          "ID" : "output",
+          "values" : ["concatenated_file.fa"],
+          "argument" : "--out"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
     }
   }
 }

@@ -7,32 +7,73 @@
   "arguments" : {
     "--in" : {
       "description" : "The file to be compressed.",
+      "short form argument" : "-i",
       "input" : true,
       "output" : false,
       "required" : true,
-      "dependent" : true,
-      "type" : "string",
-      "short form argument" : "-i",
+      "data type" : "string",
       "extension" : "vcf",
       "modify argument name on command line" : "hide",
       "if input is stream" : "do not include"
     },
     "--out" : {
       "description" : "The output file.",
+      "short form argument" : "-o",
       "input" : false,
       "output" : true,
       "required" : true,
-      "dependent" : false,
-      "type" : "string",
-      "short form argument" : "-o",
+      "data type" : "string",
       "extension" : "gz",
-      "modify argument name on command line" : "omit",
-      "if output to stream" : "do not include"
+      "modify argument name on command line" : "stdout",
+      "if output to stream" : "do not include",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "append"
+      }
+    },
+    "--keep-original" : {
+      "description" : "Keep the original file after compression.",
+      "short form argument" : "-k",
+      "command line argument" : "-c",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
     }
   },
+
+  "argument order" : [
+    "--keep-original",
+    "--in",
+    "--out"
+  ],
+
   "instances" : {
     "default" : {
       "description" : "Default instance requires the users input for all files."
+    },
+
+    "test" : {
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "vcf",
+          "values" : ["../resources/tutorial/current/test_genome.dbSNP.snps.sites.vcf"],
+          "argument" : "--in"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        },
+        {
+          "ID" : "keep original",
+          "values" : ["set"],
+          "argument" : "--keep-original"
+        }
+      ]
     }
   }
 }

@@ -13,7 +13,8 @@
       "required" : true,
       "extension" : "vcf|vcf.gz",
       "if input is stream" : "do not include",
-      "data type" : "string"
+      "data type" : "string",
+      "modify argument name on command line" : "hide"
     },
     "--out" : {
       "description" : "The output filtered VCF file.",
@@ -27,7 +28,7 @@
       "construct filename" : {
         "ID" : "from tool argument",
         "use argument" : "--in",
-        "replace extension" : true,
+        "modify extension" : "replace",
         "add additional text" : "filtered"
       }
     },
@@ -96,6 +97,7 @@
       "data type" : "string"
     }
   },
+
   "argument order" : [
     "--info-filter",
     "--genotype-filter",
@@ -107,9 +109,31 @@
     "--in",
     "--out"
   ],
+
   "instances" : {
     "default" : {
       "description" : "Default instance requires the users input for all files."
+    },
+
+    "test" : {
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "vcf",
+          "values" : ["../resources/tutorial/current/simulated_reads.vcf"],
+          "argument" : "--in"
+        },
+        {
+          "ID" : "region",
+          "values" : ["20:60000-100000"],
+          "argument" : "--region"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
     }
   }
 }

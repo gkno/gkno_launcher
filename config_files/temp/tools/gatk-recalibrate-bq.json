@@ -5,74 +5,160 @@
   "precommand" : "java -Xmx2g -jar",
   "help" : "--help|-h",
   "arguments" : {
-    "--reference_sequence" : {
+    "--fasta-reference" : {
+      "short form argument" : "-r",
+      "command line argument" : "--reference_sequence",
       "description" : "the reference fasta file",
       "input" : true,
       "output" : false,
       "required" : true,
-      "dependent" : true,
-      "type" : "string",
-      "short form argument" : "-R",
+      "data type" : "string",
       "extension" : "fasta|fa"
     },
-    "--input_file" : {
+    "--fasta-reference-index" : {
+      "description" : "the reference fasta index file",
+      "short form argument" : "-ri",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "include on command line" : false,
+      "extension" : "fai",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--fasta-reference",
+        "modify extension" : "append"
+      }
+    },
+    "--fasta-reference-dictionary" : {
+      "description" : "the reference fasta dictionary file",
+      "short form argument" : "-rd",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "include on command line" : false,
+      "extension" : "dict",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--fasta-reference",
+        "modify extension" : "replace"
+      }
+    },
+    "--in" : {
       "description" : "input SAM or BAM file(s)",
+      "short form argument" : "-i",
+      "command line argument" : "--input_file",
       "input" : true,
       "use for filenames" : true,
       "output" : false,
       "required" : true,
-      "dependent" : true,
-      "type" : "string",
-      "short form argument" : "-I",
+      "data type" : "string",
       "extension" : "sam|bam"
     },
-    "--BQSR" : {
-      "description" : "input covariates table recalibration file",
+    "--in-index" : {
+      "description" : "input SAM or BAM index file(s)",
+      "short form argument" : "-ii",
       "input" : true,
       "output" : false,
       "required" : true,
-      "dependent" : true,
-      "type" : "string",
-      "short form argument" : "-BQSR",
-      "extension" : "csv"
-    },
-    "--analysis_type" : {
-      "description" : "type of analysis to run",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "dependent" : false,
-      "type" : "string",
-      "short form argument" : "-T",
-      "extension" : "no extension",
-      "default" : [
-        "PrintReads"
-      ]
+      "data type" : "string",
+      "include on command line" : false,
+      "extension" : "bai",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "append"
+      }
     },
     "--out" : {
       "description" : "the output recalibrated BAM file",
+      "short form argument" : "-o",
       "input" : false,
       "output" : true,
       "required" : true,
-      "dependent" : false,
-      "type" : "string",
-      "extension" : "recal.bam",
-      "short form argument" : "-o"
+      "data type" : "string",
+      "extension" : "bam",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "replace",
+        "add additional text" : "recalibrated"
+      }
     },
-    "--doNotWriteOriginalQuals" : {
-      "description" : "Do not write out the original qualities as an extra tag in the BAM file",
+    "--covariates-file" : {
+      "description" : "input covariates table recalibration file",
+      "short form argument" : "-c",
+      "command line argument" : "--BQSR",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "csv"
+    },
+    "--analysis-type" : {
+      "description" : "type of analysis to run",
+      "short form argument" : "-a",
+      "command line argument" : "--analysis_type",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "flag",
-      "extension" : "no extension",
-      "short form argument" : "-noOQs"
+      "data type" : "string",
+      "extension" : "no extension"
+    },
+    "--do-not-write-original-quals" : {
+      "description" : "Do not write out the original qualities as an extra tag in the BAM file",
+      "short form argument" : "-noq",
+      "command line argument" : "--doNotWriteOriginalQuals",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
     }
   },
+
   "instances" : {
     "default" : {
-      "description" : "Default instance requires the users input for all files."
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "analysis",
+          "argument" : "--analysis-type",
+          "values" : ["PrintReads"]
+        }
+      ]
+    },
+
+    "test" : {
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "analysis",
+          "argument" : "--analysis-type",
+          "values" : ["PrintReads"]
+        },
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["../resources/tutorial/current/test_genome.fa"]
+        },
+        {
+          "ID" : "bam",
+          "argument" : "--in",
+          "values" : ["../resources/tutorial/current/simulated_reads.bam"]
+        }, 
+        {
+          "ID" : "covariates",
+          "argument" : "--covariates-file",
+          "values" : ["../resources/tutorial/current/simulated_reads.csv"]
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
     }
   }
 }

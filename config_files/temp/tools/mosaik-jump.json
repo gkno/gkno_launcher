@@ -4,9 +4,9 @@
   "executable" : "MosaikJump",
   "help" : "--help|-h",
   "arguments" : {
-    "--in" : {
+    "--mosaik-reference" : {
       "description" : "Input reference file",
-      "short form argument" : "-i",
+      "short form argument" : "-r",
       "command line argument" : "-ia",
       "input" : true,
       "use for filenames" : true,
@@ -15,9 +15,9 @@
       "data type" : "string",
       "extension" : "dat"
     },
-    "--out" : {
+    "--jump-database" : {
       "description" : "Output filename stub",
-      "short form argument" : "-o",
+      "short form argument" : "-j",
       "command line argument" : "-out",
       "input" : false,
       "output" : true,
@@ -31,8 +31,8 @@
       ],
       "construct filename" : {
         "ID": "from tool argument",
-        "use argument" : "--in",
-        "replace extension" : false,
+        "use argument" : "--mosaik-reference",
+        "modify extension" : "omit",
         "add argument values" : [
           "--hash-size"
         ]
@@ -79,9 +79,31 @@
       "data type" : "flag"
     }
   },
+
   "instances" : {
     "default" : {
       "description" : "Default instance requires the users input for all files."
+    },
+
+    "test" : {
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "values" : ["../resources/tutorial/current/test_genome.dat"],
+          "argument" : "--mosaik-reference"
+        },
+        {
+          "ID" : "hash size",
+          "values" : ["8"],
+          "argument" : "--hash-size"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
     }
   }
 }
