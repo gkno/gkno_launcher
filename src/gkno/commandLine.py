@@ -438,6 +438,14 @@ class commandLine:
             config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, nodeID, task, argument)
             config.nodeMethods.optionNodeID += 1
 
+            # If the option node corresponds to a file, build a file node.
+            if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile'):
+              shortForm = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'shortForm')
+              if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isInput'):
+                config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortForm, 'input')
+              else:
+                config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortForm, 'input')
+
         else: isGknoArgument = True
 
       # Check if the argument is a flag. If so, the value needs to be set to 'set'.
@@ -472,7 +480,7 @@ class commandLine:
           # If the file is a filename stub, find the extensions to add to the base value and
           # define the file node values.
           if isFilenameStub:
-            tool       = config.pipeline.tasks[task]
+            tool = config.pipeline.tasks[task]
             if isInput: argument = config.edgeMethods.getEdgeAttribute(graph, fileNodeIDs[0], task, 'argument')
             else: argument = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeIDs[0], 'argument')
             extensions = config.tools.getArgumentData(tool, argument, 'filename extensions')

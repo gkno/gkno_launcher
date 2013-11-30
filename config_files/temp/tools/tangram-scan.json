@@ -4,70 +4,130 @@
   "executable" : "tangram_scan",
   "help" : "--help|-h",
   "arguments" : {
-    "-in" : {
+    "--in-list" : {
       "description" : "The list of input BAM files.",
+      "short form argument" : "-il",
+      "command line argument" : "-in",
       "input" : true,
       "output" : false,
       "required" : true,
-      "dependent" : true,
-      "type" : "string",
+      "data type" : "string",
       "extension" : "no extension"
     },
-    "-dir" : {
+    "--output-directory" : {
       "description" : "Path of the output directory.  This must be empty or non-existent.",
+      "short form argument" : "-d",
+      "command line argument" : "-dir",
       "input" : false,
       "output" : true,
       "required" : true,
-      "dependent" : false,
-      "type" : "string",
+      "data type" : "string",
       "extension" : "no extension",
-      "do not construct filename from input" : true,
       "directory" : true,
-      "generated files" : [
-        "lib_table.dat",
-        "hist.dat"
-      ]
+      "must be absent prior to execution" : true
     },
-    "-cf" : {
+    "--library-file" : {
+      "description" : "Automatically generated file.",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "dat",
+      "include on command line" : false,
+      "hide in help" : true,
+      "construct filename" : {
+        "ID": "define name",
+        "directory argument" : "--output-directory",
+        "filename" : "lib_table",
+        "add extension" : true
+      }
+    },
+    "--histogram-file" : {
+      "description" : "Automatically generated file.",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "dat",
+      "hide in help" : true,
+      "include on command line" : false,
+      "construct filename" : {
+        "ID": "define name",
+        "directory argument" : "--output-directory",
+        "filename" : "hist",
+        "add extension" : true
+      }
+    },
+    "--fragment-length-consistency" : {
       "description" : "Threshold for determining consistency with the fragment length distribution [0.01]",
+      "short form argument" : "-f",
+      "command line argument" : "-cf",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "float",
+      "data type" : "float",
       "extension" : "no extension"
     },
-    "-tr" : {
+    "--trim-rate" : {
       "description" : "Trim rate for the fragment length distribution [0.02]",
+      "short form argument" : "-t",
+      "command line argument" : "-tr",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "float",
+      "data type" : "float",
       "extension" : "no extension"
     },
-    "-mq" : {
+    "--min-mapping-quality" : {
       "description" : "Minimum mapping quality for a normal read pair",
+      "short form argument" : "-mq",
+      "command line argument" : "-mq",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "integer",
+      "data type" : "integer",
       "extension" : "no extension"
     },
-    "-mf" : {
+    "--minimum-fragments" : {
       "description" : "The minimum number of normal fragments in a library [10000].",
+      "short form argument" : "-mf",
+      "command line argument" : "-mf",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "integer",
+      "data type" : "integer",
       "extension" : "no extension"
     }
   },
+
   "instances" : {
     "default" : {
       "description" : "Default instance requires the users input for all files."
+    },
+
+    "test" : {
+      "nodes" : [
+        {
+          "ID" : "list",
+          "values" : ["./files-for-testing-tools/tangram-bam-list.txt"],
+          "argument" : "--in-list"
+        },
+        {
+          "ID" : "output",
+          "argument" : "--output-directory",
+          "values" : ["tangram-files"]
+        },
+        {
+          "ID" : "output",
+          "argument" : "--minimum-fragments",
+          "values" : ["0"]
+        },
+        {
+          "ID" : "output path",
+          "argument" : "--output-path",
+          "values" : ["./"]
+        }
+      ]
     }
   }
 }

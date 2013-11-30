@@ -265,7 +265,8 @@ def main():
   gknoConfig.attachInstanceArgumentsToNodes(pipelineGraph, config, instanceData)
 
   # Now handle the rest of the instance arguments.
-  config.attachInstanceArgumentsToNodes(pipelineGraph, instanceData)
+  if isPipeline: config.attachPipelineInstanceArgumentsToNodes(pipelineGraph, instanceData)
+  else: config.attachToolInstanceArgumentsToNodes(pipelineGraph, instanceData, runName)
   if isVerbose: write.writeDone()
 
   # Attach the values of the pipeline arguments to the relevant nodes.
@@ -381,7 +382,7 @@ def main():
       deleteList = config.setWhenToDeleteFiles(pipelineGraph, graphIntermediates, workflow)
 
       # Write out the information for running each task.
-      make.writeTasks(pipelineGraph, config, makefileName, makefileHandle, make.tasksInPhase[phaseID], key)
+      make.writeTasks(pipelineGraph, config, makefileName, makefileHandle, make.tasksInPhase[phaseID], deleteList, key)
 
       # Close the makefile in preparation for execution.
       make.closeMakefile(makefileHandle)

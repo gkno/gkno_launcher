@@ -331,8 +331,10 @@ class gknoConfigurationFiles:
 
   # Construct a filename from instructions.
   def constructFilename(self, graph, config, method, task, fileNodeID, isInput):
-    if method == 'from tool argument':
-      self.constructFilenameFromToolArgument(graph, config, task, fileNodeID, isInput)
+    if method == 'from tool argument': self.constructFilenameFromToolArgument(graph, config, task, fileNodeID, isInput)
+
+    # If a known file is being constructed, set the name here.
+    elif method == 'define name': self.constructKnownFilename(graph, config, task, fileNodeID)
 
     # TODO ERRORS
     else:
@@ -650,6 +652,44 @@ class gknoConfigurationFiles:
       modifiedValues[valueID] = newValuesList
 
     return modifiedValues
+
+  # Construct a file of known name.
+  def constructKnownFilename(self, graph, config, task, fileNodeID):
+    modifiedValues   = {}
+    optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+    argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
+    instructions     = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'construct filename')
+
+    # Check to see if the filenames to be created should be in a different directory.
+    directoryArgument = instructions['directory argument'] if 'directory argument' in instructions else None
+    if directoryArgument:
+      if len(config.nodeMethods.getNodeForTaskArgument(graph, task, directoryArgument)) != 1:
+        #TODO ERROR
+        print('TOO MANY DIRECTORIES - constructKnownFilename')
+        self.errors.terminate()
+
+      nodeID          = config.nodeMethods.getNodeForTaskArgument(graph, task, directoryArgument)[0]
+      directoryValues = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
+      for iteration in directoryValues: modifiedValues[iteration] = [value + '/' for value in directoryValues[iteration]]
+
+    # If there is no directory argument, initialise the first iteration.
+    else: modifiedValues[1] = []
+
+    if 'filename' not in instructions:
+      #TODO ERROR INCLUDE IN VALIDATION and include addExtension
+      print('Creating filename with no given filename - constructKnownFilename.')
+      self.errors.terminate()
+    filename     = instructions['filename']
+    addExtension = instructions['add extension']
+    for iteration in modifiedValues:
+      if addExtension: extension = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'extension').split('|')[0]
+      else: extension = ''
+      filename = filename + '.' + extension
+      modifiedValues[iteration] = [value + filename for value in modifiedValues[iteration]]
+
+    # Set the values.
+    config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)
+    config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, modifiedValues)
 
   # Set file paths for all of the files.
   def setFilePaths(self, graph, config):

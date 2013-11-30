@@ -199,7 +199,7 @@ class makefileData:
 
   # Loop over all of the tasks in the workflow and write out all of the information for
   # executing each task.
-  def writeTasks(self, graph, config, makefileName, fileHandle, taskList, iteration):
+  def writeTasks(self, graph, config, makefileName, fileHandle, taskList, deleteList, iteration):
     for task in taskList:
 
       # Define the minimum and maximum iteration values. If a single iteration is being performed,
@@ -276,7 +276,6 @@ class makefileData:
     if precommand: print(precommand, end = ' ', file = fileHandle)
 
     if self.executablePaths[tool] != 'no path': print('$(', (tool + '_path').upper(), ')/', sep = '', end = '', file = fileHandle)
-    else: print('\t@', end = '', file = fileHandle)
 
     print(config.nodeMethods.getGraphNodeAttribute(graph, task, 'executable'), end = ' ', file = fileHandle)
 

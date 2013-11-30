@@ -216,7 +216,7 @@ class helpClass:
       filePath           = path + '/config_files/temp/tools/' + filename
       tool               = filename[:len(filename) - 5]
       data               = config.fileOperations.readConfigurationFile(filePath)
-      self.toolInstances = config.tools.processConfigurationData(tool, data)
+      toolInstances      = config.tools.processConfigurationData(tool, data)
       description        = config.tools.getToolAttribute(tool, 'description')
       isHidden           = True if config.tools.getToolAttribute(tool, 'isHidden') else False
 
@@ -232,7 +232,7 @@ class helpClass:
       filePath               = path + '/config_files/temp/pipes/' + filename
       pipeline               = filename[:len(filename) - 5]
       data                   = config.fileOperations.readConfigurationFile(filePath)
-      self.pipelineInstances = config.pipeline.processConfigurationData(data, filePath)
+      pipelineInstances      = config.pipeline.processConfigurationData(data, filePath)
       description            = config.pipeline.description
 
       # For the purposes of formatting the screen output, find the longest tool
@@ -314,10 +314,11 @@ class helpClass:
     requiredArguments = {}
     argumentLength    = 0
     for argument in config.tools.configurationData[tool]['arguments'].keys():
-      shortForm = config.tools.getArgumentData(tool, argument, 'short form argument')
-      if (len(argument) + len(shortForm)) > argumentLength: argumentLength = len(argument) + len(shortForm)
-      if config.tools.getArgumentData(tool, argument, 'required'): requiredArguments[argument] = shortForm
-      else: optionalArguments[argument] = shortForm
+      if not config.tools.getArgumentData(tool, argument, 'hide in help'):
+        shortForm = config.tools.getArgumentData(tool, argument, 'short form argument')
+        if (len(argument) + len(shortForm)) > argumentLength: argumentLength = len(argument) + len(shortForm)
+        if config.tools.getArgumentData(tool, argument, 'required'): requiredArguments[argument] = shortForm
+        else: optionalArguments[argument] = shortForm
 
     # Sort the required and optional arguments.
     sortedRequiredArguments = sorted(requiredArguments.keys())
@@ -379,6 +380,12 @@ class helpClass:
       for instance in sorted(self.availableInstances.keys()):
          self.writeFormattedText(instance + ":", self.availableInstances[instance], self.instanceLength + 4, 2, '')
       print(file = sys.stdout)
+
+    # Reset the pipeline variables to those of the current pipeline.
+    #TODO remove temp
+    filePath = path + '/config_files/temp/pipes/' + name + '.json'
+    data     = config.fileOperations.readConfigurationFile(filePath)
+    config.pipeline.processConfigurationData(data, filePath)
 
     # List the options available at the pipeline level.
     #

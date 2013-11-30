@@ -4,18 +4,6 @@
   "executable" : "samtools",
   "modifier" : "faidx",
   "help" : "--help|-h",
-  "additional files" : {
-    "from input arguments" : [
-      {
-        "data type" : "output",
-        "link to this argument" : "--in",
-        "remove extension" : false,
-        "add extension" : true,
-        "output extension" : "fai",
-        "stub" : false
-      }
-    ]
-  },
   "arguments" : {
     "--fasta-reference" : {
       "description" : "Input FASTA file.",
@@ -28,7 +16,7 @@
       "modify argument name on command line" : "hide"
     },
     "--output" : {
-      "description" : "Input FASTA file.",
+      "description" : "Output index file.",
       "short form argument" : "-r",
       "input" : false,
       "output" : true,
@@ -37,7 +25,7 @@
       "extension" : "fai",
       "include on command line" : false,
       "construct filename" : {
-        "ID": "from tool argument",
+        "ID" : "from tool argument",
         "use argument" : "--fasta-reference",
         "modify extension" : "append"
       }
@@ -54,7 +42,7 @@
       "nodes" : [
         {
           "ID" : "fasta",
-          "values" : ["../resources/tutorial/current/test_genome.fa"],
+          "values" : ["files-for-testing-tools/test_genome.fa"],
           "argument" : "--fasta-reference"
         },
         {
