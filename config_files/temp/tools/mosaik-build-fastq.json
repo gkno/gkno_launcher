@@ -50,8 +50,8 @@
       "data type" : "string"
     },
     "--median-fragment-length" : {
-      "description" : "Median fragment length. e.g. 150",
-      "short form argument" : "-m",
+      "description" : "The median length of the read fragments.",
+      "short form argument" : "-mf",
       "command line argument" : "-mfl",
       "input" : false,
       "output" : false,

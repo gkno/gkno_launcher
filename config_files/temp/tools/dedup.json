@@ -29,9 +29,10 @@
         "add additional text" : "dupmarked"
       }
     },
-    "--minQual" : {
+    "--min-qual" : {
       "description" : "Only add scores over this phred quality when determining a read's quality (default: 15)",
       "short form argument" : "-m",
+      "command line argument" : "--minQual",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -47,18 +48,20 @@
       "data type" : "string",
       "extension" : "log"
     },
-    "--oneChrom" : {
+    "--one-chromosome" : {
       "description" : "Treat reads with mates on different chromosomes as single-ended.",
       "short form argument" : "-oc",
+      "command line argument" : "--oneChrom",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "flag",
       "extension" : "no extension"
     },
-    "--rmDups" : {
+    "--remove-duplicates" : {
       "description" : "Remove duplicates (default is to mark duplicates).",
       "short form argument" : "-rd",
+      "command line argument" : "--rmDups",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -74,9 +77,10 @@
       "data type" : "flag",
       "extension" : "no extension"
     },
-    "--noeof" : {
+    "--no-eof" : {
       "description" : "Do not expect an EOF block on a bam file.",
       "short form argument" : "-n",
+      "command line argument" : "--noeof",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -94,7 +98,7 @@
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
-          "ID" : "BAM1",
+          "ID" : "bam",
           "values" : ["../resources/tutorial/current/simulated_reads.bam"],
           "argument" : "--in"
         },

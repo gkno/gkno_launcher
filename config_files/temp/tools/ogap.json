@@ -5,97 +5,133 @@
   "help" : "--help|-h",
   "hide tool" : true,
   "input is stream" : true,
-  "output is stream" : true,
   "arguments" : {
-    "--fasta-reference" : {
-      "description" : "FASTA reference file to use for realignment (required)",
+    "--in" : {
+      "description" : "The input BAM file.",
+      "short form argument" : "-i",
       "input" : true,
       "output" : false,
       "required" : true,
-      "dependent" : true,
-      "short form argument" : "-f",
+      "extension" : "bam",
+      "data type" : "string",
+      "if input is stream" : "do not include",
+      "hide in help" : true,
+      "include on command line" : false
+    },
+    "--out" : {
+      "description" : "The output BAM file.",
+      "short form argument" : "-o",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "extension" : "bam",
+      "data type" : "string",
+      "if output to stream" : "do not include",
+      "modify argument name on command line" : "stdout",
+      "hide in help" : true,
+      "include on command line" : false,
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "append",
+        "add additional text" : "gap_extended"
+      }
+    },
+    "--fasta-reference" : {
+      "description" : "FASTA reference file to use for realignment (required)",
+      "short form argument" : "-r",
+      "input" : true,
+      "output" : false,
+      "required" : true,
       "extension" : "fa|fasta",
-      "type" : "string"
+      "data type" : "string"
     },
     "--flanking-window" : {
       "description" : "The number of bases on the left and right to attempt to align to (default 50bp).  This limits the maximum detectable indel length.",
+      "short form argument" : "-w",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "short form argument" : "-w",
       "extension" : "no extension",
-      "type" : "integer"
+      "data type" : "integer"
     },
     "--mismatch-qsum" : {
       "description" : "Trigger realignment if the sum of quality scores of mismatched bases is >= N",
+      "short form argument" : "-mq",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "short form argument" : "-C",
-      "type" : "integer",
-      "extension" : "no extension",
-      "default" : [
-        "20"
-      ]
+      "data type" : "integer",
+      "extension" : "no extension"
     },
     "--soft-clip-qsum" : {
       "description" : "Trigger realignment if the sum of quality scores of soft clipped bases is >= N",
+      "short form argument" : "-sq",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "short form argument" : "-Q",
-      "type" : "integer",
-      "extension" : "no extension",
-      "default" : [
-        "20"
-      ]
+      "data type" : "integer",
+      "extension" : "no extension"
     },
     "--soft-clip-limit" : {
       "description" : "Only accept realignments if they have <= N soft clips",
+      "short form argument" : "-sl",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "short form argument" : "-S",
-      "type" : "integer",
-      "extension" : "no extension",
-      "default" : [
-        "0"
-      ]
+      "data type" : "integer",
+      "extension" : "no extension"
     },
     "--entropy-gap-open" : {
       "description" : "use entropy scaling for the gap open penalty",
+      "short form argument" : "-e",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "short form argument" : "-z",
-      "type" : "flag",
-      "extension" : "no extension",
-      "default" : [
-        "set"
-      ]
+      "data type" : "flag",
+      "extension" : "no extension"
     },
     "--repeat-gap-extend" : {
       "description" : "penalize non-repeat-unit gaps in repeat sequence (default 15.0, set to 0 to disable)",
+      "short form argument" : "-re",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "short form argument" : "-R",
-      "type" : "integer",
-      "extension" : "no extension",
-      "default" : [
-        "25"
-      ]
+      "data type" : "integer",
+      "extension" : "no extension"
     }
   },
+
   "instances" : {
     "default" : {
-      "description" : "Default instance requires the users input for all files."
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "qsum",
+          "argument" : "--mismatch-qsum",
+          "values" : ["20"]
+        },
+        {
+          "ID" : "soft clip",
+          "argument" : "--soft-clip-qsum",
+          "values" : ["20"]
+        },
+        {
+          "ID" : "soft clip limit",
+          "argument" : "--soft-clip-limit",
+          "values" : ["0"]
+        },
+        {
+          "ID" : "entropy",
+          "argument" : "--entropy-gap-open",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "repeat",
+          "argument" : "--repeat-gap-extend",
+          "values" : ["25"]
+        }
+      ]
     }
   }
 }

@@ -394,7 +394,7 @@ class gknoConfigurationFiles:
 
     for nodeID in fileNodeIDs:
       fileValues = {}
-      extension  = extensions.pop(0)
+      extension = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'allowedExtensions')
       for iteration in modifiedValues:
         fileValues[iteration] = []
         for value in modifiedValues[iteration]: fileValues[iteration].append(value + extension)
@@ -576,8 +576,8 @@ class gknoConfigurationFiles:
 
     # Check if the argument being created is allowed to have multiple values. If not, check each iteration
     # and ensure that the modifiedValues dictionary only has one entry per iteration.
+    modifiedValues = {}
     if not config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowMultipleValues'):
-      modifiedValues = {}
 
       # Add the value to the modifiedValues list, but only include the filename and no path if the
       # file is an output. For input files being constructed, assume that the path is the same as
@@ -737,6 +737,12 @@ class gknoConfigurationFiles:
 
               modifiedValues.append(filename)
 
+            # If the filename begins with a '$', the path has been set using a variable that will be
+            # understood by make. For example, the path might be $(PWD) representing the current
+            # working directory. In this case, the value should be left as is.
+            elif filename.startswith('$'): modifiedValues.append(filename)
+
+            # If the path is already defined, ensure the full path is written.
             else: modifiedValues.append(os.path.abspath(filename))
 
           # Reset the stored values.
@@ -885,12 +891,16 @@ class gknoConfigurationFiles:
           self.errors.terminate()
 
   # Check that all required files exist prior to executing any makefiles.
-  def checkFilesExist(self, graph, config, filenames):
+  def checkFilesExist(self, graph, config, filenames, sourcePath):
     for nodeID, filename in filenames:
 
-      # If the filename starts with the path $(PWD), replace this with the current directory.
-      if filename.startswith('$(PWD)'):
-        filename = os.getcwd() + filename.split('$(PWD)')[1]
+      # If the filename begins with $(PWD), replace it with the path of the current working
+      # directory.
+      if filename.startswith('$(PWD)'): filename = os.getcwd() + filename.split('$(PWD)')[1]
+
+      # If the filename begins with $(RESOURCES), include the full path of the resources directory.
+      elif filename.startswith('$(RESOURCES)'): filename = sourcePath + '/resources/' + filename.split('$(RESOURCES)')[1]
+
       if not os.path.exists(filename): self.missingFiles.append(filename)
 
   def writeMissingFiles(self, graph, config):

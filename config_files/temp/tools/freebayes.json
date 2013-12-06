@@ -19,6 +19,22 @@
       "data type" : "string",
       "allow multiple values" : true
     },
+    "--bam-index" : {
+      "short form argument" : "-bi",
+      "description" : "bam index file.",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "extension" : "bai",
+      "data type" : "string",
+      "allow multiple values" : true,
+      "include on command line" : false,
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--bam",
+        "modify extension" : "append"
+      }
+    },
     "--bam-list" : {
       "short form argument" : "-bl",
       "description" : "the input BAM file list.",

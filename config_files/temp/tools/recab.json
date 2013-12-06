@@ -38,9 +38,10 @@
       "data type" : "string",
       "extension" : "log"
     },
-    "--noeof" : {
+    "--no-eof" : {
       "description" : "Do not expect an EOF block on a bam file.",
       "short form argument" : "-n",
+      "command line argument" : "--noeof",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -66,18 +67,20 @@
       "data type" : "string",
       "extension" : "vcf"
     },
-    "--minBaseQual" : {
+    "--minimum-base-quality" : {
       "description" : "Minimum base quality of bases to recalibrate (default: 5).",
       "short form argument" : "-minq",
+      "command line argument" : "--minBaseQual",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "integer",
       "extension" : "no extension"
     },
-    "--maxBaseQual" : {
+    "--maximum-base-quality" : {
       "description" : "Maximum recalibrated base quality (default: 50).",
       "short form argument" : "-maxq",
+      "command line argument" : "--maxBaseQual",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -93,9 +96,10 @@
       "data type" : "integer",
       "extension" : "no extension"
     },
-    "--fitModel" : {
+    "--fit-model" : {
       "description" : "Check if the logistic regression model fits the data overriden by fast, but automatically applied by useLogReg.",
       "short form argument" : "-f",
+      "command line argument" : "--fitModel",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -111,45 +115,50 @@
       "data type" : "flag",
       "extension" : "no extension"
     },
-    "--keepPrevDbsnp" : {
+    "--keep-previous-dbsnp" : {
       "description" : "Do not exclude entries where the previous base is in dbsnp when building the recalibration table. By default they are excluded from the table.",
       "short form argument" : "-kp",
+      "command line argument" : "--keepPrevDbsnp",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "flag",
       "extension" : "no extension"
     },
-    "--keepPrevNonAdjacent" : {
+    "--keep-previous-non-adjacent" : {
       "description" : "Do not exclude entries where the previous base is not adjacent (not a Cigar M/X/=) when building the recalibration table.  By default they are excluded from the table (except the first cycle).",
       "short form argument" : "-kn",
+      "command line argument" : "--keepPrevNonAdjacent",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "flag",
       "extension" : "no extension"
     },
-    "--useLogReg" : {
+    "--use-logistic-regression" : {
       "description" : "Use logistic regression calculated quality for the new quality automatically applies fitModel and overrides fast.",
       "short form argument" : "-u",
+      "command line argument" : "--useLogReg",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "flag",
       "extension" : "no extension"
     },
-    "--qualField" : {
+    "--quality-field" : {
       "description" : "Tag to get the starting base quality (default is to get it from the Quality field).",
       "short form argument" : "-q",
+      "command line argument" : "--qualField",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "string",
       "extension" : "no extension"
     },
-    "--storeQualTag" : {
+    "--store-quality-tag" : {
       "description" : "Tag to store the previous quality into.",
       "short form argument" : "-s",
+      "command line argument" : "--storeQualTag",
       "input" : false,
       "output" : false,
       "required" : false,

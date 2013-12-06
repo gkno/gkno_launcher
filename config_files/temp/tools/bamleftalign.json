@@ -4,39 +4,54 @@
   "executable" : "bamleftalign",
   "hide tool" : true,
   "input is stream" : true,
-  "output is stream" : true,
   "help" : "--help|-h",
   "arguments" : {
-    "--fasta-reference" : {
-      "description" : "FASTA reference file to use for realignment (required)",
+    "--in" : {
+      "description" : "The input BAM file.",
+      "short form argument" : "-o",
       "input" : true,
-      "output" : false,
+      "output" : true,
       "required" : true,
-      "dependent" : true,
-      "short form argument" : "-f",
-      "extension" : "fa|fasta",
-      "type" : "string"
-    },
-    "--max-iterations" : {
-      "description" : "Iterate the left-realignment no more than this many times.",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "dependent" : false,
-      "extension" : "no extension",
-      "short form argument" : "-m",
-      "type" : "integer"
+      "extension" : "bam",
+      "data type" : "string",
+      "hide in help" : true,
+      "include on command line" : false
     },
     "--out" : {
       "description" : "The output BAM file.",
+      "short form argument" : "-o",
       "input" : false,
       "output" : true,
+      "required" : true,
+      "extension" : "bam",
+      "data type" : "string",
+      "modify argument name on command line" : "stdout",
+      "if output to stream" : "do not include",
+      "hide in help" : true,
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "append",
+        "add additional text" : "left_aligned"
+      }
+    },
+    "--fasta-reference" : {
+      "description" : "FASTA reference file to use for realignment (required)",
+      "short form argument" : "-r",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "extension" : "fa|fasta",
+      "data type" : "string"
+    },
+    "--max-iterations" : {
+      "description" : "Iterate the left-realignment no more than this many times.",
+      "short form argument" : "-m",
+      "input" : false,
+      "output" : false,
       "required" : false,
-      "dependent" : false,
-      "extension" : "left_aligned.bam",
-      "short form argument" : "-o",
-      "type" : "string",
-      "if not output to stream" : "stdout"
+      "extension" : "no extension",
+      "data type" : "integer"
     }
   },
   "instances" : {

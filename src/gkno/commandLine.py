@@ -48,7 +48,7 @@ class commandLine:
       self.mode  = 'pipeline'
       isPipeline = True
     elif argument == 'run-test':
-      self.mode = 'test'
+      self.mode = 'pipeline'
       isPipeline = True
     else: self.mode = 'tool'
 
@@ -57,6 +57,11 @@ class commandLine:
   # If gkno is being run in pipeline mode, get the name of the pipeline.
   def getPipelineName(self, isPipeline):
     if isPipeline:
+
+      # First check if the 'run-test' pipeline is being run.
+      if sys.argv[1] == 'run-test': return 'run-test'
+
+      # Otherwise, return the name of the pipeline.
       try: return sys.argv[2]
       except: return None
 
@@ -471,27 +476,39 @@ class commandLine:
           # Get the file nodes associated with the option node.
           fileNodeIDs = config.nodeMethods.getAssociatedFileNodeIDs(graph, optionNodeID)
 
-          # Determine if this node refers to a filename stub and whether it is an input or
-          # an output.
+          # Determine if this node refers to an input or output file.
           isInput = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'isInput')
-          if isInput: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, fileNodeIDs[0], task, 'isFilenameStub')
-          else: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeIDs[0], 'isFilenameStub')
+
+          # It is possible that not all of the file nodes connect to this task. If there are
+          # multiple file nodes coming from a task and one of those file links into the next
+          # task, only one of the file nodes associated with the option node will feed into
+          # the task. Determine which of these file nodes links into the task.
+          attachedFileNodeIDs = []
+          for fileNodeID in fileNodeIDs:
+            if isInput:
+              if config.edgeMethods.checkIfEdgeExists(graph, fileNodeID, task): attachedFileNodeIDs.append(fileNodeID)
+            else:
+              if config.edgeMethods.checkIfEdgeExists(graph, task, fileNodeID): attachedFileNodeIDs.append(fileNodeID)
+
+          # Determine if the file node is from a filename stub.
+          if isInput: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, attachedFileNodeIDs[0], task, 'isFilenameStub')
+          else: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, task, attachedFileNodeIDs[0], 'isFilenameStub')
 
           # If the file is a filename stub, find the extensions to add to the base value and
           # define the file node values.
           if isFilenameStub:
             tool = config.pipeline.tasks[task]
-            if isInput: argument = config.edgeMethods.getEdgeAttribute(graph, fileNodeIDs[0], task, 'argument')
-            else: argument = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeIDs[0], 'argument')
+            if isInput: argument = config.edgeMethods.getEdgeAttribute(graph, attachedFileNodeIDs[0], task, 'argument')
+            else: argument = config.edgeMethods.getEdgeAttribute(graph, task, attachedFileNodeIDs[0], 'argument')
             extensions = config.tools.getArgumentData(tool, argument, 'filename extensions')
 
             # Check that the number of file nodes is the same as the number of extensions.
-            if len(extensions) != len(fileNodeIDs):
+            if len(extensions) != len(attachedFileNodeIDs):
               #TODO ERROR
               print('1 - commands.mirrorFileNodeValues')
               self.errors.terminate()
 
-            for fileNodeID, extension in zip(fileNodeIDs, extensions):
+            for fileNodeID, extension in zip(attachedFileNodeIDs, extensions):
               values          = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
               modifiedValues = {}
               for iteration in values:
@@ -502,227 +519,6 @@ class commandLine:
 
           # If the file is not a filename stub, just add the values to the node.
           else:
-            for fileNodeID in fileNodeIDs:
+            for fileNodeID in attachedFileNodeIDs:
               values = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
               config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  # Parse through all of the commands stored in the argumentList and check that they are all valid.
-  # If they are, put them in a new structure that groups all of the arguments with their respective
-  # task.  This structure is returned.
-  def assignArgumentsToTasks(self):#, tool, shortForms, isPipeline, pipelineArguments, pipeArguments, pipeShortForms, workflow, verbose):
-    task = tool if not isPipeline else ''
-
-    # Parse through the list of arguments supplied on the command line and determine which task in
-    # the pipeline they belong to.  Modify the argumentList to include the task as well as the
-    # argument and value.  This routine does not check that the arguments are valid or correctly
-    # formed: those checks are performed in the parseCommandLine routine.
-    for argument, value in self.argumentList:
-      argumentName = ''
-      if argument in pipeArguments or argument in pipeShortForms:
-        argumentName = pipeShortForms[argument] if argument in pipeShortForms else argument
-        taskLink     = pipeArguments[argumentName]['link to this task']
-        argumentLink = pipeArguments[argumentName]['link to this argument'] if 'link to this argument' in pipeArguments[argumentName] else 'pipeline'
-
-        # Do not add 'pipeline' arguments to the new structure.
-        if argumentLink != 'pipeline':
-          if taskLink not in self.linkedArguments: self.linkedArguments[taskLink] = []
-          self.linkedArguments[taskLink].append(('pipeline', argumentName, argumentLink, value))
-
-        # Add pipeline arguments to their own structure.
-        else:
-          shortForm = pipeArguments[argumentName]['short form argument']
-          dataType  = pipeArguments[argumentName]['type']
-          value     = self.checkDataType(task, 'pipeline', argumentName, shortForm, '', '', value, dataType, verbose)
-          if dataType == 'flag': pipelineArguments[argumentName] = 'set'
-          else: pipelineArguments[argumentName] = value
-
-      # If a pipeline is being run, the name of a task in the workflow is an allowed command line
-      # argument.  If this is the case, there may be multiple arguments supplied for that specific
-      # task, so place all of these in the modifiedList.
-      elif isPipeline:
-        if argument.startswith('-'): task = argument[1:]
-        if argument.startswith('--'): task = argument[2:]
-        if task in workflow:
-          taskArguments = value.split(' ')
-          while True:
-
-            # Get the first entry in the list.  Terminate the loop if there is nothing left in the list.
-            try: taskArgument = taskArguments.pop(0)
-            except: break
-
-            # Get the next value in the list if one exists.
-            try: nextTaskArgument = taskArguments[0]
-            except: nextTaskArgument = '-'
-
-            if nextTaskArgument.startswith('-'):
-              if task not in self.linkedArguments: self.linkedArguments[task] = []
-              self.linkedArguments[task].append(('pipeline task', taskArgument, taskArgument, ''))
-            else:
-              if task not in self.linkedArguments: self.linkedArguments[task] = []
-              self.linkedArguments[task].append(('pipeline task', taskArgument, taskArgument, nextTaskArgument))
-              taskArguments.pop(0)
-
-        # If gkno is being run in the pipe mode, the allowed options (pipeline argument or pipeline task)
-        # have also been covered.  Any other command line arguments are unrecognised.
-        else:
-          self.errors.unknownArgument(verbose, argument)
-          self.errors.terminate()
-
-      # If a single tool is being run, the argument must be for this tool (again, checks on the
-      # validity of the argument are checked later).
-      elif not isPipeline:
-        argumentName = shortForms[task][argument] if argument in shortForms[task] else argument
-        if task not in self.linkedArguments: self.linkedArguments[task] = []
-        self.linkedArguments[task].append(('tool', argumentName, argumentName, value))
-
-      # If gkno is being run as a tool, the only allowed options (a general pipeline argument such
-      # as --verbose, or a tool argument) have been covered.  If gkno is being run in the pipe mode,
-      # the allowed options (pipeline argument or pipeline task) have also been covered.  Any other
-      # command line arguments are unrecognised.
-      else:
-        self.errors.unknownArgument(verbose, argument)
-        self.errors.terminate()
-
-  # All of the arguments on the command line have been added to the linkedArguments structure.  In
-  # this structure, each task in the pipeline has all of the arguments associated with it stored
-  # with their given values along with the argument in the form understood by the tool the task points
-  # to.  Now parse through all of these and check that the values supplied are valid.
-  def parseCommandLine(self, tool, arguments, shortForms, isPipeline, workflow, pipeArguments, pipeShortForms, taskToTool, verbose):
-
-    # Initialise the self.arguments structure.  This will hold all of the commands ready for building
-    # command lines in the final scripts.
-    if isPipeline:
-      for task in workflow: self.arguments[task] = {}
-    else:
-      task                 = tool
-      taskToTool[task]     = task
-      self.arguments[task] = {}
-
-    # Parse through all of the supplied arguments and values, task by task.
-    for task in self.linkedArguments:
-
-      # Get the name of the tool that the argument is for.  Note that in a pipeline, the workflow
-      # is a list of unique tasks.  Each task is associated with a tool.
-      tool = taskToTool[task]
-
-      # Parse through all of the arguments for this task.
-      for argumentType, pipeArgument, argument, value in self.linkedArguments[task]:
-
-        # Check that the argument is valid for the tool it is intended.
-        if argument not in arguments[tool]:
-          self.errors.unknownArgument(verbose, argument)
-          self.errors.terminate()
-
-        # Get the expected data type associated with the argument.
-        dataType = arguments[tool][argument]['type']
-
-        # Get the short form of the argument.
-        pipeShortForm = ''
-        shortForm     = ''
-        if argumentType == 'pipeline': pipeShortForm = pipeArguments[pipeArgument]['short form argument']
-        shortForm = arguments[tool][argument]['short form argument'] if 'short form argument' in arguments[tool][argument] else ''
-
-        # Check that a value was supplied for the argument if it is not a flag.  If there is an
-        # error, determine if the argument was defined as a pipeline argument, or as a direct
-        # argument for the tool.  The error message needs to reflect the argument inputted by the
-        # usself.errors.
-        if dataType != 'flag' and value == '':
-          self.errors.missingArgumentValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, dataType)
-          self.errors.terminate()
-
-        # If the argument is a flag and it was supplied with an argument, terminate.
-        if dataType == 'flag' and value != '':
-          self.errors.flagGivenValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value)
-          self.errors.terminate()
-
-        # If the argument is not a flag, check that the data type given is consistent with expectation.
-        if dataType != 'flag':
-          value = self.checkDataType(task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType, verbose)
-
-          # Check if this command line argument has already been seen.  Some arguments can have multiple
-          # values and so can appear on the command line multiple times (for example the --bam command in
-          # freebayes can be set multiple times to allow multiple BAM files to be read in).  If this is
-          # allowed, the argument definition should include the 'allow multiple definitions' in its 
-          # information.
-          if argument in self.arguments[task]:
-            if argument in arguments[tool]:
-              if 'allow multiple definitions' not in arguments[tool][argument]:
-                self.errors.multipleDefinitionsForSameArgument(verbose, task, argument, shortForm)
-                self.errors.terminate()
-              else: self.arguments[task][argument].append(value)
-            else: exit('haven\'t handled yet, command line: 312')
-          else:
-            self.arguments[task][argument] = []
-            self.arguments[task][argument].append(value)
-
-        # If the argument is a flag, mark this flag as set.
-        else:
-          if argument in self.arguments[task]:
-            self.errors.multipleDefinitionsForFlag(verbose, task, argument, shortForm)
-            self.errors.terminate()
-          else:
-            self.arguments[task][argument] = []
-            self.arguments[task][argument].append('set')
-
-  # Check that the argument has the correct data type.
-  def checkDataType(self, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType, verbose):
-
-    # If the argument expects a Boolean, check that the given value is either 'true', 'True', 'false' or
-    # 'False'.
-    if dataType == 'bool':
-  
-      # Ensure that a valid argument has been provided.
-      if (value == 'true') or (value == 'True'): value = True
-      elif (value == 'false') or (value == 'False'): value = False
-      else:
-        self.errors.incorrectBooleanValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value)
-        self.errors.terminate()
-  
-    # If the argument demands a string, check that a value is provided.
-    elif dataType == 'string':
-      if value == '':
-        self.errors.missingArgumentValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, dataType)
-        self.errors.terminate()
-
-    # If the argument demands an integer, check that the supplied value is an integself.errors.
-    elif (dataType == 'integer'):
-      try: value = int(value)
-      except: self.errors.incorrectDataType(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType)
-      if self.errors.hasError: self.errors.terminate()
-
-    # If the argument demands a floating point...
-    elif dataType == 'float':
-      try: value = float(value)
-      except: self.errors.incorrectDataType(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value, dataType)
-      if self.errors.hasError: self.errors.terminate()
-
-    # If a value was provided to a flag...
-    elif dataType == 'flag':
-      if value != '':
-        self.errors.flagGivenValue(verbose, task, argumentType, pipeArgument, pipeShortForm, argument, shortForm, value)
-        self.errors.terminate()
-
-    return value

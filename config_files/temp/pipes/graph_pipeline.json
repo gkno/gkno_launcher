@@ -54,16 +54,16 @@
       "long form argument" : "--ref",
       "short form argument" : "-i",
       "tasks" : {
-        "build-reference" : "--in",
+        "build-reference" : "--fasta-reference",
         "call" : "--fasta-reference"
       }
     },
     {
       "ID" : "mosaik native reference",
       "tasks" : {
-        "build-reference" : "--out",
-        "build-jump-database" : "--in",
-        "align" : "--reference"
+        "build-reference" : "--mosaik-reference",
+        "build-jump-database" : "--mosaik-reference",
+        "align" : "--mosaik-reference"
       },
       "keep files" : true
     },
@@ -80,7 +80,7 @@
     {
       "ID" : "jump database",
       "tasks" : {
-        "build-jump-database" : "--out",
+        "build-jump-database" : "--jump-database",
         "align" : "--jump-database"
       },
       "keep files" : true
@@ -88,8 +88,8 @@
     {
       "ID" : "mosaik read archive",
       "tasks" : {
-        "build" : "--out",
-        "align" : "--in"
+        "build" : "--read-archive",
+        "align" : "--read-archive"
       }
     },
     {
