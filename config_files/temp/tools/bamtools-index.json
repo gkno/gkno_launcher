@@ -1,12 +1,14 @@
 {
-  "description" : "Index a BAM file",
+  "description" : "Index a BAM file.",
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "index",
   "help" : "--help|-h",
-  "arguments" : {
-    "--in" : {
+  "arguments" : [
+    {
+      "ID" : "in",
       "description" : "the input BAM file.",
+      "long form argument" : "--in",
       "short form argument" : "-i",
       "command line argument" : "-in",
       "input" : true,
@@ -15,8 +17,10 @@
       "data type" : "string",
       "extension" : "bam"
     },
-    "--out" : {
+    {
+      "ID" : "out",
       "description" : "the index file.",
+      "long form argument" : "--out",
       "short form argument" : "-o",
       "command line argument" : "-out",
       "input" : false,
@@ -32,8 +36,10 @@
         "modify extension" : "append"
       }
     },
-    "--depth-based-index" : {
+    {
+      "ID" : "depth-based-index",
       "description" : "create non-standard (depth based) index file (*.bti). Default behaviour is to create standard BAM index (*.bai)",
+      "long form argument" : "--depth-based-index",
       "short form argument" : "-b",
       "command line argument" : "-bti",
       "input" : false,
@@ -42,7 +48,7 @@
       "data type" : "flag",
       "extension" : "no extension"
     }
-  },
+  ],
 
   "instances" : {
     "default" : {

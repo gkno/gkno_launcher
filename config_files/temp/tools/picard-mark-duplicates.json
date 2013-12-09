@@ -5,9 +5,11 @@
   "precommand" : "java -Xmx8g -jar",
   "argument delimiter" : "=",
   "help" : "--help|-h",
-  "arguments" : {
-    "--in" : {
+  "arguments" : [
+    {
+      "ID" : "in",
       "description" : "the input BAM file.",
+      "long form argument" : "--in",
       "short form argument" : "-i",
       "command line argument" : "INPUT",
       "input" : true,
@@ -16,14 +18,15 @@
       "data type" : "string",
       "extension" : "bam"
     },
-    "--output" : {
+    {
+      "ID" : "out",
       "description" : "the output BAM file.",
+      "long form argument" : "--out",
       "short form argument" : "-o",
       "command line argument" : "OUTPUT",
       "input" : false,
       "output" : true,
       "required" : true,
-      "dependent" : false,
       "data type" : "string",
       "extension" : "bam",
       "construct filename" : {
@@ -33,8 +36,10 @@
         "add additional text" : "marked"
       }
     },
-    "--metrics" : {
+    {
+      "ID" : "metrics",
       "description" : "File to write duplication metrics to.",
+      "long form argument" : "--metrics",
       "short form argument" : "-m",
       "command line argument" : "METRICS_FILE",
       "input" : false,
@@ -48,8 +53,10 @@
         "modify extension" : "replace"
       }
     },
-    "--temp-dir" : {
+    {
+      "ID" : "temp-dir",
       "description" : "Temporary directory for storing temporary data.",
+      "long form argument" : "--temp-dir",
       "short form argument" : "-t",
       "command line argument" : "TMP_DIR",
       "input" : false,
@@ -58,7 +65,7 @@
       "data type" : "string",
       "extension" : "no extension"
     }
-  },
+  ],
 
   "instances" : {
     "default" : {

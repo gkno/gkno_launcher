@@ -4,9 +4,11 @@
   "executable" : "bamtools",
   "modifier" : "stats",
   "help" : "--help|-h",
-  "arguments" : {
-    "--in" : {
+  "arguments" : [
+    {
+      "ID" : "in",
       "description" : "the input BAM file.",
+      "long form argument" :"--in",
       "short form argument" : "-i",
       "command line argument" : "-in",
       "input" : true,
@@ -15,8 +17,10 @@
       "data type" : "string",
       "extension" : "bam"
     },
-    "--insert" : {
+    {
+      "ID" : "insert",
       "description" : "summarize insert size data.",
+      "long form argument" : "--insert",
       "short form argument" : "-n",
       "command line argument" : "-insert",
       "input" : false,
@@ -25,8 +29,10 @@
       "extension" : "no extension",
       "data type" : "flag"
     },
-    "--out" : {
+    {
+      "ID" : "out",
       "description" : "the output stats file.",
+      "long form argument" : "--out",
       "short form argument" : "-o",
       "command line argument" : "-out",
       "input" : false,
@@ -41,12 +47,12 @@
         "modify extension" : "replace"
       }
     }
-  },
+  ],
 
   "argument order" : [
-    "--in",
-    "--insert",
-    "--out"
+    "in",
+    "insert",
+    "out"
   ],
 
   "instances" : {
