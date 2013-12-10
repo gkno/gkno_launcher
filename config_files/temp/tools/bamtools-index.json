@@ -6,7 +6,6 @@
   "help" : "--help|-h",
   "arguments" : [
     {
-      "ID" : "in",
       "description" : "the input BAM file.",
       "long form argument" : "--in",
       "short form argument" : "-i",
@@ -18,7 +17,6 @@
       "extension" : "bam"
     },
     {
-      "ID" : "out",
       "description" : "the index file.",
       "long form argument" : "--out",
       "short form argument" : "-o",
@@ -37,7 +35,6 @@
       }
     },
     {
-      "ID" : "depth-based-index",
       "description" : "create non-standard (depth based) index file (*.bti). Default behaviour is to create standard BAM index (*.bai)",
       "long form argument" : "--depth-based-index",
       "short form argument" : "-b",

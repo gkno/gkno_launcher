@@ -144,7 +144,6 @@ class commandLine:
     
               # The task is a node in the pipeline, but check that the node is a task node.
               if config.nodeMethods.getGraphNodeAttribute(graph, task, 'nodeType') == 'task':
-    
                 if argument not in self.argumentDictionary: self.argumentDictionary[argument] = []
                 self.argumentDictionary[argument].append(nextArgument)
                 count += 1
@@ -419,8 +418,8 @@ class commandLine:
         if not nodeID:
 
           # If this is a list of arguments, get the argument to use for the values.
-          if config.tools.getArgumentData(task, argument, 'list of input files'):
-            assignedArgument = config.tools.getArgumentData(task, argument, 'apply by repeating this argument')
+          if config.tools.getArgumentAttribute(task, argument, 'isInputList'):
+            assignedArgument = config.tools.getArgumentID(task, argument, 'repeatedArgument')
             try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, assignedArgument)[0]
             except:
               #TODO
@@ -457,7 +456,7 @@ class commandLine:
       if isGknoArgument:
         if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag': self.argumentDictionary[argument] = ['set']
       else:
-        if config.tools.getArgumentData(task, argument, 'data type') == 'flag': self.argumentDictionary[argument] = ['set']
+        if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag': self.argumentDictionary[argument] = ['set']
 
       if nodeID not in argumentValues: argumentValues[nodeID] = self.argumentDictionary[argument]
       else:

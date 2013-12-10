@@ -271,10 +271,10 @@ class gknoConfigurationFiles:
   # determine how to construct the filename and populate the node with the value.
   def constructFilenames(self, graph, config, workflow):
     for task in workflow:
+      tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
 
       # Input files are predecessor nodes to the task.  Deal with the input files first.
-      fileNodeIDs = config.nodeMethods.getPredecessorFileNodes(graph, task)
-      for fileNodeID in fileNodeIDs:
+      for fileNodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
         argument     = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'argument')
         shortForm    = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'shortForm')
         optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
@@ -303,8 +303,7 @@ class gknoConfigurationFiles:
           else: self.constructFilename(graph, config, method, task, fileNodeID, isInput = True)
                                  
       # Now deal with output files,  These are all successor nodes.
-      fileNodeIDs = config.nodeMethods.getSuccessorFileNodes(graph, task)
-      for fileNodeID in fileNodeIDs:
+      for fileNodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
         argument     = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'argument')
         optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
                                  
@@ -315,7 +314,7 @@ class gknoConfigurationFiles:
           if method == None:     
   
             # TODO ERROR MESSAGE
-            print('\tMISSING OUTPUT:', fileNodeID, task, config.pipeline.tasks[task], argument)
+            print('\tMISSING OUTPUT:', fileNodeID, task, tool, argument)
             self.errors.terminate()
   
           # If the tool configuration file has instructions on how to construct the filename,
@@ -325,7 +324,8 @@ class gknoConfigurationFiles:
   # If a filename is not defined, check to see if there are instructions on how to 
   # construct the filename.
   def constructionInstructions(self, graph, config, task, argument, fileNodeID):
-    instructions = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'construct filename')
+    tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+    instructions = config.tools.getArgumentAttribute(tool, argument, 'constructionInstructions')
     if instructions == None: return None
     else: return instructions['ID']
 
@@ -352,9 +352,10 @@ class gknoConfigurationFiles:
 
   # Construct the filenames for filename stub arguments.
   def constructFilenameFromToolArgumentStub(self, graph, config, task, fileNodeID, isInput):
+    tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
     optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
     argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
-    instructions     = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'construct filename')
+    instructions     = config.tools.getArgumentData(tool, argument, 'construct filename')
     baseArgument     = instructions['use argument']
 
     # Get the ID of the node corresponding to the baseArgument.
@@ -368,7 +369,7 @@ class gknoConfigurationFiles:
 
     # Generate the filename for the option node.  Since this is a filename stub, this will not have any
     # extension.
-    originalExtension = config.tools.getArgumentData(config.pipeline.tasks[task], baseArgument, 'extension')
+    originalExtension = config.tools.getArgumentData(tool, baseArgument, 'extension')
     modifiedValues    = self.modifyExtensions(values, originalExtension, '', replace = True)
     for iteration in modifiedValues: modifiedValues[iteration] = [value.split('/')[-1] for value in modifiedValues[iteration]]
 
@@ -384,7 +385,7 @@ class gknoConfigurationFiles:
 
     # Set all of the file nodes with their values.
     fileNodeIDs = config.nodeMethods.getAssociatedFileNodeIDs(graph, optionNodeID)
-    extensions  = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'filename extensions')
+    extensions  = config.tools.getArgumentData(tool, argument, 'filename extensions')
 
     # If the number of file nodes is not equal to the number of extensions, there is a problem.
     if len(fileNodeIDs) != len(extensions):
@@ -533,9 +534,10 @@ class gknoConfigurationFiles:
 
   # Construct the filenames for non-filename stub arguments.
   def constructFilenameFromToolArgumentNotStub(self, graph, config, task, fileNodeID, isInput):
+    tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
     optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
     argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
-    instructions     = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'construct filename')
+    instructions     = config.tools.getArgumentAttribute(tool, argument, 'constructionInstructions')
     baseArgument     = instructions['use argument']
     modifyExtension  = instructions['modify extension']
 
@@ -594,14 +596,14 @@ class gknoConfigurationFiles:
         else: modifiedValues[iteration] = [value.split('/')[-1] for value in values[iteration]]
 
     # If the extension is to be replaced, do that here. First check if the file has an extension.
-    originalExtension = config.tools.getArgumentData(config.pipeline.tasks[task], baseArgument, 'extension')
+    originalExtension = config.tools.getArgumentAttribute(tool, baseArgument, 'extension')
     if modifyExtension == 'replace':
-      newExtension      = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'extension')
+      newExtension      = config.tools.getArgumentAttribute(tool, argument, 'extension')
       modifiedValues    = self.modifyExtensions(modifiedValues, originalExtension, newExtension, replace = True)
 
     # If the new extension should be appended to the end of the original file.
     elif modifyExtension == 'append':
-      newExtension      = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'extension')
+      newExtension      = config.tools.getArgumentAttribute(tool, argument, 'extension')
       modifiedValues    = self.modifyExtensions(modifiedValues, originalExtension, newExtension, replace = False)
 
     # If the construction instructions indicate that values from another argument should be included
@@ -656,9 +658,10 @@ class gknoConfigurationFiles:
   # Construct a file of known name.
   def constructKnownFilename(self, graph, config, task, fileNodeID):
     modifiedValues   = {}
+    tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
     optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
     argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
-    instructions     = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'construct filename')
+    instructions     = config.tools.getArgumentData(tool, argument, 'construct filename')
 
     # Check to see if the filenames to be created should be in a different directory.
     directoryArgument = instructions['directory argument'] if 'directory argument' in instructions else None
@@ -682,7 +685,7 @@ class gknoConfigurationFiles:
     filename     = instructions['filename']
     addExtension = instructions['add extension']
     for iteration in modifiedValues:
-      if addExtension: extension = config.tools.getArgumentData(config.pipeline.tasks[task], argument, 'extension').split('|')[0]
+      if addExtension: extension = config.tools.getArgumentAttribute(tool, argument, 'extension').split('|')[0]
       else: extension = ''
       filename = filename + '.' + extension
       modifiedValues[iteration] = [value + filename for value in modifiedValues[iteration]]

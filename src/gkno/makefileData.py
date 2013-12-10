@@ -185,12 +185,12 @@ class makefileData:
     print(file = fileHandle)
 
   # Write out all of the executable paths that are used in the makefile.
-  def writeExecutablePaths(self, fileHandle, taskList, tasks, tools):
+  def writeExecutablePaths(self, graph, config, fileHandle, taskList):
     print('### Executable paths.', file = fileHandle)
     for task in taskList:
-      tool                       = tasks[task]
+      tool                       = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
       pathVariable               = (tool.replace(" ", "_")  + '_PATH').upper()
-      self.executablePaths[tool] = tools.getConfigurationData(tool, 'path')
+      self.executablePaths[tool] = config.nodeMethods.getGraphNodeAttribute(graph, task, 'path')
 
       # Some tools (e.g. UNIX commands) have no path and shouldn't be given an executable.
       if self.executablePaths[tool] != 'no path':
@@ -455,7 +455,7 @@ class makefileData:
 
   # Define the order in which to write out the command line arguments.
   def defineArgumentOrder(self, config, tool, arguments):
-    argumentOrder = config.tools.getToolAttribute(tool, 'argumentOrder')
+    argumentOrder = config.tools.getGeneralAttribute(tool, 'argumentOrder')
     if not argumentOrder:
       for argument in arguments: argumentOrder.append(argument)
 

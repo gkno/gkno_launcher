@@ -366,7 +366,7 @@ def main():
       make.writeHeaderInformation(sourcePath, runName, makefileName, makefileHandle, phaseID, key)
 
       # Write out the executable paths for all of the tools being used in the makefile.
-      make.writeExecutablePaths(makefileHandle, make.tasksInPhase[phaseID], config.pipeline.tasks, config.tools)
+      make.writeExecutablePaths(pipelineGraph, config, makefileHandle, make.tasksInPhase[phaseID])
 
       # Detemine which files are dependencies, outputs and intermediate files. Begin by marking all
       # intermediate file nodes. If a file node has both a predecessor and a successor, it is an
