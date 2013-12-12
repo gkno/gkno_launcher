@@ -3,20 +3,21 @@
   "path" : "MOSAIK/bin",
   "executable" : "MosaikJump",
   "help" : "--help|-h",
-  "arguments" : {
-    "--mosaik-reference" : {
+  "arguments" : [
+    {    
       "description" : "Input reference file",
+      "long form argument" : "--mosaik-reference",
       "short form argument" : "-r",
       "command line argument" : "-ia",
       "input" : true,
-      "use for filenames" : true,
       "output" : false,
       "required" : true,
       "data type" : "string",
       "extension" : "dat"
     },
-    "--jump-database" : {
+    {    
       "description" : "Output filename stub",
+      "long form argument" : "--jump-database",
       "short form argument" : "-j",
       "command line argument" : "-out",
       "input" : false,
@@ -24,6 +25,7 @@
       "required" : true,
       "data type" : "string",
       "is filename stub" : true,
+      "extension" : "none",
       "filename extensions" : [
         "_keys.jmp",
         "_meta.jmp",
@@ -38,8 +40,9 @@
         ]
       }
     },
-    "--hash-size" : {
+    {    
       "description" : "Hash size [4 - 32]",
+      "long form argument" : "--hash-size",
       "short form argument" : "-hs",
       "command line argument" : "-hs",
       "input" : false,
@@ -48,8 +51,9 @@
       "data type" : "integer",
       "extension" : "no extension"
     },
-    "--keep-keys-on-disk" : {
+    {    
       "description" : "Keeps the key database on disk",
+      "long form argument" : "--keep-keys-on-disk",
       "short form argument" : "-k",
       "command line argument" : "-kd",
       "input" : false,
@@ -58,8 +62,9 @@
       "extension" : "no extension",
       "data type" : "flag"
     },
-    "--memory" : {
+    {    
       "description" : "The amount memory used when sorting <Gb>",
+      "long form argument" : "--memory",
       "short form argument" : "-m",
       "command line argument" : "-mem",
       "input" : false,
@@ -68,8 +73,9 @@
       "extension" : "no extension",
       "data type" : "integer"
     },
-    "--iupac" : {
+    {    
       "description" : "Considers IUPAC codes",
+      "long form argument" : "--iupac",
       "short form argument" : "-u",
       "command line argument" : "-iupac",
       "input" : false,
@@ -78,7 +84,7 @@
       "extension" : "no extension",
       "data type" : "flag"
     }
-  },
+  ],
 
   "instances" : {
     "default" : {

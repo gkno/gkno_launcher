@@ -4,19 +4,23 @@
   "executable" : "bam",
   "modifier" : "dedup",
   "help" : "--help|-h",
-  "arguments" : {
-    "--in" : {
+  "arguments" : [
+    {
       "description" : "Input BAM file name (must be sorted).",
+      "long form argument" : "--in",
       "short form argument" : "-i",
+      "command line argument" : "--in",
       "input" : true,
       "output" : false,
       "required" : true,
       "data type" : "string",
       "extension" : "bam"
     },
-    "--out" : {
+    {
       "description" : "Output BAM file name (same order with original file).",
+      "long form argument" : "--out",
       "short form argument" : "-o",
+      "command line argument" : "--out",
       "input" : false,
       "output" : true,
       "required" : true,
@@ -29,8 +33,9 @@
         "add additional text" : "dupmarked"
       }
     },
-    "--min-qual" : {
+    {
       "description" : "Only add scores over this phred quality when determining a read's quality (default: 15)",
+      "long form argument" : "--min-qual",
       "short form argument" : "-m",
       "command line argument" : "--minQual",
       "input" : false,
@@ -39,17 +44,20 @@
       "data type" : "integer",
       "extension" : "no extension"
     },
-    "--log" : {
+    {
       "description" : "Log and summary statistics (default: [outfile].log, or stderr if --out starts with '-').",
+      "long form argument" : "--log",
       "short form argument" : "-l",
+      "command line argument" : "--log",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "string",
       "extension" : "log"
     },
-    "--one-chromosome" : {
+    {
       "description" : "Treat reads with mates on different chromosomes as single-ended.",
+      "long form argument" : "--one-chromosome",
       "short form argument" : "-oc",
       "command line argument" : "--oneChrom",
       "input" : false,
@@ -58,8 +66,9 @@
       "data type" : "flag",
       "extension" : "no extension"
     },
-    "--remove-duplicates" : {
+    {
       "description" : "Remove duplicates (default is to mark duplicates).",
+      "long form argument" : "--remove-duplicates",
       "short form argument" : "-rd",
       "command line argument" : "--rmDups",
       "input" : false,
@@ -68,17 +77,20 @@
       "data type" : "flag",
       "extension" : "no extension"
     },
-    "--force" : {
+    {
       "description" : "Allow an already mark-duplicated BAM file, unmarking any previously marked duplicates and apply this duplicate marking logic.  Default is to throw errors and exit when trying to run on an already mark-duplicated BAM.",
+      "long form argument" : "--force",
       "short form argument" : "-f",
+      "command line argument" : "--force",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "flag",
       "extension" : "no extension"
     },
-    "--no-eof" : {
+    {
       "description" : "Do not expect an EOF block on a bam file.",
+      "long form argument" : "--no-eof",
       "short form argument" : "-n",
       "command line argument" : "--noeof",
       "input" : false,
@@ -87,7 +99,7 @@
       "data type" : "flag",
       "extension" : "no extension"
     }
-  },
+  ],
 
   "instances" : {
     "default" : {

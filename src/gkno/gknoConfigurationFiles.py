@@ -355,7 +355,7 @@ class gknoConfigurationFiles:
     tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
     optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
     argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
-    instructions     = config.tools.getArgumentData(tool, argument, 'construct filename')
+    instructions     = config.tools.getArgumentAttribute(tool, argument, 'constructionInstructions')
     baseArgument     = instructions['use argument']
 
     # Get the ID of the node corresponding to the baseArgument.
@@ -369,7 +369,7 @@ class gknoConfigurationFiles:
 
     # Generate the filename for the option node.  Since this is a filename stub, this will not have any
     # extension.
-    originalExtension = config.tools.getArgumentData(tool, baseArgument, 'extension')
+    originalExtension = config.tools.getArgumentAttribute(tool, baseArgument, 'extension')
     modifiedValues    = self.modifyExtensions(values, originalExtension, '', replace = True)
     for iteration in modifiedValues: modifiedValues[iteration] = [value.split('/')[-1] for value in modifiedValues[iteration]]
 
@@ -385,7 +385,7 @@ class gknoConfigurationFiles:
 
     # Set all of the file nodes with their values.
     fileNodeIDs = config.nodeMethods.getAssociatedFileNodeIDs(graph, optionNodeID)
-    extensions  = config.tools.getArgumentData(tool, argument, 'filename extensions')
+    extensions  = config.tools.getArgumentAttribute(tool, argument, 'filenameExtensions')
 
     # If the number of file nodes is not equal to the number of extensions, there is a problem.
     if len(fileNodeIDs) != len(extensions):

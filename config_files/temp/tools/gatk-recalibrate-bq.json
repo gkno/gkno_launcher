@@ -4,20 +4,23 @@
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx2g -jar",
   "help" : "--help|-h",
-  "arguments" : {
-    "--fasta-reference" : {
+  "arguments" : [
+    {
+      "description" : "the reference fasta file",
+      "long form argument" : "--fasta-reference",
       "short form argument" : "-r",
       "command line argument" : "--reference_sequence",
-      "description" : "the reference fasta file",
       "input" : true,
       "output" : false,
       "required" : true,
       "data type" : "string",
       "extension" : "fasta|fa"
     },
-    "--fasta-reference-index" : {
+    {
       "description" : "the reference fasta index file",
+      "long form argument" : "--fasta-reference-index",
       "short form argument" : "-ri",
+      "command line argument" : "--fasta-reference-index",
       "input" : true,
       "output" : false,
       "required" : true,
@@ -30,9 +33,11 @@
         "modify extension" : "append"
       }
     },
-    "--fasta-reference-dictionary" : {
+    {
       "description" : "the reference fasta dictionary file",
+      "long form argument" : "--fasta-reference-dictionary",
       "short form argument" : "-rd",
+      "command line argument" : "--fastq-reference-dictionary",
       "input" : true,
       "output" : false,
       "required" : true,
@@ -45,20 +50,22 @@
         "modify extension" : "replace"
       }
     },
-    "--in" : {
+    {
       "description" : "input SAM or BAM file(s)",
+      "long form argument" : "--in",
       "short form argument" : "-i",
       "command line argument" : "--input_file",
       "input" : true,
-      "use for filenames" : true,
       "output" : false,
       "required" : true,
       "data type" : "string",
       "extension" : "sam|bam"
     },
-    "--in-index" : {
+    {
       "description" : "input SAM or BAM index file(s)",
+      "long form argument" : "--in-index",
       "short form argument" : "-ii",
+      "command line argument" : "--in-index",
       "input" : true,
       "output" : false,
       "required" : true,
@@ -71,9 +78,11 @@
         "modify extension" : "append"
       }
     },
-    "--out" : {
+    {
       "description" : "the output recalibrated BAM file",
+      "long form argument" : "--out",
       "short form argument" : "-o",
+      "command line argument" : "--out",
       "input" : false,
       "output" : true,
       "required" : true,
@@ -86,8 +95,9 @@
         "add additional text" : "recalibrated"
       }
     },
-    "--covariates-file" : {
+    {
       "description" : "input covariates table recalibration file",
+      "long form argument" : "--covariates-file",
       "short form argument" : "-c",
       "command line argument" : "--BQSR",
       "input" : true,
@@ -96,8 +106,9 @@
       "data type" : "string",
       "extension" : "csv"
     },
-    "--analysis-type" : {
+    {
       "description" : "type of analysis to run",
+      "long form argument" : "--analysis-type",
       "short form argument" : "-a",
       "command line argument" : "--analysis_type",
       "input" : false,
@@ -106,8 +117,9 @@
       "data type" : "string",
       "extension" : "no extension"
     },
-    "--do-not-write-original-quals" : {
+    {
       "description" : "Do not write out the original qualities as an extra tag in the BAM file",
+      "long form argument" : "--do-not-write-original-quals",
       "short form argument" : "-noq",
       "command line argument" : "--doNotWriteOriginalQuals",
       "input" : false,
@@ -116,7 +128,7 @@
       "data type" : "flag",
       "extension" : "no extension"
     }
-  },
+  ],
 
   "instances" : {
     "default" : {

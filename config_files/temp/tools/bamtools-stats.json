@@ -6,7 +6,6 @@
   "help" : "--help|-h",
   "arguments" : [
     {
-      "ID" : "in",
       "description" : "the input BAM file.",
       "long form argument" :"--in",
       "short form argument" : "-i",
@@ -18,7 +17,6 @@
       "extension" : "bam"
     },
     {
-      "ID" : "insert",
       "description" : "summarize insert size data.",
       "long form argument" : "--insert",
       "short form argument" : "-n",
@@ -30,7 +28,6 @@
       "data type" : "flag"
     },
     {
-      "ID" : "out",
       "description" : "the output stats file.",
       "long form argument" : "--out",
       "short form argument" : "-o",
@@ -50,9 +47,9 @@
   ],
 
   "argument order" : [
-    "in",
-    "insert",
-    "out"
+    "--in",
+    "--insert",
+    "--out"
   ],
 
   "instances" : {

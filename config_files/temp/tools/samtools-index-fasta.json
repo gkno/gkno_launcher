@@ -4,10 +4,12 @@
   "executable" : "samtools",
   "modifier" : "faidx",
   "help" : "--help|-h",
-  "arguments" : {
-    "--fasta-reference" : {
+  "arguments" : [
+    {
       "description" : "Input FASTA file.",
+      "long form argument" : "--fasta-reference",
       "short form argument" : "-r",
+      "command line argument" : "--fasta-reference",
       "input" : true,
       "output" : false,
       "required" : true,
@@ -15,9 +17,11 @@
       "extension" : "fasta|fa",
       "modify argument name on command line" : "hide"
     },
-    "--output" : {
+    {
       "description" : "Output index file.",
-      "short form argument" : "-r",
+      "long form argument" : "--output",
+      "short form argument" : "-o",
+      "command line argument" : "--output",
       "input" : false,
       "output" : true,
       "required" : true,
@@ -30,7 +34,7 @@
         "modify extension" : "append"
       }
     }
-  },
+  ],
 
   "instances" : {
     "default" : {

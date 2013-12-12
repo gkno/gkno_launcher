@@ -143,7 +143,7 @@ def main():
 
       # TODO VALIDATION MODULE IS INCOMPLETE.  CONFIGURATIONCLASS NEEDS TO BE
       # MODIFIED TO INCLUDE THIS.
-      instances = config.pipeline.processConfigurationData(pipelineConfigurationData, pipelineFile)
+      instances = config.pipeline.processConfigurationData(pipelineConfigurationData, runName)
 
     # If gkno is being run in tool mode, set the phoneHomeID.
     else: phoneHomeID = 'tools/' + runName

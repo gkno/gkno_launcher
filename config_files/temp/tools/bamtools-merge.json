@@ -6,7 +6,6 @@
   "help" : "--help|-h",
   "arguments" : [
     {
-      "ID" : "in",
       "description" : "the input BAM file.",
       "long form argument" : "--in",
       "short form argument" : "-i",
@@ -19,7 +18,6 @@
       "allow multiple values" : true
     },
     {
-      "ID" : "in-list",
       "description" : "the input BAM file list (in json format).",
       "long form argument" : "--in-list",
       "short form argument" : "-l",
@@ -33,7 +31,6 @@
       "apply by repeating this argument" : "--in"
     },
     {
-      "ID" : "out",
       "description" : "the output BAM file.",
       "long form argument" : "--out",
       "short form argument" : "-o",
@@ -52,7 +49,6 @@
       }
     },
     {
-      "ID" : "region",
       "description" : "only read data from this genomic region.",
       "long form argument" : "--region",
       "short form argument" : "-r",

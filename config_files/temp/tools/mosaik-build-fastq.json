@@ -3,9 +3,10 @@
   "path" : "MOSAIK/bin",
   "executable" : "MosaikBuild",
   "help" : "--help|-h",
-  "arguments" : {
-    "--fastq" : {
+  "arguments" : [
+    {    
       "description" : "The FASTQ file",
+      "long form argument" : "--fastq",
       "short form argument" : "-q",
       "command line argument" : "-q",
       "input" : true,
@@ -14,8 +15,9 @@
       "data type" : "string",
       "extension" : "fastq|fq|fastq.gz|fq.gz"
     },
-    "--fastq2" : {
+    {    
       "description" : "The FASTQ 2nd mate",
+      "long form argument" : "--fastq2",
       "short form argument" : "-q2",
       "command line argument" : "-q2",
       "input" : true,
@@ -24,8 +26,9 @@
       "data type" : "string",
       "extension" : "fastq|fq|fastq.gz|fq.gz"
     },
-    "--read-archive" : {
+    {    
       "description" : "The output read file",
+      "long form argument" : "--read-archive",
       "short form argument" : "-a",
       "command line argument" : "-out",
       "input" : false,
@@ -39,8 +42,9 @@
         "modify extension" : "replace"
       }
     },
-    "--read-group-id" : {
+    {    
       "description" : "Read group ID. e.g. SRR009060",
+      "long form argument" : "--read-group-id",
       "short form argument" : "-id",
       "command line argument" : "-id",
       "input" : false,
@@ -49,8 +53,9 @@
       "extension" : "no extension",
       "data type" : "string"
     },
-    "--median-fragment-length" : {
+    {    
       "description" : "The median length of the read fragments.",
+      "long form argument" : "--median-fragment-length",
       "short form argument" : "-mf",
       "command line argument" : "-mfl",
       "input" : false,
@@ -59,8 +64,9 @@
       "extension" : "no extension",
       "data type" : "integer"
     },
-    "--sample-name" : {
+    {    
       "description" : "Sample name. e.g. NA12878",
+      "long form argument" : "--sample-name",
       "short form argument" : "-s",
       "command line argument" : "-sam",
       "input" : false,
@@ -69,8 +75,9 @@
       "extension" : "no extension",
       "data type" : "string"
     },
-    "--center-name" : {
+    {    
       "description" : "The sequencing center name.",
+      "long form argument" : "--center-name",
       "short form argument" : "-c",
       "command line argument" : "-cn",
       "input" : false,
@@ -79,8 +86,9 @@
       "extension" : "no extension",
       "data type" : "string"
     },
-    "--lane" : {
+    {    
       "description" : "The library name. e.g. g1k-sc-NA18944-JPT-1.",
+      "long form argument" : "--lane",
       "short form argument" : "-l",
       "command line argument" : "-ln",
       "input" : false,
@@ -89,8 +97,9 @@
       "extension" : "no extension",
       "data type" : "string"
     },
-    "--platform" : {
+    {    
       "description" : "The platform unit. e.g. IL12_490_5.",
+      "long form argument" : "--platform",
       "short form argument" : "-p",
       "command line argument" : "-pu",
       "input" : false,
@@ -99,9 +108,10 @@
       "extension" : "no extension",
       "data type" : "string"
     },
-    "--sequencing-technology" : {
+    {    
       "description" : "Sets the sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
-      "short form argument" : "-s",
+      "long form argument" : "--sequencing-technology",
+      "short form argument" : "-st",
       "command line argument" : "-st",
       "input" : false,
       "output" : false,
@@ -109,7 +119,7 @@
       "extension" : "no extension",
       "data type" : "string"
     }
-  },
+  ],
 
   "instances" : {
     "default" : {

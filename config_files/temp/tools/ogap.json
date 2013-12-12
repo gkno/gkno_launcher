@@ -5,10 +5,12 @@
   "help" : "--help|-h",
   "hide tool" : true,
   "input is stream" : true,
-  "arguments" : {
-    "--in" : {
+  "arguments" : [
+    {    
       "description" : "The input BAM file.",
+      "long form argument" : "--in",
       "short form argument" : "-i",
+      "command line argument" : "--in",
       "input" : true,
       "output" : false,
       "required" : true,
@@ -18,9 +20,11 @@
       "hide in help" : true,
       "include on command line" : false
     },
-    "--out" : {
+    {    
       "description" : "The output BAM file.",
+      "long form argument" : "--out",
       "short form argument" : "-o",
+      "command line argument" : "--out",
       "input" : false,
       "output" : true,
       "required" : true,
@@ -37,70 +41,84 @@
         "add additional text" : "gap_extended"
       }
     },
-    "--fasta-reference" : {
+    {    
       "description" : "FASTA reference file to use for realignment (required)",
+      "long form argument" : "--fasta-reference",
       "short form argument" : "-r",
+      "command line argument" : "--fastq-reference",
       "input" : true,
       "output" : false,
       "required" : true,
       "extension" : "fa|fasta",
       "data type" : "string"
     },
-    "--flanking-window" : {
+    {    
       "description" : "The number of bases on the left and right to attempt to align to (default 50bp).  This limits the maximum detectable indel length.",
+      "long form argument" : "--flanking-window",
       "short form argument" : "-w",
+      "command line argument" : "--flanking-window",
       "input" : false,
       "output" : false,
       "required" : false,
       "extension" : "no extension",
       "data type" : "integer"
     },
-    "--mismatch-qsum" : {
+    {    
       "description" : "Trigger realignment if the sum of quality scores of mismatched bases is >= N",
+      "long form argument" : "--mismatch-qsum",
       "short form argument" : "-mq",
+      "command line argument" : "--mismatch-qsum",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "integer",
       "extension" : "no extension"
     },
-    "--soft-clip-qsum" : {
+    {    
       "description" : "Trigger realignment if the sum of quality scores of soft clipped bases is >= N",
+      "long form argument" : "--soft-clip-qsum",
       "short form argument" : "-sq",
+      "command line argument" : "--soft-clip-qsum",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "integer",
       "extension" : "no extension"
     },
-    "--soft-clip-limit" : {
+    {    
       "description" : "Only accept realignments if they have <= N soft clips",
+      "long form argument" : "--soft-clip-limit",
       "short form argument" : "-sl",
+      "command line argument" : "--soft-clip-limit",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "integer",
       "extension" : "no extension"
     },
-    "--entropy-gap-open" : {
+    {    
       "description" : "use entropy scaling for the gap open penalty",
+      "long form argument" : "--entropy-gap-open",
       "short form argument" : "-e",
+      "command line argument" : "--entropy-gap-open",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "flag",
       "extension" : "no extension"
     },
-    "--repeat-gap-extend" : {
+    {    
       "description" : "penalize non-repeat-unit gaps in repeat sequence (default 15.0, set to 0 to disable)",
+      "long form argument" : "--repeat-gap-extend",
       "short form argument" : "-re",
+      "command line argument" : "--repeat-gap-extend",
       "input" : false,
       "output" : false,
       "required" : false,
       "data type" : "integer",
       "extension" : "no extension"
     }
-  },
+  ],
 
   "instances" : {
     "default" : {

@@ -484,9 +484,12 @@ class commandLine:
           # the task. Determine which of these file nodes links into the task.
           attachedFileNodeIDs = []
           for fileNodeID in fileNodeIDs:
+            print('HELLO', task, fileNodeID, isInput, config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument'))
             if isInput:
+              print('\t', config.edgeMethods.checkIfEdgeExists(graph, fileNodeID, task))
               if config.edgeMethods.checkIfEdgeExists(graph, fileNodeID, task): attachedFileNodeIDs.append(fileNodeID)
             else:
+              print('\t', config.edgeMethods.checkIfEdgeExists(graph, task, fileNodeID))
               if config.edgeMethods.checkIfEdgeExists(graph, task, fileNodeID): attachedFileNodeIDs.append(fileNodeID)
 
           # Determine if the file node is from a filename stub.
@@ -499,7 +502,7 @@ class commandLine:
             tool = config.pipeline.tasks[task]
             if isInput: argument = config.edgeMethods.getEdgeAttribute(graph, attachedFileNodeIDs[0], task, 'argument')
             else: argument = config.edgeMethods.getEdgeAttribute(graph, task, attachedFileNodeIDs[0], 'argument')
-            extensions = config.tools.getArgumentData(tool, argument, 'filename extensions')
+            extensions = config.tools.getArgumentAttribute(tool, argument, 'filenameExtensions')
 
             # Check that the number of file nodes is the same as the number of extensions.
             if len(extensions) != len(attachedFileNodeIDs):

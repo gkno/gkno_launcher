@@ -6,9 +6,12 @@
   "hide tool" : true,
   "output is stream" : true,
   "help" : "--help|-h",
-  "arguments" : {
-    "-A" : {
+  "arguments" : [
+    {    
       "description" : "When used jointly with -r this option overwrites the original base quality.",
+      "long form argument" : "--overwrite-original-qualities",
+      "short form argument" : "-oq",
+      "command line argument" : "-A",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -19,8 +22,11 @@
         "set"
       ]
     },
-    "-e" : {
+    {    
       "description" : "Convert the read base to = if it is identical to the aligned reference base.",
+      "long form argument" : "--convert-identical",
+      "short form argument" : "-c",
+      "command line argument" : "-e",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -28,8 +34,11 @@
       "extension" : "no extension",
       "type" : "flag"
     },
-    "-u" : {
+    {    
       "description" : "Output uncompressed BAM.",
+      "long form argument" : "--output-uncompressed",
+      "short form argument" : "-ou",
+      "command line argument" : "-u",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -40,8 +49,11 @@
         "set"
       ]
     },
-    "-b" : {
+    {    
       "description" : "Output compressed BAM.",
+      "long form argument" : "--output-compressed",
+      "short form argument" : "-oc",
+      "command line argument" : "-b",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -49,8 +61,11 @@
       "extension" : "no extension",
       "type" : "flag"
     },
-    "-S" : {
+    {    
       "description" : "The input is SAM with header lines.",
+      "long form argument" : "--input-is-sam",
+      "short form argument" : "-iss",
+      "command line argument" : "-S",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -58,8 +73,11 @@
       "extension" : "no extension",
       "type" : "flag"
     },
-    "-C" : {
+    {    
       "description" : "Coefficient to cap mapping quality of poorly mapped reads. See the pileup command for details. [0]",
+      "long form argument" : "--cap-mapping-quality",
+      "short form argument" : "-cmq",
+      "command line argument" : "-C",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -67,8 +85,11 @@
       "extension" : "no extension",
       "type" : "integer"
     },
-    "-r" : {
+    {    
       "description" : "Compute the BQ tag (without -A) or cap base quality by BAQ (with -A).",
+      "long form argument" : "--compute-BQ-or-BAQ",
+      "short form argument" : "-cb",
+      "command line argument" : "-r",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -79,8 +100,11 @@
         "set"
       ]
     },
-    "-E" : {
+    {    
       "description" : "Extended BAQ calculation. This option trades specificity for sensitivity, though the effect is minor.",
+      "long form argument" : "--extended",
+      "short form argument" : "-e",
+      "command line argument" : "-E",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -91,8 +115,11 @@
         "set"
       ]
     },
-    "--in" : {
+    {    
       "description" : "Input BAM file.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "command line argument" : "--in",
       "input" : true,
       "output" : false,
       "required" : true,
@@ -106,8 +133,9 @@
       },
       "modify argument name on command line" : "hide"
     },
-    "--reference-fasta" : {
+    {    
       "description" : "Reference fasta file.",
+      "long form argument" : "--reference-fasta",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -116,19 +144,21 @@
       "extension" : "no extension",
       "modify argument name on command line" : "hide"
     }
-  },
+  ],
+
   "argument order" : [
-    "-A",
-    "-e",
-    "-u",
-    "-b",
-    "-S",
-    "-C",
-    "-r",
-    "-E",
+    "--overwrite-original-qualities",
+    "--convert-identical",
+    "--output-uncompressed",
+    "--output-compressed",
+    "--input-is-sam",
+    "--cap-mappinq-quality",
+    "--compute-BQ-or-BAQ",
+    "--extended",
     "--in",
     "--reference-fasta"
   ],
+
   "instances" : {
     "default" : {
       "description" : "Default instance requires the users input for all files."

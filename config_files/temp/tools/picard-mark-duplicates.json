@@ -7,7 +7,6 @@
   "help" : "--help|-h",
   "arguments" : [
     {
-      "ID" : "in",
       "description" : "the input BAM file.",
       "long form argument" : "--in",
       "short form argument" : "-i",
@@ -19,7 +18,6 @@
       "extension" : "bam"
     },
     {
-      "ID" : "out",
       "description" : "the output BAM file.",
       "long form argument" : "--out",
       "short form argument" : "-o",
@@ -37,7 +35,6 @@
       }
     },
     {
-      "ID" : "metrics",
       "description" : "File to write duplication metrics to.",
       "long form argument" : "--metrics",
       "short form argument" : "-m",
@@ -54,7 +51,6 @@
       }
     },
     {
-      "ID" : "temp-dir",
       "description" : "Temporary directory for storing temporary data.",
       "long form argument" : "--temp-dir",
       "short form argument" : "-t",

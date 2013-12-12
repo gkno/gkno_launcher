@@ -3,9 +3,10 @@
   "path" : "MOSAIK/bin",
   "executable" : "MosaikBuild",
   "help" : "--help|-h",
-  "arguments" : {
-    "--fasta-reference" : {
+  "arguments" : [
+    {
       "description" : "The FASTA reference sequence file",
+      "long form argument" : "--fasta-reference",
       "short form argument" : "-r",
       "command line argument" : "-fr",
       "input" : true,
@@ -14,8 +15,9 @@
       "data type" : "string",
       "extension" : "fasta|fa"
     },
-    "--mosaik-reference" : {
+    {    
       "description" : "The output Mosaik reference file",
+      "long form argument" : "--mosaik-reference",
       "short form argument" : "-m",
       "command line argument" : "-oa",
       "input" : false,
@@ -29,7 +31,7 @@
         "modify extension" : "replace"
       }
     }
-  },
+  ],
 
   "instances" : {
     "default" : {

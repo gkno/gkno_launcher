@@ -4,9 +4,10 @@
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx2g -jar",
   "help" : "--help|-h",
-  "arguments" : {
-    "--fasta-reference" : {
+  "arguments" : [
+    {
       "description" : "the reference fasta file",
+      "long form argument" : "--fasta-reference",
       "short form argument" : "-r",
       "command line argument" : "--reference_sequence",
       "input" : true,
@@ -15,9 +16,11 @@
       "data type" : "string",
       "extension" : "fasta|fa"
     },
-    "--fasta-reference-index" : {
+    {
       "description" : "the reference fasta index file",
+      "long form argument" : "--fasta-reference-index",
       "short form argument" : "-ri",
+      "command line argument" : "--fasta-reference-index",
       "input" : true,
       "output" : false,
       "required" : true,
@@ -30,9 +33,11 @@
         "modify extension" : "append"
       }
     },
-    "--fasta-reference-dictionary" : {
+    {
       "description" : "the reference fasta dictionary file",
+      "long form argument" : "--fasta-reference-dictionary",
       "short form argument" : "-rd",
+      "command line argument" : "--fasta-reference-dictionary",
       "input" : true,
       "output" : false,
       "required" : true,
@@ -45,8 +50,9 @@
         "modify extension" : "replace"
       }
     },
-    "--in" : {
+    {
       "description" : "input SAM or BAM file(s)",
+      "long form argument" : "--in",
       "short form argument" : "-i",
       "command line argument" : "--input_file",
       "input" : true,
@@ -55,9 +61,11 @@
       "data type" : "string",
       "extension" : "sam|bam"
     },
-    "--in-index" : {
+    {
       "description" : "input SAM or BAM index file(s)",
+      "long form argument" : "--in-index",
       "short form argument" : "-ii",
+      "command line argument" : "--in-index",
       "input" : true,
       "output" : false,
       "required" : true,
@@ -70,8 +78,9 @@
         "modify extension" : "append"
       }
     },
-    "--out" : {
+    {
       "description" : "output covariates table recalibration file",
+      "long form argument" : "--out",
       "short form argument" : "-o",
       "command line argument" : "--out",
       "input" : false,
@@ -85,8 +94,9 @@
         "modify extension" : "replace"
       }
     },
-    "--known-sites" : {
+    {
       "description" : "vcf file containing known variant sites",
+      "long form argument" : "--known-sites",
       "short form argument" : "-k",
       "command line argument" : "-knownSites",
       "input" : true,
@@ -95,8 +105,9 @@
       "data type" : "string",
       "extension" : "vcf|vcf.gz"
     },
-    "--logging-level" : {
+    {
       "description" : "minimum level of logging",
+      "long form argument" : "--logging-level",
       "short form argument" : "-l",
       "command line argument" : "--logging_level",
       "input" : false,
@@ -106,8 +117,9 @@
       "short form argument" : "-l",
       "extension" : "vcf"
     },
-    "--analysis-type" : {
+    {
       "description" : "type of analysis to run",
+      "long form argument" : "--analysis-type",
       "short form argument" : "-a",
       "command line argument" : "--analysis_type",
       "input" : false,
@@ -116,9 +128,11 @@
       "data type" : "string",
       "extension" : "no extension"
     },
-    "--covariate" : {
+    {
       "description" : "covariates to be used",
+      "long form argument" : "--covariate",
       "short form argument" : "-c",
+      "command line argument" : "--covariate",
       "input" : false,
       "output" : false,
       "required" : false,
@@ -126,8 +140,9 @@
       "extension" : "no extension",
       "allow multiple values" : true
     },
-    "--disable-indel-quals" : {
+    {
       "description" : "disable indel recalibration (not available in GATK-Lite)",
+      "long form argument" : "--disable-indel-quals",
       "short form argument" : "-d",
       "command line argument" : "--disable_indel_quals",
       "input" : false,
@@ -136,7 +151,7 @@
       "data type" : "flag",
       "extension" : "no extension"
     }
-  },
+  ],
 
   "instances" : {
     "default" : {

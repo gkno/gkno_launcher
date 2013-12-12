@@ -1,33 +1,33 @@
 {
-  "description" : "Join multiple files",
+  "description" : "Compress a file using gzip.",
   "path" : "no path",
   "hide tool" : true,
-  "executable" : "cat",
+  "executable" : "gzip",
   "help" : "--help|-h",
   "arguments" : [
     {
-      "description" : "Input files to be joined.",
+      "description" : "The file to be compressed.",
       "long form argument" : "--in",
       "short form argument" : "-i",
-      "command line argument" : "none",
+      "command line argument" : "--in",
       "input" : true,
       "output" : false,
       "required" : true,
       "data type" : "string",
       "extension" : "no extension",
-      "allow multiple values" : true,
-      "modify argument name on command line" : "hide"
+      "modify argument name on command line" : "hide",
+      "if input is stream" : "do not include"
     },
     {
-      "description" : "the output concatenated file.",
+      "description" : "The compressed output file.",
       "long form argument" : "--out",
       "short form argument" : "-o",
-      "command line argument" : "none",
+      "command line argument" : "--out",
       "input" : false,
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "no extension",
+      "extension" : "gz",
       "modify argument name on command line" : "stdout"
     }
   ],
@@ -46,14 +46,14 @@
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
-          "ID" : "input",
-          "values" : ["../resources/tutorial/current/test_genome.fa", "../resources/tutorial/current/mobile_element_sequences.fa"],
-          "argument" : "--in"
+          "ID" : "in",
+          "argument" : "--in",
+          "values" : ["../resources/tutorial/current/simulated_reads.bam"]
         },
         {
-          "ID" : "output",
-          "values" : ["concatenated_file.fa"],
-          "argument" : "--out"
+          "ID" : "out",
+          "argument" : "--out",
+          "values" : ["simulated_reads.compressed.gz"]
         },
         {
           "ID" : "output path",
