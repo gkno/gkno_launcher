@@ -214,11 +214,8 @@ def main():
 
     # Define the tasks structure. Since a single tool is being run, this is simply the name
     # of the tool. Set the tasks structure in the pipeline configuration object as well.
-    tasks                 = {}
-    tasks[runName]        = runName
-    config.pipeline.tasks = tasks
-    config.pipeline.workflow.append(runName)
-    config.buildTaskGraph(pipelineGraph, tasks)
+    config.pipeline.definePipelineAttributesForTool(runName)
+    config.buildTaskGraph(pipelineGraph, config.pipeline.taskAttributes.keys())
 
   # Parse the command line and put all of the arguments into a list.
   if isVerbose: write.writeReadingCommandLineArguments()
