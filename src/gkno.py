@@ -95,6 +95,10 @@ def main():
   isPipeline                    = commands.setMode(admin.isRequested)
   runName                       = commands.getPipelineName(isPipeline)
 
+  # Set the name of the pipeline/tool as a general attribute of the graph.
+  pipelineGraph.graph['name']       = runName
+  pipelineGraph.graph['isPipeline'] = isPipeline
+
   # Read in information from the gkno specific configuration file.
   gknoConfig.gknoConfigurationData = config.fileOperations.readConfigurationFile(sourcePath + '/config_files/gknoConfiguration.json')
   #TODO SORT OUT VALIDATION OF GKNO CONFIGURATION FILE>
@@ -143,21 +147,17 @@ def main():
 
       # TODO VALIDATION MODULE IS INCOMPLETE.  CONFIGURATIONCLASS NEEDS TO BE
       # MODIFIED TO INCLUDE THIS.
-      instances = config.pipeline.processConfigurationData(pipelineConfigurationData, runName)
+      instances = config.pipeline.processConfigurationData(pipelineConfigurationData, runName, gknoConfig.jsonFiles['tools'])
 
     # If gkno is being run in tool mode, set the phoneHomeID.
     else: phoneHomeID = 'tools/' + runName
-
-  # Define the list to hole the pipeline workflow.
-  workflow = []
 
   # Process all of the tool configuration files that are used.
   if commands.mode == 'pipeline':
 
     # Find all of the tasks to be used in the pipeline.
-    tasks = config.pipeline.getTasks()
-    for task in tasks:
-      tool = tasks[task]
+    for task in config.pipeline.taskAttributes:
+      tool = config.pipeline.taskAttributes[task].tool
 
       # FIXME TEMPORARY LOCATION OF CONFIG FILES.  REMOVE TEMP WHEN COMPLETE.
       toolFile              = sourcePath + '/config_files/temp/tools/' + tool + '.json'
@@ -168,25 +168,26 @@ def main():
       # Ensure that the tool configuration file is well constructed and put all of the data
       # in data structures.  Each tool in each configuration file gets its own data structure.
       config.tools.processConfigurationData(tool, toolConfigurationData)
+      del(toolConfigurationData)
 
     # For each task in the pipeline, build an individual graph consisting of a task node, input
     # option nodes (all input and output file arguments are treated as option nodes) and finally
     # all input and output files are given file nodes.  Nodes are merged later to generate the
     # final pipeline.
-    config.buildTaskGraph(pipelineGraph, tasks)
+    config.buildTaskGraph(pipelineGraph, config.pipeline.taskAttributes.keys())
 
     # Attach additional information from the pipeline configuration file to the nodes.
-    config.assignPipelineAttributes(pipelineGraph, tasks)
+    config.assignPipelineAttributes(pipelineGraph, config.pipeline.taskAttributes.keys())
 
     # Add the pipeline arguments to the nodeIDs dictionary.
-    config.nodeMethods.getPipelineArgumentNodes(pipelineGraph, config.pipeline, config.tools)
+    config.nodeMethods.getPipelineArgumentNodes(pipelineGraph, config)
   
     # Now that every task in the pipeline has an individual graph built, use the information
     # in the pipeline configuration file to merge nodes and build the final pipeline graph.
     config.mergeNodes(pipelineGraph)
   
     # Generate the workflow using a topological sort of the pipeline graph.
-    workflow = config.generateWorkflow(pipelineGraph)
+    config.pipeline.workflow = config.generateWorkflow(pipelineGraph)
   
     # Loop over all of the nodes and determine which require a value.  Also check to see if there
     # are missing edges.  For example, if a tool has an argument that is required, but is not included
@@ -196,7 +197,7 @@ def main():
 
     # If help was requested on this specific pipeline, the information now exists to generate
     # the help information.
-    if gknoHelp.specificPipelineHelp: gknoHelp.specificPipelineUsage(pipelineGraph, config, gknoConfig, runName, workflow, sourcePath)
+    if gknoHelp.specificPipelineHelp: gknoHelp.specificPipelineUsage(pipelineGraph, config, gknoConfig, runName, sourcePath)
 
   # If being run in the tool mode.
   elif commands.mode == 'tool':
@@ -209,13 +210,14 @@ def main():
     # Ensure that the tool configuration file is well constructed and put all of the data
     # in data structures.  Each tool in each configuration file gets its own data structure.
     instances = config.tools.processConfigurationData(runName, toolConfigurationData)
+    del(toolConfigurationData)
 
     # Define the tasks structure. Since a single tool is being run, this is simply the name
     # of the tool. Set the tasks structure in the pipeline configuration object as well.
     tasks                 = {}
     tasks[runName]        = runName
     config.pipeline.tasks = tasks
-    workflow.append(runName)
+    config.pipeline.workflow.append(runName)
     config.buildTaskGraph(pipelineGraph, tasks)
 
   # Parse the command line and put all of the arguments into a list.
@@ -226,7 +228,7 @@ def main():
   # If help was requested or there were problems (e.g. the tool name or pipeline
   # name did not exist), print out the required usage information.
   if gknoHelp.printHelp and not gknoHelp.specificPipelineHelp:
-    gknoHelp.printUsage(pipelineGraph, config, workflow, admin, __version__, __date__, sourcePath, runName)
+    gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, sourcePath, runName)
 
   # Populate the tl.arguments structure with the arguments with defaults from the tool configuration files.
   # The x.arguments structures for each of the classes used in gkno has the same format (a dictionary whose
@@ -246,7 +248,7 @@ def main():
     else: errors.terminate()
   
   # Print information about the pipeline to screen.
-  if isPipeline and isVerbose: write.writePipelineWorkflow(pipelineGraph, config, workflow, gknoHelp)
+  if isPipeline and isVerbose: write.writePipelineWorkflow(pipelineGraph, config, gknoHelp)
 
   # Check if an instance was requested by the user.  If so, get the data and add the values to the data nodes.
   if isVerbose: write.writeCheckingInstanceInformation()
@@ -310,12 +312,17 @@ def main():
  
   # Now that the command line argument has been parsed, all of the values supplied have been added to the
   # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
-  commands.mirrorFileNodeValues(pipelineGraph, config, workflow)
+  commands.mirrorFileNodeValues(pipelineGraph, config)
 
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
-  gknoConfig.constructFilenames(pipelineGraph, config, workflow)
+  gknoConfig.constructFilenames(pipelineGraph, config)
+
+  # Check that all required files and values have been set. All files and parameters that are listed as
+  # required by the infividual tools should already have been checked, but if the pipeline has some
+  # additional requirements, these may not yet have been checked.
+  config.checkRequiredFiles(pipelineGraph)
 
   # Check that all files have a path set.
   gknoConfig.setFilePaths(pipelineGraph, config)
@@ -335,14 +342,14 @@ def main():
   gknoConfig.checkNodeValues(pipelineGraph, config)
 
   # Find the maximum number of datasets for each task.
-  config.getNumberOfDataSets(pipelineGraph, workflow)
+  config.getNumberOfDataSets(pipelineGraph)
 
   # Identify file nodes that are streaming.
-  config.identifyStreamingNodes(pipelineGraph, workflow)
+  config.identifyStreamingNodes(pipelineGraph)
 
   # If there are multiple runs, multiple make files are created, using only the values for individual
   # iterations.
-  make.determineMakefileStructure(pipelineGraph, config, workflow, hasMultipleRuns)
+  make.determineMakefileStructure(pipelineGraph, config, hasMultipleRuns)
   makeFilename = make.getFilename(runName)
 
   # Set the output path for use in the makefile generation.
@@ -384,7 +391,7 @@ def main():
 
       # Determine the task in which each intermediate file is last used. This will allow the files to
       # be deleted as early as possible in the pipeline.
-      deleteList = config.setWhenToDeleteFiles(pipelineGraph, graphIntermediates, workflow)
+      deleteList = config.setWhenToDeleteFiles(pipelineGraph, graphIntermediates)
 
       # Search through the tasks in the workflow and check for tasks outputting to a stream. Generate a
       # list of tasks for generating the makefiles. Each entry in the list should be a list of all tasks

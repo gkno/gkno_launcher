@@ -348,7 +348,7 @@ class helpClass:
 
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
-  def specificPipelineUsage(self, graph, config, gknoConfig, name, workflow, path):
+  def specificPipelineUsage(self, graph, config, gknoConfig, name, path):
     length = len(name) + 26
     print('=' * length)
     print('  gkno pipeline usage - ', name, sep = '', file = sys.stdout)
@@ -365,8 +365,8 @@ class helpClass:
     # Write out the pipeline workflow.
     print('     Workflow:', file = sys.stdout)
     length = 0
-    for task in workflow: length = len(task) if (len(task) > length) else length
-    for task in workflow:
+    for task in config.pipeline.workflow: length = len(task) if (len(task) > length) else length
+    for task in config.pipeline.workflow:
       associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
       description    = config.nodeMethods.getGraphNodeAttribute(graph, task, 'description')
       self.writeFormattedText(task + ":", description, length + 4, 2, '')
@@ -430,9 +430,9 @@ class helpClass:
     # in order to modify parameters for the specified tool.
     print('     The following tasks can have parameters modified:', file = sys.stdout)
     length = 0
-    for task in workflow: length = len(task) if (len(task) > length) else length
+    for task in config.pipeline.workflow: length = len(task) if (len(task) > length) else length
 
-    for task in sorted(workflow):
+    for task in sorted(config.pipeline.workflow):
       associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
       isHidden       = self.availableTools[associatedTool][1]
       if not isHidden: self.writeFormattedText('--' + task + ':', associatedTool, length + 5, 2, '')

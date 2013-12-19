@@ -132,13 +132,13 @@ class gknoConfigurationFiles:
     
       # Join the option node to the gkno task node.
       attributes = edgeAttributes()
-      attributes.argument  = self.gknoConfigurationData['gkno options'][nodeID]['argument']
-      attributes.shortForm = self.gknoConfigurationData['gkno options'][nodeID]['short form']
+      attributes.longFormArgument  = self.gknoConfigurationData['gkno options'][nodeID]['argument']
+      attributes.shortFormArgument = self.gknoConfigurationData['gkno options'][nodeID]['short form']
       graph.add_edge(nodeID, 'gkno', attributes = attributes)
 
       # Add the arguments to the list of valid gkno specific arguments.
-      self.validLongFormArguments[attributes.argument]   = attributes.shortForm
-      self.validShortFormArguments[attributes.shortForm] = attributes.argument
+      self.validLongFormArguments[attributes.longFormArgument]   = attributes.shortFormArgument
+      self.validShortFormArguments[attributes.shortFormArgument] = attributes.longFormArgument
 
   # Check if a command line argument is a gkno specific argument.
   def checkPipelineArgument(self, graph, config, argument):
@@ -146,8 +146,8 @@ class gknoConfigurationFiles:
     # Next, check if the argument is a gkno specific pipeline argument.
     for nodeID in graph.nodes(data = False):
       if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'nodeType') == 'general':
-        edgeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'argument')
-        shortForm    = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'shortForm')
+        edgeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'longFormArgument')
+        shortForm    = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'shortFormArgument')
         if edgeArgument == argument: return edgeArgument
         elif shortForm == argument: return edgeArgument
 
@@ -225,7 +225,7 @@ class gknoConfigurationFiles:
 
           # Get the nodeID, for this argument.
           for nodeID in config.nodeMethods.getNodes(graph, 'general'):
-            nodeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, graph.successors(nodeID)[0], 'argument')
+            nodeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, graph.successors(nodeID)[0], 'longFormArgument')
             if argument == nodeArgument: break
 
           # Update the values in the node.
@@ -259,24 +259,24 @@ class gknoConfigurationFiles:
       if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'nodeType') == 'general':
 
         # Check if the supplied argument is the same as the argument given for this node.
-        if argument == graph[nodeID]['gkno']['attributes'].argument: return nodeID
+        if argument == graph[nodeID]['gkno']['attributes'].longFormArgument: return nodeID
 
         # Check if the supplied argument is the same as the short formargument given for this node.
-        if argument == graph[nodeID]['gkno']['attributes'].shortForm: return nodeID
+        if argument == graph[nodeID]['gkno']['attributes'].shortFormArgument: return nodeID
 
     return None
 
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
-  def constructFilenames(self, graph, config, workflow):
-    for task in workflow:
+  def constructFilenames(self, graph, config):
+    for task in config.pipeline.workflow:
       tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
 
       # Input files are predecessor nodes to the task.  Deal with the input files first.
       for fileNodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
-        argument     = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'argument')
-        shortForm    = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'shortForm')
+        argument     = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'longFormArgument')
+        shortForm    = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'shortFormArgument')
         optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
                                  
         # Use the argument to get information about the argument.
@@ -292,10 +292,10 @@ class gknoConfigurationFiles:
             description = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
   
             # Check if this argument is a pipeline argument.
-            if task in config.pipeline.pipelineArgument:
-              if argument in config.pipeline.pipelineArgument[task]:
-                pipelineLongForm  = config.pipeline.pipelineArgument[task][argument]
-                pipelineShortForm = config.pipeline.argumentData[pipelineLongForm].shortForm
+            if task in config.pipeline.taskArgument:
+              if argument in config.pipeline.taskArgument[task]:
+                pipelineLongForm  = config.pipeline.taskArgument[task][argument]
+                pipelineShortForm = config.pipeline.pipelineArguments[pipelineLongForm].shortFormArgument
                 self.errors.missingArgument(graph, config, pipelineLongForm, pipelineShortForm, description)
             self.errors.missingArgument(graph, config, argument, shortForm, description)
 
@@ -304,7 +304,7 @@ class gknoConfigurationFiles:
                                  
       # Now deal with output files,  These are all successor nodes.
       for fileNodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
-        argument     = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'argument')
+        argument     = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'longFormArgument')
         optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
                                  
         isRequired = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
@@ -352,11 +352,11 @@ class gknoConfigurationFiles:
 
   # Construct the filenames for filename stub arguments.
   def constructFilenameFromToolArgumentStub(self, graph, config, task, fileNodeID, isInput):
-    tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-    optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-    argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
-    instructions     = config.tools.getArgumentAttribute(tool, argument, 'constructionInstructions')
-    baseArgument     = instructions['use argument']
+    tool         = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+    optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+    argument     = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
+    instructions = config.tools.getArgumentAttribute(tool, argument, 'constructionInstructions')
+    baseArgument = instructions['use argument']
 
     # Get the ID of the node corresponding to the baseArgument.
     # TODO SORT OUT THE CASE WHERE THERE ARE MULTIPLE VALUES
@@ -393,13 +393,14 @@ class gknoConfigurationFiles:
       print('Number of file nodes != number of extensions - gknoConfigurationFiles.constructFilenameFromToolArgumentStub')
       self.errors.terminate()
 
-    for nodeID in fileNodeIDs:
+    # Loop over all of the file nodes and set the values.
+    for fileNodeID in fileNodeIDs:
       fileValues = {}
-      extension = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'allowedExtensions')
+      extension  = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'allowedExtensions')[0]
       for iteration in modifiedValues:
         fileValues[iteration] = []
         for value in modifiedValues[iteration]: fileValues[iteration].append(value + extension)
-      config.nodeMethods.replaceGraphNodeValues(graph, nodeID, fileValues)
+      config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, fileValues)
 
   # Add additional argument values to the filename.
   def addArgumentValues(self, graph, config, instructions, task, modifiedValues, hasExtension):
@@ -536,7 +537,7 @@ class gknoConfigurationFiles:
   def constructFilenameFromToolArgumentNotStub(self, graph, config, task, fileNodeID, isInput):
     tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
     optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-    argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
+    argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
     instructions     = config.tools.getArgumentAttribute(tool, argument, 'constructionInstructions')
     baseArgument     = instructions['use argument']
     modifyExtension  = instructions['modify extension']
@@ -555,9 +556,8 @@ class gknoConfigurationFiles:
     # Get the values from this file node.  Some of the values associated with option nodes are
     # for filename stubs, but those attached to file nodes will always be a full file name as
     # required here.
-    predecessorFileNodeIDs = config.nodeMethods.getPredecessorFileNodes(graph, task)
-    fileNodeExists         = False
-    for nodeID in predecessorFileNodeIDs:
+    fileNodeExists = False
+    for nodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
       if nodeID.startswith(baseNodeID + '_'):
         values         = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
         fileNodeExists = True
@@ -660,7 +660,7 @@ class gknoConfigurationFiles:
     modifiedValues   = {}
     tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
     optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-    argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
+    argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
     instructions     = config.tools.getArgumentData(tool, argument, 'construct filename')
 
     # Check to see if the filenames to be created should be in a different directory.
@@ -759,8 +759,8 @@ class gknoConfigurationFiles:
       values            = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
       isRequired        = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
       task              = graph.successors(optionNodeID)[0]
-      argument          = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument')
-      shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'shortForm')
+      argument          = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
+      shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'shortFormArgument')
       description       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
 
       # If the option is required but unset, terminate.

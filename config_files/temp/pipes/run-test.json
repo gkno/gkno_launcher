@@ -156,6 +156,7 @@
     },
     {
       "ID" : "sort",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "align" : "--out",
         "sort-primary-bam" : "--in"
@@ -164,6 +165,7 @@
     },
     {
       "ID" : "sort multiple",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "align" : "--out",
         "sort-multiple-bam" : "--in"
@@ -172,6 +174,7 @@
     },
     {
       "ID" : "covariate input",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "sort-primary-bam" : "--out",
         "recalibrate-bq" : "--in"
@@ -179,6 +182,7 @@
     },
     {
       "ID" : "dbsnp",
+      "description" : "Linking tasks. No argument.",
       "description" : "A database of known polymorphic sites to skip over in the recalibration algorithm.",
       "long form argument" : "--dbsnp",
       "short form argument" : "-db",
@@ -188,6 +192,7 @@
     },
     {
       "ID" : "mark duplicates",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "recalibrate-bq" : "--out",
         "mark-duplicates" : "--in"
@@ -195,6 +200,7 @@
     },
     {
       "ID" : "index final",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "mark-duplicates" : "--out",
         "filter-bam" : "--in"
@@ -202,6 +208,7 @@
     },
     {
       "ID" : "filter",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "mark-duplicates" : "--out",
         "filter-bam" : "--in"
@@ -209,6 +216,7 @@
     },
     {
       "ID" : "realign gaps",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "filter-bam" : "--out",
         "realign-gaps" : "--in"
@@ -216,6 +224,7 @@
     },
     { 
       "ID" : "left align",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "realign-gaps" : "--out",
         "left-align-indels" : "--in"
@@ -223,6 +232,7 @@
     },
     {
       "ID" : "call",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "left-align-indels" : "--out",
         "index-final-bam" : "--in",
@@ -231,6 +241,7 @@
     },
     {
       "ID" : "bam index",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "index-final-bam" : "--out",
         "variant-call" : "--bam-index"

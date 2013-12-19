@@ -51,8 +51,8 @@
     {
       "ID" : "reference fasta",
       "description" : "reference",
-      "long form argument" : "--ref",
-      "short form argument" : "-i",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
       "tasks" : {
         "build-reference" : "--fasta-reference",
         "call" : "--fasta-reference"
@@ -60,6 +60,7 @@
     },
     {
       "ID" : "mosaik native reference",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "build-reference" : "--mosaik-reference",
         "build-jump-database" : "--mosaik-reference",
@@ -79,6 +80,7 @@
     },
     {
       "ID" : "jump database",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "build-jump-database" : "--jump-database",
         "align" : "--jump-database"
@@ -87,6 +89,7 @@
     },
     {
       "ID" : "mosaik read archive",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "build" : "--read-archive",
         "align" : "--read-archive"
@@ -94,6 +97,7 @@
     },
     {
       "ID" : "alignment",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "align" : "--out",
         "sort" : "--in"
@@ -101,6 +105,7 @@
     },
     {
       "ID" : "sorted alignment",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "sort" : "--out",
         "index" : "--in"
@@ -111,7 +116,16 @@
       "keep files" : true
     },
     {
+      "ID" : "bam index",
+      "description" : "The indexed bam file",
+      "tasks" : {
+        "index" : "--out",
+        "call" : "--bam-index"
+      }
+    },
+    {
       "ID" : "variants",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "call" : "--vcf"
       },
@@ -122,6 +136,7 @@
     },
     {
       "ID" : "test",
+      "description" : "Linking tasks. No argument.",
       "tasks" : {
         "align" : "--alignment-algorithm",
         "call" : "--no-complex"

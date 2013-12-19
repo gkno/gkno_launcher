@@ -45,7 +45,7 @@
       "description" : "FASTA reference file to use for realignment (required)",
       "long form argument" : "--fasta-reference",
       "short form argument" : "-r",
-      "command line argument" : "--fastq-reference",
+      "command line argument" : "--fasta-reference",
       "input" : true,
       "output" : false,
       "required" : true,

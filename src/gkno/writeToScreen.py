@@ -48,11 +48,11 @@ class writeToScreen:
     print('Reading in command line arguments...', end = '', file = sys.stdout)
     sys.stdout.flush()
   
-  def writePipelineWorkflow(self, graph, config, workflow, gknoHelp):
+  def writePipelineWorkflow(self, graph, config, gknoHelp):
   
     # Determine the length of the longest tool name.
     length  = 0
-    for task in workflow:
+    for task in config.pipeline.workflow:
       tool   = graph.node[task]['attributes'].tool
       text   = task + ' (' + tool + '):'
       length = len(text) if len(text) > length else length
@@ -60,7 +60,7 @@ class writeToScreen:
   
     print('Workflow:', sep = '', file = sys.stdout)
     sys.stdout.flush()
-    for task in workflow:
+    for task in config.pipeline.workflow:
       tool        = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
       text        = task + ' (' + tool + '):'
       description = config.nodeMethods.getGraphNodeAttribute(graph, task, 'description')

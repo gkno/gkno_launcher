@@ -38,20 +38,20 @@ class makefileData:
     # Store the paths of all executable files.
     self.executablePaths = {}
 
-  def determineMakefileStructure(self, graph, config, workflow, hasMultipleRuns):
+  def determineMakefileStructure(self, graph, config, hasMultipleRuns):
 
     # If the pipeline is not being run with multiple runs, there is a single makefile generated,
     # so all tasks are added to the same phase and have one file in that phase.
     if not hasMultipleRuns:
-      for task in workflow: self.makefileStructure[task] = (1, 1)
+      for task in config.pipeline.workflow: self.makefileStructure[task] = (1, 1)
       self.makefilesInPhase[1] = 1
-      self.tasksInPhase[1]     = workflow
+      self.tasksInPhase[1]     = config.pipeline.workflow
 
     # If the pipeline is being in multiple runs mode, determine the structure.
     else:
       firstTask    = True
       currentPhase = 1
-      for task in workflow:
+      for task in config.pipeline.workflow:
   
         # Determine the number of iterations of input and output files.
         numberOfInputDataSets  = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getPredecessorFileNodes(graph, task))
@@ -205,7 +205,7 @@ class makefileData:
     currentTasks = []
     for task in tasks:
       currentTasks.append(task)
-      if not config.nodeMethods.getGraphNodeAttribute(graph, task, 'outputToStream'):
+      if not config.nodeMethods.getGraphNodeAttribute(graph, task, 'outputStream'):
         taskList.append(currentTasks)
         currentTasks = []
 
@@ -243,11 +243,11 @@ class makefileData:
 
         # Write out some text to the makefile.
         if len(tasks) == 1:
-          print('### Command line information for ', task, ' (',  config.pipeline.tasks[task], ').', sep = '', file = fileHandle)
+          print('### Command line information for ', task, ' (',  config.pipeline.taskAttributes[task].tool, ').', sep = '', file = fileHandle)
         else:
           print('### Command line information for the following streamed tasks: ', file = fileHandle)
           for task in tasks:
-            print('###\t', task, ' (', config.pipeline.tasks[task], ')', sep = '', file = fileHandle)
+            print('###\t', task, ' (', config.pipeline.taskAttributes[task].tool, ')', sep = '', file = fileHandle)
   
         # Due to the vagaries of the makefile operation, if there are multiple outputs, it is
         # not acceptable to just list all of the outputs at the start of the rule. In reality,
@@ -404,7 +404,7 @@ class makefileData:
                   except:
                     # TODO ERROR
                     print('Iteration not associated with file node values - make.writeCommand')
-                    print(task, fileNodeID, config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'argument'), valueList)
+                    print(task, fileNodeID, config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument'), valueList)
                     self.errors.terminate()
 
               # TODO DO I NEED TO LOOK AT OUTPUTS?
@@ -472,7 +472,7 @@ class makefileData:
 
     # Parse all of the option nodes.
     for nodeID in config.nodeMethods.getPredecessorOptionNodes(graph, task):
-      argument       = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'argument')
+      argument       = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument')
       values         = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
       isFile         = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile')
       isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isFilenameStub')
@@ -488,7 +488,7 @@ class makefileData:
       isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isFilenameStub')
       if not isFilenameStub:
         optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(nodeID)
-        argument     = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'argument')
+        argument     = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument')
         values       = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
         if argument not in arguments: arguments[argument] = []
         arguments[argument].append((optionNodeID, values))
@@ -499,7 +499,7 @@ class makefileData:
       optionNodeID   = config.nodeMethods.getOptionNodeIDFromFileNodeID(nodeID)
       if not isFilenameStub:
         optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(nodeID)
-        argument     = config.edgeMethods.getEdgeAttribute(graph, task, nodeID, 'argument')
+        argument     = config.edgeMethods.getEdgeAttribute(graph, task, nodeID, 'longFormArgument')
         values       = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
         if argument not in arguments: arguments[argument] = []
         arguments[argument].append((optionNodeID, values))

@@ -259,7 +259,7 @@ class commandLine:
 
       # If the command line argument does not correspond to a node, fail.
       if nodeID == None:
-        #TODO DAEL WITH ERROR
+        #TODO DEAL WITH ERROR
         print('unknown command:', argument)
       else:
 
@@ -298,8 +298,8 @@ class commandLine:
             task           = nodeID
             associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
             longForm       = config.tools.getLongFormArgument(associatedTool, taskArgument)
-            shortForm      = config.tools.getArgumentData(associatedTool, longForm, 'short form argument')
-            isFilenameStub = config.tools.getArgumentData(associatedTool, longForm, 'is filename stub')
+            shortForm      = config.tools.getArgumentAttribute(associatedTool, longForm, 'shortFormArgument')
+            isFilenameStub = config.tools.getArgumentAttribute(associatedTool, longForm, 'isFilenameStub')
 
             # Determine if this is a flag or a value. If the argument is a flag, the next argument on the
             # command line will be a '-'
@@ -380,9 +380,9 @@ class commandLine:
                   self.errors.terminate()
   
               # Check if this option defines a file.  If so, create a file node for this option.
-              if config.tools.getArgumentData(associatedTool, longForm, 'input'):
+              if config.tools.getArgumentAttribute(associatedTool, longForm, 'isInput'):
                 config.nodeMethods.buildTaskFileNodes(graph, config.tools, sourceNodeID, task, longForm, shortForm, 'input')
-              elif config.tools.getArgumentData(associatedTool, longForm, 'output'):
+              elif config.tools.getArgumentAttribute(associatedTool, longForm, 'isOutput'):
                 config.nodeMethods.buildTaskFileNodes(graph, config.tools, sourceNodeID, task, longForm, shortForm, 'output')
 
   # Attach the tool arguments to the graph nodes.
@@ -444,7 +444,7 @@ class commandLine:
 
             # If the option node corresponds to a file, build a file node.
             if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile'):
-              shortForm = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'shortForm')
+              shortForm = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'shortFormArgument')
               if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isInput'):
                 config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortForm, 'input')
               else:
@@ -465,8 +465,8 @@ class commandLine:
     for nodeID in argumentValues: config.nodeMethods.addValuesToGraphNode(graph, nodeID, argumentValues[nodeID], write = 'replace')
 
   # Assign values to the file nodes using the option nodes.
-  def mirrorFileNodeValues(self, graph, config, workflow):
-    for task in workflow:
+  def mirrorFileNodeValues(self, graph, config):
+    for task in config.pipeline.workflow:
 
       # Loop over all option nodes and pick out those that correspond to files.
       for optionNodeID in config.nodeMethods.getPredecessorOptionNodes(graph, task):
@@ -484,12 +484,9 @@ class commandLine:
           # the task. Determine which of these file nodes links into the task.
           attachedFileNodeIDs = []
           for fileNodeID in fileNodeIDs:
-            print('HELLO', task, fileNodeID, isInput, config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'argument'))
             if isInput:
-              print('\t', config.edgeMethods.checkIfEdgeExists(graph, fileNodeID, task))
               if config.edgeMethods.checkIfEdgeExists(graph, fileNodeID, task): attachedFileNodeIDs.append(fileNodeID)
             else:
-              print('\t', config.edgeMethods.checkIfEdgeExists(graph, task, fileNodeID))
               if config.edgeMethods.checkIfEdgeExists(graph, task, fileNodeID): attachedFileNodeIDs.append(fileNodeID)
 
           # Determine if the file node is from a filename stub.
@@ -499,9 +496,9 @@ class commandLine:
           # If the file is a filename stub, find the extensions to add to the base value and
           # define the file node values.
           if isFilenameStub:
-            tool = config.pipeline.tasks[task]
-            if isInput: argument = config.edgeMethods.getEdgeAttribute(graph, attachedFileNodeIDs[0], task, 'argument')
-            else: argument = config.edgeMethods.getEdgeAttribute(graph, task, attachedFileNodeIDs[0], 'argument')
+            tool = config.pipeline.taskAttributes[task].tool
+            if isInput: argument = config.edgeMethods.getEdgeAttribute(graph, attachedFileNodeIDs[0], task, 'longFormArgument')
+            else: argument = config.edgeMethods.getEdgeAttribute(graph, task, attachedFileNodeIDs[0], 'longFormArgument')
             extensions = config.tools.getArgumentAttribute(tool, argument, 'filenameExtensions')
 
             # Check that the number of file nodes is the same as the number of extensions.
