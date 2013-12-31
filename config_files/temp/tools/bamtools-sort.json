@@ -68,12 +68,16 @@
     }
   ],
 
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
     },
 
-    "test" : {
+    {
+      "ID" : "test" ,
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
@@ -82,11 +86,16 @@
           "argument" : "--in"
         },
         {
+          "ID" : "ERROR",
+          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
+          "argument" : "-m"
+        },
+        {
           "ID" : "output path",
           "values" : ["./"],
           "argument" : "--output-path"
         }
       ]
     }
-  }
+  ]
 }

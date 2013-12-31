@@ -249,8 +249,9 @@
     }
   ],
 
-  "instances" : {
-    "default" : {
+  "instances" : [
+    {
+      "ID" : "default",
       "description" : "The default instance sets all the parameters for the pipeline to run.",
       "nodes" : [
         {
@@ -295,5 +296,5 @@
         }
       ]
     }
-  }
+  ]
 }

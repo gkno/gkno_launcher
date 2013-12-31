@@ -140,6 +140,30 @@ class gknoConfigurationFiles:
       self.validLongFormArguments[attributes.longFormArgument]   = attributes.shortFormArgument
       self.validShortFormArguments[attributes.shortFormArgument] = attributes.longFormArgument
 
+  # Attach the gkno specific instance arguments to the relevant nodes.
+  def attachInstanceArgumentsToNodes(self, config, graph, runName, instance):
+    for counter in range(len(config.instances.instanceAttributes[runName][instance].nodes) - 1, -1, -1):
+      argument = config.instances.instanceAttributes[runName][instance].nodes[counter].argument
+      values   = config.instances.instanceAttributes[runName][instance].nodes[counter].values
+
+      # If the argument is a gkno specific argument, check if it is in the short form. If so, convert it to the
+      # long form.
+      if argument in self.validShortFormArguments: argument = self.validShortFormArguments[argument]
+
+      # Check to see if the argument is a gkno specific argument.
+      if argument in self.validLongFormArguments:
+
+        # Get the nodeID, for this argument.
+        for nodeID in config.nodeMethods.getNodes(graph, 'general'):
+          nodeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, graph.successors(nodeID)[0], 'longFormArgument')
+          if argument == nodeArgument: break
+
+        # Update the values in the node.
+        config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'replace')
+
+        # Remove the information from the instance data.
+        config.instances.instanceAttributes[runName][instance].nodes.pop(counter)
+
   # Check if a command line argument is a gkno specific argument.
   def checkPipelineArgument(self, graph, config, argument):
 
@@ -212,27 +236,6 @@ class gknoConfigurationFiles:
       self.loopData.numberOfDataSets += 1
       self.loopData.values[iteration] = []
       for value in data['values'][iteration]: self.loopData.values[iteration].append(value)
-
-  # Attach the instance arguments to the relevant nodes.
-  def attachInstanceArgumentsToNodes(self, graph, config, data):
-    if 'nodes' in data:
-      for counter in range(len(data['nodes']) -1, -1, -1):
-        argument = data['nodes'][counter]['argument']
-        if argument in self.validShortFormArguments: argument = self.validShortFormArguments[argument]
-
-        # Check to see if the argument is a gkno specific argument.
-        if argument in self.validLongFormArguments:
-
-          # Get the nodeID, for this argument.
-          for nodeID in config.nodeMethods.getNodes(graph, 'general'):
-            nodeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, graph.successors(nodeID)[0], 'longFormArgument')
-            if argument == nodeArgument: break
-
-          # Update the values in the node.
-          config.nodeMethods.addValuesToGraphNode(graph, nodeID, data['nodes'][counter]['values'], write = 'replace')
-
-          # Remove the information from the instance data.
-          data['nodes'].pop(counter)
 
   # Assign loop values to the graph.
   def addLoopValuesToGraph(self, graph, config):
