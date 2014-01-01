@@ -474,7 +474,7 @@ class gknoConfigurationFiles:
       # Check that there is only a single value in the list for this iteration in 'argumentNodeValues'.
       if len(argumentNodeValues[iteration]) != 1:
         print('CANNOT CONSTRUCT FILENAMES IF THERE IS MORE THAN ONE PARAMETER VALUE.')
-        print('constructFilenameFromToolArgumentStub')
+        print('gknoConfig.constructFilenameFromToolArgumentStub')
         self.errors.terminate()
 
       else:
@@ -569,7 +569,7 @@ class gknoConfigurationFiles:
     # If no file node was found, terminate.
     if not fileNodeExists:
       #TODO ERROR
-      print('constructFilenameFromToolArgumentNotStub')
+      print('gknoConfig.constructFilenameFromToolArgumentNotStub')
       self.errors.terminate()
 
     # Determine if the baseArgument is greedy. If so, the values associated with each iteration
