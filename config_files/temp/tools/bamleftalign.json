@@ -14,7 +14,7 @@
       "input" : true,
       "output" : true,
       "required" : true,
-      "extension" : "bam",
+      "extension" : ".bam",
       "data type" : "string",
       "hide in help" : true,
       "include on command line" : false
@@ -27,7 +27,7 @@
       "input" : false,
       "output" : true,
       "required" : true,
-      "extension" : "bam",
+      "extension" : ".bam",
       "data type" : "string",
       "modify argument name on command line" : "stdout",
       "if output to stream" : "do not include",
@@ -47,7 +47,7 @@
       "input" : true,
       "output" : false,
       "required" : true,
-      "extension" : "fa|fasta",
+      "extension" : ".fa|.fasta",
       "data type" : "string"
     },
     {
@@ -63,12 +63,16 @@
     }
   ],
 
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
     },
 
-    "test" : {
+    {
+      "ID" : "test",
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
@@ -83,5 +87,5 @@
         }
       ]
     } 
-  }
+  ]
 }

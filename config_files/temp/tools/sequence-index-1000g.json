@@ -21,7 +21,7 @@
       "required" : true,
       "dependent" : true,
       "type" : "string",
-      "extension" : "sequence.index",
+      "extension" : ".sequence.index",
       "modify argument name on command line" : "hide"
     },
     "--read-type" : {

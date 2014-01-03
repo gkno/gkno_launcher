@@ -71,35 +71,30 @@ class gknoErrors:
   # Errors with the command line. #
   #################################
 
+  # A required pipeline argument is missing.
+  def missingPipelineArgument(self, graph, config, argument, shortForm, description):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text.append('The required command line argument ' + argument + ' (' + shortForm + ') is missing.')
+    self.text.append('This argument is described as the following: ' + description)
+    self.text.append('\t')
+    self.text.append('Check the usage information for all required arguments.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   # A required argument is missing.
-  def missingArgument(self, graph, config, argument, shortForm, description):
+  def missingArgument(self, graph, config, task, argument, shortForm, description):
     if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
-    self.text = ['The required command line argument ' + argument + ' (' + shortForm + ') is missing.']
+    self.text.append('A required command line argument is missing.')
+    self.text.append('The task \'' + task + '\' requires the argument \'' + argument + ' (' + shortForm + ')\' to be set, but it has ' + \
+    'not been specified on the command line. This argument cannot be set using a pipeline argument and consequently must be set using the syntax:')
+    self.text.append('\t')
+    self.text.append('./gkno pipe <pipeline name> --' + task + ' [' + argument + ' <value>] [options]')
+    self.text.append('\t')
     self.text.append('This argument is described as the following: ' + description)
     self.text.append('\t')
-    self.text.append('Check the usage information for all required arguments.')
-    self.writeFormattedText(errorType = 'error')
-    self.terminate()
-
-  # A required option is unset.
-  def unsetRequiredOption(self, graph, config, task, argument, shortForm, description):
-    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
-    self.text = ['The required command line argument ' + argument + ' (' + shortForm + ') is missing.']
-    self.text.append('This argument is described as the following: ' + description)
-    self.text.append('\t')
-    self.text.append('Check the usage information for all required arguments.')
-    self.writeFormattedText(errorType = 'error')
-    self.terminate()
-
-  # As above, except, for the specific case where gkno is running in pipeline mode and the required argument is
-  # not a pipeline argument.
-  def unsetRequiredOptionNoPipelineArgument(self, graph, config, task, argument, shortForm, description):
-    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
-    self.text = ['An required option is missing.']
-    self.text.append('All required options need to be set on the command line or included in a selected instance. The argument \'' + argument + \
-'\' for task \'' + task + '\' is not set and there is no pipeline argument that sets this value. The value can be set using the syntax \'--' + \
-task + ' [' + argument + ' <value>]\', however it would be preferable if a pipeline argument existed to set this value. Please see the \
-documentation to see how to include this in the pipeline configuration file.')
+    self.text.append('It is recommended that the pipeline configuration file be modified to ensure that all arguments required by the pipeline ' + \
+    'have a command line argument defined in the pipeline configuration file. Please see the documentation for further information on how this ' + \
+    'can be accomplished.')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
@@ -123,9 +118,21 @@ of the following extensions:')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
-  ##########################################
+  # Invalid data type.
+  def invalidDataType(self, graph, config, longFormArgument, shortFormArgument, description, value, expectedDataType):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text.append('A command line argument was given an invalid value.')
+    self.text.append('The command line argument \'' + longFormArgument + ' (' + shortFormArgument + ')\' was given the value \'' + value + \
+    '\'. This value is invalid. The expected data type for this argument is \'' + expectedDataType + '\'. This argument is described as: ' + \
+    description)
+    self.text.append('\t')
+    self.text.append('Please provide a valid value for this argument.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  ######################################################
   # Errors with required files/directories/executables #
-  ##########################################
+  ######################################################
 
   # If input files are missing, warn the user, but don't terminate gkno.
   def missingFiles(self, graph, config, files):

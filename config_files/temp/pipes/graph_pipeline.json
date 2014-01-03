@@ -79,6 +79,15 @@
       }
     },
     {
+      "ID" : "sequencing technology",
+      "description" : "Linking tasks. No argument.",
+      "long form argument" : "--sequencing-technology",
+      "short form argument" : "-st",
+      "tasks" : {
+        "build" : "--sequencing-technology"
+      }
+    },
+    {
       "ID" : "jump database",
       "description" : "Linking tasks. No argument.",
       "tasks" : {
@@ -101,6 +110,25 @@
       "tasks" : {
         "align" : "--out",
         "sort" : "--in"
+      },
+      "extension" : ".bam"
+    },
+    {
+      "ID" : "single-end neural net",
+      "description" : "Linking tasks. No argument.",
+      "long form argument" : "--ann-single-end",
+      "short form argument" : "-as",
+      "tasks" : {
+        "align" : "--ann-single-end"
+      }
+    },
+    {
+      "ID" : "paired-end neural net",
+      "description" : "Linking tasks. No argument.",
+      "long form argument" : "--ann-paired-end",
+      "short form argument" : "-ap",
+      "tasks" : {
+        "align" : "--ann-paired-end"
       }
     },
     {

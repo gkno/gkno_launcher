@@ -11,7 +11,7 @@
       "required" : true,
       "dependent" : true,
       "type" : "string",
-      "extension" : "fq|fastq|fq.gz|fastq.gz"
+      "extension" : ".fq|.fastq|.fq.gz|.fastq.gz"
     },
     "-fq2" : {
       "description" : "The input fastq file (second mate).",
@@ -20,7 +20,7 @@
       "required" : false,
       "dependent" : true,
       "type" : "string",
-      "extension" : "fq|fastq|fq.gz|fastq.gz"
+      "extension" : ".fq|.fastq|.fq.gz|.fastq.gz"
     },
     "-ref" : {
       "description" : "Mosaik reference archive.",
@@ -29,7 +29,7 @@
       "required" : true,
       "dependent" : true,
       "type" : "string",
-      "extension" : "dat"
+      "extension" : ".dat"
     },
     "-jmp" : {
       "description" : "Stub for Mosaik jump table files.",
@@ -38,7 +38,7 @@
       "required" : true,
       "dependent" : true,
       "type" : "string",
-      "extension" : "stub",
+      "extension" : "no extension",
       "stub" : true,
       "outputs" : [
         "_keys.jmp",
@@ -65,7 +65,7 @@
       "required" : true,
       "dependent" : false,
       "type" : "string",
-      "extension" : "json",
+      "extension" : ".json",
       "default" : [
         "$(MAKEFILE_ID)_mosaikParameters.json"
       ]
@@ -77,7 +77,7 @@
       "required" : true,
       "dependent" : true,
       "type" : "string",
-      "extension" : "ann"
+      "extension" : ".ann"
     },
     "-annpe" : {
       "description" : "Neural network file (paired end).",
@@ -86,7 +86,7 @@
       "required" : true,
       "dependent" : true,
       "type" : "string",
-      "extension" : "ann"
+      "extension" : ".ann"
     },
     "-tmp" : {
       "description" : "Scratch directory for generated files.",

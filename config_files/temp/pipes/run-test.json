@@ -255,13 +255,13 @@
       "description" : "The default instance sets all the parameters for the pipeline to run.",
       "nodes" : [
         {
-          "ID" : "fasta reference",
-          "argument" : "--fasta",
+          "ID" : "fasta references",
+          "argument" : "--fasta-reference",
           "values" : ["$(RESOURCES)/tutorial/current/test_genome.fa"]
         },
         {
           "ID" : "hash size",
-          "argument" : "--hash-size",
+          "argument" : "-hs",
           "values" : ["10"]
         },
         {
@@ -276,12 +276,12 @@
         },
         {
           "ID" : "annse",
-          "argument" : "--ann-se",
+          "argument" : "--ann-single-end",
           "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"]
         },
         {
           "ID" : "annpe",
-          "argument" : "--ann-pe",
+          "argument" : "--ann-paired-end",
           "values" : ["$(RESOURCES)/tutorial/current/pe.100.01.ann"]
         },
         {

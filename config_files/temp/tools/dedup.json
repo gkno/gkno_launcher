@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "bam"
+      "extension" : ".bam"
     },
     {
       "description" : "Output BAM file name (same order with original file).",
@@ -25,7 +25,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "bam",
+      "extension" : ".bam",
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--in",
@@ -53,7 +53,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "log"
+      "extension" : ".log"
     },
     {
       "description" : "Treat reads with mates on different chromosomes as single-ended.",
@@ -101,12 +101,16 @@
     }
   ],
 
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
     },
 
-    "test" : {
+    {
+      "ID" : "test",
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
@@ -121,5 +125,5 @@
         }
       ]
     }
-  }
+  ]
 }

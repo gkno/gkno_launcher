@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "bam"
+      "extension" : ".bam"
     },
     {    
       "description" : "Output recalibrated BAM file name.",
@@ -25,7 +25,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "bam",
+      "extension" : ".bam",
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--in",
@@ -42,7 +42,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "log"
+      "extension" : ".log"
     },
     {    
       "description" : "Do not expect an EOF block on a bam file.",
@@ -64,7 +64,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "fa|fasta"
+      "extension" : ".fa|.fasta"
     },
     {    
       "description" : "dbsnp file of positions.",
@@ -75,7 +75,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "vcf"
+      "extension" : ".vcf"
     },
     {    
       "description" : "Minimum base quality of bases to recalibrate (default: 5).",
@@ -189,12 +189,16 @@
     }
   ],
 
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
     },
 
-    "test" : {
+    {
+      "ID" : "test",
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
@@ -214,5 +218,5 @@
         }
       ]
     }
-  }
+  ]
 }

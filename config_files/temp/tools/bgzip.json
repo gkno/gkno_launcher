@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "vcf",
+      "extension" : "no extension",
       "modify argument name on command line" : "hide",
       "if input is stream" : "do not include"
     },
@@ -27,7 +27,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "gz",
+      "extension" : ".gz",
       "modify argument name on command line" : "stdout",
       "if output to stream" : "do not include",
       "construct filename" : {

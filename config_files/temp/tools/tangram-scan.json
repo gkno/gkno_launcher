@@ -32,7 +32,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "dat",
+      "extension" : ".dat",
       "include on command line" : false,
       "hide in help" : true,
       "construct filename" : {
@@ -48,7 +48,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "dat",
+      "extension" : ".dat",
       "hide in help" : true,
       "include on command line" : false,
       "construct filename" : {

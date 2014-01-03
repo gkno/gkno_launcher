@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "fasta|fa"
+      "extension" : ".fasta|.fa"
     },
     {
       "description" : "the reference fasta index file",
@@ -26,7 +26,7 @@
       "required" : true,
       "data type" : "string",
       "include on command line" : false,
-      "extension" : "fai",
+      "extension" : ".fai",
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--fasta-reference",
@@ -43,7 +43,7 @@
       "required" : true,
       "data type" : "string",
       "include on command line" : false,
-      "extension" : "dict",
+      "extension" : ".dict",
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--fasta-reference",
@@ -59,7 +59,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "sam|bam"
+      "extension" : ".sam|.bam"
     },
     {
       "description" : "input SAM or BAM index file(s)",
@@ -71,7 +71,7 @@
       "required" : true,
       "data type" : "string",
       "include on command line" : false,
-      "extension" : "bai",
+      "extension" : ".bai",
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--in",
@@ -87,7 +87,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "csv",
+      "extension" : ".csv",
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--in",
@@ -103,7 +103,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "vcf|vcf.gz"
+      "extension" : ".vcf|.vcf.gz"
     },
     {
       "description" : "minimum level of logging",
@@ -115,7 +115,7 @@
       "required" : false,
       "data type" : "string",
       "short form argument" : "-l",
-      "extension" : "vcf"
+      "extension" : ".vcf"
     },
     {
       "description" : "type of analysis to run",

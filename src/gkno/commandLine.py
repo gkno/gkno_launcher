@@ -120,7 +120,10 @@ class commandLine:
         pipelineArgument = gknoConfig.checkPipelineArgument(graph, config, argument)
         if pipelineArgument != None:
           if pipelineArgument not in self.argumentDictionary: self.argumentDictionary[pipelineArgument] = []
-          if nextArgument.startswith('-'): self.argumentDictionary[pipelineArgument].append('')
+
+          # If the next value on the command line starts with a '-', then there is no value associated
+          # with this argument. Thus it must be a flag, so give the argumentDictionary the value 'set'.
+          if nextArgument.startswith('-'): self.argumentDictionary[pipelineArgument].append('set')
           else:
             self.argumentDictionary[pipelineArgument].append(nextArgument)
             count += 1

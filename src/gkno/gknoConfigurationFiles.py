@@ -6,9 +6,6 @@ from copy import deepcopy
 import configurationClass.configurationClass
 from configurationClass.configurationClass import *
 
-import dataChecking
-from dataChecking import checkDataType
-
 import gknoErrors
 from gknoErrors import *
 
@@ -278,8 +275,8 @@ class gknoConfigurationFiles:
 
       # Input files are predecessor nodes to the task.  Deal with the input files first.
       for fileNodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
-        argument     = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'longFormArgument')
-        shortForm    = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'shortFormArgument')
+        longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'longFormArgument')
+        shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'shortFormArgument')
         optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
                                  
         # Use the argument to get information about the argument.
@@ -290,34 +287,37 @@ class gknoConfigurationFiles:
         # another task, the nodes are merged and so the input is set.  Thus, an empty value cannot be
         # filled without command line (or instance) information.
         if isRequired and not isSet:
-          method = self.constructionInstructions(graph, config, task, argument, fileNodeID)
+          method = self.constructionInstructions(graph, config, task, longFormArgument, fileNodeID)
           if method == None:
             description = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
   
             # Check if this argument is a pipeline argument.
             if task in config.pipeline.taskArgument:
-              if argument in config.pipeline.taskArgument[task]:
-                pipelineLongForm  = config.pipeline.taskArgument[task][argument]
-                pipelineShortForm = config.pipeline.pipelineArguments[pipelineLongForm].shortFormArgument
-                self.errors.missingArgument(graph, config, pipelineLongForm, pipelineShortForm, description)
-            self.errors.missingArgument(graph, config, argument, shortForm, description)
+              if longFormArgument in config.pipeline.taskArgument[task]:
+                pipelineLongFormArgument  = config.pipeline.taskArgument[task][longFormArgument]
+                pipelineShortFormArgument = config.pipeline.pipelineArguments[pipelineLongFormArgument].shortFormArgument
+                self.errors.missingPipelineArgument(graph, config, pipelineLongFormArgument, pipelineShortFormArgument, description)
+
+            # If not a pipeline arghument, the error message needs to make the distinction. The error message
+            # will also recommend adding the argument to the pipeline arguments since it is required.
+            self.errors.missingArgument(graph, config, task, longFormArgument, shortFormArgument, description)
 
           # Build the input filename using the described method.
           else: self.constructFilename(graph, config, method, task, fileNodeID, isInput = True)
                                  
       # Now deal with output files,  These are all successor nodes.
       for fileNodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
-        argument     = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'longFormArgument')
-        optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+        longFormArgument = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'longFormArgument')
+        optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
                                  
         isRequired = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
         isSet      = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'hasValue')
         if isRequired and not isSet:
-          method = self.constructionInstructions(graph, config, task, argument, fileNodeID)
+          method = self.constructionInstructions(graph, config, task, longFormArgument, fileNodeID)
           if method == None:     
   
             # TODO ERROR MESSAGE
-            print('\tMISSING OUTPUT:', fileNodeID, task, tool, argument)
+            print('\tMISSING OUTPUT:', fileNodeID, task, tool, longFormArgument)
             self.errors.terminate()
   
           # If the tool configuration file has instructions on how to construct the filename,
@@ -355,11 +355,11 @@ class gknoConfigurationFiles:
 
   # Construct the filenames for filename stub arguments.
   def constructFilenameFromToolArgumentStub(self, graph, config, task, fileNodeID, isInput):
-    tool         = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-    optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-    argument     = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
-    instructions = config.tools.getArgumentAttribute(tool, argument, 'constructionInstructions')
-    baseArgument = instructions['use argument']
+    tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+    optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+    longFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
+    instructions     = config.tools.getArgumentAttribute(tool, longFormArgument, 'constructionInstructions')
+    baseArgument     = instructions['use argument']
 
     # Get the ID of the node corresponding to the baseArgument.
     # TODO SORT OUT THE CASE WHERE THERE ARE MULTIPLE VALUES
@@ -388,7 +388,7 @@ class gknoConfigurationFiles:
 
     # Set all of the file nodes with their values.
     fileNodeIDs = config.nodeMethods.getAssociatedFileNodeIDs(graph, optionNodeID)
-    extensions  = config.tools.getArgumentAttribute(tool, argument, 'filenameExtensions')
+    extensions  = config.tools.getArgumentAttribute(tool, longFormArgument, 'filenameExtensions')
 
     # If the number of file nodes is not equal to the number of extensions, there is a problem.
     if len(fileNodeIDs) != len(extensions):
@@ -518,7 +518,7 @@ class gknoConfigurationFiles:
             extensions = extension.split('|')
             fileHasExtension = False
             for specificExtension in extensions:
-              if value.endswith('.' + specificExtension):
+              if value.endswith(specificExtension):
                 fileHasExtension = True
                 break
             extension = specificExtension
@@ -528,7 +528,7 @@ class gknoConfigurationFiles:
               print('Unexpected extension - addAdditionalText')
               self.errors.terminate()
 
-          newValue = str(value.split('.' + extension)[0] + '.' + str(text) + '.' + extension)
+          newValue = str(value.split(extension)[0] + '.' + str(text) + extension)
           modifiedValues.append(newValue)
 
         else: modifiedValues.append(value + str(text))
@@ -633,7 +633,7 @@ class gknoConfigurationFiles:
     # The replacement extension may also be a list of allowed values.  Choose the first value in
     # this list as the extension to use.
     if extB == '': replaceExtension = ''
-    else: replaceExtension = '.' + str(extB.split('|')[0])
+    else: replaceExtension = str(extB.split('|')[0])
 
     # Loop over all values and change the extension.
     for valueID in values:
@@ -647,7 +647,7 @@ class gknoConfigurationFiles:
             # If the extension wasn't provided, just use the extension that is on the
             # file.
             if extension == 'no extension': extension = value.split('.')[-1]
-            string  = '.' + str(extension)
+            string  = str(extension)
 
             if replace: newValuesList.append(value.replace(string, replaceExtension))
             else: newValuesList.append(value + replaceExtension)
@@ -690,7 +690,7 @@ class gknoConfigurationFiles:
     for iteration in modifiedValues:
       if addExtension: extension = config.tools.getArgumentAttribute(tool, argument, 'extension').split('|')[0]
       else: extension = ''
-      filename = filename + '.' + extension
+      filename = filename + extension
       modifiedValues[iteration] = [value + filename for value in modifiedValues[iteration]]
 
     # Set the values.
@@ -762,7 +762,7 @@ class gknoConfigurationFiles:
       values            = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
       isRequired        = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
       task              = graph.successors(optionNodeID)[0]
-      argument          = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
+      longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
       shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'shortFormArgument')
       description       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
 
@@ -771,20 +771,17 @@ class gknoConfigurationFiles:
 
         # If gkno is being run in pipeline mode, check if this argument is a pipeline argument.
         if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'pipeline':
-          longForm, shortForm = config.pipeline.getPipelineArgument(task, argument)
+          pipelineLongFormArgument, pipelineShortFormArgument = config.pipeline.getPipelineArgument(task, longFormArgument)
 
           # If the required argument is not a pipeline argument, recommend that the configuration should be
           # amended to include one.
-          if longForm == None:
-            self.errors.unsetRequiredOptionNoPipelineArgument(graph, config, task, argument, shortFormArgument, description)
+          if pipelineLongFormArgument == None: self.errors.missingArgument(graph, config, task, longFormArgument, shortFormArgument, description)
 
           # If the pipeline argument exists, just terminate.
-          else:
-            description = config.pipeline.argumentData[longForm]['description']
-            self.errors.unsetRequiredOption(graph, config, task, longForm, shortForm, description)
+          else: self.errors.missingPipelineArgument(graph, config, longFormArgument, shortFormArgument, description)
 
         # If gkno is being run in tool mode, terminate.
-        self.errors.unsetRequiredOption(graph, config, task, argument, shortFormArgument, description)
+        self.errors.missingPipelineArgument(graph, config, longFormArgument, shortFormArgument, description)
 
       # Loop over the remaining values.
       if values:
@@ -804,10 +801,9 @@ class gknoConfigurationFiles:
           for value in values[iteration]:
 
             # Get the data type for the value and check that it is as expected.
-            if not self.checkDataType(expectedDataType, value):
-              #TODO SORT ERROR.
-              print('Unexpected data type:', value, expectedDataType)
-              self.errors.terminate()
+            if not self.checkDataType(expectedDataType, value)[0]:
+              self.errors.invalidDataType(graph, config, longFormArgument, shortFormArgument, description, value, expectedDataType)
+              print('dUnexpected data type:', value, expectedDataType)
 
             # If the value refers to a file, check that the extension is valid. This is not necessary
             # for arguments representing a filename stub.
@@ -826,13 +822,33 @@ class gknoConfigurationFiles:
       
                         # If gkno is being run in tool mode, get the arguments.
                         if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'tool':
-                          self.errors.invalidExtension(fileValue, extensions, argument, shortFormArgument, task, '', '')
+                          self.errors.invalidExtension(fileValue, extensions, longFormArgument, shortFormArgument, task, '', '')
         
                         # If gkno is being run in pipeline, mode, determine if the argument with the
                         # incorrect extension is a pipeline argument.
                         else:
-                          longForm, shortForm = config.pipeline.getPipelineArgument(task, argument)
-                          self.errors.invalidExtension(fileValue, extensions, longForm, shortForm, task, argument, shortFormArgument)
+                          longForm, shortForm = config.pipeline.getPipelineArgument(task, longFormArgument)
+                          self.errors.invalidExtension(fileValue, extensions, longForm, shortForm, task, longFormArgument, shortFormArgument)
+
+  # Loop over all of the gkno specific nodes and check that the values are valid.
+  def checkNodeValues(self, graph, config):
+    for nodeID in config.nodeMethods.getNodes(graph, 'general'):
+      values   = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
+      dataType = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType')
+      for iteration in values:
+        for counter, value in enumerate(values[iteration]):
+          success, modifiedValue = self.checkDataType(dataType, value)
+          if not success:
+            longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'longFormArgument')
+            shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'shortFormArgument')
+            description       = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'description')
+            self.errors.invalidDataType(graph, config, longFormArgument, shortFormArgument, description, value, dataType)
+
+          # If the value is of the correct type, replace the stored value with the returned value. For
+          # example, if the value is 'true', and the expected type is a Boolean, this is fine, but would
+          # not be recognised in the Python code as a Boolean. The checkDataType routine returns the value
+          # in the correct form.
+          values[iteration][counter] = modifiedValue
 
   # Check if data types agree.
   def checkDataType(self, expectedType, value):
@@ -853,8 +869,10 @@ class gknoConfigurationFiles:
 
     # Check integers...
     elif expectedType == 'integer':
-      if isinstance(value, int): return True, value
-      else: return False, value
+      try: intValue = int(value)
+      except: return False, value
+
+      return True, intValue
 
     # Check floats...
     elif expectedType == 'float':
@@ -885,17 +903,6 @@ class gknoConfigurationFiles:
 
     return False
 
-  # Loop over all of the gkno specific nodes and check that the values are valid.
-  def checkNodeValues(self, graph, config):
-    for nodeID in config.nodeMethods.getNodes(graph, 'general'):
-      values   = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
-      dataType = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType')
-      for iteration in values:
-        if not self.checkDataTypes(dataType, values[iteration]):
-          # TODO ERROR
-          print('gknoConfig.checkNodeValues - wrong data type', nodeID, values[iteration], dataType)
-          self.errors.terminate()
-
   # Check that all required files exist prior to executing any makefiles.
   def checkFilesExist(self, graph, config, filenames, sourcePath):
     for nodeID, filename in filenames:
@@ -916,44 +923,45 @@ class gknoConfigurationFiles:
       self.errors.missingFiles(graph, config, self.missingFiles)
       config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-EXECUTE', [False], write = 'replace')
 
+#TODO REMOVE
   # Check if data types agree.
-  def checkDataTypes(self, expectedType, values):
-
-    # First check flags.
-    if expectedType == 'flag':
-      for counter, value in enumerate(values):
-        if value != 'set' and value != 'unset': return False
-  
-    # Next check Booleans.
-    elif expectedType == 'bool':
-      for counter, value in enumerate(values):
-        if not isinstance(value, bool):
-          if value == 'true' or value == 'True': values[counter] = True
-          elif value == 'false' or value == 'False': values[counter] = False
-          else: return False
-  
-    # Check integers...
-    elif expectedType == 'integer':
-      for counter, value in enumerate(values):
-        if not isinstance(int(value), int): return False
-        else: values[counter] = int(value)
-  
-    # Check floats...
-    elif expectedType == 'float':
-      for counter, value in enumerate(values):
-        if not isinstance(value, float): return False
-  
-    # and strings.
-    elif expectedType == 'string':
-      for counter, value in enumerate(values):
-  
-        # First check if the value is unicode.
-        if isinstance(value, unicode): values[counter] = str(value)
-
-        # Check if the value is a string.
-        elif not isinstance(value, str): return False
-  
-    # If the data type is unknown.
-    else: return False
-  
-    return True
+#  def checkDataTypes(self, expectedType, values):
+#
+#    # First check flags.
+#    if expectedType == 'flag':
+#      for counter, value in enumerate(values):
+#        if value != 'set' and value != 'unset': return False
+#  
+#    # Next check Booleans.
+#    elif expectedType == 'bool':
+#      for counter, value in enumerate(values):
+#        if not isinstance(value, bool):
+#          if value == 'true' or value == 'True': values[counter] = True
+#          elif value == 'false' or value == 'False': values[counter] = False
+#          else: return False
+#  
+#    # Check integers...
+#    elif expectedType == 'integer':
+#      for counter, value in enumerate(values):
+#        if not isinstance(int(value), int): return False
+#        else: values[counter] = int(value)
+#  
+#    # Check floats...
+#    elif expectedType == 'float':
+#      for counter, value in enumerate(values):
+#        if not isinstance(value, float): return False
+#  
+#    # and strings.
+#    elif expectedType == 'string':
+#      for counter, value in enumerate(values):
+#  
+#        # First check if the value is unicode.
+#        if isinstance(value, unicode): values[counter] = str(value)
+#
+#        # Check if the value is a string.
+#        elif not isinstance(value, str): return False
+#  
+#    # If the data type is unknown.
+#    else: return False
+#  
+#    return True

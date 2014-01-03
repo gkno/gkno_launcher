@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "bam"
+      "extension" : ".bam"
     },
     {
       "description" : "the index file.",
@@ -25,7 +25,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "bai",
+      "extension" : ".bai",
       "hide in help" : true,
       "include on command line" : false,
       "construct filename" : {
@@ -47,12 +47,14 @@
     }
   ],
 
-  "instances" : {
-    "default" : {
+  "instances" : [
+    {
+      "ID" : "default",
       "description" : "Default instance requires the users input for all files."
     },
 
-    "test" : {
+    {
+      "ID" : "test",
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
@@ -62,5 +64,5 @@
         }
       ]
     }
-  }
+  ]
 }

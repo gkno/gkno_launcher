@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "bam"
+      "extension" : ".bam"
     },
     {
       "description" : "the output BAM file.",
@@ -25,7 +25,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "bam",
+      "extension" : ".bam",
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--in",

@@ -12,7 +12,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "fa|fasta"
+      "extension" : ".fa|.fasta"
     },
     "--special-reference" : {
       "description" : "The input reference file containing the insertion sequences.",
@@ -22,7 +22,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "fa|fasta"
+      "extension" : ".fa|.fasta"
     },
     "--out" : {
       "description" : "The output reference file.",
@@ -32,7 +32,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "dat"
+      "extension" : ".dat"
     }
   },
 

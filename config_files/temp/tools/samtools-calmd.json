@@ -125,7 +125,7 @@
       "required" : true,
       "dependent" : false,
       "type" : "string",
-      "extension" : "bam",
+      "extension" : ".bam",
       "if input is stream" : "replace",
       "replace argument with" : {
         "argument" : "--stdin",

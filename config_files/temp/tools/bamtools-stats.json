@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "bam"
+      "extension" : ".bam"
     },
     {
       "description" : "summarize insert size data.",
@@ -36,7 +36,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "stats",
+      "extension" : ".stats",
       "modify argument name on command line" : "stdout",
       "construct filename" : {
         "ID": "from tool argument",

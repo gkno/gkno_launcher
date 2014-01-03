@@ -14,7 +14,7 @@
       "input" : true,
       "output" : false,
       "required" : true,
-      "extension" : "bam",
+      "extension" : ".bam",
       "data type" : "string",
       "if input is stream" : "do not include",
       "hide in help" : true,
@@ -28,7 +28,7 @@
       "input" : false,
       "output" : true,
       "required" : true,
-      "extension" : "bam",
+      "extension" : ".bam",
       "data type" : "string",
       "if output to stream" : "do not include",
       "modify argument name on command line" : "stdout",
@@ -49,7 +49,7 @@
       "input" : true,
       "output" : false,
       "required" : true,
-      "extension" : "fa|fasta",
+      "extension" : ".fa|.fasta",
       "data type" : "string"
     },
     {    
@@ -120,8 +120,9 @@
     }
   ],
 
-  "instances" : {
-    "default" : {
+  "instances" : [
+    {
+      "ID" : "default",
       "description" : "Default instance requires the users input for all files.",
       "nodes" : [
         {
@@ -151,5 +152,5 @@
         }
       ]
     }
-  }
+  ]
 }

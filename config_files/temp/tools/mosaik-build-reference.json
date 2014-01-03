@@ -13,7 +13,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "fasta|fa"
+      "extension" : ".fasta|.fa"
     },
     {    
       "description" : "The output Mosaik reference file",
@@ -24,7 +24,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "dat",
+      "extension" : ".dat",
       "construct filename" : {
         "ID": "from tool argument",
         "use argument" : "--fasta-reference",
@@ -33,12 +33,16 @@
     }
   ],
 
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
     },
 
-    "test" : {
+    {
+      "ID" : "test",
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
@@ -53,5 +57,5 @@
         }
       ]
     }
-  }
+  ]
 }

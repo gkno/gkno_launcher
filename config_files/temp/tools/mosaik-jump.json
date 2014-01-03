@@ -13,7 +13,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "dat"
+      "extension" : ".dat"
     },
     {    
       "description" : "Output filename stub",
@@ -25,7 +25,7 @@
       "required" : true,
       "data type" : "string",
       "is filename stub" : true,
-      "extension" : "none",
+      "extension" : "no extension",
       "filename extensions" : [
         "_keys.jmp",
         "_meta.jmp",
@@ -86,12 +86,16 @@
     }
   ],
 
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
     },
 
-    "test" : {
+    {
+      "ID" : "test",
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
@@ -111,5 +115,5 @@
         }
       ]
     }
-  }
+  ]
 }

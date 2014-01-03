@@ -158,8 +158,6 @@ def main():
       toolFile              = sourcePath + '/config_files/temp/tools/' + tool + '.json'
       toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
 
-      # TODO TOOL CONFIGURATION FILE VALIDATION HAS NOT YET BEEN HANDLED IN THE
-      # CONFIGURATIONCLASS.
       # Ensure that the tool configuration file is well constructed and put all of the data
       # in data structures.  Each tool in each configuration file gets its own data structure.
       config.tools.processConfigurationData(tool, toolConfigurationData)
@@ -177,13 +175,18 @@ def main():
     # Add the pipeline arguments to the nodeIDs dictionary.
     config.nodeMethods.getPipelineArgumentNodes(pipelineGraph, config)
   
+    # If the pipeline configuration file links a filename stub argument from one task to a non-filename
+    # stub argument in another, the explicit extension must be included in the configuration file. Check
+    # that this is the case.
+    config.checkStubConnections(pipelineGraph)
+  
     # Now that every task in the pipeline has an individual graph built, use the information
     # in the pipeline configuration file to merge nodes and build the final pipeline graph.
     config.mergeNodes(pipelineGraph)
   
     # Generate the workflow using a topological sort of the pipeline graph.
     config.pipeline.workflow = config.generateWorkflow(pipelineGraph)
-  
+
     # Loop over all of the nodes and determine which require a value.  Also check to see if there
     # are missing edges.  For example, if a tool has an argument that is required, but is not included
     # in the pipeline configuration file (as a pipeline argument or via connections), the graph cannot
