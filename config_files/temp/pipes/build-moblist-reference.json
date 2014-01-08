@@ -75,13 +75,13 @@
       "nodes" : [
         {
           "ID" : "reference fasta",
-          "values" : ["files-for-testing-tools/test_genome.fa", "files-for-testing-tools/mobile_element_sequences.fa"],
-          "argument" : "--fasta-reference"
+          "argument" : "--fasta-reference",
+          "values" : ["files-for-testing-tools/test_genome.fa", "files-for-testing-tools/mobile_element_sequences.fa"]
         },
         {
           "ID" : "hash size",
           "argument" : "--hash-size",
-          "values" : ["10"]
+          "values" : [10]
         },
         {
           "ID" : "output",

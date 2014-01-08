@@ -40,7 +40,7 @@ class gknoErrors:
         if firstLine and errorType == 'error':
           print('ERROR:   %-*s' % (1, line), file=sys.stderr)
         elif firstLine and errorType == 'warning':
-          print('WARNING:   %-*s' % (1, line), file=sys.stderr)
+          print('WARNING: %-*s' % (1, line), file=sys.stderr)
         elif secondLine:
           print('DETAILS: %-*s' % (1, line), file=sys.stderr)
           secondLine = False
@@ -66,6 +66,21 @@ class gknoErrors:
     print('  TERMINATED: Errors found in running gkno.  See specific error messages above for resolution.', file=sys.stderr)
     print('================================================================================================', file=sys.stderr)
     exit(2)
+
+  #####################################
+  # Error with pipeline construction. #
+  #####################################
+
+  # The pipeline contains an isolated node.
+  def isolatedNodes(self, graph, config, isolatedNodes):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text.append('Isolated node in pipeline.')
+    self.text.append('The following nodes do not share any files with any other task in the pipeline. This may be by design, but is often ' + \
+    'a sign that the pipeline configuration file is not complete.')
+    self.text.append('\t')
+    for nodeID in isolatedNodes: self.text.append('\t' + nodeID)
+    self.text.append('\t')
+    self.writeFormattedText(errorType = 'warning')
 
   #################################
   # Errors with the command line. #

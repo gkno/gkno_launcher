@@ -59,6 +59,13 @@
       "short form" : "-nj",
       "value" : ["1"]
     },
+    "GKNO-NO-HARD-WARNINGS" : {
+      "argument" : "--no-hard-warnings",
+      "data type" : "flag",
+      "description" : "If not set, some warnings require the user to acknowledge that they have read it by pressing 'Enter'.",
+      "short form" : "-nhw",
+      "value" : ["unset"]
+    },
     "GKNO-OUTPUT-PATH" : {
       "argument" : "--output-path",
       "data type" : "string",

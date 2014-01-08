@@ -188,6 +188,10 @@ def main():
     # Generate the workflow using a topological sort of the pipeline graph.
     config.pipeline.workflow = config.generateWorkflow(pipelineGraph)
 
+    # Check to see if any tasks in the pipeline are isolated, i.e. they share no files with any other task
+    # in the pipeline.
+    hasIsolatedNode, isolatedNodes = config.checkForIsolatedNodes(pipelineGraph)
+
     # Loop over all of the nodes and determine which require a value.  Also check to see if there
     # are missing edges.  For example, if a tool has an argument that is required, but is not included
     # in the pipeline configuration file (as a pipeline argument or via connections), the graph cannot
@@ -211,7 +215,6 @@ def main():
     config.tools.processConfigurationData(runName, toolConfigurationData)
     config.instances.checkInstances(runName, toolConfigurationData['instances'], isPipeline)
     del(toolConfigurationData)
-
     # Define the tasks structure. Since a single tool is being run, this is simply the name
     # of the tool. Set the tasks structure in the pipeline configuration object as well.
     config.pipeline.definePipelineAttributesForTool(runName)
@@ -402,8 +405,18 @@ def main():
   # screen and ensure that the makefiles aren't executed.
   gknoConfig.writeMissingFiles(pipelineGraph, config)
 
+  #TODO
   # Check that all of the executable files exist.
   # checkExecutables()
+
+  # If the pipeline contains any isolated nodes, print a warning to screen.
+  if hasIsolatedNode:
+    errors.isolatedNodes(pipelineGraph, config, isolatedNodes)
+
+    # Force the uset to acknowledge that the warning was read,
+    execute        = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-EXECUTE', 'values')[1][0]
+    noHardWarnings = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-NO-HARD-WARNINGS', 'values')[1][0]
+    if execute and not noHardWarnings: raw_input('Press Enter to continue...')
 
   # Having established the mode of operation and checked that the command lines are
   # valid etc., ping the website to log use of gkno.

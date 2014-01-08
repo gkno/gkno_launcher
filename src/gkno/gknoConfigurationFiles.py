@@ -798,12 +798,12 @@ class gknoConfigurationFiles:
 
           # Determine the expected data type
           expectedDataType = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'dataType')
-          for value in values[iteration]:
+          for counter, value in enumerate(values[iteration]):
 
             # Get the data type for the value and check that it is as expected.
-            if not self.checkDataType(expectedDataType, value)[0]:
-              self.errors.invalidDataType(graph, config, longFormArgument, shortFormArgument, description, value, expectedDataType)
-              print('dUnexpected data type:', value, expectedDataType)
+            success, modifiedValue     = self.checkDataType(expectedDataType, value)
+            values[iteration][counter] = modifiedValue
+            if not success: self.errors.invalidDataType(graph, config, longFormArgument, shortFormArgument, description, value, expectedDataType)
 
             # If the value refers to a file, check that the extension is valid. This is not necessary
             # for arguments representing a filename stub.
@@ -886,7 +886,7 @@ class gknoConfigurationFiles:
       if isinstance(value, str): return True, value
 
       # If the value is not a string, check to see if it is unicode. If so, return a string.
-      elif isinstance(value, str): return True, str(value)
+      elif isinstance(value, unicode): return True, str(value)
       else: return False, value
 
     # If the data type is unknown.

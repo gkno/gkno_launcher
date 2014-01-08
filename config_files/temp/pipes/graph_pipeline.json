@@ -25,6 +25,9 @@
     },
     "filter-variants" : {
       "tool" : "vcflib-filter"
+    },
+    "isolated" : {
+      "tool" : "bamtools-filter"
     }
   },
 
@@ -46,9 +49,6 @@
       "required" : true,
       "tasks" : {
         "build" : "--fastq2"
-      },
-      "greedy tasks" : {
-        "call" : "--bam"
       }
     },
     {

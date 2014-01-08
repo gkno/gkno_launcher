@@ -11,7 +11,7 @@
         },
         {
           "ID": "reference fasta",
-          "argument" : "--reference-fasta",
+          "argument" : "--fasta-reference",
           "values" : ["test_reference.fa"]
         }
       ]
