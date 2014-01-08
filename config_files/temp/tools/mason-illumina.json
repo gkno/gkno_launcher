@@ -4,109 +4,119 @@
   "executable" : "mason",
   "modifier" : "illumina",
   "help" : "--help|-h",
-  "arguments" : {
-    "--input-fasta" : {
+  "arguments" : [
+    {
       "description" : "The input FASTA sequence file.",
+      "long form argument" : "--input-fasta",
       "short form argument" : "-in",
+      "command line argument" : "--input-fasta",
       "input" : true,
       "output" : false,
       "required" : true,
-      "dependent" : true,
-      "type" : "string",
+      "data type" : "string",
       "extension" : "fa|fasta",
       "modify argument name on command line" : "hide"
     },
-    "--seed" : {
+    {
       "description" : "The seed for Rng. Default: 0.",
+      "long form argument" : "--seed",
       "short form argument" : "-s",
+      "command line argument" : "--seed",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "integer",
+      "data type" : "integer",
       "extension" : "no extension"
     },
-    "--simulate-qualities" : {
+    {
       "description" : "Simulate qualities, generate FASTQ instead of FASTA.",
+      "long form argument" : "--simulate-qualities",
       "short form argument" : "-sq",
+      "command line argument" : "--simulate-qualities",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "flag",
+      "data type" : "flag",
       "extension" : "no extension"
     },
-    "--read-length" : {
+    {
       "description" : "The length of the reads to simulate. All resulting reads will have the same length. Default: 36.",
+      "long form argument" : "--read-length",
       "short form argument" : "-n",
+      "command line argument" : "--read-length",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "integer",
+      "data type" : "integer",
       "extension" : "no extension"
     },
-    "--num-reads" : {
+    {
       "description" : "Number of reads (or mate pairs) to simulate. Default: 1000.",
+      "long form argument" : "--num-reads",
       "short form argument" : "-N",
+      "command line argument" : "--num-reads",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "integer",
+      "data type" : "integer",
       "extension" : "no extension"
     },
-    "--library-length-mean" : {
+    {
       "description" : "Mate-pair mean library length. Default: 1000.",
+      "long form argument" : "--library-length-mean",
       "short form argument" : "-ll",
+      "command line argument" : "--library-length-mean",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "integer",
+      "data type" : "integer",
       "extension" : "no extension"
     },
-    "--mate-pairs" : {
+    {
       "description" : "Enable mate pair simulation.",
+      "long form argument" : "--mate-pairs",
       "short form argument" : "-mp",
+      "command line argument" : "--mate-pairs",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "flag",
+      "data type" : "flag",
       "extension" : "no extension"
     },
-    "--read-name-prefix" : {
+    {
       "description" : "Read name prefix. Default is output file name.",
+      "long form argument" : "--read-name-prefix",
       "short form argument" : "-rnp",
+      "command line argument" : "--read-name-prefix",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "integer",
+      "data type" : "integer",
       "extension" : "no extension"
     },
-    "--haplotype-snp-rate" : {
+    {
       "description" : "Haplotype SNP rate. Default: 0.001.",
+      "long form argument" : "--haplotype-snp-rate",
       "short form argument" : "-hs",
+      "command line argument" : "--haplotype-snp-rate",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "float",
+      "data type" : "float",
       "extension" : "no extension"
     },
-    "--haplotype-indel-rate" : {
+    {
       "description" : "Haplotype indel rate. Default: 0.001.",
+      "long form argument" : "--haplotype-indel-rate",
       "short form argument" : "-hi",
+      "command line argument" : "--haplotype-indel-rate",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "float",
+      "data type" : "float",
       "extension" : "no extension"
     }
-  },
+  ],
 
   "argument order" : [
     "--seed",
@@ -121,9 +131,12 @@
     "--input-fasta"
   ],
 
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
     }
-  }
+  ]
 }

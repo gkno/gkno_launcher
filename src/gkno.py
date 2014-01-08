@@ -142,6 +142,7 @@ def main():
       pipelineConfigurationData = config.fileOperations.readConfigurationFile(pipelineFile)
       config.pipeline.processConfigurationData(pipelineConfigurationData, runName, gknoConfig.jsonFiles['tools'])
       config.instances.checkInstances(runName, pipelineConfigurationData['instances'], isPipeline)
+      config.instances.checkExternalInstances(config.fileOperations, pipelineFile, runName, gknoConfig.jsonFiles['tools'], isPipeline)
       del(pipelineConfigurationData)
 
     # If gkno is being run in tool mode, set the phoneHomeID.

@@ -3,10 +3,12 @@
   "path" : "no path",
   "executable" : "md5sum",
   "help" : "--help|-h",
-  "arguments" : {
-    "--in" : {
+  "arguments" : [
+    {
       "description" : "the file whose md5 checksum is to be calculated.",
+      "long form argument" : "--in",
       "short form argument" : "-i",
+      "command line argument" : "--in",
       "input" : true,
       "output" : false,
       "required" : true,
@@ -14,9 +16,11 @@
       "extension" : "no extension",
       "modify argument name on command line" : "hide"
     },
-    "--out" : {
+    {
       "description" : "the output md5 checksum.",
+      "long form argument" :"--out",
       "short form argument" : "-o",
+      "command line argument" :"--out",
       "input" : false,
       "output" : true,
       "required" : true,
@@ -29,19 +33,23 @@
         "modify extension" : "append"
       }
     }
-  },
+  ],
 
   "argument order" : [
     "--in",
     "--out"
   ],
 
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
     },
 
-    "test" : {
+    {
+      "ID" : "test",
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
@@ -56,5 +64,5 @@
         }
       ]
     }
-  }
+  ]
 }

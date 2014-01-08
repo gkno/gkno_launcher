@@ -25,12 +25,6 @@ class helpClass:
     self.pipelineLength       = 0
     self.toolLength           = 0
 
-    # Instances information.
-    self.availableInstances = {}
-    self.pipelineInstances  = {}
-    self.toolInstances      = {}
-    self.instanceLength     = 0
-
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
   def checkForHelp(self, isPipeline, pipelineName, admin, mode):
@@ -69,14 +63,15 @@ class helpClass:
   # of usage information to provide, write to screen and then terminate.
   def printUsage(self, graph, config, gknoConfig, admin, path, name):
 
-    # Get information on all the available tools and pipelines.
-    self.getToolsAndPipelines(config, gknoConfig, path)
-
     # General gkno usage.
-    if self.generalHelp: self.usage(graph, config, gknoConfig, admin, path)
+    if self.generalHelp:
+      self.getTools(config, gknoConfig, path)
+      self.getPipelines(config, gknoConfig, path)
+      self.usage(graph, config, gknoConfig, admin, path)
 
     # gkno tool mode usage.
     elif self.toolHelp:
+      self.getTools(config, gknoConfig, path)
       if self.invalidTool:
         self.printToolModeUsage(config, gknoConfig, path)
         self.invalidToolMessage(name)
@@ -84,11 +79,9 @@ class helpClass:
 
     # General pipeline help.
     elif self.pipelineHelp:
-      if self.invalidPipeline:
-        self.printPipelineModeUsage(config, gknoConfig, path)
-        if self.invalidPipeline: self.invalidPipelineMessage(name)
-      else:
-        self.printPipelineModeUsage(config, gknoConfig, path)
+      self.getPipelines(config, gknoConfig, path)
+      self.printPipelineModeUsage(config, gknoConfig, path)
+      if self.invalidPipeline: self.invalidPipelineMessage(name)
 
     # Admin mode help.
     elif self.adminHelp: self.adminModeUsage(admin)
@@ -207,7 +200,7 @@ class helpClass:
     print(file = sys.stdout)
 
   # Get information on all avilable tools and pipelines.
-  def getToolsAndPipelines(self, config, gknoConfig, path):
+  def getTools(self, config, gknoConfig, path):
 
     # Open each tool file, check that it is a valid json file and get the tool description and
     # whether the tool is hidden.
@@ -215,25 +208,31 @@ class helpClass:
       #TODO REMOVE TEMP
       filePath           = path + '/config_files/temp/tools/' + filename
       tool               = filename[:len(filename) - 5]
-      data               = config.fileOperations.readConfigurationFile(filePath)
-      toolInstances      = config.tools.processConfigurationData(tool, data)
-      description        = config.tools.getToolAttribute(tool, 'description')
-      isHidden           = True if config.tools.getToolAttribute(tool, 'isHidden') else False
+
+      # Open the tool configuration file and process the data.
+      configurationData = config.fileOperations.readConfigurationFile(filePath)
+      config.tools.processConfigurationData(tool, configurationData)
+      description       = config.tools.getGeneralAttribute(tool, 'description')
+      isHidden          = config.tools.getGeneralAttribute(tool, 'isHidden')
 
       # For the purposes of formatting the screen output, find the longest tool
       # name and use this to define the format length.
       if len(tool) > self.toolLength: self.toolLength = len(tool)
       self.availableTools[tool] = (description, isHidden)
 
+  def getPipelines(self, config, gknoConfig, path):
+
     # Open each pipeline file, check that it is a valid json file and get the pipeline description and
     # whether the tool is hidden.
     for filename in gknoConfig.jsonFiles['pipelines']:
       #TODO REMOVE TEMP
-      filePath               = path + '/config_files/temp/pipes/' + filename
-      pipeline               = filename[:len(filename) - 5]
-      data                   = config.fileOperations.readConfigurationFile(filePath)
-      pipelineInstances      = config.pipeline.processConfigurationData(data, filePath)
-      description            = config.pipeline.description
+      filePath          = path + '/config_files/temp/pipes/' + filename
+      pipeline          = filename[:len(filename) - 5]
+
+      # Open the pipeline configuration file and process the data.
+      configurationData = config.fileOperations.readConfigurationFile(filePath)
+      config.pipeline.processConfigurationData(configurationData, pipeline, gknoConfig.jsonFiles['tools'])
+      description       = config.pipeline.attributes.description
 
       # For the purposes of formatting the screen output, find the longest tool
       # name and use this to define the format length.
@@ -243,26 +242,28 @@ class helpClass:
   # Get instances information.
   def getInstances(self, config, gknoConfig, path, mode, name):
 
-    # Get the instances contained in the tool configuration file.
-    instances = self.toolInstances if mode == 'tool' else self.pipelineInstances
-    for instance in instances.keys():
-      self.availableInstances[instance] = instances[instance]['description']
-      if len(instance) > self.instanceLength: self.instanceLength = len(instance)
+    # Define information based on whether a tool or pipeline is being run.
+    if mode == 'tool':
+      isPipeline       = False
+      text             = 'tool instances'
+      filePath         = path + '/config_files/temp/tools/'
+      externalFilename = name + '_instances'
+      externalFilePath = filePath + externalFilename + '.json'
+    elif mode == 'pipe':
+      isPipeline       = True
+      text             = 'pipeline instances'
+      filePath         = path + '/config_files/temp/pipes/'
+      externalFilename = name + '_instances'
+      externalFilePath = filePath + externalFilename + '.json'
+
+    # Open the pipeline configuration file and process the instance data.
+    configurationData = config.fileOperations.readConfigurationFile(filePath + name + '.json')
+    config.instances.checkInstances(name, configurationData['instances'], isPipeline)
 
     # Now get any external instances.
-    filename = name + '_instances.json'
-    if mode == 'tool':
-      text     = 'tool instances'
-      filePath = path + '/config_files/temp/tools/' + filename
-    else:
-      text     = 'pipeline instances'
-      filePath = path + '/config_files/temp/pipes/' + filename
-
-    if filename in gknoConfig.jsonFiles[text]:
-      data     = config.fileOperations.readConfigurationFile(filePath)
-      for instance in data['instances']:
-        self.availableInstances[instance] = data['instances'][instance]['description']
-        if len(instance) > self.instanceLength: self.instanceLength = len(instance)
+    if externalFilename + '.json' in gknoConfig.jsonFiles[text]:
+      configurationData = config.fileOperations.readConfigurationFile(externalFilePath)
+      config.instances.checkInstances(name, configurationData['instances'], isPipeline)
 
   # If help for a specific tool was requested, but that tool does not exist,
   # print an error after the usage information.
@@ -303,22 +304,28 @@ class helpClass:
 
     # If this pipeline has different instances, print them to screen.
     self.getInstances(config, gknoConfig, path, 'tool', tool)
-    if self.availableInstances:
+    if config.instances.instanceAttributes[tool]:
+
+      # Determine the longest instance name.
+      instanceLength = 0
+      for instance in config.instances.instanceAttributes[tool].keys():
+        if len(instance) > instanceLength: instanceLength = len(instance)
+
       print('     Instances:', file = sys.stdout)
-      for instance in sorted(self.availableInstances.keys()):
-         self.writeFormattedText(instance + ":", self.availableInstances[instance], self.instanceLength + 4, 2, '')
+      for instance in sorted(config.instances.instanceAttributes[tool].keys()):
+        self.writeFormattedText(instance + ":", config.instances.instanceAttributes[tool][instance].description, instanceLength + 4, 2, '')
       print(file = sys.stdout)
 
     # Split the tool inputs into a required and an optional set.
     optionalArguments = {}
     requiredArguments = {}
     argumentLength    = 0
-    for argument in config.tools.configurationData[tool]['arguments'].keys():
-      if not config.tools.getArgumentData(tool, argument, 'hide in help'):
-        shortForm = config.tools.getArgumentData(tool, argument, 'short form argument')
-        if (len(argument) + len(shortForm)) > argumentLength: argumentLength = len(argument) + len(shortForm)
-        if config.tools.getArgumentData(tool, argument, 'required'): requiredArguments[argument] = shortForm
-        else: optionalArguments[argument] = shortForm
+    for longFormArgument in config.tools.argumentAttributes[tool].keys():
+      if not config.tools.getArgumentAttribute(tool, longFormArgument, 'hideInHelp'):
+        shortFormArgument = config.tools.getArgumentAttribute(tool, longFormArgument, 'shortFormArgument')
+        if (len(longFormArgument) + len(shortFormArgument)) > argumentLength: argumentLength = len(longFormArgument) + len(shortFormArgument)
+        if config.tools.getArgumentAttribute(tool, longFormArgument, 'isRequired'): requiredArguments[longFormArgument] = shortFormArgument
+        else: optionalArguments[longFormArgument] = shortFormArgument
 
     # Sort the required and optional arguments.
     sortedRequiredArguments = sorted(requiredArguments.keys())
@@ -329,8 +336,8 @@ class helpClass:
       print('     Required arguments:', file = sys.stdout)
       for argument in sortedRequiredArguments:
         argumentText  = argument + ' (' + requiredArguments[argument] + '):'
-        description   = config.tools.getArgumentData(tool, argument, 'description')
-        dataType      = config.tools.getArgumentData(tool, argument, 'data type')
+        description   = config.tools.getArgumentAttribute(tool, argument, 'description')
+        dataType      = config.tools.getArgumentAttribute(tool, argument, 'dataType')
         self.writeFormattedText(argumentText, description, argumentLength + 5, 2, dataType)
       print(file = sys.stdout)
       sys.stdout.flush()
@@ -340,8 +347,8 @@ class helpClass:
       print('     Optional arguments:', file = sys.stdout)
       for argument in sortedOptionalArguments:
         argumentText  = argument + ' (' + optionalArguments[argument] + '):'
-        description   = config.tools.getArgumentData(tool, argument, 'description')
-        dataType      = config.tools.getArgumentData(tool, argument, 'data type')
+        description   = config.tools.getArgumentAttribute(tool, argument, 'description')
+        dataType      = config.tools.getArgumentAttribute(tool, argument, 'dataType')
         self.writeFormattedText(argumentText, description, argumentLength + 5, 2, dataType)
       print(file = sys.stdout)
       sys.stdout.flush()
@@ -359,7 +366,7 @@ class helpClass:
 
     # Print out the decription of the pipeline.
     print('     Description:', file = sys.stdout)
-    self.writeFormattedText('', config.pipeline.description, 0, 2, '')
+    self.writeFormattedText('', config.pipeline.attributes.description, 0, 2, '')
     print(file = sys.stdout)
 
     # Write out the pipeline workflow.
@@ -373,19 +380,28 @@ class helpClass:
     print(file = sys.stdout)
 
     # If this pipeline has different instances, print them to screen.
-    self.getToolsAndPipelines(config, gknoConfig, path)
-    self.getInstances(config, gknoConfig, path, 'pipe', name)
-    if self.availableInstances:
+    # TODO REMOVE TEMP
+    #configurationData = config.fileOperations.readConfigurationFile(path + '/config_files/temp/pipes/' + name + '.json')
+    #config.pipeline.processConfigurationData(configurationData, name, gknoConfig.jsonFiles['tools'])
+    #self.getToolsAndPipelines(config, gknoConfig, path)
+    #self.getInstances(config, gknoConfig, path, 'pipe', name)
+    if config.instances.instanceAttributes[name]:
       print('     Instances:', file = sys.stdout)
-      for instance in sorted(self.availableInstances.keys()):
-         self.writeFormattedText(instance + ":", self.availableInstances[instance], self.instanceLength + 4, 2, '')
+
+      # Find the length of the longest instance name.
+      instanceLength = 0
+      for instance in config.instances.instanceAttributes[name].keys():
+        if len(instance) > instanceLength: instanceLength = len(instance)
+
+      for instance in sorted(config.instances.instanceAttributes[name].keys()):
+         self.writeFormattedText(instance + ":", config.instances.instanceAttributes[name][instance].description, instanceLength + 4, 2, '')
       print(file = sys.stdout)
 
     # Reset the pipeline variables to those of the current pipeline.
     #TODO remove temp
-    filePath = path + '/config_files/temp/pipes/' + name + '.json'
-    data     = config.fileOperations.readConfigurationFile(filePath)
-    config.pipeline.processConfigurationData(data, filePath)
+    #filePath = path + '/config_files/temp/pipes/' + name + '.json'
+    #data     = config.fileOperations.readConfigurationFile(filePath)
+    #config.pipeline.processConfigurationData(data, filePath)
 
     # List the options available at the pipeline level.
     #
@@ -396,21 +412,32 @@ class helpClass:
     optionNodeIDs     = config.nodeMethods.getNodes(graph, 'option')
     requiredArguments = {}
     optionalArguments = {}
-    for argument in config.pipeline.argumentData:
-      description = config.pipeline.argumentData[argument].description
-      shortForm   = config.pipeline.argumentData[argument].shortForm
-      text        = argument + ' (' + shortForm + '):'
-      length      = len(text) if (len(text) > length) else length
+    for longFormArgument in config.pipeline.pipelineArguments:
+      description       = config.pipeline.pipelineArguments[longFormArgument].description
+      shortFormArgument = config.pipeline.pipelineArguments[longFormArgument].shortFormArgument
+      configNodeID      = config.pipeline.pipelineArguments[longFormArgument].configNodeID
+      text              = longFormArgument + ' (' + shortFormArgument + '):'
+      length            = len(text) if (len(text) > length) else length
 
       # First check if the pipeline requires the argument. If not, check if the tool
       # requires the argument.
-      isRequired = config.pipeline.argumentData[argument].isRequired
+      isRequired = config.pipeline.pipelineArguments[longFormArgument].isRequired
       if not isRequired:
-        nodeID             = config.pipeline.argumentData[argument].nodeID
-        associatedTask     = config.pipeline.nodeTaskInformation[nodeID][0][0]
-        associatedArgument = config.pipeline.nodeTaskInformation[nodeID][0][1]
-        associatedTool     = config.nodeMethods.getGraphNodeAttribute(graph, associatedTask, 'tool')
-        isRequired         = config.tools.getArgumentData(associatedTool, associatedArgument, 'required')
+
+        # Check the tasks.
+        if config.pipeline.nodeAttributes[configNodeID].tasks:
+          for associatedTask in config.pipeline.nodeAttributes[configNodeID].tasks:
+            associatedTool     = config.pipeline.taskAttributes[associatedTask].tool
+            associatedArgument = config.pipeline.nodeAttributes[configNodeID].tasks[associatedTask]
+            if config.tools.getArgumentAttribute(associatedTool, associatedArgument, 'isRequired'): isRequired = True
+
+        # If iSRequired is still False, check for greedy tasks.
+        if not isRequired and config.pipeline.nodeAttributes[configNodeID].greedyTasks:
+          for associatedTask in config.pipeline.nodeAttributes[configNodeID].greedyTasks:
+            associatedTool     = config.pipeline.taskAttributes[associatedTask].tool
+            associatedArgument = config.pipeline.nodeAttributes[configNodeID].greedyTasks[associatedTask]
+            if config.tools.getArgumentAttribute(associatedTool, associatedArgument, 'isRequired'): isRequired = True
+
       if isRequired: requiredArguments[text] = description
       else: optionalArguments[text] = description
 
@@ -432,6 +459,7 @@ class helpClass:
     length = 0
     for task in config.pipeline.workflow: length = len(task) if (len(task) > length) else length
 
+    self.getTools(config, gknoConfig, path)
     for task in sorted(config.pipeline.workflow):
       associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
       isHidden       = self.availableTools[associatedTool][1]

@@ -3,20 +3,26 @@
   "path" : "Tangram/bin",
   "executable" : "tangram_merge",
   "help" : "--help|-h",
-  "arguments" : {
-    "-dir" : {
+  "arguments" : [
+    {
       "description" : "Path of the directory containing the fragment length distribution information (output of tangram-scan).",
+      "long form argument" : "--directory",
+      "short form argument" : "-d",
+      "command line argument" : "-dir",
       "input" : true,
       "output" : false,
       "required" : true,
-      "dependent" : false,
-      "type" : "string",
+      "data type" : "string",
       "extension" : "no extension"
     }
-  },
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
     }
-  }
+  ]
 }

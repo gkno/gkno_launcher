@@ -4,7 +4,6 @@
   "executable" : "samtools",
   "modifier" : "calmd",
   "hide tool" : true,
-  "output is stream" : true,
   "help" : "--help|-h",
   "arguments" : [
     {    
@@ -15,12 +14,8 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "flag",
-      "extension" : "no extension",
-      "default" : [
-        "set"
-      ]
+      "data type" : "flag",
+      "extension" : "no extension"
     },
     {    
       "description" : "Convert the read base to = if it is identical to the aligned reference base.",
@@ -30,9 +25,8 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
       "extension" : "no extension",
-      "type" : "flag"
+      "data type" : "flag"
     },
     {    
       "description" : "Output uncompressed BAM.",
@@ -42,12 +36,8 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "flag",
-      "extension" : "no extension",
-      "default" : [
-        "set"
-      ]
+      "data type" : "flag",
+      "extension" : "no extension"
     },
     {    
       "description" : "Output compressed BAM.",
@@ -57,9 +47,8 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
       "extension" : "no extension",
-      "type" : "flag"
+      "data type" : "flag"
     },
     {    
       "description" : "The input is SAM with header lines.",
@@ -69,9 +58,8 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
       "extension" : "no extension",
-      "type" : "flag"
+      "data type" : "flag"
     },
     {    
       "description" : "Coefficient to cap mapping quality of poorly mapped reads. See the pileup command for details. [0]",
@@ -81,9 +69,8 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
       "extension" : "no extension",
-      "type" : "integer"
+      "data type" : "integer"
     },
     {    
       "description" : "Compute the BQ tag (without -A) or cap base quality by BAQ (with -A).",
@@ -93,12 +80,8 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "flag",
-      "extension" : "no extension",
-      "default" : [
-        "set"
-      ]
+      "data type" : "flag",
+      "extension" : "no extension"
     },
     {    
       "description" : "Extended BAQ calculation. This option trades specificity for sensitivity, though the effect is minor.",
@@ -108,12 +91,8 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
       "extension" : "no extension",
-      "type" : "flag",
-      "default" : [
-        "set"
-      ]
+      "data type" : "flag"
     },
     {    
       "description" : "Input BAM file.",
@@ -123,8 +102,7 @@
       "input" : true,
       "output" : false,
       "required" : true,
-      "dependent" : false,
-      "type" : "string",
+      "data type" : "string",
       "extension" : ".bam",
       "if input is stream" : "replace",
       "replace argument with" : {
@@ -136,11 +114,12 @@
     {    
       "description" : "Reference fasta file.",
       "long form argument" : "--reference-fasta",
+      "short form argument" : "-r",
+      "command line argument" : "--reference-fasta",
       "input" : false,
       "output" : false,
       "required" : false,
-      "dependent" : false,
-      "type" : "string",
+      "data type" : "string",
       "extension" : "no extension",
       "modify argument name on command line" : "hide"
     }
@@ -152,16 +131,39 @@
     "--output-uncompressed",
     "--output-compressed",
     "--input-is-sam",
-    "--cap-mappinq-quality",
+    "--cap-mapping-quality",
     "--compute-BQ-or-BAQ",
     "--extended",
     "--in",
     "--reference-fasta"
   ],
 
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "overwrite",
+          "argument" : "--overwrite-original-qualities",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "uncompressed",
+          "argument" : "--output-uncompressed",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "compute BAQ",
+          "argument" : "--compute-BQ-or-BAQ",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "extended BAQ",
+          "argument" : "--extended",
+          "values" : ["set"]
+        }
+      ]
     }
-  }
+  ]
 }

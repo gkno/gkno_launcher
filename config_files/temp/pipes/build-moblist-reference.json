@@ -53,6 +53,7 @@
     },
     {
       "ID" : "mosaik reference",
+      "description" : "Reference file in native Mosaik format.",
       "tasks" : {
         "build-reference" : "--mosaik-reference",
         "build-jump-database" : "--mosaik-reference"
@@ -61,12 +62,15 @@
     }
   ],
 
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires user to input all input filenames."
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires user to input all input filenames.",
+      "nodes" : []
     },
 
-    "test" : {
+    {
+      "ID" : "test",
       "description" : "Test instance for the test harness.",
       "nodes" : [
         {
@@ -91,5 +95,5 @@
         }
       ]
     }
-  }
+  ]
 }

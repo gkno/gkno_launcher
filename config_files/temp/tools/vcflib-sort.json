@@ -4,10 +4,12 @@
   "executable" : "vcfsort",
   "hide tool" : false,
   "help" : "--help|-h",
-  "arguments" : {
-    "--in" : {
+  "arguments" : [
+    {
       "description" : "The input vcf file.",
+      "long form argument" : "--in",
       "short form argument" : "-i",
+      "command line argument" : "--in",
       "input" : true,
       "output" : false,
       "required" : true,
@@ -15,9 +17,11 @@
       "if input is stream" : "do not include",
       "data type" : "string"
     },
-    "--out" : {
+    {
       "description" : "The output sorted VCF file.",
+      "long form argument" : "--out",
       "short form argument" : "-o",
+      "command line argument" : "--out",
       "output" : true,
       "input" : false,
       "required" : true,
@@ -32,19 +36,21 @@
         "add additional text" : "sorted"
       }
     }
-  },
+  ],
 
   "argument order" : [
     "--in",
     "--out"
   ],
 
-  "instances" : {
-    "default" : {
+  "instances" : [
+    {
+      "ID" : "default",
       "description" : "Default instance requires the users input for all files."
     },
 
-    "test" : {
+    {
+      "ID" : "test",
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
@@ -59,5 +65,5 @@
         }
       ]
     }
-  }
+  ]
 }

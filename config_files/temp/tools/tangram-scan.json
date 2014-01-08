@@ -3,9 +3,10 @@
   "path" : "Tangram/bin",
   "executable" : "tangram_scan",
   "help" : "--help|-h",
-  "arguments" : {
-    "--in-list" : {
+  "arguments" : [
+    {
       "description" : "The list of input BAM files.",
+      "long form argument" : "--in-list",
       "short form argument" : "-il",
       "command line argument" : "-in",
       "input" : true,
@@ -14,20 +15,22 @@
       "data type" : "string",
       "extension" : "no extension"
     },
-    "--output-directory" : {
+    {
       "description" : "Path of the output directory.  This must be empty or non-existent.",
+      "long form argument" : "--output-directory",
       "short form argument" : "-d",
       "command line argument" : "-dir",
       "input" : false,
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "no extension",
-      "directory" : true,
-      "must be absent prior to execution" : true
+      "extension" : "no extension"
     },
-    "--library-file" : {
+    {
       "description" : "Automatically generated file.",
+      "long form argument" : "--library-file",
+      "short form argument" : "-lf",
+      "command line argument" : "--library-file",
       "input" : false,
       "output" : true,
       "required" : true,
@@ -42,8 +45,11 @@
         "add extension" : true
       }
     },
-    "--histogram-file" : {
+    {
       "description" : "Automatically generated file.",
+      "long form argument" : "--histogram-file",
+      "short form argument" : "-hf",
+      "command line argument" : "--histogram-file",
       "input" : false,
       "output" : true,
       "required" : true,
@@ -58,8 +64,9 @@
         "add extension" : true
       }
     },
-    "--fragment-length-consistency" : {
+    {
       "description" : "Threshold for determining consistency with the fragment length distribution [0.01]",
+      "long form argument" : "--fragment-length-consistency",
       "short form argument" : "-f",
       "command line argument" : "-cf",
       "input" : false,
@@ -68,8 +75,9 @@
       "data type" : "float",
       "extension" : "no extension"
     },
-    "--trim-rate" : {
+    {
       "description" : "Trim rate for the fragment length distribution [0.02]",
+      "long form argument" : "--trim-rate",
       "short form argument" : "-t",
       "command line argument" : "-tr",
       "input" : false,
@@ -78,8 +86,9 @@
       "data type" : "float",
       "extension" : "no extension"
     },
-    "--min-mapping-quality" : {
+    {
       "description" : "Minimum mapping quality for a normal read pair",
+      "long form argument" : "--min-mapping-quality",
       "short form argument" : "-mq",
       "command line argument" : "-mq",
       "input" : false,
@@ -88,8 +97,9 @@
       "data type" : "integer",
       "extension" : "no extension"
     },
-    "--minimum-fragments" : {
+    {
       "description" : "The minimum number of normal fragments in a library [10000].",
+      "long form argument" : "--minimum-fragments",
       "short form argument" : "-mf",
       "command line argument" : "-mf",
       "input" : false,
@@ -98,14 +108,19 @@
       "data type" : "integer",
       "extension" : "no extension"
     }
-  },
+  ],
 
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
     },
 
-    "test" : {
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
           "ID" : "list",
@@ -129,5 +144,5 @@
         }
       ]
     }
-  }
+  ]
 }

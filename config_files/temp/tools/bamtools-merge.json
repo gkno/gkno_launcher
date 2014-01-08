@@ -61,12 +61,14 @@
     }
   ],
 
-  "instances" : {
-    "default" : {
+  "instances" : [
+    {
+      "ID" : "default",
       "description" : "Default instance requires the users input for all files."
     },
 
-    "test" : {
+    {
+      "ID" : "test",
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
@@ -81,5 +83,5 @@
         }
       ]
     }
-  }
+  ]
 }
