@@ -145,6 +145,31 @@ of the following extensions:')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  # Multiple instances were specified.
+  def multipleInstancesSpecified(self, graph, config):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text.append('Multiple instances were specified on the command line.')
+    self.text.append('Each tool or pipeline can be run using a set of predefined values contained in an instance using the --instance ' + \
+    '(-is) argument on the command line. Only one instance can be defined on the pipeline, however multiple were set. Please check the ' + \
+    'command line and ensure that only one instance is defined.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # The instance name was not specified.
+  def noInstanceNameProvided(self, graph, config, isPipeline):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text.append('Missing instance name.')
+    self.text.append('Each tool or pipeline can be run using a set of predefined values contained in an instance using the --instance ' + \
+    '(-is) argument on the command line. The command line syntax is:')
+    self.text.append('\t')
+    if isPipeline: self.text.append('gkno pipe <pipeline name> --instance <instance name> [options]')
+    else: self.text.append('gkno <tool name> --instance <instance name> [options]')
+    self.text.append('\t')
+    self.text.append('Please ensure that the instance name is included on the command line. Use the --help argument to see all of the ' + \
+    'available instances. If the instance is set and help requested, the parameters included in the instance will be displayed.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   ######################################################
   # Errors with required files/directories/executables #
   ######################################################

@@ -61,7 +61,7 @@ class helpClass:
 
   # If usage information needs to be printed out, determine the exact level
   # of usage information to provide, write to screen and then terminate.
-  def printUsage(self, graph, config, gknoConfig, admin, path, name):
+  def printUsage(self, graph, config, gknoConfig, admin, path, name, instanceName):
 
     # General gkno usage.
     if self.generalHelp:
@@ -75,7 +75,7 @@ class helpClass:
       if self.invalidTool:
         self.printToolModeUsage(config, gknoConfig, path)
         self.invalidToolMessage(name)
-      else: self.toolUsage(config, gknoConfig, name, path)
+      else: self.toolUsage(config, gknoConfig, name, path, instanceName)
 
     # General pipeline help.
     elif self.pipelineHelp:
@@ -288,7 +288,7 @@ class helpClass:
     sys.stdout.flush()
 
   # Print out tool usage.
-  def toolUsage(self, config, gknoConfig, tool, path):
+  def toolUsage(self, config, gknoConfig, tool, path, instanceName):
     print('===================', file = sys.stdout)
     print('  gkno tool usage', file = sys.stdout)
     print('===================', file = sys.stdout)
@@ -353,9 +353,28 @@ class helpClass:
       print(file = sys.stdout)
       sys.stdout.flush()
 
+    # Write out all of the values included in the selected instance, if there are any.
+    if config.instances.getArguments(tool, instanceName):
+      print('     Instance parameters for instance: ', instanceName, sep = '', file = sys.stdout)
+  
+      # Get the length of the longest argument in the instance.
+      argumentLength = 0
+      for argument, values in config.instances.getArguments(tool, instanceName):
+        if len(argument) > argumentLength: argumentLength = len(argument)
+  
+      # Write out the values.
+      for argument, values in config.instances.getArguments(tool, instanceName):
+        firstValue = True
+        for value in values:
+          if firstValue:
+            self.writeFormattedText(argument + ':', str(value), argumentLength + 5, 2, '')
+            firstValue = False
+          else:
+            self.writeFormattedText('', str(value), argumentLength + 5, 2, '')
+
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
-  def specificPipelineUsage(self, graph, config, gknoConfig, name, path):
+  def specificPipelineUsage(self, graph, config, gknoConfig, name, path, instanceName):
     length = len(name) + 26
     print('=' * length)
     print('  gkno pipeline usage - ', name, sep = '', file = sys.stdout)
@@ -465,6 +484,26 @@ class helpClass:
       isHidden       = self.availableTools[associatedTool][1]
       if not isHidden: self.writeFormattedText('--' + task + ':', associatedTool, length + 5, 2, '')
     sys.stdout.flush()
+
+    # Write out all of the values included in the selected instance, if there are any.
+    if config.instances.getArguments(name, instanceName):
+      print('', file = sys.stdout)
+      print('     Instance parameters for instance: ', instanceName, sep = '', file = sys.stdout)
+ 
+      # Get the length of the longest argument in the instance.
+      argumentLength = 0
+      for argument, values in config.instances.getArguments(name, instanceName):
+        if len(argument) > argumentLength: argumentLength = len(argument)
+ 
+      # Write out the values.
+      for argument, values in config.instances.getArguments(name, instanceName):
+        firstValue = True
+        for value in values:
+          if firstValue:
+            self.writeFormattedText(argument + ':', str(value), argumentLength + 5, 2, '')
+            firstValue = False
+          else:
+            self.writeFormattedText('', str(value), argumentLength + 5, 2, '')
 
     # Terminate.
     exit(0)

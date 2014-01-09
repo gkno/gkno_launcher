@@ -118,7 +118,9 @@ def main():
   # or '-h' arguments on the command line. If help has been requested, print out the required
   # help.
   gknoHelp.checkForHelp(isPipeline, runName, admin, commands.mode)
-  if gknoHelp.printHelp and not gknoHelp.specificPipelineHelp: gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, sourcePath, runName)
+  instanceName = commands.getInstanceName(pipelineGraph, config, isPipeline)
+  if gknoHelp.printHelp and not gknoHelp.specificPipelineHelp:
+    gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, sourcePath, runName, instanceName)
 
   # Print gkno title and version to the screen.
   write.printHeader(__version__, __date__)
@@ -200,7 +202,7 @@ def main():
 
     # If help was requested on this specific pipeline, the information now exists to generate
     # the help information.
-    if gknoHelp.specificPipelineHelp: gknoHelp.specificPipelineUsage(pipelineGraph, config, gknoConfig, runName, sourcePath)
+    if gknoHelp.specificPipelineHelp: gknoHelp.specificPipelineUsage(pipelineGraph, config, gknoConfig, runName, sourcePath, instanceName)
 
   # If being run in the tool mode.
   elif commands.mode == 'tool':
@@ -252,7 +254,6 @@ def main():
 
   # Check if an instance was requested by the user.  If so, get the data and add the values to the data nodes.
   if isVerbose: write.writeCheckingInstanceInformation()
-  instanceName = commands.getInstanceName()
 
   # Check to see if the requested instance is available.
   #TODO REMOVE temp

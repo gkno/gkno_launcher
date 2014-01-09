@@ -209,17 +209,29 @@ class commandLine:
 
   # Check if an instance was defined and return the instance name.  If no instance was requested,
   # return 'default'.
-  def getInstanceName(self):
-    if '--instance' in self.argumentDictionary:
+  def getInstanceName(self, graph, config, isPipeline):
+    instanceName = ''
+    success      = True
 
-      # If multiple instances were specified, fail.
-      if len(self.argumentDictionary['--instance']) != 1:
-        # TODO SORT ERRORS
-        print('Multiple instances specified on the command line.')
-        self.errors.terminate()
+    # If the command line contains the instance argument, find the name of the instance.
+    if '--instance' in sys.argv or '-is' in sys.argv:
 
-      return self.argumentDictionary['--instance'][0]
+      # Check that the instance was only defined once.
+      if sys.argv.count('--instance') + sys.argv.count('-is') > 1: self.errors.multipleInstancesSpecified(graph, config)
 
+      # Find the instance name.
+      for counter, value in enumerate(sys.argv):
+        if value == '--instance' or value == '-is':
+          try: instanceName = sys.argv[counter + 1]
+          except: success = False
+
+      # Check trhat the instance name was provided (e.g. the next value on the command line cannot start
+      # with a '-'.
+      if instanceName.startswith('-'): success = False
+      if success: return instanceName
+      else: self.errors.noInstanceNameProvided(graph, config, isPipeline)
+
+    # If no instance was specified, return 'default'.
     else: return 'default'
 
   # Check for lists of input files and add any to the argumentDictionary structure.
