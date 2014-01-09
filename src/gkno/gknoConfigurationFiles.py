@@ -917,9 +917,16 @@ class gknoConfigurationFiles:
       if not os.path.exists(filename): self.missingFiles.append(filename)
 
   def writeMissingFiles(self, graph, config):
+    modifiedList = []
 
     # If there were files missing, write a warning and ensure that gkno will not execute.
     if self.missingFiles:
+
+      # Check if any files appear multiple times.
+      for missingFile in self.missingFiles:
+        if missingFile not in modifiedList: modifiedList.append(missingFile)
+      self.missingFiles = modifiedList
+
       self.errors.missingFiles(graph, config, self.missingFiles)
       config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-EXECUTE', [False], write = 'replace')
 
