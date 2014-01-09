@@ -14,6 +14,12 @@
       "short form" : "-dnl",
       "value" : ["unset"]
     },
+    "GKNO-DRAW-PIPELINE" : {
+      "argument" : "--draw-pipeline-graph",
+      "data type" : "string",
+      "description" : "Name of the file to output a visual depiction of the pipeline graph.",
+      "short form" : "-dpg"
+    },
     "GKNO-EXECUTE" : {
       "argument" : "--execute",
       "data type" : "bool",

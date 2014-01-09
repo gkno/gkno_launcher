@@ -217,6 +217,7 @@ def main():
     config.tools.processConfigurationData(runName, toolConfigurationData)
     config.instances.checkInstances(runName, toolConfigurationData['instances'], isPipeline)
     del(toolConfigurationData)
+
     # Define the tasks structure. Since a single tool is being run, this is simply the name
     # of the tool. Set the tasks structure in the pipeline configuration object as well.
     config.pipeline.definePipelineAttributesForTool(runName)
@@ -418,6 +419,10 @@ def main():
     execute        = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-EXECUTE', 'values')[1][0]
     noHardWarnings = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-NO-HARD-WARNINGS', 'values')[1][0]
     if execute and not noHardWarnings: raw_input('Press Enter to continue...')
+
+  # Check if a plotting the pipeline was requested. If so, check that a name for the output file was given and
+  # draw the pipeline.
+  if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DRAW-PIPELINE', 'values'): gknoConfig.drawPipeline(pipelineGraph, config, draw)
 
   # Having established the mode of operation and checked that the command lines are
   # valid etc., ping the website to log use of gkno.

@@ -13,49 +13,52 @@ class gknoErrors:
 
   # Format the error message and write to screen.
   def writeFormattedText(self, errorType):
-      firstLine = True
-      secondLine = False
-      maxLength = 93 - 5
-      print(file = sys.stderr)
-      for line in self.text:
-        textList = []
-        while len(line) > maxLength:
-          index = line.rfind(' ', 0, maxLength)
+    firstLine = True
+    secondLine = False
+    maxLength = 93 - 5
+    print(file = sys.stderr)
+    for line in self.text:
+      textList = []
+      while len(line) > maxLength:
+        index = line.rfind(' ', 0, maxLength)
+        if index == -1:
+          index = line.find(' ', 0, len(line))
           if index == -1:
-            index = line.find(' ', 0, len(line))
-            if index == -1:
-              textList.append(line)
-              line = ''
-            else:
-              textList.append(line[0:index])
-              line = line[index + 1:len(line)]
+            textList.append(line)
+            line = ''
           else:
             textList.append(line[0:index])
             line = line[index + 1:len(line)]
+        else:
+          textList.append(line[0:index])
+          line = line[index + 1:len(line)]
 
-        if line != '' and line != ' ': textList.append(line)
-        line = textList.pop(0)
+      if line != '' and line != ' ': textList.append(line)
+      line = textList.pop(0)
+      while line.startswith(' '): line = line[1:]
+
+      if firstLine and errorType == 'error':
+        print('ERROR:   %-*s' % (1, line), file=sys.stderr)
+      elif firstLine and errorType == 'warning':
+        print('WARNING: %-*s' % (1, line), file=sys.stderr)
+      elif secondLine:
+        print('DETAILS: %-*s' % (1, line), file=sys.stderr)
+        secondLine = False
+      else:
+        print('         %-*s' % (1, line), file=sys.stderr)
+      for line in textList:
         while line.startswith(' '): line = line[1:]
 
-        if firstLine and errorType == 'error':
-          print('ERROR:   %-*s' % (1, line), file=sys.stderr)
-        elif firstLine and errorType == 'warning':
-          print('WARNING: %-*s' % (1, line), file=sys.stderr)
-        elif secondLine:
-          print('DETAILS: %-*s' % (1, line), file=sys.stderr)
-          secondLine = False
-        else:
-          print('         %-*s' % (1, line), file=sys.stderr)
-        for line in textList:
-          while line.startswith(' '): line = line[1:]
+        if secondLine: print('DETAILS: %-*s' % (1, line), file=sys.stderr)
+        else: print('         %-*s' % (1, line), file=sys.stderr)
 
-          if secondLine: print('DETAILS: %-*s' % (1, line), file=sys.stderr)
-          else: print('         %-*s' % (1, line), file=sys.stderr)
+      if firstLine:
+        print(file=sys.stderr)
+        firstLine = False
+        secondLine = True
 
-        if firstLine:
-          print(file=sys.stderr)
-          firstLine = False
-          secondLine = True
+    # Clear self.text. If a warning was given, gkno will not terminate and so self.text may be reused.
+    self.text = []
 
   ##################
   # Terminate gkno #
@@ -167,6 +170,17 @@ of the following extensions:')
     self.text.append('\t')
     self.text.append('Please ensure that the instance name is included on the command line. Use the --help argument to see all of the ' + \
     'available instances. If the instance is set and help requested, the parameters included in the instance will be displayed.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # The name of the file for the pipeline graph image is not provided.
+  def noDrawFileProvided(self, graph, config):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text.append('Missing filename for pipeline image.')
+    self.text.append('The command line argument \'--draw-pipeline-graph (-dpg)\' was set on the command line, but no filename was provided. ' + \
+    'Please check the command line and include a name for the pipeline image file with the following syntax:')
+    self.text.append('\t')
+    self.text.append('--draw-pipeline-graph <filename>')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 

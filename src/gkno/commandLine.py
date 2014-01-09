@@ -121,9 +121,12 @@ class commandLine:
         if pipelineArgument != None:
           if pipelineArgument not in self.argumentDictionary: self.argumentDictionary[pipelineArgument] = []
 
-          # If the next value on the command line starts with a '-', then there is no value associated
-          # with this argument. Thus it must be a flag, so give the argumentDictionary the value 'set'.
-          if nextArgument.startswith('-'): self.argumentDictionary[pipelineArgument].append('set')
+          # Check if this is a flag.
+          nodeID = config.nodeMethods.getNodeForTaskArgument(graph, 'gkno', pipelineArgument, 'general')[0]
+          isFlag = True if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag' else False
+          if isFlag: self.argumentDictionary[pipelineArgument].append('set')
+          elif nextArgument.startswith('-'): 
+            self.argumentDictionary[pipelineArgument].append('')
           else:
             self.argumentDictionary[pipelineArgument].append(nextArgument)
             count += 1
@@ -310,11 +313,11 @@ class commandLine:
             except: nextTaskArgument = '-'
 
             # Ensure that we are using the long form argument.
-            task           = nodeID
-            associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-            longForm       = config.tools.getLongFormArgument(associatedTool, taskArgument)
-            shortForm      = config.tools.getArgumentAttribute(associatedTool, longForm, 'shortFormArgument')
-            isFilenameStub = config.tools.getArgumentAttribute(associatedTool, longForm, 'isFilenameStub')
+            task              = nodeID
+            associatedTool    = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+            longFormArgument  = config.tools.getLongFormArgument(associatedTool, taskArgument)
+            shortFormArgument = config.tools.getArgumentAttribute(associatedTool, longFormArgument, 'shortFormArgument')
+            isFilenameStub    = config.tools.getArgumentAttribute(associatedTool, longFormArgument, 'isFilenameStub')
 
             # Determine if this is a flag or a value. If the argument is a flag, the next argument on the
             # command line will be a '-'
@@ -322,13 +325,13 @@ class commandLine:
             else: value = [taskArguments.pop(0)]
 
             # If there is no node available for this task argument, create the node and add the edge.
-            sourceNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, nodeID, longForm)
+            sourceNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, nodeID, longFormArgument, 'option')
             if not sourceNodeIDs:
               sourceNodeID  = 'OPTION_' + str(config.nodeMethods.optionNodeID)
-              attributes    = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longForm)
+              attributes    = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longFormArgument)
               graph.add_node(sourceNodeID, attributes = attributes)
               config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'replace')
-              config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeID, task, longForm)
+              config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeID, task, longFormArgument)
               config.nodeMethods.optionNodeID += 1
 
             # If there are already nodes for this task argument, determine how to proceed.
@@ -343,7 +346,7 @@ class commandLine:
               if not isFile:
                 if len(sourceNodeIDs) == 1:
                   config.nodeMethods.addValuesToGraphNode(graph, sourceNodeIDs[0], value, write = 'replace')
-                  config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeIDs[0], task, longForm)
+                  config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeIDs[0], task, longFormArgument)
                 else:
                   #TODO ERROR
                   print('MULTIPLE SOURCE NODES FOR NON FILE NODE. - attachPipelineArgumentsToNodes')
@@ -377,16 +380,16 @@ class commandLine:
   
                 # No nodes were found with no predecessors, so a new node should be created.
                 if not availableNodeIDs:
-                  attributes   = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longForm)
-                  sourceNodeID = config.nodeMethods.buildOptionNode(graph, config.tools, task, associatedTool, longForm, attributes)
+                  attributes   = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longFormArgument)
+                  sourceNodeID = config.nodeMethods.buildOptionNode(graph, config.tools, task, associatedTool, longFormArgument, attributes)
                   config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'replace')
-                  config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeID, task, longForm)
+                  config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeID, task, longFormArgument)
   
                 # A node was found with no predecssors, so add values to this node.
                 elif len(availableNodeIDs) == 1:
                   sourceNodeID = availableNodeIDs[0]
                   config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'append', iteration = 1)
-                  config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeID, task, longForm)
+                  config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeID, task, longFormArgument)
   
                 # Multiple previous nodes were found. This should not have occured, so gkno canno proceed.
                 else:
@@ -395,10 +398,10 @@ class commandLine:
                   self.errors.terminate()
   
               # Check if this option defines a file.  If so, create a file node for this option.
-              if config.tools.getArgumentAttribute(associatedTool, longForm, 'isInput'):
-                config.nodeMethods.buildTaskFileNodes(graph, config.tools, sourceNodeID, task, longForm, shortForm, 'input')
-              elif config.tools.getArgumentAttribute(associatedTool, longForm, 'isOutput'):
-                config.nodeMethods.buildTaskFileNodes(graph, config.tools, sourceNodeID, task, longForm, shortForm, 'output')
+              if config.tools.getArgumentAttribute(associatedTool, longFormArgument, 'isInput'):
+                config.nodeMethods.buildTaskFileNodes(graph, config.tools, sourceNodeID, task, longFormArgument, shortFormArgument, 'input')
+              elif config.tools.getArgumentAttribute(associatedTool, longFormArgument, 'isOutput'):
+                config.nodeMethods.buildTaskFileNodes(graph, config.tools, sourceNodeID, task, longFormArgument, shortFormArgument, 'output')
 
   # Attach the tool arguments to the graph nodes.
   def attachToolArgumentsToNodes(self, graph, config, gknoConfig):
@@ -418,7 +421,7 @@ class commandLine:
       isGknoArgument = False
 
       # Get the nodeID of the option node for this argument.
-      try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, argument)[0]
+      try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, argument, 'option')[0]
 
       # If no nodes were found, the argument must be a gkno specific argument or not have
       # been created in the graph yet,
@@ -435,7 +438,7 @@ class commandLine:
           # If this is a list of arguments, get the argument to use for the values.
           if config.tools.getArgumentAttribute(task, argument, 'isInputList'):
             assignedArgument = config.tools.getArgumentID(task, argument, 'repeatedArgument')
-            try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, assignedArgument)[0]
+            try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, assignedArgument, 'option')[0]
             except:
               #TODO
               print("NODE DOESN'T EXIST. CREATE - attachToolArgumentsToNodes")

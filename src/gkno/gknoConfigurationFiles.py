@@ -363,7 +363,7 @@ class gknoConfigurationFiles:
 
     # Get the ID of the node corresponding to the baseArgument.
     # TODO SORT OUT THE CASE WHERE THERE ARE MULTIPLE VALUES
-    baseNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument)
+    baseNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument, 'option')
     if len(baseNodeIDs) != 1:
       print('Not yet handled constructFilenameFromToolArgumentStub')
       self.errors.terminate()
@@ -417,7 +417,7 @@ class gknoConfigurationFiles:
     for taskArgument in instructions['add argument values']:
 
       # Find the option node that provides information for this argument.
-      argumentNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, taskArgument)
+      argumentNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, taskArgument, 'option')
 
       # If there is no node defined, the argument required to construct the filename has not been
       # defined. As such, it is impossible to construct the filename, so terminate gkno with an error
@@ -547,7 +547,7 @@ class gknoConfigurationFiles:
 
     # Get the ID of the node corresponding to the baseArgument. If there are multiple nodes
     # available, pick one that has a predecessor node itself. TODO SORT THIS OUT
-    baseNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument)
+    baseNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument, 'option')
     if len(baseNodeIDs) == 1: baseNodeID = baseNodeIDs[0]
     elif len(baseNodeIDs) == 0:
       #TODO Sort error
@@ -669,12 +669,12 @@ class gknoConfigurationFiles:
     # Check to see if the filenames to be created should be in a different directory.
     directoryArgument = instructions['directory argument'] if 'directory argument' in instructions else None
     if directoryArgument:
-      if len(config.nodeMethods.getNodeForTaskArgument(graph, task, directoryArgument)) != 1:
+      if len(config.nodeMethods.getNodeForTaskArgument(graph, task, directoryArgument, 'option')) != 1:
         #TODO ERROR
         print('TOO MANY DIRECTORIES - constructKnownFilename')
         self.errors.terminate()
 
-      nodeID          = config.nodeMethods.getNodeForTaskArgument(graph, task, directoryArgument)[0]
+      nodeID          = config.nodeMethods.getNodeForTaskArgument(graph, task, directoryArgument, 'option')[0]
       directoryValues = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
       for iteration in directoryValues: modifiedValues[iteration] = [value + '/' for value in directoryValues[iteration]]
 
@@ -923,6 +923,15 @@ class gknoConfigurationFiles:
       self.errors.missingFiles(graph, config, self.missingFiles)
       config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-EXECUTE', [False], write = 'replace')
 
+  # Draw the pipeline graph.
+  def drawPipeline(self, graph, config, draw):
+    filename = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-DRAW-PIPELINE', 'values')[1][0]
+    if filename == '': self.errors.noDrawFileProvided(graph, config)
+
+    # If the filename does not have the '.dot' extension, add it.
+    if not filename.endswith('.dot'): filename += '.dot'
+    draw.drawDot(graph, config.nodeMethods, config.edgeMethods, filename, nodes = 'file')
+  
 #TODO REMOVE
   # Check if data types agree.
 #  def checkDataTypes(self, expectedType, values):
