@@ -85,6 +85,20 @@ class gknoErrors:
     self.text.append('\t')
     self.writeFormattedText(errorType = 'warning')
 
+  # Attempt to construct a filename when the basenode hasn't been set.
+  def unsetBaseNode(self, graph, config, task, argument, baseArgument):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+    self.text.append('Attempt to construct a filename from a non-existent file.')
+    self.text.append('Task \'' + task + '\', argument \'' + argument + '\' has not been set on the command line and so is being constructed ' + \
+    'using instructions from the tool (' + tool + ') configuration file. The construction uses the value of argument \'' + baseArgument + \
+    '\' from the same task, but this has not been set. This problem is likely caused by an incomplete pipeline configuration file. ' + \
+    'The argument \'' + baseArgument + '\' for task \'' + task + '\' should appear in one of the nodes in the pipeline configuration file; ' + \
+    'either with a pipeline argument that is set as required, or as linked to a different task/argument in the pipeline. Please check the ' + \
+    'pipeline configuration file for errors.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   #################################
   # Errors with the command line. #
   #################################

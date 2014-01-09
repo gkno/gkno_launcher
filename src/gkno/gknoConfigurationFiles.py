@@ -549,10 +549,7 @@ class gknoConfigurationFiles:
     # available, pick one that has a predecessor node itself. TODO SORT THIS OUT
     baseNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument, 'option')
     if len(baseNodeIDs) == 1: baseNodeID = baseNodeIDs[0]
-    elif len(baseNodeIDs) == 0:
-      #TODO Sort error
-      print('No basenode - constructFilenameFromToolArgumentNotStub')
-      self.errors.terminate()
+    elif len(baseNodeIDs) == 0: self.errors.unsetBaseNode(graph, config, task, argument, baseArgument)
     else: baseNodeID = config.nodeMethods.getNodeIDWithPredecessor(graph, baseNodeIDs, task)
 
     # Find all predecessor file nodes and then identify the file associated with the baseNodeID.
