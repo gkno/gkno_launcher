@@ -166,6 +166,10 @@ def main():
       config.tools.processConfigurationData(tool, toolConfigurationData)
       del(toolConfigurationData)
 
+    # Check that any argument in a pipeline configuration file node taht defines a filename stub
+    # is linked to other stub arguments, or that the desired extension is included in the node.
+    config.pipeline.checkCommonNodes(config.tools)
+
     # For each task in the pipeline, build an individual graph consisting of a task node, input
     # option nodes (all input and output file arguments are treated as option nodes) and finally
     # all input and output files are given file nodes.  Nodes are merged later to generate the
@@ -222,6 +226,9 @@ def main():
     # of the tool. Set the tasks structure in the pipeline configuration object as well.
     config.pipeline.definePipelineAttributesForTool(runName)
     config.buildTaskGraph(pipelineGraph, config.pipeline.taskAttributes.keys())
+
+  # TODO REMOVE
+  draw.drawDot(pipelineGraph, config.nodeMethods, config.edgeMethods, config.tools, 'mod.dot', nodes = 'file')
 
   # Parse the command line and put all of the arguments into a list.
   if isVerbose: write.writeReadingCommandLineArguments()

@@ -934,7 +934,7 @@ class gknoConfigurationFiles:
 
     # If the filename does not have the '.dot' extension, add it.
     if not filename.endswith('.dot'): filename += '.dot'
-    draw.drawDot(graph, config.nodeMethods, config.edgeMethods, filename, nodes = 'file')
+    draw.drawDot(graph, config.nodeMethods, config.edgeMethods, config.tools, filename, nodes = 'file')
   
 #TODO REMOVE
   # Check if data types agree.
