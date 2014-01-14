@@ -267,7 +267,6 @@ def main():
   # Check to see if the requested instance is available.
   #TODO REMOVE temp
   config.instances.checkRequestedInstance(sourcePath + '/config_files/temp/', runName, instanceName, gknoConfig.jsonFiles, isPipeline)
-  # TODO Validate instance data. Check that tool instances have the argument field.
 
   # Check to see if any of the instance arguments are gkno specific arguments.
   gknoConfig.attachInstanceArgumentsToNodes(config, pipelineGraph, runName, instanceName)

@@ -87,7 +87,7 @@ class helpClass:
     elif self.adminHelp: self.adminModeUsage(admin)
 
     # Terminate.
-    exit(0)
+    exit(3)
 
   # Print usage information.
   def usage(self, graph, config, gknoConfig, admin, path):
@@ -506,7 +506,7 @@ class helpClass:
             self.writeFormattedText('', str(value), argumentLength + 5, 2, '')
 
     # Terminate.
-    exit(0)
+    exit(3)
 
   # If an admin mode's help was requested.
   def adminModeUsage(self, admin):

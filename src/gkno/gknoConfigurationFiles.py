@@ -661,7 +661,7 @@ class gknoConfigurationFiles:
     tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
     optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
     argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
-    instructions     = config.tools.getArgumentData(tool, argument, 'construct filename')
+    instructions     = config.tools.getArgumentAttribute(tool, argument, 'constructionInstructions')
 
     # Check to see if the filenames to be created should be in a different directory.
     directoryArgument = instructions['directory argument'] if 'directory argument' in instructions else None
