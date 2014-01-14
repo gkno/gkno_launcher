@@ -50,7 +50,8 @@ __date__ = "July 2013"
 def main():
 
   # Initialise variables:
-  phoneHomeID = ''
+  phoneHomeID     = ''
+  hasIsolatedNode = False
 
   # Define the errors class.
   errors = gknoErrors()
@@ -320,7 +321,7 @@ def main():
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
-  gknoConfig.constructFilenames(pipelineGraph, config)
+  gknoConfig.constructFilenames(pipelineGraph, config, isPipeline)
 
   # Check that all required files and values have been set. All files and parameters that are listed as
   # required by the infividual tools should already have been checked, but if the pipeline has some
@@ -425,7 +426,7 @@ def main():
     # Force the uset to acknowledge that the warning was read,
     execute        = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-EXECUTE', 'values')[1][0]
     noHardWarnings = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-NO-HARD-WARNINGS', 'values')[1][0]
-    if execute and not noHardWarnings: raw_input('Press Enter to continue...')
+    if execute and noHardWarnings == 'unset': raw_input('Press Enter to continue...')
 
   # Check if a plotting the pipeline was requested. If so, check that a name for the output file was given and
   # draw the pipeline.

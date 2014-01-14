@@ -114,19 +114,25 @@ class gknoErrors:
     self.terminate()
 
   # A required argument is missing.
-  def missingArgument(self, graph, config, task, argument, shortForm, description):
+  def missingArgument(self, graph, config, task, argument, shortForm, description, isPipeline):
     if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
     self.text.append('A required command line argument is missing.')
-    self.text.append('The task \'' + task + '\' requires the argument \'' + argument + ' (' + shortForm + ')\' to be set, but it has ' + \
-    'not been specified on the command line. This argument cannot be set using a pipeline argument and consequently must be set using the syntax:')
-    self.text.append('\t')
-    self.text.append('./gkno pipe <pipeline name> --' + task + ' [' + argument + ' <value>] [options]')
-    self.text.append('\t')
-    self.text.append('This argument is described as the following: ' + description)
-    self.text.append('\t')
-    self.text.append('It is recommended that the pipeline configuration file be modified to ensure that all arguments required by the pipeline ' + \
-    'have a command line argument defined in the pipeline configuration file. Please see the documentation for further information on how this ' + \
-    'can be accomplished.')
+    if isPipeline:
+      self.text.append('The task \'' + task + '\' requires the argument \'' + argument + ' (' + shortForm + ')\' to be set, but it has ' + \
+      'not been specified on the command line. This argument cannot be set using a pipeline argument and consequently must be set using the syntax:')
+      self.text.append('\t')
+      self.text.append('./gkno pipe <pipeline name> --' + task + ' [' + argument + ' <value>] [options]')
+      self.text.append('\t')
+      self.text.append('This argument is described as the following: ' + description)
+      self.text.append('\t')
+      self.text.append('It is recommended that the pipeline configuration file be modified to ensure that all arguments required by the pipeline ' + \
+     'have a command line argument defined in the pipeline configuration file. Please see the documentation for further information on how this ' + \
+      'can be accomplished.')
+
+    # For tool mode.
+    else:
+      self.text.append('The tool \'' + task + '\' requires the argument \'' + argument + ' (' + shortForm + ')\' to be set, but it has ' + \
+      'not been specified on the command line. ')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 

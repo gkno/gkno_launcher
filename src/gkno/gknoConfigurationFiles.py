@@ -269,7 +269,7 @@ class gknoConfigurationFiles:
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
-  def constructFilenames(self, graph, config):
+  def constructFilenames(self, graph, config, isPipeline):
     for task in config.pipeline.workflow:
       tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
 
@@ -298,9 +298,9 @@ class gknoConfigurationFiles:
                 pipelineShortFormArgument = config.pipeline.pipelineArguments[pipelineLongFormArgument].shortFormArgument
                 self.errors.missingPipelineArgument(graph, config, pipelineLongFormArgument, pipelineShortFormArgument, description)
 
-            # If not a pipeline arghument, the error message needs to make the distinction. The error message
+            # If not a pipeline argument, the error message needs to make the distinction. The error message
             # will also recommend adding the argument to the pipeline arguments since it is required.
-            self.errors.missingArgument(graph, config, task, longFormArgument, shortFormArgument, description)
+            self.errors.missingArgument(graph, config, task, longFormArgument, shortFormArgument, description, isPipeline)
 
           # Build the input filename using the described method.
           else: self.constructFilename(graph, config, method, task, fileNodeID, isInput = True)
