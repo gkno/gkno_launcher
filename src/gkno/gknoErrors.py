@@ -251,7 +251,21 @@ argument existed to set this value. Please see the documentation to see how to i
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  ################################
+  # Error with executable files. #
+  ################################
 
+  # If there are any missing executables, terminate.
+  def missingExecutables(self, graph, config, missingExecutableList):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text.append('Missing executable files')
+    self.text.append('The following executable files are not available, but are required:')
+    self.text.append('\t')
+    for executable in missingExecutableList: self.text.append(executable)
+    self.text.append('\t')
+    self.text.append('Please ensure that gkno has been built or updated.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
 
 
 
@@ -1610,18 +1624,6 @@ argument existed to set this value. Please see the documentation to see how to i
     'this tool provides no instructions on outputting to a stream.  Please modify the tool configuration ' + \
     'file to allow accepting an input stream, or modify the pipeline configuration file to remove the streamed input.'
     self.text.append(text)
-    self.writeFormattedText()
-    self.hasError = True
-
-  # If there are any missing executables, terminate.
-  def missingExecutables(self, newLine, missingExecutableList):
-    if newLine: print(file=sys.stderr)
-    text = 'Missing executable files'
-    self.text.append(text)
-    text = 'The following executable files are not available, but are required:'
-    self.text.append(text)
-    self.text.append('\t')
-    for executable in missingExecutableList: self.text.append(executable)
     self.writeFormattedText()
     self.hasError = True
 

@@ -948,45 +948,25 @@ class gknoConfigurationFiles:
     if not filename.endswith('.dot'): filename += '.dot'
     draw.drawDot(graph, config.nodeMethods, config.edgeMethods, config.tools, filename, nodes = 'file')
   
-#TODO REMOVE
-  # Check if data types agree.
-#  def checkDataTypes(self, expectedType, values):
-#
-#    # First check flags.
-#    if expectedType == 'flag':
-#      for counter, value in enumerate(values):
-#        if value != 'set' and value != 'unset': return False
-#  
-#    # Next check Booleans.
-#    elif expectedType == 'bool':
-#      for counter, value in enumerate(values):
-#        if not isinstance(value, bool):
-#          if value == 'true' or value == 'True': values[counter] = True
-#          elif value == 'false' or value == 'False': values[counter] = False
-#          else: return False
-#  
-#    # Check integers...
-#    elif expectedType == 'integer':
-#      for counter, value in enumerate(values):
-#        if not isinstance(int(value), int): return False
-#        else: values[counter] = int(value)
-#  
-#    # Check floats...
-#    elif expectedType == 'float':
-#      for counter, value in enumerate(values):
-#        if not isinstance(value, float): return False
-#  
-#    # and strings.
-#    elif expectedType == 'string':
-#      for counter, value in enumerate(values):
-#  
-#        # First check if the value is unicode.
-#        if isinstance(value, unicode): values[counter] = str(value)
-#
-#        # Check if the value is a string.
-#        elif not isinstance(value, str): return False
-#  
-#    # If the data type is unknown.
-#    else: return False
-#  
-#    return True
+  # Check that all of the executables required exist.
+  def checkExecutables(self, config, graph, toolsPath):
+    executablesList       = []
+    missingExecutableList = []
+    for task in config.pipeline.workflow:
+      tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+      executablePath = config.nodeMethods.getGraphNodeAttribute(graph, task, 'path')
+      executable     = config.nodeMethods.getGraphNodeAttribute(graph, task, 'executable')
+
+      # Only check tools that actually have an executable.
+      if executablePath != 'no path':
+        executable = toolsPath + executablePath + '/' + executable
+        if executable not in executablesList: executablesList.append(executable)
+
+    # Having identified all of the unique programmes, check that they exist.
+    for executable in executablesList:
+      try:
+        with open(executable): pass
+      except IOError: missingExecutableList.append(executable)
+
+    # If there are any executable files that don't exist, print them out and fail.
+    if len(missingExecutableList) != 0: self.errors.missingExecutables(graph, config, missingExecutableList)

@@ -61,9 +61,10 @@ def main():
   #TODO REMOVE TEMP
   sourcePath                     = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno.py')]
   configurationFilesPath         = sourcePath + '/config_files/temp/'
+  gknoConfigurationFilePath      = sourcePath + '/config_files/'
   pipelineConfigurationFilesPath = sourcePath + '/config_files/temp/pipes/'
   toolConfigurationFilesPath     = sourcePath + '/config_files/temp/tools/'
-  gknoConfigurationFilePath      = sourcePath + '/config_files/'
+  toolsPath                      = sourcePath + '/tools/'
 
   # Define an admin utilities object. This handles all of the build/update steps
   # along with 'resource' management.
@@ -410,9 +411,8 @@ def main():
     # screen and ensure that the makefiles aren't executed.
     gknoConfig.writeMissingFiles(pipelineGraph, config)
   
-    #TODO
     # Check that all of the executable files exist.
-    # checkExecutables()
+    gknoConfig.checkExecutables(config, pipelineGraph, toolsPath)
 
   # If the pipeline contains any isolated nodes, print a warning to screen.
   if hasIsolatedNode:
