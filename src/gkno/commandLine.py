@@ -123,8 +123,7 @@ class commandLine:
           nodeID = config.nodeMethods.getNodeForTaskArgument(graph, 'gkno', pipelineArgument, 'general')[0]
           isFlag = True if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag' else False
           if isFlag: self.argumentDictionary[pipelineArgument].append('set')
-          elif nextArgument.startswith('-'): 
-            self.argumentDictionary[pipelineArgument].append('')
+          elif nextArgument.startswith('-'): self.argumentDictionary[pipelineArgument].append('')
           else:
             self.argumentDictionary[pipelineArgument].append(nextArgument)
             count += 1

@@ -257,13 +257,13 @@ class helpClass:
       externalFilePath = filePath + externalFilename + '.json'
 
     # Open the pipeline configuration file and process the instance data.
-    configurationData = config.fileOperations.readConfigurationFile(filePath + name + '.json')
-    config.instances.checkInstances(name, configurationData['instances'], isPipeline)
+    configurationData = config.fileOperations.readConfigurationFile(filePath + name + '.json', isExternal = False)
+    config.instances.checkInstances(name, configurationData['instances'], isPipeline, isExternal = False)
 
     # Now get any external instances.
     if externalFilename + '.json' in gknoConfig.jsonFiles[text]:
       configurationData = config.fileOperations.readConfigurationFile(externalFilePath)
-      config.instances.checkInstances(name, configurationData['instances'], isPipeline)
+      config.instances.checkInstances(name, configurationData['instances'], isPipeline, isExternal = True)
 
   # If help for a specific tool was requested, but that tool does not exist,
   # print an error after the usage information.

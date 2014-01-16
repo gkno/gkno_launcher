@@ -277,7 +277,7 @@ class gknoConfigurationFiles:
       for fileNodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
         longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'longFormArgument')
         shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'shortFormArgument')
-        optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+        optionNodeID      = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
                                  
         # Use the argument to get information about the argument.
         isRequired = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
@@ -385,6 +385,9 @@ class gknoConfigurationFiles:
 
     # Reset the node values for the option and the file node.
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)
+
+    # Mark this node as having had its values constructed, rather than set by the user.
+    config.nodeMethods.setGraphNodeAttribute(graph, optionNodeID, 'isConstructed', True)
 
     # Set all of the file nodes with their values.
     fileNodeIDs = config.nodeMethods.getAssociatedFileNodeIDs(graph, optionNodeID)
@@ -619,6 +622,9 @@ class gknoConfigurationFiles:
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)
     config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, modifiedValues)
 
+    # Mark this node as having had its values constructed, rather than set by the user.
+    config.nodeMethods.setGraphNodeAttribute(graph, optionNodeID, 'isConstructed', True)
+
   # Modify the extensions for files.
   def modifyExtensions(self, values, extA, extB, replace):
     modifiedValues = {}
@@ -694,6 +700,9 @@ class gknoConfigurationFiles:
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)
     config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, modifiedValues)
 
+    # Mark this node as having had its values constructed, rather than set by the user.
+    config.nodeMethods.setGraphNodeAttribute(graph, optionNodeID, 'isConstructed', True)
+
   # Set file paths for all of the files.
   def setFilePaths(self, graph, config):
 
@@ -751,8 +760,8 @@ class gknoConfigurationFiles:
           # Reset the stored values.
           values[iteration] = modifiedValues
 
-  # Check all of tha provided information.
-  def checkData(self, graph, config):
+  # Check all of the provided information.
+  def checkData(self, graph, config, checkRequired):
     for optionNodeID in config.nodeMethods.getNodes(graph, 'option'):
 
       # Check if there are any values associated with this node and if it is required.
@@ -763,8 +772,10 @@ class gknoConfigurationFiles:
       shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'shortFormArgument')
       description       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
 
-      # If the option is required but unset, terminate.
-      if isRequired and not values:
+      # If the option is required but unset, terminate. The checkRequired flag allows the data checking
+      # to proceed without failing if required files are not present. In particular, if an instance is being
+      # exported, the presence of required values is not a cause for termination.
+      if isRequired and not values and checkRequired:
 
         # If gkno is being run in pipeline mode, check if this argument is a pipeline argument.
         if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'pipeline':
@@ -772,7 +783,8 @@ class gknoConfigurationFiles:
 
           # If the required argument is not a pipeline argument, recommend that the configuration should be
           # amended to include one.
-          if pipelineLongFormArgument == None: self.errors.missingArgument(graph, config, task, longFormArgument, shortFormArgument, description)
+          if pipelineLongFormArgument == None:
+            self.errors.missingArgument(graph, config, task, longFormArgument, shortFormArgument, description, True)
 
           # If the pipeline argument exists, just terminate.
           else: self.errors.missingPipelineArgument(graph, config, longFormArgument, shortFormArgument, description)

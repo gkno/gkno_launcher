@@ -243,14 +243,14 @@ to do this is missing, however. Please ensure that the argument \'' + argument +
   # not a pipeline argument.
   def missingArgumentInFilenameConstructionNotPipelineArgument(self, graph, config, task, argument):
     if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
-    self.text = ['An argument required for constructing a filename is missing.']
+    self.text.append('An argument required for constructing a filename is missing.')
     self.text.append('gkno is attempting to generate a filename using instructions from the tool configuration file. An argument required \
 to do this is missing. The required argument is \'' + argument + '\' for task \'' + task + '\' and there is no pipeline argument that sets this \
 value. The value can be set using the syntax \'--' + task + ' [' + argument + ' <value>]\', however it would be preferable if a pipeline \
 argument existed to set this value. Please see the documentation to see how to include this in the pipeline configuration file.')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
-  
+
 
 
 
@@ -1355,67 +1355,6 @@ argument existed to set this value. Please see the documentation to see how to i
     text = 'The instances file \'' + filename + '\' contains an instance with the name \'' + instance + '\', however, an instance of this ' + \
     'name is already present in the configuration file.  Please ensure that all of the instances defined for a specific tool/pipeline have ' + \
     'unique names (only modify entries in the instances file if possible).'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.hasError = True
-
-  ###################################
-  # Errors with exporting an instance
-  ###################################
-
-  # If the user is attempting to export an instance and they have supplied a file for performing multiple
-  # runs, terminate.
-  def exportInstanceForMultipleRuns(self, newLine):
-    if newLine: print(file=sys.stderr)
-    text = 'Error in attempting to export instance file.'
-    self.text.append(text)
-    text = 'An instance can only be exported if gkno is being run without the --multiple-runs (-mr) command line argument.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.hasError = True
-
-  # If the --export-instance argument includes additional information.  This should be a flag.
-  def noInstanceNameInExport(self, newLine, value, filename):
-    if newLine: print(file=sys.stderr)
-    text = 'No instance name provided for exporting an instance.'
-    self.text.append(text)
-    text = 'The --export-instance (-ei) command line argument requires the desired instance name to be provided.  The provided value (' + value + \
-    ') is either not a string or is missing.  When outputting a new instance, the file \'' + filename + '\' will store the instance information ' + \
-    'with the supplied name.  Please check the command line for errors.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.hasError = True
-
-  # If the --export-instance argument requests an instance name that already exists, terminate.
-  def instanceNameExists(self, newLine, name):
-    if newLine: print(file=sys.stderr)
-    text = 'Requested instance name already exists: ' + name
-    self.text.append(text)
-    text = 'The --export-instance (-ei) command line argument sets the name of the instance to be output.  The requested name \'' + name + \
-    '\' is already defined, either in the configuration file or the instances file.  Please select a different name for the outputted instance.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.hasError = True
-
-  # An unrecognised argument appears in the instance file.
-  def unknownArgumentInInstance(self, newLine, name, argument):
-    if newLine: print(file=sys.stderr)
-    text = 'Unknown command line argument (from instance): ' + argument
-    self.text.append(text)
-    text = "The argument '" + argument + "', present in the instance '" + name + "' is not associated with the tool or any tools in the " + \
-    'pipeline (if a pipeline is being executed).  Please check the instance information in the configuration file and repair.'
-    self.text.append(text)
-    self.writeFormattedText()
-    self.hasError = True
-
-  # The instance contains information that is invalid.  Specifically, a supplied command line argument
-  # does not fit with the tool requested.
-  def invalidArgumentInInstance(self, newLine, instance, argument):
-    if newLine: print(file=sys.stderr)
-    text = 'Invalid argument in instance: ' + instance
-    self.text.append(text)
-    text = "The argument '" + argument + "' appears in the list of arguments for instance '" + instance + "' but this is not " + \
-    'a valid argument for this tool/pipeline.  Please check the instance arguments in the configuration file.'
     self.text.append(text)
     self.writeFormattedText()
     self.hasError = True

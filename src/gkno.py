@@ -50,14 +50,20 @@ __date__ = "July 2013"
 def main():
 
   # Initialise variables:
-  phoneHomeID     = ''
-  hasIsolatedNode = False
+  phoneHomeID       = ''
+  generateMakefiles = True
+  hasIsolatedNode   = False
 
   # Define the errors class.
   errors = gknoErrors()
 
   # Define the source path of all the gkno machinery.
-  sourcePath = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno.py')]
+  #TODO REMOVE TEMP
+  sourcePath                     = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno.py')]
+  configurationFilesPath         = sourcePath + '/config_files/temp/'
+  pipelineConfigurationFilesPath = sourcePath + '/config_files/temp/pipes/'
+  toolConfigurationFilesPath     = sourcePath + '/config_files/temp/tools/'
+  gknoConfigurationFilePath      = sourcePath + '/config_files/'
 
   # Define an admin utilities object. This handles all of the build/update steps
   # along with 'resource' management.
@@ -97,7 +103,7 @@ def main():
   runName                       = commands.getPipelineName(isPipeline)
 
   # Read in information from the gkno specific configuration file.
-  gknoConfig.gknoConfigurationData = config.fileOperations.readConfigurationFile(sourcePath + '/config_files/gknoConfiguration.json')
+  gknoConfig.gknoConfigurationData = config.fileOperations.readConfigurationFile(gknoConfigurationFilePath + '/gknoConfiguration.json')
   #TODO SORT OUT VALIDATION OF GKNO CONFIGURATION FILE>
   gknoConfig.validateConfigurationFile()
   gknoConfig.addGknoSpecificNodes(pipelineGraph, config, isPipeline)
@@ -110,7 +116,7 @@ def main():
   #  purpose etc.  These are contained in config_files/tools.  Find all of the config files
   # and create a hash table with all available tools.
   # FIXME REMOVE TEMP
-  gknoConfig.getJsonFiles(sourcePath + '/config_files/temp/')
+  gknoConfig.getJsonFiles(configurationFilesPath)
 
   # Check if the pipeline/tool name is valid.
   if commands.mode != 'admin': gknoConfig.checkPipelineName(gknoHelp, isPipeline, runName)
@@ -140,12 +146,11 @@ def main():
     # If the file exists, parse the json file.
     if isPipeline:
       phoneHomeID               = 'pipes/' + runName
-      #FIXME REMOVE TEMP
-      pipelineFile              = sourcePath + '/config_files/temp/pipes/' + runName + '.json'
-      pipelineConfigurationData = config.fileOperations.readConfigurationFile(pipelineFile)
+      filename                  = pipelineConfigurationFilesPath + runName + '.json'
+      pipelineConfigurationData = config.fileOperations.readConfigurationFile(filename)
       config.pipeline.processConfigurationData(pipelineConfigurationData, runName, gknoConfig.jsonFiles['tools'])
-      config.instances.checkInstances(runName, pipelineConfigurationData['instances'], isPipeline)
-      config.instances.checkExternalInstances(config.fileOperations, pipelineFile, runName, gknoConfig.jsonFiles['tools'], isPipeline)
+      config.instances.checkInstances(runName, pipelineConfigurationData['instances'], isPipeline, isExternal = False)
+      config.instances.checkExternalInstances(config.fileOperations, filename, runName, gknoConfig.jsonFiles['tools'], isPipeline)
       del(pipelineConfigurationData)
 
     # If gkno is being run in tool mode, set the phoneHomeID.
@@ -156,10 +161,8 @@ def main():
 
     # Find all of the tasks to be used in the pipeline.
     for task in config.pipeline.taskAttributes:
-      tool = config.pipeline.taskAttributes[task].tool
-
-      # FIXME TEMPORARY LOCATION OF CONFIG FILES.  REMOVE TEMP WHEN COMPLETE.
-      toolFile              = sourcePath + '/config_files/temp/tools/' + tool + '.json'
+      tool                  = config.pipeline.taskAttributes[task].tool
+      toolFile              = toolConfigurationFilesPath + tool + '.json'
       toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
 
       # Ensure that the tool configuration file is well constructed and put all of the data
@@ -211,8 +214,7 @@ def main():
 
   # If being run in the tool mode.
   elif commands.mode == 'tool':
-    # FIXME TEMPORARY LOCATION OF CONFIG FILES.  REMOVE TEMP WHEN COMPLETE.
-    toolFile              = sourcePath + '/config_files/temp/tools/' + runName + '.json'
+    toolFile              = toolConfigurationFilesPath + runName + '.json'
     toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
 
     # TODO TOOL CONFIGURATION FILE VALIDATION HAS NOT YET BEEN HANDLED IN THE
@@ -220,7 +222,8 @@ def main():
     # Ensure that the tool configuration file is well constructed and put all of the data
     # in data structures.  Each tool in each configuration file gets its own data structure.
     config.tools.processConfigurationData(runName, toolConfigurationData)
-    config.instances.checkInstances(runName, toolConfigurationData['instances'], isPipeline)
+    config.instances.checkInstances(runName, toolConfigurationData['instances'], isPipeline, isExternal = False)
+    config.instances.checkExternalInstances(config.fileOperations, toolFile, runName, gknoConfig.jsonFiles['tools'], isPipeline)
     del(toolConfigurationData)
 
     # Define the tasks structure. Since a single tool is being run, this is simply the name
@@ -265,8 +268,7 @@ def main():
   if isVerbose: write.writeCheckingInstanceInformation()
 
   # Check to see if the requested instance is available.
-  #TODO REMOVE temp
-  config.instances.checkRequestedInstance(sourcePath + '/config_files/temp/', runName, instanceName, gknoConfig.jsonFiles, isPipeline)
+  config.instances.checkRequestedInstance(configurationFilesPath, runName, instanceName, gknoConfig.jsonFiles, isPipeline)
 
   # Check to see if any of the instance arguments are gkno specific arguments.
   gknoConfig.attachInstanceArgumentsToNodes(config, pipelineGraph, runName, instanceName)
@@ -290,59 +292,52 @@ def main():
     gknoConfig.addLoopValuesToGraph(pipelineGraph, config)
     if isVerbose: write.writeDone()
 
-  # TODO DEAL WITH INSTANCE EXPORTS
-  # If the --export-config has been set, then the user is attempting to create a
-  # new configuration file based on the selected pipeline.  This can only be
-  # selected for a pipeline and if multiple runs are NOT being performed.
-  #if '--export-instance' in cl.uniqueArguments:
-    #if mr.hasMultipleRuns:
-    #  er.exportInstanceForMultipleRuns(verbose)
-    #  er.terminate()
-
-    # Define the json export object, initialise and then check that the given filename is unique.
-    #make.arguments = deepcopy(make.coreArguments)
-    #make.prepareForInternalLoop(iLoop.tasks, iLoop.arguments, iLoop.numberOfIterations)
-    #ei = exportInstance()
-    #if pl.isPipeline: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, pl.instances, verbose)
-    #else: ei.checkInstanceFile(cl.argumentList, pl.pipelineName, tl.instances[tl.tool], verbose)
-    #ei.getData(gknoHelp, tl.argumentInformation, tl.shortForms, pl.isPipeline, pl.workflow, pl.taskToTool, pl.argumentInformation, pl.arguments, pl.toolsOutputtingToStream, pl.toolArgumentLinks, pl.linkage, make.arguments, verbose)
-    #if pl.isPipeline: ei.writeNewConfigurationFile(sourcePath, 'pipes', ins.externalInstances, pl.instances, cl.linkedArguments)
-    #else: ei.writeNewConfigurationFile(sourcePath, 'tools', ins.externalInstances, tl.instances[tl.tool], cl.linkedArguments)
-
-    # After the configuration file has been exported, terminate the script.  No
-    # Makefile is generated and nothing is executed.
-    #exit(0)
- 
   # Now that the command line argument has been parsed, all of the values supplied have been added to the
   # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
   commands.mirrorFileNodeValues(pipelineGraph, config)
 
-  # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
-  # defined by the user.  If there is a required input or output file and it does not have its value set, 
-  # determine how to construct the filename and populate the node with the value.
-  gknoConfig.constructFilenames(pipelineGraph, config, isPipeline)
+  # Not all of the following operation need to be performed if an instance is being exported. Since exporting
+  # an instance just requires that the supplied values are valid, but not that all values are supplied (since
+  # gkno will not be executed).
+  isExportInstance = True if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-EXPORT-INSTANCE', 'values') else False
+  if not isExportInstance:
 
-  # Check that all required files and values have been set. All files and parameters that are listed as
-  # required by the infividual tools should already have been checked, but if the pipeline has some
-  # additional requirements, these may not yet have been checked.
-  config.checkRequiredFiles(pipelineGraph)
+    # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
+    # defined by the user.  If there is a required input or output file and it does not have its value set, 
+    # determine how to construct the filename and populate the node with the value.
+    gknoConfig.constructFilenames(pipelineGraph, config, isPipeline)
+
+    # Check that all required files and values have been set. All files and parameters that are listed as
+    # required by the infividual tools should already have been checked, but if the pipeline has some
+    # additional requirements, these may not yet have been checked.
+    config.checkRequiredFiles(pipelineGraph)
+
+    # If flags are linked in a pipeline configuration file, but none of them were set on the command line,
+    # the nodes will have no values. This will cause problems when generating the makefiles. Search all
+    # option nodes looking for flags and set any unset nodes to 'unset'.
+    config.searchForUnsetFlags(pipelineGraph)
 
   # Check that all files have a path set.
   gknoConfig.setFilePaths(pipelineGraph, config)
-
-  # If flags are linked in a pipeline configuration file, but none of them were set on the command line,
-  # the nodes will have no values. This will cause problems when generating the makefiles. Search all
-  # option nodes looking for flags and set any unset nodes to 'unset'.
-  config.searchForUnsetFlags(pipelineGraph)
 
   # Prior to filling in missing filenames, check that all of the supplied data is consistent with
   # expectations.  This includes ensuring that the inputted data types are correct (for example, if
   # an argument expects an integer, check that the values are integers), filename extensions are valid
   # and that multiple values aren't given to arguments that are only allowed a single value.
-  gknoConfig.checkData(pipelineGraph, config)
+  gknoConfig.checkData(pipelineGraph, config, not isExportInstance)
 
   # Check that all of the supplied values for the gkno specific nodes are valid.
   gknoConfig.checkNodeValues(pipelineGraph, config)
+
+  # If the --export-config has been set, then the user is attempting to create a
+  # new configuration file based on the selected tool/pipeline.  This can only be
+  # if multiple runs are NOT being performed.
+  if isExportInstance:
+    if hasMultipleRuns: config.errors.exportInstanceForMultipleRuns(isVerbose)
+    if isPipeline: config.exportInstance(pipelineGraph, pipelineConfigurationFilesPath, runName, isPipeline)
+    else: config.exportInstance(pipelineGraph, toolConfigurationFilesPath, runName, isPipeline) 
+    config.nodeMethods.addValuesToGraphNode(pipelineGraph, 'GKNO-EXECUTE', [False], write = 'replace')
+    generateMakefiles = False
 
   # Find the maximum number of datasets for each task.
   config.getNumberOfDataSets(pipelineGraph)
@@ -350,73 +345,74 @@ def main():
   # Identify file nodes that are streaming.
   config.identifyStreamingNodes(pipelineGraph)
 
-  # If there are multiple runs, multiple make files are created, using only the values for individual
-  # iterations.
-  make.determineMakefileStructure(pipelineGraph, config, hasMultipleRuns)
-  makeFilename = make.getFilename(runName)
-
-  # Set the output path for use in the makefile generation.
-  make.getOutputPath(pipelineGraph, config)
-
-  for phaseID in make.makefileNames:
-    for iteration, makefileName in enumerate(make.makefileNames[phaseID]):
-
-      # If multiple runs are being performed, the iteration needs to be sent to the various following
-      # routines in order to pick the files necessary for the particular makefile. Otherwise, all
-      # iterations of data should be used in the makefile (there is either only one iteration or
-      # internal loops are required in which case, all of the iterations are used in the same file).
-      # Set the 'key' to the iteration or 'all' depending on the run type.
-      if hasMultipleRuns: key = iteration + 1
-      else: key = 'all'
-
-      # Open the makefile.
-      makefileHandle = make.openMakefile(makefileName)
-
-      # Write header information to all of the makefiles.
-      make.writeHeaderInformation(sourcePath, runName, makefileName, makefileHandle, phaseID, key)
-
-      # Write out the executable paths for all of the tools being used in the makefile.
-      make.writeExecutablePaths(pipelineGraph, config, makefileHandle, make.tasksInPhase[phaseID])
-
-      # Detemine which files are dependencies, outputs and intermediate files. Begin by marking all
-      # intermediate file nodes. If a file node has both a predecessor and a successor, it is an
-      # intermediate file. Mark the file node as such unless the pipeline configuration file specifically
-      # states that the file should be kept.
-      graphDependencies  = config.determineGraphDependencies(pipelineGraph, make.tasksInPhase[phaseID], key = key)
-      graphOutputs       = config.determineGraphOutputs(pipelineGraph, make.tasksInPhase[phaseID], key = key)
-      graphIntermediates = config.determineGraphIntermediateFiles(pipelineGraph, make.tasksInPhase[phaseID], key = key)
-
-      # Write the intermediate files to the makefile.
-      make.writeIntermediateFiles(makefileHandle, graphIntermediates)
-
-      # Write the pipeline outputs to the makefile.
-      make.writeOutputFiles(makefileHandle, graphOutputs)
-
-      # Determine the task in which each intermediate file is last used. This will allow the files to
-      # be deleted as early as possible in the pipeline.
-      deleteList = config.setWhenToDeleteFiles(pipelineGraph, graphIntermediates)
-
-      # Search through the tasks in the workflow and check for tasks outputting to a stream. Generate a
-      # list of tasks for generating the makefiles. Each entry in the list should be a list of all tasks
-      # that are piped together (in a pipeline with no streaming, this list will just be the workflow).
-      taskList = make.determineStreamingTaskList(pipelineGraph, config, make.tasksInPhase[phaseID])
-
-      # Write out the information for running each task.
-      make.writeTasks(pipelineGraph, config, makefileName, makefileHandle, taskList, deleteList, key)
-
-      # Close the makefile in preparation for execution.
-      make.closeMakefile(makefileHandle)
-
-      # Check that all of the input files exist.
-      gknoConfig.checkFilesExist(pipelineGraph, config, graphDependencies, sourcePath)
-
-  # If there are files required for the makefiles to run and theu don't exist, write a warning to the
-  # screen and ensure that the makefiles aren't executed.
-  gknoConfig.writeMissingFiles(pipelineGraph, config)
-
-  #TODO
-  # Check that all of the executable files exist.
-  # checkExecutables()
+  if generateMakefiles:
+    # If there are multiple runs, multiple make files are created, using only the values for individual
+    # iterations.
+    make.determineMakefileStructure(pipelineGraph, config, hasMultipleRuns)
+    makeFilename = make.getFilename(runName)
+  
+    # Set the output path for use in the makefile generation.
+    make.getOutputPath(pipelineGraph, config)
+  
+    for phaseID in make.makefileNames:
+      for iteration, makefileName in enumerate(make.makefileNames[phaseID]):
+  
+        # If multiple runs are being performed, the iteration needs to be sent to the various following
+        # routines in order to pick the files necessary for the particular makefile. Otherwise, all
+        # iterations of data should be used in the makefile (there is either only one iteration or
+        # internal loops are required in which case, all of the iterations are used in the same file).
+        # Set the 'key' to the iteration or 'all' depending on the run type.
+        if hasMultipleRuns: key = iteration + 1
+        else: key = 'all'
+  
+        # Open the makefile.
+        makefileHandle = make.openMakefile(makefileName)
+  
+        # Write header information to all of the makefiles.
+        make.writeHeaderInformation(sourcePath, runName, makefileName, makefileHandle, phaseID, key)
+  
+        # Write out the executable paths for all of the tools being used in the makefile.
+        make.writeExecutablePaths(pipelineGraph, config, makefileHandle, make.tasksInPhase[phaseID])
+  
+        # Detemine which files are dependencies, outputs and intermediate files. Begin by marking all
+        # intermediate file nodes. If a file node has both a predecessor and a successor, it is an
+        # intermediate file. Mark the file node as such unless the pipeline configuration file specifically
+        # states that the file should be kept.
+        graphDependencies  = config.determineGraphDependencies(pipelineGraph, make.tasksInPhase[phaseID], key = key)
+        graphOutputs       = config.determineGraphOutputs(pipelineGraph, make.tasksInPhase[phaseID], key = key)
+        graphIntermediates = config.determineGraphIntermediateFiles(pipelineGraph, make.tasksInPhase[phaseID], key = key)
+  
+        # Write the intermediate files to the makefile.
+        make.writeIntermediateFiles(makefileHandle, graphIntermediates)
+  
+        # Write the pipeline outputs to the makefile.
+        make.writeOutputFiles(makefileHandle, graphOutputs)
+  
+        # Determine the task in which each intermediate file is last used. This will allow the files to
+        # be deleted as early as possible in the pipeline.
+        deleteList = config.setWhenToDeleteFiles(pipelineGraph, graphIntermediates)
+  
+        # Search through the tasks in the workflow and check for tasks outputting to a stream. Generate a
+        # list of tasks for generating the makefiles. Each entry in the list should be a list of all tasks
+        # that are piped together (in a pipeline with no streaming, this list will just be the workflow).
+        taskList = make.determineStreamingTaskList(pipelineGraph, config, make.tasksInPhase[phaseID])
+  
+        # Write out the information for running each task.
+        make.writeTasks(pipelineGraph, config, makefileName, makefileHandle, taskList, deleteList, key)
+  
+        # Close the makefile in preparation for execution.
+        make.closeMakefile(makefileHandle)
+  
+        # Check that all of the input files exist.
+        gknoConfig.checkFilesExist(pipelineGraph, config, graphDependencies, sourcePath)
+  
+    # If there are files required for the makefiles to run and theu don't exist, write a warning to the
+    # screen and ensure that the makefiles aren't executed.
+    gknoConfig.writeMissingFiles(pipelineGraph, config)
+  
+    #TODO
+    # Check that all of the executable files exist.
+    # checkExecutables()
 
   # If the pipeline contains any isolated nodes, print a warning to screen.
   if hasIsolatedNode:
