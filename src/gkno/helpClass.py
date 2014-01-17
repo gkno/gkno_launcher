@@ -2,9 +2,6 @@
 
 from __future__ import print_function
 
-#import configurationClass
-#from configurationClass import *
-
 import os
 import sys
 
@@ -61,26 +58,26 @@ class helpClass:
 
   # If usage information needs to be printed out, determine the exact level
   # of usage information to provide, write to screen and then terminate.
-  def printUsage(self, graph, config, gknoConfig, admin, path, name, instanceName):
+  def printUsage(self, graph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath, name, instanceName):
 
     # General gkno usage.
     if self.generalHelp:
-      self.getTools(config, gknoConfig, path)
-      self.getPipelines(config, gknoConfig, path)
-      self.usage(graph, config, gknoConfig, admin, path)
+      self.getTools(config, gknoConfig, toolConfigurationFilesPath)
+      self.getPipelines(config, gknoConfig, pipelineConfigurationFilesPath)
+      self.usage(graph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath)
 
     # gkno tool mode usage.
     elif self.toolHelp:
-      self.getTools(config, gknoConfig, path)
+      self.getTools(config, gknoConfig, toolConfigurationFilesPath)
       if self.invalidTool:
-        self.printToolModeUsage(config, gknoConfig, path)
+        self.printToolModeUsage()
         self.invalidToolMessage(name)
-      else: self.toolUsage(config, gknoConfig, name, path, instanceName)
+      else: self.toolUsage(graph, config, gknoConfig, name, toolConfigurationFilesPath, instanceName)
 
     # General pipeline help.
     elif self.pipelineHelp:
-      self.getPipelines(config, gknoConfig, path)
-      self.printPipelineModeUsage(config, gknoConfig, path)
+      self.getPipelines(config, gknoConfig, pipelineConfigurationFilesPath)
+      self.printPipelineModeUsage()
       if self.invalidPipeline: self.invalidPipelineMessage(name)
 
     # Admin mode help.
@@ -90,7 +87,7 @@ class helpClass:
     exit(3)
 
   # Print usage information.
-  def usage(self, graph, config, gknoConfig, admin, path):
+  def usage(self, graph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath):
     print('The gkno package can be run in three different modes:', file=sys.stdout)
     print('     ADMIN mode:     lets you manage gkno itself', file = sys.stdout)
     print('     TOOL mode:      runs a single tool', file=sys.stdout)
@@ -103,10 +100,10 @@ class helpClass:
     self.printAdminModeUsage(admin)
 
     # Print out a list of available tools.
-    self.printToolModeUsage(config, gknoConfig, path)
+    self.printToolModeUsage()
 
     # Print out pipeline help.
-    self.printPipelineModeUsage(config, gknoConfig, path)
+    self.printPipelineModeUsage()
 
   # Write out key value pairs in a formatted manned.  These may be tool and
   # description or command line argument and description or whatever else is
@@ -170,7 +167,7 @@ class helpClass:
     print(file = sys.stdout)
 
   # Print usage information on the tool mode of operation.
-  def printToolModeUsage(self, config, gknoConfig, path):
+  def printToolModeUsage(self):
     print('=============', file = sys.stdout)
     print('  tool mode', file = sys.stdout)
     print('=============', file = sys.stdout)
@@ -185,7 +182,7 @@ class helpClass:
     print(file = sys.stdout)
 
   # Print usage information on the pipeline mode of operation.
-  def printPipelineModeUsage(self, config, gknoConfig, path):
+  def printPipelineModeUsage(self):
     print('=================', file = sys.stdout)
     print('  pipeline mode', file = sys.stdout)
     print('=================', file = sys.stdout)
@@ -200,13 +197,12 @@ class helpClass:
     print(file = sys.stdout)
 
   # Get information on all avilable tools and pipelines.
-  def getTools(self, config, gknoConfig, path):
+  def getTools(self, config, gknoConfig, toolConfigurationFilesPath):
 
     # Open each tool file, check that it is a valid json file and get the tool description and
     # whether the tool is hidden.
     for filename in gknoConfig.jsonFiles['tools']:
-      #TODO REMOVE TEMP
-      filePath           = path + '/config_files/temp/tools/' + filename
+      filePath           = toolConfigurationFilesPath + filename
       tool               = filename[:len(filename) - 5]
 
       # Open the tool configuration file and process the data.
@@ -220,17 +216,17 @@ class helpClass:
       if len(tool) > self.toolLength: self.toolLength = len(tool)
       self.availableTools[tool] = (description, isHidden)
 
-  def getPipelines(self, config, gknoConfig, path):
+  def getPipelines(self, config, gknoConfig, pipelineConfigurationFilesPath):
 
     # Open each pipeline file, check that it is a valid json file and get the pipeline description and
     # whether the tool is hidden.
     for filename in gknoConfig.jsonFiles['pipelines']:
-      #TODO REMOVE TEMP
-      filePath          = path + '/config_files/temp/pipes/' + filename
-      pipeline          = filename[:len(filename) - 5]
+      filePath = pipelineConfigurationFilesPath + filename
+      pipeline = filename[:len(filename) - 5]
 
       # Open the pipeline configuration file and process the data.
       configurationData = config.fileOperations.readConfigurationFile(filePath)
+      config.pipeline.clearPipeline()
       config.pipeline.processConfigurationData(configurationData, pipeline, gknoConfig.jsonFiles['tools'])
       description       = config.pipeline.attributes.description
 
@@ -240,24 +236,24 @@ class helpClass:
       self.availablePipelines[pipeline] = description
 
   # Get instances information.
-  def getInstances(self, config, gknoConfig, path, mode, name):
+  def getInstances(self, config, gknoConfig, toolConfigurationFilesPath, pipelineConfigurationFilesPath, mode, name):
 
     # Define information based on whether a tool or pipeline is being run.
     if mode == 'tool':
       isPipeline       = False
       text             = 'tool instances'
-      filePath         = path + '/config_files/temp/tools/'
+      filePath         = toolConfigurationFilesPath
       externalFilename = name + '_instances'
       externalFilePath = filePath + externalFilename + '.json'
     elif mode == 'pipe':
       isPipeline       = True
       text             = 'pipeline instances'
-      filePath         = path + '/config_files/temp/pipes/'
+      filePath         = pipelineConfigurationFilesPath
       externalFilename = name + '_instances'
       externalFilePath = filePath + externalFilename + '.json'
 
     # Open the pipeline configuration file and process the instance data.
-    configurationData = config.fileOperations.readConfigurationFile(filePath + name + '.json', isExternal = False)
+    configurationData = config.fileOperations.readConfigurationFile(filePath + name + '.json')
     config.instances.checkInstances(name, configurationData['instances'], isPipeline, isExternal = False)
 
     # Now get any external instances.
@@ -288,7 +284,7 @@ class helpClass:
     sys.stdout.flush()
 
   # Print out tool usage.
-  def toolUsage(self, config, gknoConfig, tool, path, instanceName):
+  def toolUsage(self, graph, config, gknoConfig, tool, toolConfigurationFilesPath, instanceName):
     print('===================', file = sys.stdout)
     print('  gkno tool usage', file = sys.stdout)
     print('===================', file = sys.stdout)
@@ -303,7 +299,7 @@ class helpClass:
     sys.stdout.flush()
 
     # If this pipeline has different instances, print them to screen.
-    self.getInstances(config, gknoConfig, path, 'tool', tool)
+    self.getInstances(config, gknoConfig, toolConfigurationFilesPath, '', 'tool', tool)
     if config.instances.instanceAttributes[tool]:
 
       # Determine the longest instance name.
@@ -315,6 +311,9 @@ class helpClass:
       for instance in sorted(config.instances.instanceAttributes[tool].keys()):
         self.writeFormattedText(instance + ":", config.instances.instanceAttributes[tool][instance].description, instanceLength + 4, 2, '')
       print(file = sys.stdout)
+
+    # Write out all of the gkno options.
+    self.gknoOptions(graph, config)
 
     # Split the tool inputs into a required and an optional set.
     optionalArguments = {}
@@ -374,7 +373,7 @@ class helpClass:
 
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
-  def specificPipelineUsage(self, graph, config, gknoConfig, name, path, instanceName):
+  def specificPipelineUsage(self, graph, config, gknoConfig, name, toolConfigurationFilesPath, instanceName):
     length = len(name) + 26
     print('=' * length)
     print('  gkno pipeline usage - ', name, sep = '', file = sys.stdout)
@@ -399,11 +398,6 @@ class helpClass:
     print(file = sys.stdout)
 
     # If this pipeline has different instances, print them to screen.
-    # TODO REMOVE TEMP
-    #configurationData = config.fileOperations.readConfigurationFile(path + '/config_files/temp/pipes/' + name + '.json')
-    #config.pipeline.processConfigurationData(configurationData, name, gknoConfig.jsonFiles['tools'])
-    #self.getToolsAndPipelines(config, gknoConfig, path)
-    #self.getInstances(config, gknoConfig, path, 'pipe', name)
     if config.instances.instanceAttributes[name]:
       print('     Instances:', file = sys.stdout)
 
@@ -416,11 +410,8 @@ class helpClass:
          self.writeFormattedText(instance + ":", config.instances.instanceAttributes[name][instance].description, instanceLength + 4, 2, '')
       print(file = sys.stdout)
 
-    # Reset the pipeline variables to those of the current pipeline.
-    #TODO remove temp
-    #filePath = path + '/config_files/temp/pipes/' + name + '.json'
-    #data     = config.fileOperations.readConfigurationFile(filePath)
-    #config.pipeline.processConfigurationData(data, filePath)
+    # Write out all of the gkno options.
+    self.gknoOptions(graph, config)
 
     # List the options available at the pipeline level.
     #
@@ -478,7 +469,7 @@ class helpClass:
     length = 0
     for task in config.pipeline.workflow: length = len(task) if (len(task) > length) else length
 
-    self.getTools(config, gknoConfig, path)
+    self.getTools(config, gknoConfig, toolConfigurationFilesPath)
     for task in sorted(config.pipeline.workflow):
       associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
       isHidden       = self.availableTools[associatedTool][1]
@@ -507,6 +498,29 @@ class helpClass:
 
     # Terminate.
     exit(3)
+
+  # Write out the gkno specific options.
+  def gknoOptions(self, graph, config):
+    print('     General gkno arguments:', file = sys.stdout)
+
+    # Find the length of the longest argument.
+    argumentLength = 0
+    for nodeID in config.nodeMethods.getNodes(graph, 'general'):
+      longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'longFormArgument')
+      shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'shortFormArgument')
+      argumentText      = longFormArgument + ' (' + shortFormArgument + ')'
+      if len(argumentText) > argumentLength: argumentLength = len(argumentText)
+
+    # Write out the arguments.
+    for nodeID in config.nodeMethods.getNodes(graph, 'general'):
+      longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'longFormArgument')
+      shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'shortFormArgument')
+      argumentText      = longFormArgument + ' (' + shortFormArgument + ')'
+      description       = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'description')
+      dataType          = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType')
+      self.writeFormattedText(argumentText + ':', description, argumentLength + 5, 2, dataType)
+
+    print(file = sys.stdout)
 
   # If an admin mode's help was requested.
   def adminModeUsage(self, admin):

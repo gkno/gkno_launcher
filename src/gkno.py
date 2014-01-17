@@ -105,7 +105,6 @@ def main():
 
   # Read in information from the gkno specific configuration file.
   gknoConfig.gknoConfigurationData = config.fileOperations.readConfigurationFile(gknoConfigurationFilePath + '/gknoConfiguration.json')
-  #TODO SORT OUT VALIDATION OF GKNO CONFIGURATION FILE>
   gknoConfig.validateConfigurationFile()
   gknoConfig.addGknoSpecificNodes(pipelineGraph, config, isPipeline)
   gknoConfig.eraseConfigurationData()
@@ -114,9 +113,8 @@ def main():
   isVerbose = commands.checkVerbose(pipelineGraph, config, admin)
 
   # Each of the tools available to gkno should have a config file to describe its operation,
-  #  purpose etc.  These are contained in config_files/tools.  Find all of the config files
+  # purpose etc.  These are contained in config_files/tools.  Find all of the config files
   # and create a hash table with all available tools.
-  # FIXME REMOVE TEMP
   gknoConfig.getJsonFiles(configurationFilesPath)
 
   # Check if the pipeline/tool name is valid.
@@ -128,7 +126,7 @@ def main():
   gknoHelp.checkForHelp(isPipeline, runName, admin, commands.mode)
   instanceName = commands.getInstanceName(pipelineGraph, config, isPipeline)
   if gknoHelp.printHelp and not gknoHelp.specificPipelineHelp:
-    gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, sourcePath, runName, instanceName)
+    gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath, runName, instanceName)
 
   # Print gkno title and version to the screen.
   write.printHeader(__version__, __date__)
@@ -211,7 +209,8 @@ def main():
 
     # If help was requested on this specific pipeline, the information now exists to generate
     # the help information.
-    if gknoHelp.specificPipelineHelp: gknoHelp.specificPipelineUsage(pipelineGraph, config, gknoConfig, runName, sourcePath, instanceName)
+    if gknoHelp.specificPipelineHelp:
+      gknoHelp.specificPipelineUsage(pipelineGraph, config, gknoConfig, runName, toolConfigurationFilesPath, instanceName)
 
   # If being run in the tool mode.
   elif commands.mode == 'tool':

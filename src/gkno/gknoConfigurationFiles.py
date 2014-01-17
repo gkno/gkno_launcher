@@ -87,9 +87,9 @@ class gknoConfigurationFiles:
 
     # Now check for pipelines.
     else:
-      if not name:
-        gknoHelp.printHelp       = True
-        gknoHelp.pipelineHelp    = True
+      if not name or name == '-h' or name == '--help':
+        gknoHelp.printHelp    = True
+        gknoHelp.pipelineHelp = True
       elif name + '.json' not in self.jsonFiles['pipelines']:
         gknoHelp.printHelp       = True
         gknoHelp.pipelineHelp    = True
