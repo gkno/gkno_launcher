@@ -99,6 +99,15 @@ class gknoErrors:
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  # Attempt to get information from a non-existent node.
+  def nodeNotInGraph(self, graph, config, nodeID, routine):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text.append('Error adding values to node')
+    self.text.append('The routine \'' + routine + '\' attempted to get information about the node with ID \'' + nodeID + '\' but this node ' + \
+    'is not in the pipeline graph.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   #################################
   # Errors with the command line. #
   #################################
@@ -266,6 +275,11 @@ argument existed to set this value. Please see the documentation to see how to i
     self.text.append('Please ensure that gkno has been built or updated.')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
+
+  ####################################
+  # Errors with multiple runs/loops. #
+  ####################################
+
 
 
 

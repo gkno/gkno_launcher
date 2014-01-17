@@ -232,9 +232,6 @@ def main():
     config.pipeline.definePipelineAttributesForTool(runName)
     config.buildTaskGraph(pipelineGraph, config.pipeline.taskAttributes.keys())
 
-  # TODO REMOVE
-  draw.drawDot(pipelineGraph, config.nodeMethods, config.edgeMethods, config.tools, 'mod.dot', nodes = 'file')
-
   # Parse the command line and put all of the arguments into a list.
   if isVerbose: write.writeReadingCommandLineArguments()
   commands.getCommandLineArguments(pipelineGraph, config, gknoConfig, runName, isPipeline, isVerbose)

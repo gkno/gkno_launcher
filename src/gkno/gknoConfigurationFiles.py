@@ -237,21 +237,19 @@ class gknoConfigurationFiles:
   # Assign loop values to the graph.
   def addLoopValuesToGraph(self, graph, config):
 
-    # TODO EXPLAIN
+    # Loop over each of the data sets and add to the correct iteration in the correct node.
     for iteration in range(1, self.loopData.numberOfDataSets + 1):
       for argument, values in zip(self.loopData.arguments, self.loopData.values[str(iteration)]):
 
         # Find the node for this argument.
-        nodeID = config.pipeline.argumentData[argument].nodeID
+        nodeID = config.pipeline.pipelineArguments[argument].ID
 
-        # TODO Check if a node has been deleted as part of the merge process, that the pipeline
-        # has the argumentData updated to reflect the change.
-        if nodeID not in graph.nodes():
-          print('ERROR - node not in graph - addLoopValuesToGraph')
-          self.errors.terminate()
+        # If this nodeID is not in the graph, an error has occured. Likely this node has been
+        # deleted in the merge process.
+        if nodeID not in graph.nodes(): self.errors.nodeNotInGraph(graph, config, nodeID, 'gknoConfigurationFiles.addLoopValuesToGraph')
 
-        if iteration == 1: config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'replace')
-        else: config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'iteration', iteration = str(iteration))
+        if iteration == 1: config.nodeMethods.addValuesToGraphNode(graph, nodeID, [str(values)], write = 'replace')
+        else: config.nodeMethods.addValuesToGraphNode(graph, nodeID, [str(values)], write = 'iteration', iteration = str(iteration))
 
   # Return the node for a gkno argument contained in the gkno configuration file.
   def getNodeForGknoArgument(self, graph, config, argument):
@@ -282,7 +280,7 @@ class gknoConfigurationFiles:
         # Use the argument to get information about the argument.
         isRequired = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
         isSet      = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'hasValue')
-                                 
+
         # If input files aren't set, gkno should terminate.  If the input is linked to the output of
         # another task, the nodes are merged and so the input is set.  Thus, an empty value cannot be
         # filled without command line (or instance) information.
@@ -304,7 +302,7 @@ class gknoConfigurationFiles:
 
           # Build the input filename using the described method.
           else: self.constructFilename(graph, config, method, task, fileNodeID, isInput = True)
-                                 
+
       # Now deal with output files,  These are all successor nodes.
       for fileNodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
         longFormArgument = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'longFormArgument')
@@ -346,7 +344,7 @@ class gknoConfigurationFiles:
 
   # Construct a filename using another tool argument.
   def constructFilenameFromToolArgument(self, graph, config, task, fileNodeID, isInput):
-    optionNodeID   = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+    optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
 
     # Check if the filename is a filename stub.
     isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'isFilenameStub')

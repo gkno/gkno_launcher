@@ -365,9 +365,6 @@ class makefileData:
         if iteration in values: valueList = values[iteration]
         elif iteration != 1: valueList = values[1]
         else:
-          #TODO ERROR
-         # print('error in make.writeCommand', task, argument)
-         # self.errors.terminate()
          valueList = {}
 
         # The argument in the tool configuration file is not necessarily the same command that
@@ -398,10 +395,14 @@ class makefileData:
               if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isInput'):
                 isAssociated = config.edgeMethods.checkIfEdgeExists(graph, fileNodeID, task)
 
-                # Check that the iteration exists in the values of associated file nodes.
+                # Check that the iteration exists in the values of associated file nodes. Again, if not, use the
+                # values in the first iteration.
                 if isAssociated:
-                  try: valueList = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')[iteration]
-                  except:
+                  fileValues = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
+                  if iteration in fileValues: valueList = fileValues[iteration]
+                  elif iteration != 1: valueList = fileValues[1]
+                  else:
+
                     # TODO ERROR
                     print('Iteration not associated with file node values - make.writeCommand')
                     print(task, fileNodeID, config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument'), valueList)
