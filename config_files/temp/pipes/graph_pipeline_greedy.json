@@ -159,7 +159,9 @@
       "ID" : "variants",
       "description" : "Linking tasks. No argument.",
       "tasks" : {
-        "call" : "--vcf",
+        "call" : "--vcf"
+      },
+      "greedy tasks" : {
         "filter-variants" : "--in"
       },
       "keep files" : true

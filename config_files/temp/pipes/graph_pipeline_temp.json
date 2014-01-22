@@ -25,6 +25,9 @@
     },
     "filter-variants" : {
       "tool" : "vcflib-filter"
+    },
+    "isolated" : {
+      "tool" : "bamtools-filter"
     }
   },
 
@@ -139,8 +142,7 @@
       "ID" : "sorted alignment",
       "description" : "Linking tasks. No argument.",
       "tasks" : {
-        "sort" : "--out",
-        "index" : "--in"
+        "sort" : "--out"
       },
       "greedy tasks" : {
         "call" : "--bam"
@@ -159,7 +161,9 @@
       "ID" : "variants",
       "description" : "Linking tasks. No argument.",
       "tasks" : {
-        "call" : "--vcf",
+        "call" : "--vcf"
+      },
+      "greedy tasks" : {
         "filter-variants" : "--in"
       },
       "keep files" : true

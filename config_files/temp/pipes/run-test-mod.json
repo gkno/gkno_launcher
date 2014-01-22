@@ -17,6 +17,9 @@
     "sort-primary-bam" : {
       "tool" : "bamtools-sort"
     },
+    "index-test" : {
+      "tool" : "bamtools-index"
+    },
     "sort-multiple-bam" : {
       "tool" : "bamtools-sort"
     },
@@ -176,7 +179,8 @@
       "description" : "Linking tasks. No argument.",
       "tasks" : {
         "sort-primary-bam" : "--out",
-        "recalibrate-bq" : "--in"
+        "recalibrate-bq" : "--in",
+        "index-test" : "--in"
       }
     },
     {
