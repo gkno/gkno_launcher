@@ -434,7 +434,7 @@ class commandLine:
 
           # If this is a list of arguments, get the argument to use for the values.
           if config.tools.getArgumentAttribute(task, argument, 'isInputList'):
-            assignedArgument = config.tools.getArgumentID(task, argument, 'repeatedArgument')
+            assignedArgument = config.tools.getArgumentAttribute(task, argument, 'repeatArgument')
             try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, assignedArgument, 'option')[0]
             except:
               #TODO
