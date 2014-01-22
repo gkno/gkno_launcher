@@ -560,7 +560,7 @@ class gknoConfigurationFiles:
     fileNodeExists = False
     for nodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
       if nodeID.startswith(baseNodeID + '_'):
-        values         = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
+        values         = deepcopy(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
         fileNodeExists = True
         break
 

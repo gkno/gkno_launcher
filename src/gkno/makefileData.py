@@ -49,37 +49,67 @@ class makefileData:
 
     # If the pipeline is being in multiple runs mode, determine the structure.
     else:
-      firstTask    = True
-      currentPhase = 1
+      firstTask         = True
+      self.currentPhase = 1
       for task in config.pipeline.workflow:
   
         # Determine the number of iterations of input and output files.
         numberOfInputDataSets  = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getPredecessorFileNodes(graph, task))
         numberOfOutputDataSets = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getSuccessorFileNodes(graph, task))
-  
-        if numberOfInputDataSets != numberOfOutputDataSets:
+
+        if numberOfOutputDataSets > numberOfInputDataSets:
           #TODO ERROR
-          print('NUMBER OF INPUT DATA SETS IS DIFFERENT TO NUMBER OF OUTPUT DATASETS - determineMakefileStructure')
-          self.error.terminate()
-  
+          print('makefileData.determineMakefileStructure')
+          print('More output data sets than input data sets.')
+          self.errors.terminate()
+
         # If this is the first task in the workflow, determine how many makefiles are required
         # for this task. This is the number of input or output data sets. Set the current makefiles
         # to these.
         if firstTask:
-          numberOfFilesinPhase            = numberOfInputDataSets
-          self.makefileStructure[task]    = (currentPhase, numberOfFilesinPhase)
-          self.makefilesInPhase[1]        = numberOfInputDataSets
-          self.tasksInPhase[currentPhase] = []
-          firstTask                       = False
+          self.numberOfFilesinPhase            = numberOfInputDataSets
+          self.makefileStructure[task]         = (self.currentPhase, self.numberOfFilesinPhase)
+          self.makefilesInPhase[1]             = numberOfInputDataSets
+          self.tasksInPhase[self.currentPhase] = []
+          firstTask                            = False
         else:
-          if numberOfInputDataSets != numberOfFilesinPhase:
-            currentPhase += 1
-            self.tasksInPhase[currentPhase]     = []
-            self.numberOfPhases                 = currentPhase
-            self.makefilesInPhase[currentPhase] = numberOfInputDataSets
-            numberOfFilesinPhase                = numberOfInputDataSets
-          self.makefileStructure[task]    = (currentPhase, numberOfFilesinPhase)
-        self.tasksInPhase[currentPhase].append(task)
+
+          # If there are more input data sets than output data sets, this must be the start of a 
+          # new phase.
+          if numberOfInputDataSets > numberOfOutputDataSets:
+
+            # If the number of input data sets is not equal to the number of files in the current phase,
+            # an error has occured.
+            if numberOfInputDataSets != self.numberOfFilesinPhase:
+              #TODO ERROR
+              print('makefileData.determineMakefileStructure')
+              print('Number of input data sets is different to the number of files in the phase.')
+              self.errors.terminate()
+ 
+            # If the number of output data sets is smaller than the number of input data sets, there
+            # must be a single output data set only. This essentially means that the task is taking the
+            # outputs from multiple tasks and using them all to run. If this is the case, there must
+            # be a single output data set.
+            if numberOfOutputDataSets != 1:
+              #TODO ERROR
+              print('makefileData.determineMakefileStructure')
+              print('A greedy task is accepting multiple inputs, but has more than one output data set.')
+              self.errors.terminate()
+
+            self.createNewPhase(1)
+
+          # If the number of input data sets is equal to the number of output data sets, whether this
+          # is the start of a new phase or not depends on the number of data sets output by the previous
+          # phase.
+          else:
+
+            # If the number of input data sets differs from the number of output data sets from the
+            # last task, this is the start of a new phase.
+            if numberOfInputDataSets != self.numberOfFilesinPhase: self.createNewPhase(numberOfInputDataSets)
+
+          # Add this task to the makefile structure.
+          self.makefileStructure[task] = (self.currentPhase, self.numberOfFilesinPhase)
+        self.tasksInPhase[self.currentPhase].append(task)
 
   # Get the number of data sets for a node.
   def getNumberOfDataSets(self, graph, config, task, nodeIDs):
@@ -95,6 +125,14 @@ class makefileData:
       if numberOfDataSets > finalNumber: finalNumber = numberOfDataSets
 
     return finalNumber
+
+  # Create a new phase in the makefile structure.
+  def createNewPhase(self, numberOfFiles):
+    self.currentPhase += 1
+    self.tasksInPhase[self.currentPhase]     = []
+    self.numberOfPhases                      = self.currentPhase
+    self.makefilesInPhase[self.currentPhase] = numberOfFiles
+    self.numberOfFilesinPhase                = numberOfFiles
 
   # Set the names of the makefiles to be created.  If this is a single run, a single name
   # is required, otherwise, there will be a list of names for each of the created makefiles.
@@ -358,14 +396,34 @@ class makefileData:
       for nodeID, values in arguments[argument]:
 
         # Determine if this argument is a flag or a file.
-        isFlag = True if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag' else False
-        isFile = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile')
+        isFlag    = True if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag' else False
+        isFile    = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile')
+        isGreedy  = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isGreedy')
 
-        # If the iteration does not exist, use the value from the first iteration.
-        if iteration in values: valueList = values[iteration]
-        elif iteration != 1: valueList = values[1]
+        # If this argument is greedy, put all values into the first iteration. If the iteration parameter
+        # is not equal to 1, fail, since the number of data sets should have been set to one given that the
+        # argument is greedy.
+        if isGreedy:
+          if iteration != 1:
+            #TODO ERROR
+            print('makefileData.writeCommand')
+            print('Greedy argument, but dealing with other than the 1st iteration')
+            self.errors.terminate()
+
+          valueList = []
+          for iterationCount in values:
+            for value in values[iterationCount]: valueList.append(value)
+
+        # Deal with arguments that are not greedy.
         else:
-         valueList = {}
+
+          # If the iteration exists, put the values into valueList.
+          if iteration in values: valueList = values[iteration]
+
+          # If the iteration does not exist, use the value from the first iteration (assuming that it
+          # exists).
+          elif iteration != 1: valueList = values[1]
+          else: valueList = {}
 
         # The argument in the tool configuration file is not necessarily the same command that
         # the tool itself expects. This is because gkno attempts to standardise the command line
@@ -396,17 +454,26 @@ class makefileData:
                 isAssociated = config.edgeMethods.checkIfEdgeExists(graph, fileNodeID, task)
 
                 # Check that the iteration exists in the values of associated file nodes. Again, if not, use the
-                # values in the first iteration.
+                # values in the first iteration or all values if the argument is greedy.
                 if isAssociated:
                   fileValues = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
-                  if iteration in fileValues: valueList = fileValues[iteration]
-                  elif iteration != 1: valueList = fileValues[1]
-                  else:
 
-                    # TODO ERROR
-                    print('Iteration not associated with file node values - make.writeCommand')
-                    print(task, fileNodeID, config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument'), valueList)
-                    self.errors.terminate()
+                  # Deal with greedy arguments.
+                  if isGreedy:
+                    valueList = []
+                    for iterationCount in fileValues:
+                      for value in fileValues[iterationCount]: valueList.append(value)
+
+                  # Deal with non greedy arguments.
+                  else:
+                    if iteration in fileValues: valueList = fileValues[iteration]
+                    elif iteration != 1: valueList = fileValues[1]
+                    else:
+
+                      # TODO ERROR
+                      print('Iteration not associated with file node values - make.writeCommand')
+                      print(task, fileNodeID, config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument'), valueList)
+                      self.errors.terminate()
 
               # TODO DO I NEED TO LOOK AT OUTPUTS?
 
