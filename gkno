@@ -1,7 +1,25 @@
 #!/bin/bash
 
+# Find the path to the gkno directory.
 dir="`dirname \"$0\"`"
 dir="`( cd \"$dir\" && pwd )`"
+
+# Get the current working directory.
+current_directory=$(pwd)
+
+# Define the path to the configurationClass directory.
+configuration_class_directory=$dir/src/configurationClass
+     
+# Check if the configurationClass directory is empty. If it is, clone
+# configurationClass
+if ! [ "$(ls -A "$configuration_class_directory")" ]
+then             
+  echo "Cloning configuration class"
+  cd $dir/src
+  git clone https://github.com/AlistairNWard/configurationClass.git
+  cd $current_directory
+fi   
+
 command_line="python $dir/src/gkno.py"
 for ARG in "$@"
 do
