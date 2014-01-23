@@ -1,25 +1,34 @@
 #!/bin/bash
 
-# Find the path to the gkno directory.
+# Find the gkno directory.
 gkno_directory="`dirname \"$0\"`"
 gkno_directory="`( cd \"$gkno_directory\" && pwd )`"
 
-# Get the current working directory.
+# Store the current working directory.
 current_directory=$(pwd)
+
+# -------------------------------------------------------
+# NOTE: Update any submodules that contain python 
+# library code in the block below, *before* executing 
+# the main gkno script.
+# -------------------------------------------------------
 
 # Define the path to the configurationClass directory.
 configuration_class_directory=$gkno_directory/src/configurationClass
-export PYTHONPATH=$PYTHONPATH:$configuration_class_directory:$configuration_class_directory/networkx 
-     
+ 
 # configurationClass directory will be empty on first run.
 # If so, we need to fetch its source code before running main gkno.
 if ! [ "$(ls -A "$configuration_class_directory")" ]
 then             
-  echo "Fetching components - this will take a few minutes...."
   cd $gkno_directory
-  git submodule update --quiet --init --recursive
+  git submodule update --quiet --init src/configurationClass
   cd $current_directory
 fi   
+
+# Add configurationClass module(s) to python's module search path.
+PYTHONPATH=$PYTHONPATH:$configuration_class_directory:$configuration_class_directory/networkx 
+
+# --------------------------------------------------------
 
 # Run main gkno script.
 command_line="python $gkno_directory/src/gkno.py"
@@ -27,4 +36,6 @@ for ARG in "$@"
 do
   command_line="$command_line $ARG"
 done
+
+export PYTHONPATH
 $command_line
