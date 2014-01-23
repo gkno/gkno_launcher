@@ -44,5 +44,5 @@
 	path = tools/libStatGen
 	url = git://github.com/gkno/libStatGen.git
 [submodule "configurationClass"]
-        path = configurationClass
-        url = git://github.com/gkno/configurationClass.git
+    path = src/configurationClass
+    url = git://github.com/gkno/configurationClass.git
