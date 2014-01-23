@@ -1,26 +1,28 @@
 #!/bin/bash
 
 # Find the path to the gkno directory.
-dir="`dirname \"$0\"`"
-dir="`( cd \"$dir\" && pwd )`"
+gkno_directory="`dirname \"$0\"`"
+gkno_directory="`( cd \"$gkno_directory\" && pwd )`"
 
 # Get the current working directory.
 current_directory=$(pwd)
 
 # Define the path to the configurationClass directory.
-configuration_class_directory=$dir/src/configurationClass
+configuration_class_directory=$gkno_directory/src/configurationClass
+export PYTHONPATH=$PYTHONPATH:$configuration_class_directory:$configuration_class_directory/networkx 
      
-# Check if the configurationClass directory is empty. If it is, clone
-# configurationClass
+# configurationClass directory will be empty on first run.
+# If so, we need to fetch its source code before running main gkno.
 if ! [ "$(ls -A "$configuration_class_directory")" ]
 then             
-  echo "Cloning configuration class"
-  cd $dir/src
-  git clone https://github.com/AlistairNWard/configurationClass.git
+  echo "Fetching components - this will take a few minutes...."
+  cd $gkno_directory
+  git submodule update --quiet --init --recursive
   cd $current_directory
 fi   
 
-command_line="python $dir/src/gkno.py"
+# Run main gkno script.
+command_line="python $gkno_directory/src/gkno.py"
 for ARG in "$@"
 do
   command_line="$command_line $ARG"
