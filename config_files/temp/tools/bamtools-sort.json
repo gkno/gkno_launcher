@@ -72,8 +72,7 @@
     {
       "ID" : "default",
       "description" : "Default instance requires the users input for all files.",
-      "nodes" : [
-      ]
+      "nodes" : []
     },
 
     {
@@ -82,18 +81,13 @@
       "nodes" : [
         {
           "ID" : "BAM1",
-          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
-          "argument" : "--in"
-        },
-        {
-          "ID" : "ERROR",
-          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
-          "argument" : "-m"
+          "argument" : "--in",
+          "values" : ["../resources/tutorial/current/simulated_reads.bam"]
         },
         {
           "ID" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
+          "argument" : "--output-path",
+          "values" : ["./"]
         }
       ]
     }

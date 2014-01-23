@@ -39,7 +39,8 @@
   "instances" : [
     {
       "ID" : "default",
-      "description" : "Default instance requires the users input for all files."
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : []
     },
 
     {

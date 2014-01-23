@@ -54,6 +54,7 @@
 
     {
       "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
           "ID" : "reference",

@@ -114,8 +114,7 @@
     {
       "ID" : "default",
       "description" : "Default instance requires the users input for all files.",
-      "nodes" : [
-      ]
+      "nodes" : []
     },
 
     {
@@ -133,7 +132,7 @@
           "values" : ["tangram-files"]
         },
         {
-          "ID" : "output",
+          "ID" : "fragments",
           "argument" : "--minimum-fragments",
           "values" : ["0"]
         },
