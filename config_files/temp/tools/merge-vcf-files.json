@@ -4,38 +4,44 @@
   "executable" : "merge-vcf.sh",
   "hide tool" : true,
   "help" : "--help|-h",
-  "arguments" : {
-    "--vcf-list" : {
+  "arguments" : [
+    {
       "description" : "Input compressed vcf file list.",
+      "long form argument" : "--vcf-list",
       "short form argument" : "-vl",
+      "command line argument" : "--vcf-list",
       "input" : true,
       "output" : false,
       "required" : true,
-      "dependent" : false,
-      "type" : "string",
+      "data type" : "string",
       "extension" : "no extension",
       "modify argument name on command line" : "hide"
     },
-    "--out" : {
+    {
       "description" : "Output filename.",
+      "long form argument" : "--out",
       "short form argument" : "-o",
+      "command line argument" : "--out",
       "input" : false,
       "output" : true,
       "required" : true,
-      "dependent" : false,
-      "type" : "string",
+      "data type" : "string",
       "modify argument name on command line" : "stdout",
       "if output to stream" : "do not include",
       "extension" : "vcf"
     }
-  },
+  ],
+
   "argument order" : [
     "--vcf-list",
     "--out"
   ],
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : []
     }
-  }
+  ]
 }

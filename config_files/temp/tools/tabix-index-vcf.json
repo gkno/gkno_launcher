@@ -5,35 +5,46 @@
   "executable" : "tabix",
   "modifier" : "-p vcf",
   "help" : "--help|-h",
-  "additional files" : {
-    "from input arguments" : [
-      {
-        "type" : "output",
-        "link to this argument" : "--in",
-        "remove extension" : false,
-        "add extension" : true,
-        "output extension" : "tbi",
-        "stub" : false
-      }
-    ]
-  },
-  "arguments" : {
-    "--in" : {
+  "arguments" : [
+    {
       "description" : "The file to be indexed.",
+      "long form argument" : "--in",
       "short form argument" : "-i",
+      "command line argument" : "--in",
       "input" : true,
       "output" : false,
       "required" : true,
-      "dependent" : true,
-      "type" : "string",
+      "data type" : "string",
       "extension" : "vcf.gz",
       "modify argument name on command line" : "hide",
       "if input is stream" : "do not include"
+    },
+    {
+      "description" : "The output index file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "--out",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".tbi",
+      "hide in help" : true,
+      "include on command line" : false,
+      "if input is stream" : "do not include",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "append"
+      }
     }
-  },
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires the users input for all files."
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : []
     }
-  }
+  ]
 }
