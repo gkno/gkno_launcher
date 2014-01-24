@@ -180,8 +180,10 @@ class makefileData:
     return makefileHandle
 
   # Write initial information to the makefiles.
-  def writeHeaderInformation(self, sourcePath, pipelineName, makefileName, fileHandle, phaseID, iteration):
+  def writeHeaderInformation(self, sourcePath, pipelineName, makefileName, fileHandle, phaseID, iteration, version, date, gknoCommitID):
     print('### gkno Makefile', file = fileHandle)
+    print('### Generated using gkno version ', version, ' (', date, ')', sep = '', file = fileHandle)
+    print('### (git commit: ', gknoCommitID, ')', sep = '', file = fileHandle)
     print('### Running pipeline:', pipelineName, file = fileHandle)
 
     # Write phase information if there is more than one phase in the pipeline.

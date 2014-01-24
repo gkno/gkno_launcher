@@ -66,6 +66,9 @@ def main():
   toolConfigurationFilesPath     = sourcePath + '/config_files/temp/tools/'
   toolsPath                      = sourcePath + '/tools/'
 
+  # Get the latest commitID for gkno (the environment variable was set up in the shell script).
+  gknoCommitID = os.getenv('gknoCommitID')
+
   # Define an admin utilities object. This handles all of the build/update steps
   # along with 'resource' management.
   admin = adminUtils(sourcePath)
@@ -129,7 +132,7 @@ def main():
     gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath, runName, instanceName)
 
   # Print gkno title and version to the screen.
-  write.printHeader(__version__, __date__)
+  write.printHeader(__version__, __date__, gknoCommitID)
 
   # No admin mode requested. Prepare to setup our tool or pipeline run.
   if not admin.isRequested:
@@ -366,7 +369,7 @@ def main():
         makefileHandle = make.openMakefile(makefileName)
   
         # Write header information to all of the makefiles.
-        make.writeHeaderInformation(sourcePath, runName, makefileName, makefileHandle, phaseID, key)
+        make.writeHeaderInformation(sourcePath, runName, makefileName, makefileHandle, phaseID, key, __version__, __date__, gknoCommitID)
   
         # Write out the executable paths for all of the tools being used in the makefile.
         make.writeExecutablePaths(pipelineGraph, config, makefileHandle, make.tasksInPhase[phaseID])

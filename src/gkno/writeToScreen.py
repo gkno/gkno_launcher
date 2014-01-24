@@ -14,14 +14,17 @@ class writeToScreen:
 
   # For most of the usage requests, the version number and date are printed out
   # at the start of the message.  Print these here.
-  def printHeader(self, version, date):
+  def printHeader(self, version, date, gknoCommitID):
     print(file = sys.stdout)
-    print('===============================', file = sys.stdout)
+    commitLength = len(gknoCommitID) + 14
+    length       = max(commitLength, 29)
+    print('=' * length, file=sys.stderr)
     print('  Boston College gkno package', file = sys.stdout)
     print(file = sys.stdout)
-    print('  version: ', version, sep = '', file = sys.stdout)
-    print('  date:    ', date, sep = '', file = sys.stdout)
-    print('===============================', file = sys.stdout)
+    print('  version:    ', version, sep = '', file = sys.stdout)
+    print('  date:       ', date, sep = '', file = sys.stdout)
+    print('  git commit: ', gknoCommitID, sep = '', file = sys.stdout)
+    print('=' * length, file=sys.stderr)
     print(file = sys.stdout)
   
   def beginToolConfigurationFileCheck(self):
