@@ -8,8 +8,8 @@ gkno_directory="`( cd \"$gkno_directory\" && pwd )`"
 current_directory=$(pwd)
 
 # Get the most recent commit.
-commitID=$(git log | head -n 1 | awk '{print $2}')
-export gknoCommitID=$commitID
+COMMITID=$(git log | head -n 1 | awk '{print $2}')
+export GKNOCOMMITID=$COMMITID
 
 # -------------------------------------------------------
 # NOTE: Update any submodules that contain python 

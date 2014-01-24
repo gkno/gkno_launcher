@@ -72,28 +72,18 @@ class commandLine:
   def checkVerbose(self, graph, config, admin):
     for count, argument in enumerate(sys.argv[1:]):
       if argument == '--verbose' or argument == '-vb':
-        try: value = sys.argv[count + 2]
-        except: value = ''
 
-        # Check the supplied value.
-        if value == 'false' or value == 'False': isVerbose = False
-        elif value == 'true' or value == 'True':
-          isVerbose       = True
-          admin.isVerbose = True
-        else:
-          # TODO ERROR
-          print('ERROR GETTING VERBOSE - commands.checkVerbose')
-          self.errors.terminate()
+        # Set the verbose values.
+        admin.isVerbose = True
 
         # Update the 'GKNO-VERBOSE' node.
-        config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-VERBOSE', [isVerbose], 'replace')
+        config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-VERBOSE', ['set'], 'replace')
+        return True
 
-        return isVerbose
-
-    return True
+    return False
 
   # Parse through the command line and put all of the arguments into a list.
-  def getCommandLineArguments(self, graph, config, gknoConfig, tool, isPipeline, verbose):
+  def getCommandLineArguments(self, graph, config, gknoConfig, tool, isPipeline):
     count = 1
     while True:
       try: argument = sys.argv[count]

@@ -935,7 +935,7 @@ class gknoConfigurationFiles:
       self.missingFiles = modifiedList
 
       self.errors.missingFiles(graph, config, self.missingFiles)
-      config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-EXECUTE', [False], write = 'replace')
+      config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-DO-NOT-EXECUTE', ['set'], write = 'replace')
 
   # Draw the pipeline graph.
   def drawPipeline(self, graph, config, draw):

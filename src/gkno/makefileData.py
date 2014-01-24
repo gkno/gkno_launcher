@@ -170,7 +170,7 @@ class makefileData:
       # If the chosen output path is not the current directory, check to see if the directory exists.
       if not os.path.isdir(self.outputPath):
         self.errors.missingOutputDirectory(graph, config, self.outputPath)
-        config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-EXECUTE', [False], write = 'replace')
+        config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-DO-NOT-EXECUTE', ['set'], write = 'replace')
 
   # Open the makefile and write the initial information to the file.
   def openMakefile(self, makefileName):

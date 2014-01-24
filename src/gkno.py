@@ -67,7 +67,7 @@ def main():
   toolsPath                      = sourcePath + '/tools/'
 
   # Get the latest commitID for gkno (the environment variable was set up in the shell script).
-  gknoCommitID = os.getenv('gknoCommitID')
+  gknoCommitID = os.getenv('GKNOCOMMITID')
 
   # Define an admin utilities object. This handles all of the build/update steps
   # along with 'resource' management.
@@ -235,9 +235,9 @@ def main():
     config.buildTaskGraph(pipelineGraph, config.pipeline.taskAttributes.keys())
 
   # Parse the command line and put all of the arguments into a list.
-  if isVerbose: write.writeReadingCommandLineArguments()
-  commands.getCommandLineArguments(pipelineGraph, config, gknoConfig, runName, isPipeline, isVerbose)
-  if isVerbose: write.writeDone()
+  write.writeReadingCommandLineArguments()
+  commands.getCommandLineArguments(pipelineGraph, config, gknoConfig, runName, isPipeline)
+  write.writeDone()
 
   # If help was requested or there were problems (e.g. the tool name or pipeline
   # name did not exist), print out the required usage information.
@@ -262,10 +262,10 @@ def main():
     else: errors.terminate()
   
   # Print information about the pipeline to screen.
-  if isPipeline and isVerbose: write.writePipelineWorkflow(pipelineGraph, config, gknoHelp)
+  if isPipeline: write.writePipelineWorkflow(pipelineGraph, config, gknoHelp)
 
   # Check if an instance was requested by the user.  If so, get the data and add the values to the data nodes.
-  if isVerbose: write.writeCheckingInstanceInformation()
+  write.writeCheckingInstanceInformation()
 
   # Check to see if the requested instance is available.
   config.instances.checkRequestedInstance(configurationFilesPath, runName, instanceName, gknoConfig.jsonFiles, isPipeline)
@@ -276,21 +276,21 @@ def main():
   # Now handle the rest of the instance arguments.
   if isPipeline: config.attachPipelineInstanceArgumentsToNodes(pipelineGraph, runName, instanceName)
   else: config.attachToolInstanceArgumentsToNodes(pipelineGraph, runName, instanceName)
-  if isVerbose: write.writeDone()
+  write.writeDone()
 
   # Attach the values of the pipeline arguments to the relevant nodes.
   #TODO USE attachToolArgumentsToNodes in attachPipelineArgumentsToNodes when dealing with tasks.
-  if isVerbose: write.writeAssignPipelineArgumentsToNodes()
+  write.writeAssignPipelineArgumentsToNodes()
   if isPipeline: commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
   else: commands.attachToolArgumentsToNodes(pipelineGraph, config, gknoConfig)
-  if isVerbose: write.writeDone()
+  write.writeDone()
 
   # Check if multiple runs or internal loops have been requested.
   hasMultipleRuns, hasInternalLoop = gknoConfig.hasLoop(pipelineGraph, config)
   if hasMultipleRuns or hasInternalLoop:
-    if isVerbose: write.writeAssignLoopArguments(hasMultipleRuns)
+    write.writeAssignLoopArguments(hasMultipleRuns)
     gknoConfig.addLoopValuesToGraph(pipelineGraph, config)
-    if isVerbose: write.writeDone()
+    write.writeDone()
 
   # Now that the command line argument has been parsed, all of the values supplied have been added to the
   # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
@@ -333,7 +333,7 @@ def main():
   # new configuration file based on the selected tool/pipeline.  This can only be
   # if multiple runs are NOT being performed.
   if isExportInstance:
-    if hasMultipleRuns: config.errors.exportInstanceForMultipleRuns(isVerbose)
+    if hasMultipleRuns: config.errors.exportInstanceForMultipleRuns()
     if isPipeline: config.exportInstance(pipelineGraph, pipelineConfigurationFilesPath, runName, isPipeline)
     else: config.exportInstance(pipelineGraph, toolConfigurationFilesPath, runName, isPipeline) 
     config.nodeMethods.addValuesToGraphNode(pipelineGraph, 'GKNO-EXECUTE', [False], write = 'replace')
@@ -418,9 +418,9 @@ def main():
     errors.isolatedNodes(pipelineGraph, config, isolatedNodes)
 
     # Force the uset to acknowledge that the warning was read,
-    execute        = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-EXECUTE', 'values')[1][0]
+    doNotExecute   = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DO-NOT-EXECUTE', 'values')[1][0]
     noHardWarnings = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-NO-HARD-WARNINGS', 'values')[1][0]
-    if execute and noHardWarnings == 'unset': raw_input('Press Enter to continue...')
+    if doNotExecute == 'unset' and noHardWarnings == 'unset': raw_input('Press Enter to continue...')
 
   # Check if a plotting the pipeline was requested. If so, check that a name for the output file was given and
   # draw the pipeline.
@@ -429,23 +429,23 @@ def main():
   # Having established the mode of operation and checked that the command lines are
   # valid etc., ping the website to log use of gkno.
   if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DNL', 'values')[1][0] == 'unset':
-    if isVerbose: write.writeTracking(phoneHomeID)
+    write.writeTracking(phoneHomeID)
     phoneHome(sourcePath, phoneHomeID)
-    if isVerbose: write.writeDone()
+    write.writeDone()
   write.writeBlankLine()
 
   # Execute the generated script unless the execute flag has been unset.
   success = 0
-  if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-EXECUTE', 'values')[1][0]:
+  if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DO-NOT-EXECUTE', 'values')[1][0] == 'unset':
     for phaseID in make.makefileNames:
       for iteration, makefileName in enumerate(make.makefileNames[phaseID]):
 
         # Check if the '--number-jobs' option is set.  If so, request this number of jobs.
         numberOfJobs = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-JOBS', 'values')[1][0]
         execute      = 'make -j ' + str(numberOfJobs) + ' --file ' + makefileName
-        if isVerbose: write.writeExecuting(execute)
+        write.writeExecuting(execute)
         success = subprocess.call(execute.split())
-        if isVerbose: write.writeComplete(success)
+        write.writeComplete(success)
 
   # If the makefile was succesfully run, finish gkno with the exit condition of 0.
   # If the makefile failed to run, finish with the exit condition 3.  A failure
