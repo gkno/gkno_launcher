@@ -1,0 +1,161 @@
+{
+  "description" : "Filter vcf files on a variety of parameters.",
+  "path" : "vcflib",
+  "executable" : "vcffilter",
+  "hide tool" : true,
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "The input vcf file.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "command line argument" : "--in",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "extension" : ".vcf|.vcf.gz",
+      "if input is stream" : "do not include",
+      "data type" : "string",
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "The output filtered VCF file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "--out",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".vcf",
+      "modify argument name on command line" : "stdout",
+      "construct filename" : {
+        "ID" : "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "replace",
+        "add additional text" : "filtered"
+      }
+    },
+    {
+      "description" : "Specifies a filter to apply to the info fields of records, removes alleles which do not pass the filter.",
+      "long form argument" : "--info-filter",
+      "short form argument" : "-f",
+      "command line argument" : "--info-filter",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "allow multiple values" : true,
+      "extension" : "no extension",
+      "data type" : "string"
+    },
+    {
+      "description" : "Specifies a filter to apply to the genotype fields of records.",
+      "long form argument" : "--genotype-filter",
+      "short form argument" : "-g",
+      "command line argument" : "--genotype-filter",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "string"
+    },
+    {
+      "description" : "Tag vcf records as filtered with this tag instead of suppressing them.",
+      "long form argument" : "--tag",
+      "short form argument" : "-t",
+      "command line argument" : "--tag",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "string"
+    },
+    {
+      "description" : "Apply -t on a per-allele basis.  Adds or sets the corresponding INFO field tag.",
+      "long form argument" : "--allele-tag",
+      "short form argument" : "-a",
+      "command line argument" : "--allele-tag",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    {
+      "description" : "Inverts the filter, e.g. grep -v.",
+      "long form argument" : "--invert",
+      "short form argument" : "-v",
+      "command line argument" : "--invert",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    {
+      "description" : "Use logical OR instead of AND to combine filters.",
+      "long form argument" : "--or",
+      "short form argument" : "-or",
+      "command line argument" : "--or",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    {
+      "description" : "Specify a region on which to target the filtering, requires a BGZF compressed file which has been indexed with tabix.  Any number of regions may be specified.",
+      "long form argument" : "--region",
+      "short form argument" : "-r",
+      "command line argument" : "--region",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "string"
+    }
+  ],
+
+  "argument order" : [
+    "--info-filter",
+    "--genotype-filter",
+    "--tag",
+    "--allele-tag",
+    "--invert",
+    "--or",
+    "--region",
+    "--in",
+    "--out"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "vcf",
+          "values" : ["../resources/tutorial/current/simulated_reads.vcf"],
+          "argument" : "--in"
+        },
+        {
+          "ID" : "region",
+          "values" : ["20:60000-100000"],
+          "argument" : "--region"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
+    }
+  ]
+}

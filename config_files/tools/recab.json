@@ -1,0 +1,222 @@
+{
+  "description" : "Recalibrate base qualities in a BAM file (University of Michigan).",
+  "path" : "bamUtil/bin",
+  "executable" : "bam",
+  "modifier" : "recab",
+  "help" : "--help|-h",
+  "arguments" : [
+    {    
+      "description" : "Input BAM file name.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "command line argument" : "--in",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".bam"
+    },
+    {    
+      "description" : "Output recalibrated BAM file name.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "--out",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".bam",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "replace",
+        "add additional text" : "recalibrated"
+      }
+    },
+    {    
+      "description" : "Log and summary statistics (default: [outfile].log, or stderr if --out starts with '-').",
+      "long form argument" : "--log",
+      "short form argument" : "-l",
+      "command line argument" : "--log",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : ".log"
+    },
+    {    
+      "description" : "Do not expect an EOF block on a bam file.",
+      "long form argument" : "--no-eof",
+      "short form argument" : "-n",
+      "command line argument" : "--noeof",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "Reference file name.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "command line argument" : "--refFile",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".fa|.fasta"
+    },
+    {    
+      "description" : "dbsnp file of positions.",
+      "long form argument" : "--dbsnp",
+      "short form argument" : "-d",
+      "command line argument" : "--dbsnp",
+      "input" : true,
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : ".vcf"
+    },
+    {    
+      "description" : "Minimum base quality of bases to recalibrate (default: 5).",
+      "long form argument" : "--minimum-base-quality",
+      "short form argument" : "-minq",
+      "command line argument" : "--minBaseQual",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "Maximum recalibrated base quality (default: 50).",
+      "long form argument" : "--maximum-base-quality",
+      "short form argument" : "-maxq",
+      "command line argument" : "--maxBaseQual",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "Blended model weight.",
+      "long form argument" : "--blended",
+      "short form argument" : "-b",
+      "command line argument" : "--blended",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "Check if the logistic regression model fits the data overriden by fast, but automatically applied by useLogReg.",
+      "long form argument" : "--fit-model",
+      "short form argument" : "-f",
+      "command line argument" : "--fitModel",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "use a compact representation that only allows:|* at most 256 Read Groups|* maximum quality 63|* at most 127 cycles|overrides fitModel, but is overridden by useLogReg uses up to about 2.25G more memory than running without --fast.",
+      "long form argument" : "--fast",
+      "short form argument" : "-t",
+      "command line argument" : "--fast",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "Do not exclude entries where the previous base is in dbsnp when building the recalibration table. By default they are excluded from the table.",
+      "long form argument" : "--keep-previous-dbsnp",
+      "short form argument" : "-kp",
+      "command line argument" : "--keepPrevDbsnp",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "Do not exclude entries where the previous base is not adjacent (not a Cigar M/X/=) when building the recalibration table.  By default they are excluded from the table (except the first cycle).",
+      "long form argument" : "--keep-previous-non-adjacent",
+      "short form argument" : "-kn",
+      "command line argument" : "--keepPrevNonAdjacent",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "Use logistic regression calculated quality for the new quality automatically applies fitModel and overrides fast.",
+      "long form argument" : "--use-logistic-regression",
+      "short form argument" : "-u",
+      "command line argument" : "--useLogReg",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "Tag to get the starting base quality (default is to get it from the Quality field).",
+      "long form argument" : "--quality-field",
+      "short form argument" : "-q",
+      "command line argument" : "--qualField",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "Tag to store the previous quality into.",
+      "long form argument" : "--store-quality-tag",
+      "short form argument" : "-s",
+      "command line argument" : "--storeQualTag",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : "no extension"
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "BAM1",
+          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
+          "argument" : "--in"
+        },
+        {
+          "ID" : "reference",
+          "values" : ["../resources/tutorial/current/test_genome.fa"],
+          "argument" : "--fasta-reference"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
+    }
+  ]
+}

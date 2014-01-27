@@ -1,0 +1,123 @@
+{
+  "description" : "Resolves paired-end reads (marking the IsProperPair flag as needed).",
+  "path" : "bamtools/bin",
+  "executable" : "bamtools",
+  "modifier" : "resolve",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "the input BAM file.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "command line argument" : "-in",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".bam"
+    },
+    {
+      "description" : "the output marked BAM file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "-out",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".bam",
+      "construct filename" : {
+        "ID": "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "replace",
+        "add additional text" : "dupmarked"
+      }
+    },
+    {
+      "description" : "input/output stats file, depending on selected mode (see below). This file is human-readable, storing fragment length data generated per read group, as well as the options used to configure the -makeStats mode.",
+      "long form argument" : "--stats",
+      "short form argument" : "-s",
+      "command line argument" : "-stats",
+      "input" : false,
+      "output" : true,
+      "required" : false,
+      "data type" : "string",
+      "extension" : ".stats"
+    },
+    {
+      "description" : "generates a fragment-length stats file from the input BAM. Data is written to file specified using the -stats option. MarkPairs Mode Settings are DISABLED.",
+      "long form argument" : "--make-stats",
+      "short form argument" : "-ms",
+      "command line argument" : "-makeStats",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "generates an output BAM with alignments marked with proper-pair status. Stats data is read from file specified using the -stats option. MakeStats Mode settings are DISABLED.",
+      "long form argument" : "--mark-pairs",
+      "short form argument" : "-mp",
+      "command line argument" : "-markPairs",
+      "output" : false,
+      "input" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "combines the -makeStats & -markPairs modes into a single command.  However, due to the two-pass nature of paired-end resolution, piping BAM data via stdin is DISABLED. You must supply an explicit input BAM file. Output BAM may be piped to stdout, however, if desired. All MakeStats & MarkPairs Mode Settings are available. The intermediate stats file if not necessary, but if the -stats options is used, then one will be generated. You may find this useful for documentation purposes.",
+      "long form argument" : "--two-pass",
+      "short form argument" : "-t",
+      "command line argument" : "-twoPass",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "minimum map quality. Used in -makeStats mode as a heuristic for determining a mate's uniqueness. Used in -markPairs mode as a filter for marking candidate proper pairs.",
+      "long form argument" : "--min-mq",
+      "short form argument" : "-mq",
+      "command line argument" : "-minMQ",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "number of passes",
+          "values" : ["set"],
+          "argument" : "--two-pass"
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "Input BAM file",
+          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
+          "argument" : "--in"
+        },
+        {
+          "ID" : "number of passes",
+          "values" : ["set"],
+          "argument" : "--two-pass"
+        }
+      ]
+    }
+  ]
+}

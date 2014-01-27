@@ -1,0 +1,169 @@
+{
+  "description" : "Modify base quality based on Hidden Markov model.",
+  "path" : "samtools",
+  "executable" : "samtools",
+  "modifier" : "calmd",
+  "hide tool" : true,
+  "help" : "--help|-h",
+  "arguments" : [
+    {    
+      "description" : "When used jointly with -r this option overwrites the original base quality.",
+      "long form argument" : "--overwrite-original-qualities",
+      "short form argument" : "-oq",
+      "command line argument" : "-A",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "Convert the read base to = if it is identical to the aligned reference base.",
+      "long form argument" : "--convert-identical",
+      "short form argument" : "-c",
+      "command line argument" : "-e",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    {    
+      "description" : "Output uncompressed BAM.",
+      "long form argument" : "--output-uncompressed",
+      "short form argument" : "-ou",
+      "command line argument" : "-u",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "Output compressed BAM.",
+      "long form argument" : "--output-compressed",
+      "short form argument" : "-oc",
+      "command line argument" : "-b",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    {    
+      "description" : "The input is SAM with header lines.",
+      "long form argument" : "--input-is-sam",
+      "short form argument" : "-iss",
+      "command line argument" : "-S",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    {    
+      "description" : "Coefficient to cap mapping quality of poorly mapped reads. See the pileup command for details. [0]",
+      "long form argument" : "--cap-mapping-quality",
+      "short form argument" : "-cmq",
+      "command line argument" : "-C",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "integer"
+    },
+    {    
+      "description" : "Compute the BQ tag (without -A) or cap base quality by BAQ (with -A).",
+      "long form argument" : "--compute-BQ-or-BAQ",
+      "short form argument" : "-cb",
+      "command line argument" : "-r",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {    
+      "description" : "Extended BAQ calculation. This option trades specificity for sensitivity, though the effect is minor.",
+      "long form argument" : "--extended",
+      "short form argument" : "-e",
+      "command line argument" : "-E",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    {    
+      "description" : "Input BAM file.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "command line argument" : "--in",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".bam",
+      "if input is stream" : "replace",
+      "replace argument with" : {
+        "argument" : "--stdin",
+        "value" : "no value"
+      },
+      "modify argument name on command line" : "hide"
+    },
+    {    
+      "description" : "Reference fasta file.",
+      "long form argument" : "--reference-fasta",
+      "short form argument" : "-r",
+      "command line argument" : "--reference-fasta",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : "no extension",
+      "modify argument name on command line" : "hide"
+    }
+  ],
+
+  "argument order" : [
+    "--overwrite-original-qualities",
+    "--convert-identical",
+    "--output-uncompressed",
+    "--output-compressed",
+    "--input-is-sam",
+    "--cap-mapping-quality",
+    "--compute-BQ-or-BAQ",
+    "--extended",
+    "--in",
+    "--reference-fasta"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "overwrite",
+          "argument" : "--overwrite-original-qualities",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "uncompressed",
+          "argument" : "--output-uncompressed",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "compute BAQ",
+          "argument" : "--compute-BQ-or-BAQ",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "extended BAQ",
+          "argument" : "--extended",
+          "values" : ["set"]
+        }
+      ]
+    }
+  ]
+}

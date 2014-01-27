@@ -1,0 +1,69 @@
+{
+  "description" : "Join multiple files",
+  "path" : "no path",
+  "hide tool" : true,
+  "executable" : "cat",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "Input files to be joined.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "command line argument" : "none",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "no extension",
+      "allow multiple values" : true,
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "the output concatenated file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "none",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "no extension",
+      "modify argument name on command line" : "stdout"
+    }
+  ],
+
+  "argument order" : [
+    "--in",
+    "--out"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "input",
+          "values" : ["../resources/tutorial/current/test_genome.fa", "../resources/tutorial/current/mobile_element_sequences.fa"],
+          "argument" : "--in"
+        },
+        {
+          "ID" : "output",
+          "values" : ["concatenated_file.fa"],
+          "argument" : "--out"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
+    }
+  ]
+}
