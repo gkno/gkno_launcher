@@ -2,9 +2,6 @@
 
 from __future__ import print_function
 
-import dataChecking
-from dataChecking import *
-
 import gknoErrors
 from gknoErrors import *
 

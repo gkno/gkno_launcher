@@ -901,7 +901,6 @@ class gknoConfigurationFiles:
 
     return True, value
 
-  #TODO FINISH
   # Check that a file extension is valid.
   def checkFileExtension(self, graph, config, nodeID, value):
     for extension in config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'allowedExtensions'):

@@ -58,12 +58,11 @@ def main():
   errors = gknoErrors()
 
   # Define the source path of all the gkno machinery.
-  #TODO REMOVE TEMP
   sourcePath                     = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno.py')]
-  configurationFilesPath         = sourcePath + '/config_files/temp/'
+  configurationFilesPath         = sourcePath + '/config_files/'
   gknoConfigurationFilePath      = sourcePath + '/config_files/'
-  pipelineConfigurationFilesPath = sourcePath + '/config_files/temp/pipes/'
-  toolConfigurationFilesPath     = sourcePath + '/config_files/temp/tools/'
+  pipelineConfigurationFilesPath = sourcePath + '/config_files/pipes/'
+  toolConfigurationFilesPath     = sourcePath + '/config_files/tools/'
   toolsPath                      = sourcePath + '/tools/'
 
   # Get the latest commitID for gkno (the environment variable was set up in the shell script).
@@ -220,8 +219,6 @@ def main():
     toolFile              = toolConfigurationFilesPath + runName + '.json'
     toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
 
-    # TODO TOOL CONFIGURATION FILE VALIDATION HAS NOT YET BEEN HANDLED IN THE
-    # CONFIGURATIONCLASS.
     # Ensure that the tool configuration file is well constructed and put all of the data
     # in data structures.  Each tool in each configuration file gets its own data structure.
     config.tools.processConfigurationData(runName, toolConfigurationData)
@@ -279,7 +276,6 @@ def main():
   write.writeDone()
 
   # Attach the values of the pipeline arguments to the relevant nodes.
-  #TODO USE attachToolArgumentsToNodes in attachPipelineArgumentsToNodes when dealing with tasks.
   write.writeAssignPipelineArgumentsToNodes()
   if isPipeline: commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
   else: commands.attachToolArgumentsToNodes(pipelineGraph, config, gknoConfig)

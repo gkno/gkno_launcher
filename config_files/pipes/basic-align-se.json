@@ -220,6 +220,13 @@
       "short form argument" : "-srh",
       "type" : "integer"
     },
+    "--no-threads" : {
+      "description" : "Specifies the number of threads to use for the aligner.",
+      "link to this task" : "align",
+      "link to this argument" : "-p",
+      "short form argument" : "-nt",
+      "type" : "integer"
+    },
     "--alignment-candidate-threshold" : {
       "description" : "Specifies the minimum length of an alignment candidate.",
       "link to this task" : "align",
@@ -260,7 +267,6 @@
     },
     "test" : {
       "description" : "Test instance for the test harness.",
-      "--reference-fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
       "--mosaik-jump-database" : "$(RESOURCES)/tutorial/current/test_genome_10",
       "--mosaik-reference" : "$(RESOURCES)/tutorial/current/test_genome.dat",
       "--fastq" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq",
@@ -272,7 +278,6 @@
     },
     "human" : {
       "description" : "Human instance uses the human reference from the resources.  It is assumed that the Mosaik reference files have been created in the current working directory.",
-      "--reference-fasta" : "$(PWD)/human_reference_v37_decoys_moblist.fa",
       "--mosaik-jump-database" : "$(PWD)/human_reference_v37_decoys_moblist_15",
       "--mosaik-reference" : "$(PWD)/human_reference_v37_decoys_moblist.dat",
       "--ann-se" : "$(RESOURCES)/homo_sapiens/current/se.100.005.ann",
@@ -280,7 +285,6 @@
     },
     "human-moblist" : {
       "description" : "Human-moblist instance uses the human reference with moblistfrom the resources.  It is assumed that the Mosaik reference files have been created in the current working directory.",
-      "--reference-fasta" : "$(PWD)/human_reference_v37_decoys_moblist.fa",
       "--mosaik-jump-database" : "$(PWD)/human_reference_v37_decoys_moblist_15",
       "--mosaik-reference" : "$(PWD)/human_reference_v37_decoys_moblist.dat",
       "--ann-se" : "$(RESOURCES)/homo_sapiens/current/se.100.005.ann",
@@ -289,7 +293,6 @@
     },
     "tutorial" : {
       "description" : "Tutorial instance uses files from the tutorial resources.",
-      "--reference-fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
       "--mosaik-jump-database" : "$(PWD)/test_genome_10",
       "--mosaik-reference" : "$(PWD)/test_genome.dat",
       "--fastq" : "$(RESOURCES)/tutorial/current/simulated_reads_1.fq",
@@ -301,13 +304,13 @@
     },
     "1000G-tutorial" : {
       "description" : "1000G tutorial instance is for use with the 1000G tutorial only.",
-      "--reference-fasta" : "$(RESOURCES)/tutorial/current/test_genome.fa",
       "--mosaik-jump-database" : "$(PWD)/test_genome_10",
       "--mosaik-reference" : "$(PWD)/test_genome.dat",
       "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
       "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
       "--single-end" : "set",
-      "--hash-size" : "10"
+      "--hash-size" : "10",
+      "--no-threads" : "8"
     }
   }
 }

@@ -1,118 +1,99 @@
 {
   "description" : "Concatenate reference fasta files and generate Mosaik reference and jump database.",
-  "workflow" : [
-    "merge-fasta",
-    "index-fasta",
-    "create-sequence-dictionary",
-    "build-reference",
-    "build-jump-database"
-  ],
-  "tools" : {
-    "merge-fasta" : "concatenate-files",
-    "index-fasta" : "samtools-index-fasta",
-    "create-sequence-dictionary" : "picard-create-sequence-dictionary",
-    "build-reference" : "mosaik-build-reference",
-    "build-jump-database" : "mosaik-jump"
-  },
-  "construct filenames" : {
-    "build-jump-database" : {
-      "-out" : {
-        "filename root" : "from argument",
-        "get root from task" : "build-reference",
-        "get root from argument" : "-fr",
-        "remove input extension" : true,
-        "additional text from parameters" : {
-          "order" : [
-            "filename root",
-            "hash-size"
-          ],
-          "hash-size" : {
-            "get parameter from task" : "build-jump-database",
-            "get parameter from argument" : "-hs",
-            "remove extension" : false
-          }
-        }
-      }
-    }
-  },
-  "linkage" : {
+
+  "tasks" : {
+    "merge-fasta" : {
+      "tool" : "concatenate-files"
+    },
     "index-fasta" : {
-      "--in" : {
-        "link to this task" : "merge-fasta",
-        "link to this argument" : "--out"
-      }
+      "tool" : "samtools-index-fasta"
     },
     "create-sequence-dictionary" : {
-      "REFERENCE" : {
-        "link to this task" : "merge-fasta",
-        "link to this argument" : "--out"
-      }
+      "tool" : "picard-create-sequence-dictionary"
     },
     "build-reference" : {
-      "-fr" : {
-        "link to this task" : "merge-fasta",
-        "link to this argument" : "--out"
-      }
+      "tool" : "mosaik-build-reference"
     },
     "build-jump-database" : {
-      "-ia" : {
-        "link to this task" : "build-reference",
-        "link to this argument" : "-oa"
-      }
+      "tool" : "mosaik-jump"
     }
   },
-  "arguments" : {
-    "--fasta" : {
+
+  "nodes" : [
+    {
+      "ID" : "reference fasta",
       "description" : "Reference fasta file{s}.",
+      "long form argument" : "--fasta-reference",
       "short form argument" : "-f",
-      "link to this task" : "merge-fasta",
-      "link to this argument" : "--in",
-      "type" : "string"
+      "tasks" : {
+        "merge-fasta" : "--in"
+      }
     },
-    "--out" : {
+    {
+      "ID" : "output",
       "description" : "The output fasta reference including the moblist.",
+      "long form argument" : "--out",
       "short form argument" : "-o",
-      "link to this task" : "merge-fasta",
-      "link to this argument" : "--out",
-      "type" : "string"
+      "tasks" : {
+        "merge-fasta" : "--out",
+        "index-fasta" : "--fasta-reference",
+        "create-sequence-dictionary" : "--fasta-reference",
+        "build-reference" : "--fasta-reference"
+      },
+      "keep files" : true
     },
-    "--hash-size" : {
+    {
+      "ID" : "hash size",
       "description" : "hash-size",
-      "link to this task" : "build-jump-database",
-      "link to this argument" : "-hs",
-      "type" : "integer",
-      "short form argument" : "-hs"
-    }
-  },
-  "instances" : {
-    "default" : {
-      "description" : "Default instance requires user to input all input filenames."
+      "long form argument" : "--hash-size",
+      "short form argument" : "-hs",
+      "tasks" : {
+        "build-jump-database" : "--hash-size"
+      }
     },
-    "test" : {
+    {
+      "ID" : "mosaik reference",
+      "description" : "Reference file in native Mosaik format.",
+      "tasks" : {
+        "build-reference" : "--mosaik-reference",
+        "build-jump-database" : "--mosaik-reference"
+      },
+      "keep files" : true
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires user to input all input filenames.",
+      "nodes" : []
+    },
+
+    {
+      "ID" : "test",
       "description" : "Test instance for the test harness.",
-      "--fasta" : [
-        "$(RESOURCES)/tutorial/current/test_genome.fa",
-        "$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"
-      ],
-      "--hash-size" : "10",
-      "--out" : "test_genome_moblist.fa"
-    },
-    "tutorial" : {
-      "description" : "Tutorial instance builds the reference using the 'current' tutorial resources.",
-      "--fasta" : [
-        "$(RESOURCES)/tutorial/current/test_genome.fa",
-        "$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"
-      ],
-      "--hash-size" : "10",
-      "--out" : "test_genome_moblist.fa"
-    },
-    "human" : {
-      "description" : "Human instance builds the reference using the 'current' human resources.",
-      "--fasta" : [
-        "$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa",
-        "$(RESOURCES)/homo_sapiens/current/mobile_element_sequences.fa"
-      ],
-      "--out" : "human_reference_v37_decoys_moblist.fa"
+      "nodes" : [
+        {
+          "ID" : "reference fasta",
+          "argument" : "--fasta-reference",
+          "values" : ["files-for-testing-tools/test_genome.fa", "files-for-testing-tools/mobile_element_sequences.fa"]
+        },
+        {
+          "ID" : "hash size",
+          "argument" : "--hash-size",
+          "values" : [10]
+        },
+        {
+          "ID" : "output",
+          "argument" : "--out",
+          "values" : ["test_genome_moblist.fa"]
+        },
+        {
+          "ID" : "output path",
+          "argument" : "--output-path",
+          "values" : ["./"]
+        }
+      ]
     }
-  }
+  ]
 }
