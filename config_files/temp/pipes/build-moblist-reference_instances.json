@@ -1,9 +1,0 @@
-{
-  "instances" : [
-    {
-      "ID" : "external",
-      "description" : "Default instance requires user to input all input filenames.",
-      "nodes" : []
-    }
-  ]
-}
