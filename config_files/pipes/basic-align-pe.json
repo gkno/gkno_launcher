@@ -15,7 +15,7 @@
       "tool" : "bamtools-sort"
     },
     "index-primary-bam" : {
-      "tool " : "bamtools-index"
+      "tool" : "bamtools-index"
     },
     "get-alignment-stats" : {
       "tool" : "bamtools-stats"
@@ -29,8 +29,8 @@
       "long form argument" : "--fastq",
       "short form argument" : "-q",
       "tasks" : {
-        "generate-mosaik-parameters" : "-fq1",
-        "build-read-archive" : "-fq1"
+        "generate-mosaik-parameters" : "--fastq",
+        "build-read-archive" : "--fastq"
       }
     },
     {
@@ -39,8 +39,8 @@
       "long form argument" : "--fastq2",
       "short form argument" : "-q2",
       "tasks" : {
-        "generate-mosaik-parameters" : "-fq2",
-        "build-read-archive" : "-fq2"
+        "generate-mosaik-parameters" : "--fastq2",
+        "build-read-archive" : "--fastq2"
       }
     },
     {
@@ -49,8 +49,8 @@
       "long form argument" : "--mosaik-reference",
       "short form argument" : "-m",
       "tasks" : {
-        "generate-mosaik-parameters" : "-ref",
-        "align" : "-ia"
+        "generate-mosaik-parameters" : "--mosaik-reference",
+        "align" : "--mosaik-reference"
       }
     },
     {
@@ -59,8 +59,8 @@
       "long form argument" : "--jump-database",
       "short form argument" : "-j",
       "tasks" : {
-        "generate-mosaik-parameters" : "-jmp",
-        "align" : "-jmp"
+        "generate-mosaik-parameters" : "--jump-database",
+        "align" : "--jump-database"
       }
     },
     {
@@ -69,7 +69,7 @@
       "long form argument" : "--reads-per-batch",
       "short form argument" : "-rb",
       "tasks" : {
-        "generate-mosaik-parameters" : "-b"
+        "generate-mosaik-parameters" : "--reads-per-batch"
       }
     },
     {
@@ -78,8 +78,8 @@
       "long form argument" : "--hash-size",
       "short form argument" : "-hs",
       "tasks" : {
-        "generate-mosaik-parameters" : "-hs",
-        "align" : "-hs"
+        "generate-mosaik-parameters" : "--hash-size",
+        "align" : "--hash-size"
       }
     },
     {
@@ -88,8 +88,8 @@
       "long form argument" : "--sequencing-technology",
       "short form argument" : "-st",
       "tasks" : {
-        "generate-mosaik-parameters" : "-st",
-        "build-read-archive" : "-st"
+        "generate-mosaik-parameters" : "--sequencing-technology",
+        "build-read-archive" : "--sequencing-technology"
       }
     },
     {
@@ -98,8 +98,8 @@
       "long form argument" : "--ann-se",
       "short form argument" : "-as",
       "tasks" : {
-        "generate-mosaik-parameters" : "-annse",
-        "align" : "-annse"
+        "generate-mosaik-parameters" : "--ann-single-end",
+        "align" : "--ann-single-end"
       }
     },
     {
@@ -108,8 +108,8 @@
       "long form argument" : "--ann-pe",
       "short form argument" : "-ap",
       "tasks" : {
-        "generate-mosaik-parameters" : "-annpe",
-        "align" : "-annpe"
+        "generate-mosaik-parameters" : "--ann-paired-end",
+        "align" : "--ann-paired-end"
       }
     },
     {
@@ -118,7 +118,7 @@
       "long form argument" : "--median-fragment-length",
       "short form argument" : "-mfl",
       "tasks" : {
-        "build-read-archive" : "-mfl"
+        "build-read-archive" : "--median-fragment-length"
       }
     },
     {
@@ -127,8 +127,8 @@
       "long form argument" : "--read-archive",
       "short form argument" : "-a",
       "tasks" : {
-        "build-read-archive" : "-out",
-        "align" : "-in"
+        "build-read-archive" : "--read-archive",
+        "align" : "--read-archive"
       }
     },
     {
@@ -137,7 +137,7 @@
       "long form argument" : "--sample-name",
       "short form argument" : "-sam",
       "tasks" : {
-        "build-read-archive" : "-out"
+        "build-read-archive" : "--sample-name"
       }
     },
     {
@@ -146,7 +146,7 @@
       "long form argument" : "--center-name",
       "short form argument" : "-c",
       "tasks" : {
-        "build-read-archive" : "-cn"
+        "build-read-archive" : "--center-name"
       }
     },
     {
@@ -155,7 +155,7 @@
       "long form argument" : "--read-group-id",
       "short form argument" : "-id",
       "tasks" : {
-        "build-read-archive" : "-rg"
+        "build-read-archive" : "--read-group-id"
       }
     },
     {
@@ -164,7 +164,7 @@
       "long form argument" : "--lane",
       "short form argument" : "-l",
       "tasks" : {
-        "build-read-archive" : "-ln"
+        "build-read-archive" : "--lane"
       }
     },
     {
@@ -173,7 +173,7 @@
       "long form argument" : "--platform",
       "short form argument" : "-pu",
       "tasks" : {
-        "build-read-archive" : "-pu"
+        "build-read-archive" : "--platform"
       }
     },
     {
@@ -182,7 +182,7 @@
       "long form argument" : "--special-reference-prefix",
       "short form argument" : "-s",
       "tasks" : {
-        "align" : "-sref"
+        "align" : "--special-reference-prefix"
       }
     },
     {
@@ -191,7 +191,7 @@
       "long form argument" : "--special-reference-hashes",
       "short form argument" : "-sh",
       "tasks" : {
-        "align" : "-srefn"
+        "align" : "--special-reference-hashes"
       }
     },
     {
@@ -200,7 +200,7 @@
       "long form argument" : "--processors",
       "short form argument" : "-p",
       "tasks" : {
-        "align" : "-p"
+        "align" : "--processors"
       }
     },
     {
@@ -209,7 +209,7 @@
       "long form argument" : "--alignment-candidate-threshold",
       "short form argument" : "-act",
       "tasks" : {
-        "align" : "-act"
+        "align" : "--alignment-candidate-threshold"
       }
     },
     {
@@ -258,7 +258,7 @@
       "nodes" : [
         {
           "ID" : "jump database",
-          "argument" : "--mosaik-jump-database",
+          "argument" : "--jump-database",
           "values" : ["$(RESOURCES)/tutorial/current/test_genome_10"]
         },
         {

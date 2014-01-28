@@ -33,7 +33,7 @@
       "include on command line" : false,
       "if input is stream" : "do not include",
       "construct filename" : {
-        "ID": "from tool argument",
+        "method": "from tool argument",
         "use argument" : "--in",
         "modify extension" : "append"
       }

@@ -108,6 +108,20 @@ class gknoErrors:
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  # An output file has no name and no instructions on how to create it.
+  def noOutputFilename(self, task, tool, longFormArgument, shortFormArgument, pipelineArgument):
+    self.text.append('Unable to set output filename for task: ' + task)
+    self.text.append('The task \'' + task + '\' using tool \'' + tool + '\' requires the name of an output file to be set by the user as the ' + \
+    'tool configuration file does not provide instructions on how to construct the filename and this file node is not connected to any other ' + \
+    'tasks in the pipeline which might set the value for it. Please perform one of the possible solutions:')
+    self.text.append('\t')
+    self.text.append('1. Link this argument to another task in the pipeline which already has a set value.')
+    self.text.append('2. Provide instructions in the \'' + tool + '\' configuration file describing how to construct the filename.')
+    if pipelineArgument[0] == None: self.text.append('3. Set the filename using the syntax \'--' + task + ' [' + longFormArgument + ' <filename>].')
+    else: self.text.append('3. Set the filename using ' + pipelineArgument[0] + ' <filename>.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   #################################
   # Errors with the command line. #
   #################################

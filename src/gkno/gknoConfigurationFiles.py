@@ -305,18 +305,20 @@ class gknoConfigurationFiles:
 
       # Now deal with output files,  These are all successor nodes.
       for fileNodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
-        longFormArgument = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'longFormArgument')
-        optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+        longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'longFormArgument')
+        shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'shortFormArgument')
+        optionNodeID      = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
                                  
         isRequired = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
         isSet      = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'hasValue')
         if isRequired and not isSet:
           method = self.constructionInstructions(graph, config, task, longFormArgument, fileNodeID)
-          if method == None:     
-  
-            # TODO ERROR MESSAGE
-            print('\tMISSING OUTPUT:', fileNodeID, task, tool, longFormArgument)
-            self.errors.terminate()
+
+          # If an output file does not exist and has no instructions on how to be generated, terminate.
+          if method == None:
+            tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+            pipelineArgument = config.pipeline.getPipelineArgument(task, longFormArgument)
+            self.errors.noOutputFilename(task, tool, longFormArgument, shortFormArgument, pipelineArgument)
   
           # If the tool configuration file has instructions on how to construct the filename,
           # built it using these instructions.

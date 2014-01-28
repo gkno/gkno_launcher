@@ -59,7 +59,7 @@
         ".multiple.bam"
       ],
       "construct filename" : {
-        "ID": "from tool argument",
+        "method": "from tool argument",
         "use argument" : "--read-archive",
         "modify extension" : "omit"
       }

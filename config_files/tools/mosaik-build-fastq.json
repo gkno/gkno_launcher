@@ -37,7 +37,7 @@
       "data type" : "string",
       "extension" : ".mkb",
       "construct filename" : {
-        "ID": "from tool argument",
+        "method": "from tool argument",
         "use argument" : "--fastq",
         "modify extension" : "replace"
       }
@@ -56,7 +56,7 @@
     {    
       "description" : "The median length of the read fragments.",
       "long form argument" : "--median-fragment-length",
-      "short form argument" : "-mf",
+      "short form argument" : "-mfl",
       "command line argument" : "-mfl",
       "input" : false,
       "output" : false,

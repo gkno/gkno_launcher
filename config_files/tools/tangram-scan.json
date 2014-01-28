@@ -39,7 +39,7 @@
       "include on command line" : false,
       "hide in help" : true,
       "construct filename" : {
-        "ID": "define name",
+        "method": "define name",
         "directory argument" : "--output-directory",
         "filename" : "lib_table",
         "add extension" : true
@@ -58,7 +58,7 @@
       "hide in help" : true,
       "include on command line" : false,
       "construct filename" : {
-        "ID": "define name",
+        "method": "define name",
         "directory argument" : "--output-directory",
         "filename" : "hist",
         "add extension" : true

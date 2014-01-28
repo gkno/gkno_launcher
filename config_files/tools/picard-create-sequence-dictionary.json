@@ -28,7 +28,7 @@
       "data type" : "string",
       "extension" : ".dict",
       "construct filename" : {
-        "ID": "from tool argument",
+        "method": "from tool argument",
         "use argument" : "--fasta-reference",
         "modify extension" : "replace"
       }

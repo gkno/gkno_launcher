@@ -34,7 +34,7 @@
       "allow multiple values" : true,
       "include on command line" : false,
       "construct filename" : {
-        "ID": "from tool argument",
+        "method": "from tool argument",
         "use argument" : "--bam",
         "modify extension" : "append"
       }
@@ -64,7 +64,7 @@
       "data type" : "string",
       "if output to stream" : "do not include",
       "construct filename" : {
-        "ID": "from tool argument",
+        "method": "from tool argument",
         "use argument" : "--bam",
         "modify extension" : "replace"
       }

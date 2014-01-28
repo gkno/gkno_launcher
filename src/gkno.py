@@ -170,6 +170,7 @@ def main():
       # in data structures.  Each tool in each configuration file gets its own data structure.
       config.tools.processConfigurationData(tool, toolConfigurationData)
       del(toolConfigurationData)
+    exit(0)
 
     # Check that any argument in a pipeline configuration file node taht defines a filename stub
     # is linked to other stub arguments, or that the desired extension is included in the node.

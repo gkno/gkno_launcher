@@ -74,11 +74,15 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".json"
+      "extension" : ".json",
+      "construct filename" : {
+        "method": "define name",
+        "filename" : "$(MAKEFILE_ID)_mosaikParameters.json"
+      }
     },
     {
       "description" : "Neural network file (single end).",
-      "long form argument" : "--ann-se",
+      "long form argument" : "--ann-single-end",
       "short form argument" : "-as",
       "command line argument" : "-annse",
       "input" : true,
@@ -89,7 +93,7 @@
     },
     {
       "description" : "Neural network file (paired end).",
-      "long form argument" : "-ann-pe",
+      "long form argument" : "--ann-paired-end",
       "short form argument" : "-ap",
       "command line argument" : "-annpe",
       "input" : true,
@@ -111,7 +115,7 @@
     },
     {
       "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'.",
-      "long form argument" : "-sequencing-technology",
+      "long form argument" : "--sequencing-technology",
       "short form argument" : "-st",
       "command line argument" : "-st",
       "input" : false,
