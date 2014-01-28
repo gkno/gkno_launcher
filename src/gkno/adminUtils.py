@@ -177,12 +177,12 @@ class adminUtils:
     # Fetch info for tools only.
     submodules = {}
     for line in output.splitlines():
-        fields = line.split()
-        commit = fields[0]
-        fullName = fields[1]
-        if fullName.startswith("tools/"):
-          name = fullName[6:]    
-          submodules[name] = commit
+      fields = line.split()
+      commit = fields[0]
+      fullName = fields[1]
+      if fullName.startswith("tools/"):
+        name = fullName[6:]    
+        submodules[name] = commit
 
     # Determine longest tool name (for clean formatting).
     toolNames = sorted(submodules.keys(), key=lambda s: s.lower())
@@ -196,10 +196,12 @@ class adminUtils:
     print("Listed below are the built-in software tools provided by gkno. Follow the URLs", end="\n", file=sys.stdout)
     print("provided to access the specific version of each tool used in this version of gkno.", end="\n", file=sys.stdout)
     print("", end="\n", file=sys.stdout)
+
     toolHeader = "Tool"
     underline  = '-'*maxNameLength
-    print(toolHeader.ljust(maxNameLength) + "\t" + "URL", end="\n", file=sys.stdout)
-    print(underline.ljust(maxNameLength) + "\t" + underline, end="\n", file=sys.stdout)
+    print(toolHeader.ljust(maxNameLength) + "\t" + "URL",     end="\n", file=sys.stdout)
+    print(underline.ljust(maxNameLength)  + "\t" + underline, end="\n", file=sys.stdout)
+
     for toolName in toolNames:
       url = "https://github.com/gkno/" + toolName + "/tree/" + submodules[toolName]
       print(toolName.ljust(maxNameLength) + "\t" + url, end="\n", file=sys.stdout)
