@@ -65,11 +65,29 @@
     },
     {
       "ID" : "batch size",
-      "description" : "The input Mosaik jump database stub.",
+      "description" : "Number of pairs to align per batch [1000].",
       "long form argument" : "--reads-per-batch",
       "short form argument" : "-rb",
       "tasks" : {
         "generate-mosaik-parameters" : "--reads-per-batch"
+      }
+    },
+    {
+      "ID" : "mosaik path",
+      "description" : "The location of the MOSAIK executables.",
+      "long form argument" : "--mosaik-path",
+      "short form argument" : "-mp",
+      "tasks" : {
+        "generate-mosaik-parameters" : "--mosaik-path"
+      }
+    },
+    {
+      "ID" : "temp directory",
+      "description" : "Temporary directory for temp files.",
+      "long form argument" : "--temp-directory",
+      "short form argument" : "-td",
+      "tasks" : {
+        "generate-mosaik-parameters" : "--temp-directory"
       }
     },
     {
@@ -110,6 +128,14 @@
       "tasks" : {
         "generate-mosaik-parameters" : "--ann-paired-end",
         "align" : "--ann-paired-end"
+      }
+    },
+    {
+      "ID" : "build parameters",
+      "description" : "Linking only. Parameters from premo used in mosaik-build-fastq.",
+      "tasks" : {
+        "generate-mosaik-parameters" : "--out",
+        "build-read-archive" : "read json file"
       }
     },
     {
@@ -249,7 +275,23 @@
     {
       "ID" : "default",
       "description" : "Default instance requires user to input all input filenames.",
-      "nodes" : []
+      "nodes" : [
+        {
+          "ID" : "batch",
+          "argument" : "--reads-per-batch",
+          "values" : [1000]
+        },
+        {
+          "ID" : "temp directory",
+          "argument" : "--temp-directory",
+          "values" : ["$(PWD)/$(MAKEFILE_ID)_tmp"]
+        },
+        {
+          "ID" : "mosaik path",
+          "argument" : "--mosaik-path",
+          "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
+        }
+      ]
     },
 
     {
@@ -277,6 +319,11 @@
           "values" : ["$(RESOURCES)/tutorial/current/simulated_reads_2.fq"]
         },
         {
+          "ID" : "batch",
+          "argument" : "--reads-per-batch",
+          "values" : [1000]
+        },
+        {
           "ID" : "se neural net",
           "argument" : "--ann-se",
           "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"]
@@ -290,6 +337,21 @@
           "ID" : "hash size",
           "argument" : "--hash-size",
           "values" : [10]
+        },
+        {
+          "ID" : "temp directory",
+          "argument" : "--temp-directory",
+          "values" : ["$(PWD)/$(MAKEFILE_ID)_tmp"]
+        },
+        {
+          "ID" : "mosaik path",
+          "argument" : "--mosaik-path",
+          "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
+        },
+        {
+          "ID" : "sequencing technology",
+          "argument" : "--sequencing-technology",
+          "values" : ["illumina"]
         }
       ]
     }

@@ -44,7 +44,7 @@ class gknoConfigurationFiles:
     # Define a dictionary to hold information contained in the gkno configuration file.
     self.gknoConfigurationData = {}
 
-    #TODO FILL IN TEXT
+    # TODO
     self.delimiter = '_'
 
     # Define the data structure for loop data.
@@ -327,10 +327,7 @@ class gknoConfigurationFiles:
   # If a filename is not defined, check to see if there are instructions on how to 
   # construct the filename.
   def constructionInstructions(self, graph, config, task, argument, fileNodeID):
-    tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-    instructions = config.tools.getArgumentAttribute(tool, argument, 'constructionInstructions')
-    if instructions == None: return None
-    else: return instructions['ID']
+    return config.tools.getConstructionMethod(config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool'), argument)
 
   # Construct a filename from instructions.
   def constructFilename(self, graph, config, method, task, fileNodeID, isInput):
@@ -684,17 +681,15 @@ class gknoConfigurationFiles:
     # If there is no directory argument, initialise the first iteration.
     else: modifiedValues[1] = []
 
-    if 'filename' not in instructions:
-      #TODO ERROR INCLUDE IN VALIDATION and include addExtension
-      print('Creating filename with no given filename - constructKnownFilename.')
-      self.errors.terminate()
-    filename     = instructions['filename']
-    addExtension = instructions['add extension']
+    # Get the filename and determine if the extensions needs to be added.
+    filename     = config.tools.getFilenameFromConstruction(tool, argument)
+    addExtension = config.tools.addExtensionFromConstruction(tool, argument)
     for iteration in modifiedValues:
       if addExtension: extension = config.tools.getArgumentAttribute(tool, argument, 'extension').split('|')[0]
       else: extension = ''
       filename = filename + extension
       modifiedValues[iteration] = [value + filename for value in modifiedValues[iteration]]
+      if not modifiedValues[iteration]: modifiedValues[iteration].append(str(filename))
 
     # Set the values.
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)
@@ -803,6 +798,7 @@ class gknoConfigurationFiles:
           #TODO SORT OUT ERRORS.
           if not allowMultipleValues and numberOfValues != 1:
             print('GIVEN MULTIPLE VALUES WHEN NOT ALLOWED', values[iteration])
+            print(task, longFormArgument)
             self.errors.terminate()
 
           # Determine the expected data type

@@ -77,7 +77,8 @@
       "extension" : ".json",
       "construct filename" : {
         "method": "define name",
-        "filename" : "$(MAKEFILE_ID)_mosaikParameters.json"
+        "filename" : "$(MAKEFILE_ID)_mosaikParameters",
+        "add extension" : true
       }
     },
     {

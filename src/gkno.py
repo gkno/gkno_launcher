@@ -170,7 +170,6 @@ def main():
       # in data structures.  Each tool in each configuration file gets its own data structure.
       config.tools.processConfigurationData(tool, toolConfigurationData)
       del(toolConfigurationData)
-    exit(0)
 
     # Check that any argument in a pipeline configuration file node taht defines a filename stub
     # is linked to other stub arguments, or that the desired extension is included in the node.
@@ -187,11 +186,6 @@ def main():
 
     # Add the pipeline arguments to the nodeIDs dictionary.
     config.nodeMethods.getPipelineArgumentNodes(pipelineGraph, config)
-  
-    # If the pipeline configuration file links a filename stub argument from one task to a non-filename
-    # stub argument in another, the explicit extension must be included in the configuration file. Check
-    # that this is the case.
-    config.checkStubConnections(pipelineGraph)
   
     # Now that every task in the pipeline has an individual graph built, use the information
     # in the pipeline configuration file to merge nodes and build the final pipeline graph.
