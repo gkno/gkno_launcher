@@ -144,7 +144,7 @@ class makefileData:
       self.makefileNames[1] = []
       if self.makefilesInPhase[1] == 1: self.makefileNames[1].append(text + '.make')
       else:
-        for count in self.makefilesInPhase[1]: self.makefileNames[1].append(text + '_' + str(count) + '.make')
+        for count in range(1, self.makefilesInPhase[1] + 1): self.makefileNames[1].append(text + '_' + str(count) + '.make')
 
     # If there are phases, include the phase in the name of the makefiles.
     else:
@@ -397,113 +397,126 @@ class makefileData:
     for argument in argumentOrder:
       for nodeID, values in arguments[argument]:
 
-        # Determine if this argument is a flag or a file.
-        isFlag    = True if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag' else False
-        isFile    = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile')
-        isGreedy  = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isGreedy')
-
-        # If this argument is greedy, put all values into the first iteration. If the iteration parameter
-        # is not equal to 1, fail, since the number of data sets should have been set to one given that the
-        # argument is greedy.
-        if isGreedy:
-          if iteration != 1:
-            #TODO ERROR
-            print('makefileData.writeCommand')
-            print('Greedy argument, but dealing with other than the 1st iteration')
-            self.errors.terminate()
-
-          valueList = []
-          for iterationCount in values:
-            for value in values[iterationCount]: valueList.append(value)
-
-        # Deal with arguments that are not greedy.
-        else:
-
-          # If the iteration exists, put the values into valueList.
+        # If this is not really an argument, but a request to read argument information from a
+        # json file, this needs to be handled.
+        if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'readJson'):
           if iteration in values: valueList = values[iteration]
-
-          # If the iteration does not exist, use the value from the first iteration (assuming that it
-          # exists).
           elif iteration != 1: valueList = values[1]
           else: valueList = {}
+          for value in valueList:
+            executable = config.nodeMethods.getGraphNodeAttribute(graph, task, 'executable')
+            print(' \t`python $(GKNO_PATH)/getParameters.py ', value, ' ', executable, '` \\', sep = '', file = fileHandle)
 
-        # The argument in the tool configuration file is not necessarily the same command that
-        # the tool itself expects. This is because gkno attempts to standardise the command line
-        # arguments across the tools. The argument to be used is also attached to the edge, so
-        # get and use this value,
-        commandLineArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'commandLineArgument')
-        if not commandLineArgument: commandLineArgument = argument
+        # Deal with actual arguments.
+        else:
 
-        # Some arguments are included with the tools in order to help track the files, but do not
-        # actually get written to the command line. For example, bamtools-index requires an input
-        # bam file, but the output index file is created based on the name of the input file and
-        # is not specified by the user. Check to see if this is the case.
-        includeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'includeOnCommandLine')
-
-        # If the option refers to a file, then check, whether the option is a filename stub. Since the same
-        # option can point to multiple tasks and the option can be a filename stub for one task, but a file
-        # for another, determine this using the edge describing the individual argument. If the option is a
-        # filename stub, use the values attached to the option node. If it isn't, find the associated file
-        # node and use the values from there.
-        if isFile:
-          if not config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFilenameStub'):
-            for fileNodeID in config.nodeMethods.getAssociatedFileNodeIDs(graph, nodeID):
-
-              # Check that this file node points into or from the current task. Since this option may have been
-              # associated with a filename stub, not all of the associated files are necessarily required by
-              # this task.
-              if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isInput'):
-                isAssociated = config.edgeMethods.checkIfEdgeExists(graph, fileNodeID, task)
-
-                # Check that the iteration exists in the values of associated file nodes. Again, if not, use the
-                # values in the first iteration or all values if the argument is greedy.
-                if isAssociated:
-                  fileValues = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
-
-                  # Deal with greedy arguments.
-                  if isGreedy:
-                    valueList = []
-                    for iterationCount in fileValues:
-                      for value in fileValues[iterationCount]: valueList.append(value)
-
-                  # Deal with non greedy arguments.
-                  else:
-                    if iteration in fileValues: valueList = fileValues[iteration]
-                    elif iteration != 1: valueList = fileValues[1]
+          # Determine if this argument is a flag or a file.
+          isFlag    = True if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag' else False
+          isFile    = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile')
+          isGreedy  = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isGreedy')
+  
+          # If this argument is greedy, put all values into the first iteration. If the iteration parameter
+          # is not equal to 1, fail, since the number of data sets should have been set to one given that the
+          # argument is greedy.
+          if isGreedy:
+            if iteration != 1:
+              #TODO ERROR
+              print('makefileData.writeCommand')
+              print('Greedy argument, but dealing with other than the 1st iteration')
+              self.errors.terminate()
+  
+            valueList = []
+            for iterationCount in values:
+              for value in values[iterationCount]: valueList.append(value)
+  
+          # Deal with arguments that are not greedy.
+          else:
+  
+            # If the iteration exists, put the values into valueList.
+            if iteration in values: valueList = values[iteration]
+  
+            # If the iteration does not exist, use the value from the first iteration (assuming that it
+            # exists).
+            elif iteration != 1 and values: valueList = values[1]
+            else: valueList = {}
+  
+          # The argument in the tool configuration file is not necessarily the same command that
+          # the tool itself expects. This is because gkno attempts to standardise the command line
+          # arguments across the tools. The argument to be used is also attached to the edge, so
+          # get and use this value,
+          commandLineArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'commandLineArgument')
+          if not commandLineArgument: commandLineArgument = argument
+  
+          # Some arguments are included with the tools in order to help track the files, but do not
+          # actually get written to the command line. For example, bamtools-index requires an input
+          # bam file, but the output index file is created based on the name of the input file and
+          # is not specified by the user. Check to see if this is the case.
+          includeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'includeOnCommandLine')
+  
+          # If the option refers to a file, then check, whether the option is a filename stub. Since the same
+          # option can point to multiple tasks and the option can be a filename stub for one task, but a file
+          # for another, determine this using the edge describing the individual argument. If the option is a
+          # filename stub, use the values attached to the option node. If it isn't, find the associated file
+          # node and use the values from there.
+          if isFile:
+            if not config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFilenameStub'):
+              for fileNodeID in config.nodeMethods.getAssociatedFileNodeIDs(graph, nodeID):
+  
+                # Check that this file node points into or from the current task. Since this option may have been
+                # associated with a filename stub, not all of the associated files are necessarily required by
+                # this task.
+                if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isInput'):
+                  isAssociated = config.edgeMethods.checkIfEdgeExists(graph, fileNodeID, task)
+  
+                  # Check that the iteration exists in the values of associated file nodes. Again, if not, use the
+                  # values in the first iteration or all values if the argument is greedy.
+                  if isAssociated:
+                    fileValues = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
+  
+                    # Deal with greedy arguments.
+                    if isGreedy:
+                      valueList = []
+                      for iterationCount in fileValues:
+                        for value in fileValues[iterationCount]: valueList.append(value)
+  
+                    # Deal with non greedy arguments.
                     else:
-
-                      # TODO ERROR
-                      print('Iteration not associated with file node values - make.writeCommand')
-                      print(task, fileNodeID, config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument'), valueList)
-                      self.errors.terminate()
-
-              # TODO DO I NEED TO LOOK AT OUTPUTS?
-
-        for value in valueList:
-          if includeArgument:
-
-            # Determine the argument delimiter for this tool.
-            delimiter = config.nodeMethods.getGraphNodeAttribute(graph, task, 'delimiter')
-
-            # Check if the argument is an output that writes to standard out.
-            if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout':
-              print('\t>> ', value, ' \\', sep = '', file = fileHandle)
-              stdoutUsed = True
-
-            # If the argument should be hidden, only write the value.
-            elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'hide':
-              print('\t', value, ' \\', sep = '', file = fileHandle)
-
-            # If the argument and value should be hidden, don't write anything.
-            elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'omit':
-              pass
-
-            # Check if the argument is a flag.
-            elif not isFlag: print('\t', commandLineArgument, delimiter, value, ' \\', sep = '', file = fileHandle)
-
-            # If the argument is a flag, check that the value is 'set' and if so, just write the argument.
-            else:
-              if value == 'set': print('\t', commandLineArgument, ' \\', sep = '', file = fileHandle)
+                      if iteration in fileValues: valueList = fileValues[iteration]
+                      elif iteration != 1: valueList = fileValues[1]
+                      else:
+  
+                        # TODO ERROR
+                        print('Iteration not associated with file node values - make.writeCommand')
+                        print(task, fileNodeID, config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument'), valueList)
+                        self.errors.terminate()
+  
+                # TODO DO I NEED TO LOOK AT OUTPUTS?
+  
+          for value in valueList:
+            if includeArgument:
+  
+              # Determine the argument delimiter for this tool.
+              delimiter = config.nodeMethods.getGraphNodeAttribute(graph, task, 'delimiter')
+  
+              # Check if the argument is an output that writes to standard out.
+              if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout':
+                print('\t>> ', value, ' \\', sep = '', file = fileHandle)
+                stdoutUsed = True
+  
+              # If the argument should be hidden, only write the value.
+              elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'hide':
+                print('\t', value, ' \\', sep = '', file = fileHandle)
+  
+              # If the argument and value should be hidden, don't write anything.
+              elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'omit':
+                pass
+  
+              # Check if the argument is a flag.
+              elif not isFlag: print('\t', commandLineArgument, delimiter, value, ' \\', sep = '', file = fileHandle)
+  
+              # If the argument is a flag, check that the value is 'set' and if so, just write the argument.
+              else:
+                if value == 'set': print('\t', commandLineArgument, ' \\', sep = '', file = fileHandle)
 
     return stdoutUsed
 

@@ -495,6 +495,7 @@ class commandLine:
               if config.edgeMethods.checkIfEdgeExists(graph, task, fileNodeID): attachedFileNodeIDs.append(fileNodeID)
 
           # Determine if the file node is from a filename stub.
+          print
           if isInput: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, attachedFileNodeIDs[0], task, 'isFilenameStub')
           else: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, task, attachedFileNodeIDs[0], 'isFilenameStub')
 
