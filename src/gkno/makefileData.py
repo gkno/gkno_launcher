@@ -358,7 +358,7 @@ class makefileData:
     print('\t  touch $@; \\', file = fileHandle)
     print('\telse \\', file = fileHandle)
     print('\t  rm -f ', primaryOutput, "; \\", sep = '', file = fileHandle)
-    print('\t  $(MAKE) -f ', makefileName, ' ', primaryOutput, '; \\', sep = '', file = fileHandle)
+    print('\t  $(MAKE) --no-print-directory -f ', makefileName, ' ', primaryOutput, '; \\', sep = '', file = fileHandle)
     print('\tfi', file = fileHandle)
     print(file = fileHandle)
 
