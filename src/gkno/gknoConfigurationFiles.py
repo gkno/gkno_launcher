@@ -718,42 +718,63 @@ class gknoConfigurationFiles:
     for optionNodeID in config.nodeMethods.getNodes(graph, 'option'):
       if config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isFile'):
 
+        # Determine if the file is an input or output file. Since the node could be feeding
+        # into or from multiple tasks, a file is an input, if and only if, the file nodes
+        # associated with the option node have no predecessors.
+        isInput = self.checkIfInputFile(config, graph, optionNodeID)
+
         # Loop over each iteration of lists of files.
         values = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
         for iteration in values:
-          modifiedValues = []
+          modifiedOptionNodeValues = []
           for filename in values[iteration]:
 
-            # If the filename is missing, leave this blank. This will be caught as an error later, 
-            # if the file is required.
-            if not filename: modifiedValues.append('')
-
-            # If the filename already has a '/' in it, assume that the path is already defined.
-            # In this case, leave the path as defined.
-            elif '/' not in filename:
-
-              # Determine if the file is an input or output file. Since the node could be feeding
-              # into or from multiple tasks, a file is an input, if and only if, the file nodes
-              # associated with the option node have no predecessors.
-              fileNodeIDs = config.nodeMethods.getAssociatedFileNodeIDs(graph, optionNodeID)
-              isInput     = True
-              for fileNodeID in fileNodeIDs:
-                if graph.predecessors(fileNodeID): isInput = False
-              if isInput: filename = inputPath + filename
-              else: filename = outputPath + filename
-
-              modifiedValues.append(filename)
-
-            # If the filename begins with a '$', the path has been set using a variable that will be
-            # understood by make. For example, the path might be $(PWD) representing the current
-            # working directory. In this case, the value should be left as is.
-            elif filename.startswith('$'): modifiedValues.append(filename)
-
-            # If the path is already defined, ensure the full path is written.
-            else: modifiedValues.append(os.path.abspath(filename))
+            # Determine how the filename needs to be mofidied and then add to the given list of values.
+            self.addModifiedValues(config, graph, filename, modifiedOptionNodeValues, isInput, inputPath, outputPath)
 
           # Reset the stored values.
-          values[iteration] = modifiedValues
+          values[iteration] = modifiedOptionNodeValues
+
+        # Loop over any associated file nodes and ensure that their paths are also set.
+        for fileNodeID in config.nodeMethods.getAssociatedFileNodeIDs(graph, optionNodeID):
+          values = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
+          for iteration in values:
+            modifiedFileNodeValues = []
+            for filename in values[iteration]:
+              self.addModifiedValues(config, graph, filename, modifiedFileNodeValues, isInput, inputPath, outputPath)
+            values[iteration] = modifiedFileNodeValues
+
+  # Determine if the file is an input or output file. Since the node could be feeding
+  # into or from multiple tasks, a file is an input, if and only if, the file nodes
+  # associated with the option node have no predecessors.
+  def checkIfInputFile(self, config, graph, nodeID):
+    fileNodeIDs = config.nodeMethods.getAssociatedFileNodeIDs(graph, nodeID)
+    isInput     = True
+    for fileNodeID in fileNodeIDs:
+      if graph.predecessors(fileNodeID): isInput = False
+
+    return isInput
+
+  # Determine how the filename needs to be mofidied and then add to the given list of values.
+  def addModifiedValues(self, config, graph, filename, values, isInput, inputPath, outputPath):
+
+    # If the filename is missing, leave this blank. This will be caught as an error later, 
+    # if the file is required.
+    if not filename: values.append('')
+
+    # If the filename already has a '/' in it, assume that the path is already defined.
+    # In this case, leave the path as defined.
+    elif '/' not in filename:
+      if isInput: values.append(str(inputPath) + str(filename))
+      else: values.append(str(outputPath) + str(filename))
+
+    # If the filename begins with a '$', the path has been set using a variable that will be
+    # understood by make. For example, the path might be $(PWD) representing the current
+    # working directory. In this case, the value should be left as is.
+    elif filename.startswith('$'): values.append(filename)
+
+    # If the path is already defined, ensure the full path is written.
+    else: values.append(os.path.abspath(filename))
 
   # Check all of the provided information.
   def checkData(self, graph, config, checkRequired):
