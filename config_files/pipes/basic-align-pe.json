@@ -136,7 +136,8 @@
       "tasks" : {
         "generate-mosaik-parameters" : "--out",
         "build-read-archive" : "read json file"
-      }
+      },
+      "delete files" : true
     },
     {
       "ID" : "fragment length",
@@ -155,7 +156,8 @@
       "tasks" : {
         "build-read-archive" : "--read-archive",
         "align" : "--read-archive"
-      }
+      },
+      "delete files" : true
     },
     {
       "ID" : "sample",
@@ -258,7 +260,8 @@
         "sort-primary-bam" : {
           "--in" : "bam"
         }
-      }
+      },
+      "delete files" : true
     },
     {
       "ID" : "index",
@@ -311,12 +314,12 @@
         {
           "ID" : "fastq",
           "argument" : "--fastq",
-          "values" : ["$(RESOURCES)/tutorial/current/simulated_reads_1.fq"]
+          "values" : ["./sim/simulated_1.fq"]
         },
         {
           "ID" : "fastq mate",
           "argument" : "--fastq2",
-          "values" : ["$(RESOURCES)/tutorial/current/simulated_reads_2.fq"]
+          "values" : ["./sim/simulated_2.fq"]
         },
         {
           "ID" : "batch",
