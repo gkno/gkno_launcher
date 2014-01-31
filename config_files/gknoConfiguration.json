@@ -14,18 +14,18 @@
       "short form" : "-dnl",
       "value" : ["unset"]
     },
+    "GKNO-DO-NOT-EXECUTE" : {
+      "argument" : "--do-not-execute",
+      "data type" : "flag",
+      "description" : "Flag to stop execution of the Makefile after gkno is run.",
+      "short form" : "-dne",
+      "value" : ["unset"]
+    },
     "GKNO-DRAW-PIPELINE" : {
       "argument" : "--draw-pipeline-graph",
       "data type" : "string",
       "description" : "Name of the file to output a visual depiction of the pipeline graph.",
       "short form" : "-dpg"
-    },
-    "GKNO-EXECUTE" : {
-      "argument" : "--execute",
-      "data type" : "bool",
-      "description" : "Boolean to determine if the Makefile should be executed.  Default: True.",
-      "short form" : "-ex",
-      "value" : [true]
     },
     "GKNO-EXPORT-INSTANCE" : {
       "argument" : "--export-instance",
@@ -93,10 +93,10 @@
     },
     "GKNO-VERBOSE" : {
       "argument" : "--verbose",
-      "data type" : "bool",
-      "description" : "Boolean to determine if verbose information should be output.  Default: True.",
+      "data type" : "flag",
+      "description" : "Flag to determine if verbose information should be output.  Default is not verbose.",
       "short form" : "-vb",
-      "value" : [false]
+      "value" : ["unset"]
     }
   }
 }
