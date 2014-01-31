@@ -291,10 +291,32 @@
           "values" : ["../resources/tutorial/current/test_genome.fa"],
           "argument" : "--fasta-reference"
         },
+<<<<<<< HEAD
         {
           "ID" : "output path",
           "values" : ["./"],
           "argument" : "--output-path"
+=======
+        "--targets" : {
+          "short form argument" : "-t",
+          "description" : "Limit analysis to targets listed in the BED-format FILE.",
+          "input" : true,
+          "output" : false,
+          "required" : false,
+          "dependent" : true,
+          "type" : "string",
+          "extension" : "bed"
+        },
+        "--use-duplicate-reads" : {
+          "short form argument" : "-4",
+          "description" : "Include duplicate-marked alignments in the analysis. Default: exclude duplicates marked as such in alignments.",
+          "input" : false,
+          "output" : false,
+          "required" : false,
+          "dependent" : false,
+          "type" : "flag",
+          "extension" : "extension"
+>>>>>>> 2184d6d6a87b5b9045455c7c75e29ccc4114e2ff
         }
       ]
     }

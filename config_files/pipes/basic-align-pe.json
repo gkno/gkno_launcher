@@ -14,6 +14,9 @@
     "sort-primary-bam" : {
       "tool" : "bamtools-sort"
     },
+    "sort-multiple-bam" : {
+      "tool" : "bamtools-sort"
+    },
     "index-primary-bam" : {
       "tool" : "bamtools-index"
     },
@@ -38,6 +41,7 @@
       "description" : "The input fastq file (second mate).",
       "long form argument" : "--fastq2",
       "short form argument" : "-q2",
+      "required" : true,
       "tasks" : {
         "generate-mosaik-parameters" : "--fastq2",
         "build-read-archive" : "--fastq2"
@@ -254,11 +258,15 @@
       "description" : "Linking tasks only.",
       "tasks" : {
         "align" : "--out",
-        "sort-primary-bam" : "--in"
+        "sort-primary-bam" : "--in",
+        "sort-multiple-bam" : "--in"
       },
       "extensions" : {
         "sort-primary-bam" : {
           "--in" : "bam"
+        },
+        "sort-multiple-bam" : {
+          "--in" : "multiple.bam"
         }
       },
       "delete files" : true

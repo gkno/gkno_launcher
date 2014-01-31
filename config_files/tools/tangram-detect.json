@@ -61,8 +61,8 @@
     },
     {
       "description" : "The output file (including path) [stdout].",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
+      "long form argument" : "--vcf",
+      "short form argument" : "-v",
       "command line argument" : "-out",
       "input" : false,
       "output" : true,

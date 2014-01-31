@@ -28,8 +28,8 @@
     },
     {
       "description" : "The output reference file.",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
+      "long form argument" : "--tangram-reference",
+      "short form argument" : "-tr",
       "command line argument" : "-out",
       "input" : false,
       "output" : true,
