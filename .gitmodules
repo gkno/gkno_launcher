@@ -49,3 +49,6 @@
 [submodule "tools/blast"]
 	path = tools/blast
 	url = https://github.com/gkno/blast.git
+[submodule "tools/Jellyfish"]
+	path = tools/Jellyfish
+	url = https://github.com/gkno/Jellyfish.git
