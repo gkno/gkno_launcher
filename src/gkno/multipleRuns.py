@@ -6,8 +6,8 @@ import sys
 import dataChecking
 from dataChecking import *
 
-import errors
-from errors import *
+import gknoErrors
+from gknoErrors import *
 
 import files
 from files import *

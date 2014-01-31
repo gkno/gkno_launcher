@@ -2,8 +2,8 @@
 
 from __future__ import print_function
 
-import errors
-from errors import *
+import gknoErrors
+from gknoErrors import *
 
 import json
 import os
@@ -42,7 +42,7 @@ class files:
 
   # Get json data from a file.
   def getJsonData(self, filename, fail):
-    er        = errors()
+    er        = gknoErrors()
     inputData = ''
 
     # Check that the file exists.

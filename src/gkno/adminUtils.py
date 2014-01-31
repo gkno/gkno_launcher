@@ -12,26 +12,27 @@ import tarfile
 import urllib
 
 import conf
-import errors
-from errors import *
+import gknoErrors
+from gknoErrors import *
 
 class adminUtils:
   def __init__(self, sourcePath):
 
     # Command line modes
     self.resourceModes = [ "add-resource", "remove-resource", "update-resource" ]
-    self.allModes      = [ "build", "update" ] + self.resourceModes
+    self.allModes      = [ "build", "update", "version" ] + self.resourceModes
 
     # Setup help/usage descriptions
     self.modeDescriptions = {}
     self.modeDescriptions["build"]           = "Initialize gkno. This step is required to run any other operations."
     self.modeDescriptions["update"]          = "Update gkno itself, its internal tools, and any tracked organism resources."
+    self.modeDescriptions["version"]         = "View gkno version in use, along with access to built-in tool versions."
     self.modeDescriptions["add-resource"]    = "Download resource data for an organism and track it for updated releases."
     self.modeDescriptions["remove-resource"] = "Delete resource data for an organism and stop tracking it."
     self.modeDescriptions["update-resource"] = "Update resource data for an organism."
 
     # General data members
-    self.error        = errors()
+    self.error        = gknoErrors()
     self.isRequested  = False
     self.isVerbose    = False
     self.mode         = ""
@@ -74,8 +75,9 @@ class adminUtils:
       
     # Run the requested operation
     success = False
-    if   self.mode == "build" : success = self.build()
-    elif self.mode == "update": success = self.update()
+    if   self.mode == "build"   : success = self.build()
+    elif self.mode == "update"  : success = self.update()
+    elif self.mode == "version" : success = self.showVersion()
     else:
     
       # Check command line for organism and/or release name, then resolve any potential alias.
@@ -153,6 +155,58 @@ class adminUtils:
     # If we get here - clean up, mark built status, and return success
     os.chdir(originalWorkingDir)
     self.userSettings["isBuilt"] = True
+    return True
+
+  # "gkno version" 
+  # 
+  # gkno version is output already, by main script. Here we will create links 
+  # that point users to the built-in tool repos, at the specific commit used
+  # by gkno. Additional information about each tool (e.g. version, features )
+  # should be available from its documentation or contacting its authors.
+
+  def showVersion(self):
+
+    # Run 'git submodule' to print out all submodule info.
+    process = subprocess.Popen(["git", "submodule"], stdout=subprocess.PIPE)
+    (output, err) = process.communicate()
+    exit_code = process.wait()
+    if exit_code != 0:
+      print("Could not retrieve tool version data: " + err, end="\n", file=sys.stdout)
+      return False
+
+    # Fetch info for tools only.
+    submodules = {}
+    for line in output.splitlines():
+      fields = line.split()
+      commit = fields[0]
+      fullName = fields[1]
+      if fullName.startswith("tools/"):
+        name = fullName[6:]    
+        submodules[name] = commit
+
+    # Determine longest tool name (for clean formatting).
+    toolNames = sorted(submodules.keys(), key=lambda s: s.lower())
+    maxNameLength = 0
+    for toolName in toolNames:
+      if len(toolName) > maxNameLength:
+        maxNameLength = len(toolName)
+
+    # Print results.
+    print("", end="\n", file=sys.stdout)
+    print("Listed below are the built-in software tools provided by gkno. Follow the URLs", end="\n", file=sys.stdout)
+    print("provided to access the specific version of each tool used in this version of gkno.", end="\n", file=sys.stdout)
+    print("", end="\n", file=sys.stdout)
+
+    toolHeader = "Tool"
+    underline  = '-'*maxNameLength
+    print(toolHeader.ljust(maxNameLength) + "\t" + "URL",     end="\n", file=sys.stdout)
+    print(underline.ljust(maxNameLength)  + "\t" + underline, end="\n", file=sys.stdout)
+
+    for toolName in toolNames:
+      url = "https://github.com/gkno/" + toolName + "/tree/" + submodules[toolName]
+      print(toolName.ljust(maxNameLength) + "\t" + url, end="\n", file=sys.stdout)
+    
+    # Return success.
     return True
 
   # "gkno update"

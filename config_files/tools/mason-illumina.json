@@ -1,0 +1,142 @@
+{
+  "description" : "Generate simulated Illumina reads.",
+  "path" : "mason/bin",
+  "executable" : "mason",
+  "modifier" : "illumina",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "The input FASTA sequence file.",
+      "long form argument" : "--input-fasta",
+      "short form argument" : "-in",
+      "command line argument" : "--input-fasta",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "fa|fasta",
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "The seed for Rng. Default: 0.",
+      "long form argument" : "--seed",
+      "short form argument" : "-s",
+      "command line argument" : "--seed",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Simulate qualities, generate FASTQ instead of FASTA.",
+      "long form argument" : "--simulate-qualities",
+      "short form argument" : "-sq",
+      "command line argument" : "--simulate-qualities",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "The length of the reads to simulate. All resulting reads will have the same length. Default: 36.",
+      "long form argument" : "--read-length",
+      "short form argument" : "-n",
+      "command line argument" : "--read-length",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Number of reads (or mate pairs) to simulate. Default: 1000.",
+      "long form argument" : "--num-reads",
+      "short form argument" : "-N",
+      "command line argument" : "--num-reads",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Mate-pair mean library length. Default: 1000.",
+      "long form argument" : "--library-length-mean",
+      "short form argument" : "-ll",
+      "command line argument" : "--library-length-mean",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Enable mate pair simulation.",
+      "long form argument" : "--mate-pairs",
+      "short form argument" : "-mp",
+      "command line argument" : "--mate-pairs",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Read name prefix. Default is output file name.",
+      "long form argument" : "--read-name-prefix",
+      "short form argument" : "-rnp",
+      "command line argument" : "--read-name-prefix",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Haplotype SNP rate. Default: 0.001.",
+      "long form argument" : "--haplotype-snp-rate",
+      "short form argument" : "-hs",
+      "command line argument" : "--haplotype-snp-rate",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "float",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Haplotype indel rate. Default: 0.001.",
+      "long form argument" : "--haplotype-indel-rate",
+      "short form argument" : "-hi",
+      "command line argument" : "--haplotype-indel-rate",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "float",
+      "extension" : "no extension"
+    }
+  ],
+
+  "argument order" : [
+    "--seed",
+    "--simulate-qualities",
+    "--read-length",
+    "--num-reads",
+    "--library-length-mean",
+    "--mate-pairs",
+    "--read-name-prefix",
+    "--haplotype-snp-rate",
+    "--haplotype-indel-rate",
+    "--input-fasta"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

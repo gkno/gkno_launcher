@@ -1,12 +1,7 @@
+import gkno.conf.gknoDependencies
+import gkno.conf.gknoResources
+import gkno.conf.gknoTools
 
-import conf.gknoDependencies
-import conf.gknoResources
-import conf.gknoTools
-
-dependencies = conf.gknoDependencies.List
-resources = conf.gknoResources.List
-tools = conf.gknoTools.List
-
-
-
-
+dependencies = gknoDependencies.List
+resources    = gknoResources.List
+tools        = gknoTools.List

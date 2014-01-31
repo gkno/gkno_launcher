@@ -6,8 +6,8 @@ import sys
 import dataChecking
 from dataChecking import *
 
-import errors
-from errors import *
+import gknoErrors
+from gknoErrors import *
 
 import files
 from files import *
@@ -19,7 +19,7 @@ class internalLoop:
     self.arguments          = {}
     self.argumentList       = []
     self.data               = []
-    self.errors             = errors()
+    self.errors             = gknoErrors()
     self.ID                 = 0
     self.numberOfIterations = 0
     self.tasks              = []

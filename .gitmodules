@@ -43,3 +43,15 @@
 [submodule "tools/libStatGen"]
 	path = tools/libStatGen
 	url = git://github.com/gkno/libStatGen.git
+[submodule "configurationClass"]
+    path = src/configurationClass
+    url = git://github.com/gkno/configurationClass.git
+[submodule "tools/blast"]
+	path = tools/blast
+	url = https://github.com/gkno/blast.git
+[submodule "tools/Jellyfish"]
+	path = tools/Jellyfish
+	url = https://github.com/gkno/Jellyfish.git
+[submodule "tools/seqan"]
+	path = tools/seqan
+	url = https://github.com/gkno/seqan.git

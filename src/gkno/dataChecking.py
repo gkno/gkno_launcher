@@ -5,8 +5,8 @@ from copy import deepcopy
 import os
 import sys
 
-import errors
-from errors import *
+import gknoErrors
+from gknoErrors import *
 
 import files
 from files import *
@@ -50,7 +50,7 @@ def checkDataType(expectedType, value):
 # tools have input lists specified and if so, add these to the actual command line
 # argument list that should be used.
 def checkInputLists(argumentInformation, workflow, taskToTool, arguments, verbose):
-  er                = errors()
+  er                = gknoErrors()
   modifiedArguments = deepcopy(arguments)
   argumentsToRemove = []
 
@@ -122,7 +122,7 @@ def checkMakefileID(arguments, iTasks, numberOfIterations):
 # if any of the input files have 'use for filenames' set to true.  If so, use this
 # filename to build the output (changing the extension as required).
 def constructFilenames(task, tool, arguments, argumentInformation, constructFilenames, links, taskToTool, verbose):
-  er = errors()
+  er = gknoErrors()
 
   # Each task has a set of arguments depending on whether the task is involved in an internal loop
   # and the number of loops over the task need to be performed.  When constructing the filenames,
@@ -224,7 +224,7 @@ def constructFilenames(task, tool, arguments, argumentInformation, constructFile
 
 # Construct filenames using the instructions in the pipeline configuration file.
 def constructFilename(task, tool, iteration, argument, constructFilenames, arguments, argumentInformation, taskToTool, verbose):
-  er           = errors()
+  er           = gknoErrors()
   basename     = ''
   construction = ''
   separator    = '_'
@@ -339,7 +339,7 @@ def constructFilename(task, tool, iteration, argument, constructFilenames, argum
 # requested input filename, remove the extension and replace with the required
 # extension for this output file.
 def constructFilenameFromInput(task, tool, iteration, argumentInformation, arguments, outputFile, inputArgument, verbose):
-  er = errors()
+  er = gknoErrors()
   
   # Check if the input file that is to be used for constructing the output filename is
   # blank.  If so, terminate gkno as the output filename cannot be determined.
@@ -384,7 +384,7 @@ def checkStreamedOutput(task, tool, argumentInformation, taskToTool, constructFi
     # If the output file is not provided or can be constucted, fail.
     else:
       print('\t\tfail')
-      er = errors()
+      er = gknoErrors()
       er.terminate()
 
 # Check to see if the input file has a path or not.  If not, set it to the
@@ -442,7 +442,7 @@ def setFile(pipelineArgumentInformation, pipelineArguments, arguments, filename,
 # Check the filename extension.  If the filename is not a stub and the
 # name soesn't end with the expected extension, throw an error.
 def checkExtension(argumentInformation, shortForms, links, task, tool, argument, isOutput, filename, verbose):
-  er      = errors()
+  er      = gknoErrors()
   correct = False
 
   # First check if the filename is a stub.
@@ -483,7 +483,7 @@ def checkExtension(argumentInformation, shortForms, links, task, tool, argument,
 
 # Loop over the tools and check that all required information has been set.
 def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipeline, workflow, pipelineArgumentInformation, toolsOutputtingToStream, links, linkage, checkRequired, verbose):
-  er = errors()
+  er = gknoErrors()
 
   for counter, iteration in enumerate(arguments[task]):
     for argument in iteration:
@@ -591,7 +591,7 @@ def checkParameters(gknoHelp, task, tool, argumentInformation, arguments, isPipe
 # Determine which files are required for each tool to run.  For each tool, these files
 # are stored in a list and are used to define the dependencies in the Makefile.
 def determineDependencies(argumentInformation, generatedFiles, workflow, taskToTool, toolsOutputtingToStream, arguments):
-  er           = errors()
+  er           = gknoErrors()
   previousTask = ''
   dependencies = {}
   outputs      = {}
@@ -681,7 +681,7 @@ def determineDependencies(argumentInformation, generatedFiles, workflow, taskToT
 # included at the beginning of the tools configuration files.  Parse these
 # additional output files (if there are any) and add to the outputs string.
 def determineAdditionalFiles(additionalFiles, workflow, taskToTool, pipelineDependencies, arguments, dependencies, outputs, verbose):
-  er = errors()
+  er = gknoErrors()
 
   # Loop over each tool in turn and check for additional output files.
   for task in workflow:
@@ -740,7 +740,7 @@ def determineAdditionalFiles(additionalFiles, workflow, taskToTool, pipelineDepe
 # file segment 'delete files' identifies which files should be deleted and
 # when in the pipeline they can be removed.
 def determineFilesToDelete(arguments, deleteFiles, iTasks, numberOfIterations, verbose):
-  er     = errors()
+  er     = gknoErrors()
   output = {}
 
   # Check to see if the configuration file has the 'delete files' section.
@@ -820,7 +820,7 @@ def determineFinalOutputs(deleteFiles, outputs):
 # Determine if any of the tools are being piped together and check if the
 # tools involved can use the stream for input and output.
 def determinePiping(arguments, argumentInformation, toolsDemandingInputStream, toolsDemandingOutputStream, workflow, taskToTool, toolsOutputtingToStream, verbose):
-  er               = errors()
+  er               = gknoErrors()
   addArguments     = {}
   addedInformation = {}
   hasPipes         = False
@@ -1021,7 +1021,7 @@ def getTaskBlockOutputsAndDependencies(taskBlocks, outputs, dependencies, iTasks
 
 # Check that all of the executables required exist.
 def checkExecutables(sourcePath, paths, executables, workflow, taskToTool, verbose):
-  er                    = errors()
+  er                    = gknoErrors()
   executablesList       = []
   missingExecutableList = []
   for task in workflow:

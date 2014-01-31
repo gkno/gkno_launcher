@@ -1,0 +1,80 @@
+{
+  "description" : "Prints general alignment statistics.",
+  "path" : "bamtools/bin",
+  "executable" : "bamtools",
+  "modifier" : "stats",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "the input BAM file.",
+      "long form argument" :"--in",
+      "short form argument" : "-i",
+      "command line argument" : "-in",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".bam"
+    },
+    {
+      "description" : "summarize insert size data.",
+      "long form argument" : "--insert",
+      "short form argument" : "-n",
+      "command line argument" : "-insert",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    {
+      "description" : "the output stats file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "-out",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".stats",
+      "modify argument name on command line" : "stdout",
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "replace"
+      }
+    }
+  ],
+
+  "argument order" : [
+    "--in",
+    "--insert",
+    "--out"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "BAM1",
+          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
+          "argument" : "--in"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
+    }
+  ]
+}

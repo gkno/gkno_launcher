@@ -1,124 +1,324 @@
 {
   "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
-  "workflow" : [
-    "build-tangram-reference",
-    "merge-fasta",
-    "index-fasta",
-    "create-sequence-dictionary",
-    "build-reference",
-    "build-jump-database",
-    "generate-mosaik-parameters",
-    "build-read-archive",
-    "align",
-    "sort-primary-bam",
-    "sort-multiple-bam",
-    "mark-duplicates",
-    "index-final-bam",
-    "generate-bam-list",
-    "scan-bam-files",
-    "detect-mei"
-  ],
+
   "tools" : {
-    "build-tangram-reference" : "tangram-index",
-    "merge-fasta" : "concatenate-files",
-    "index-fasta" : "samtools-index-fasta",
-    "create-sequence-dictionary" : "picard-create-sequence-dictionary",
-    "build-reference" : "mosaik-build-reference",
-    "build-jump-database" : "mosaik-jump",
-    "generate-mosaik-parameters" : "premo",
-    "build-read-archive" : "mosaik-build-fastq",
-    "align" : "mosaik-aligner",
-    "sort-primary-bam" : "bamtools-sort",
-    "sort-multiple-bam" : "bamtools-sort",
-    "generate-bam-list" : "generate-file-list",
-    "mark-duplicates" : "picard-mark-duplicates",
-    "index-final-bam" : "bamtools-index",
-    "scan-bam-files" : "tangram-scan",
-    "detect-mei" : "tangram-detect"
-  },
-  "internal loop" : [
-    "generate-mosaik-parameters",
-    "build-read-archive",
-    "align",
-    "sort-primary-bam",
-    "sort-multiple-bam",
-    "mark-duplicates",
-    "index-final-bam"
-  ],
-  "construct filenames" : {
+    "build-tangram-reference" : {
+      "tool" : "tangram-index"
+    }
+    "merge-fasta" : {
+      "tool" : "concatenate-files"
+    }
+    "index-fasta" : {
+      "tool" : "samtools-index-fasta"
+    }
+    "create-sequence-dictionary" : {
+      "tool" : "picard-create-sequence-dictionary"
+    }
     "build-reference" : {
-      "-oa" : {
-        "filename root" : "from argument",
-        "get root from task" : "build-reference",
-        "get root from argument" : "-fr",
-        "remove input extension" : true
-      }
-    },
+      "tool" : "mosaik-build-reference"
+    }
     "build-jump-database" : {
-      "-out" : {
-        "filename root" : "from argument",
-        "get root from task" : "build-reference",
-        "get root from argument" : "-fr",
-        "remove input extension" : true,
-        "additional text from parameters" : {
-          "order" : [
-            "filename root",
-            "hash-size"
-          ],
-          "hash-size" : {
-            "get parameter from task" : "build-jump-database",
-            "get parameter from argument" : "-hs",
-            "remove extension" : true
-          }
-        }
-      }
-    },
+      "tool" : "mosaik-jump"
+    }
+    "generate-mosaik-parameters" : {
+      "tool" : "premo"
+    }
+    "build-read-archive" : {
+      "tool" : "mosaik-build-fastq"
+    }
+    "align" : {
+      "tool" : "mosaik-aligner"
+    }
+    "sort-primary-bam" : {
+      "tool" : "bamtools-sort"
+    }
+    "sort-multiple-bam" : {
+      "tool" : "bamtools-sort"
+    }
+    "index-primary-bam" : {
+      "tool" : "bamtools-index"
+    }
     "generate-bam-list" : {
-      "--out" : {
-        "filename root" : "from text",
-        "filename root text" : "tangram-bam-list.txt"
-      }
-    },
+      "tool" : "generate-file-list"
+    }
+    "mark-duplicates" : {
+      "tool" : "picard-mark-duplicates"
+    }
+    "index-final-bam" : {
+      "tool" : "bamtools-index"
+    }
+    "scan-bam-files" : {
+      "tool" : "tangram-scan"
+    }
     "detect-mei" : {
-      "-lb" : {
-        "filename root" : "from argument",
-        "get root from task" : "scan-bam-files",
-        "get root from argument" : "-dir",
-        "remove input extension" : true,
-        "additional text" : "/lib_table.dat"
-      },
-      "-ht" : {
-        "filename root" : "from argument",
-        "get root from task" : "scan-bam-files",
-        "get root from argument" : "-dir",
-        "remove input extension" : false,
-        "additional text" : "/hist.dat"
-      },
-      "-out" : {
-        "filename root" : "from text",
-        "filename root text" : "tangram"
-      }
+      "tool" : "tangram-detect"
     }
   },
+
+  "nodes" : [
+    {
+      "ID" : "reference fasta",
+      "description" : "The reference fasta file.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-f",
+      "tasks" : {
+        "merge-fasta" : "--in",
+        "build-tangram-reference" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "moblist reference",
+      "description" : "The mobile element reference sequences.",
+      "long form argument" : "--special-reference",
+      "short form argument" : "-sp",
+      "tasks" : {
+        "merge-fasta" : "--in",
+        "build-tangram-reference" : "--special-reference"
+      }
+    },
+    {
+      "ID" : "Tangram reference",
+      "description" : "The binary reference for use with Tangram.",
+      "long form argument" : "--tangram-reference",
+      "short form argument" : "-tr",
+      "tasks" : {
+        "build-tangram-reference" : "--tangram-reference",
+        "detect-mei" : "--tangram-reference"
+      }
+    },
+    {
+      "ID" : "merged fasta",
+      "description" : "The fasta reference including the mobile element sequences.",
+      "long form argument" : "--merged-reference",
+      "short form argument" : "-mr",
+      "tasks" : {
+        "merge-fasta" : "--out"
+      }
+    },
+    {
+      "ID" : "hash size",
+      "description" : "The hash size for breaking up the read and reference.",
+      "long form argument" : "--hash-size",
+      "short form argument" : "-hs",
+      "tasks" : {
+        "build-jump-database" : "--hash-size"
+      }
+    },
+    {
+      "ID" : "fastq first mate",
+      "description" : "The fastq file for the first mate in the pair.",
+      "long form argument" : "--fastq",
+      "short form argument" : "-q",
+      "tasks" : {
+        "generate-mosaik-parameters" : "--fastq"
+      }
+    },
+    {
+      "ID" : "fastq second mate",
+      "description" : "The fastq file for the second mate in the pair.",
+      "long form argument" : "--fastq2",
+      "short form argument" : "-q2",
+      "required" : true,
+      "tasks" : {
+        "generate-mosaik-parameters" : "--fastq2"
+      }
+    },
+    {
+      "ID" : "batch",
+      "description" : "Number of pairs to align per batch [1000].",
+      "long form argument" : "--reads-per-batch",
+      "short form argument" : "-rb",
+      "tasks" : {
+        "generate-mosaik-parameters" : "--reads-per-batch"
+      }
+    },
+    {
+      "ID" : "sequencing technology",
+      "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'.",
+      "long form argument" : "--sequencing-technology",
+      "short form argument" : "-st",
+      "tasks" : {
+        "generate-mosaik-parameters" : "--sequencing-technology",
+        "build-read-archive" : "--sequencing-technology"
+      }
+    },
+    {
+      "ID" : "single end neural net",
+      "description" : "Neural network file for Mosaik mapping quality scores (single end).",
+      "long form argument" : "--ann-se",
+      "short form argument" : "-as",
+      "tasks" : {
+        "generate-mosaik-parameters" : "--ann-single-end",
+        "align" : "--ann-single-end"
+      }
+    },
+    {
+      "ID" : "paired end neural net",
+      "description" : "Neural network file for Mosaik mapping quality scores (paired end).",
+      "long form argument" : "--ann-pe",
+      "short form argument" : "-ap",
+      "tasks" : {
+        "generate-mosaik-parameters" : "--ann-paired-end",
+        "align" : "--ann-paired-end"
+      }
+    },
+    {
+      "ID" : "fragment length",
+      "description" : "Median fragment length.",
+      "long form argument" : "--median-fragment-length",
+      "short form argument" : "-mfl",
+      "tasks" : {
+        "build-read-archive" : "--median-fragment-length"
+      }
+    },
+    {
+      "ID" : "read archive",
+      "description" : "The output read archive.",
+      "long form argument" : "--read-archive",
+      "short form argument" : "-a",
+      "tasks" : {
+        "build-read-archive" : "--read-archive",
+        "align" : "--read-archive"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "special references",
+      "description" : "Specifies the prefixes of 'special' reference sequences.",
+      "long form argument" : "--special-reference-prefix",
+      "short form argument" : "-s",
+      "tasks" : {
+        "align" : "--special-reference-prefix"
+      }
+    },
+    {
+      "ID" : "special reference hashes",
+      "description" : "Specifies the maximum number of hashes for the special reference sequences.",
+      "long form argument" : "--special-reference-hashes",
+      "short form argument" : "-sh",
+      "tasks" : {
+        "align" : "--special-reference-hashes"
+      }
+    },
+    {
+      "ID" : "threads",
+      "description" : "Specifies the number of threads to use for the aligner.",
+      "long form argument" : "--mosaik-processors",
+	      "short form argument" : "-mp",
+      "tasks" : {
+        "align" : "--processors"
+      }
+    },
+    {
+      "ID" : "candidates",
+      "description" : "Specifies the minimum length of an alignment candidate.",
+      "long form argument" : "--alignment-candidate-threshold",
+      "short form argument" : "-act",
+      "tasks" : {
+        "align" : "--alignment-candidate-threshold"
+      }
+    },
+    {
+      "ID" : "max hash",
+      "description" : "Specifies the maximum number of positions stored for each hash.",
+      "long form argument" : "--maximum-hashes-per-seed",
+      "short form argument" : "-mhp",
+      "tasks" : {
+        "align" : "--maximum-hashes-per-seed"
+      }
+    },
+    {
+      "ID" : "tangram directory",
+      "description" : "The directory containing the histogram and library files.",
+      "long form argument" : "--output-directory",
+      "short form argument" : "-d",
+      "tasks" : {
+        "scan-bam-files" : "--output-directory"
+      }
+    },
+    {
+      "ID" : "min fragments",
+      "description" : "The minimum number of normal fragments in a library [10000].",
+      "long form argument" : "--minimum-fragments",
+      "short form argument" : "-mf",
+      "tasks" : {
+        "scan-bam-files" : "--minimum-fragments"
+      }
+    },
+    {
+      "ID" : "bam-list",
+      "description" : "A file containing a list of all BAM files to be processed by TANGRAM.",
+      "long form argument" : "--in-list",
+      "short form argument" : "-il",
+      "tasks" : {
+        "detect-mei" : "--in-list"
+      }
+    },
+    {
+      "ID" : "library",
+      "description" : "The file containing information on the read libraries.",
+      "long form argument" : "--library",
+      "short form argument" : "-l",
+      "tasks" : {
+        "detect-mei" : "--library"
+      }
+    },
+    {
+      "ID" : "histogram",
+      "description" : "The file containing fragment length information.",
+      "long form argument" : "--histogram",
+      "short form argument" : "-ht",
+      "tasks" : {
+        "detect-mei" : "--histogram"
+      }
+    },
+    {
+      "ID" : "call region",
+      "description" : "The region in which to search for variants.",
+      "long form argument" : "--region",
+      "short form argument" : "-rg",
+      "tasks" : {
+        "detect-mei" : "--region"
+      }
+    },
+    {
+      "ID" : "calls",
+      "description" : "The output file (including path) [stdout].",
+      "long form argument" : "--vcf",
+      "short form argument" : "-v",
+      "tasks" : {
+        "detect-mei" : "--vcf"
+      }
+    },
+    {
+      "ID" : "tangram threads",
+      "description" : "The number of threads to use when detecting variants.",
+      "long form argument" : "--tangram-processors",
+      "short form argument" : "-tp",
+      "tasks" : {
+        "detect-mei" : "--processors"
+      }
+    },
+    {
+      "ID" : "index fasta",
+      "description" : "Linking arguments.",
+      "tasks" : {
+        "merge-fasta" : "--out",
+        "index-fasta" : "--in",
+        "create-sequence-dictionary" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "fasta dictionary",
+      "description" : "Linking arguments.",
+      "tasks" : {
+        "merge-fasta" : "--out",
+        "index-fasta" : "--in"
+      }
+    },
+
+
   "linkage" : {
-    "merge-fasta" : {
-      "--in" : {
-        "link to this task" : [
-          "build-tangram-reference",
-          "build-tangram-reference"
-        ],
-        "link to this argument" : [
-          "-ref",
-          "-sp"
-        ]
-      }
-    },
-    "index-fasta" : {
-      "--in" : {
-        "link to this task" : "merge-fasta",
-        "link to this argument" : "--out"
-      }
-    },
     "create-sequence-dictionary" : {
       "REFERENCE" : {
         "link to this task" : "merge-fasta",
@@ -220,6 +420,12 @@
         "extension" : ".multiple.sorted.bam"
       }
     },
+    "index-primary-bam" : {
+      "-in" : {
+        "link to this task" : "sort-primary-bam",
+        "link to this argument" : "-out"
+      }
+    },
     "mark-duplicates" : {
       "INPUT" : {
         "link to this task" : "sort-primary-bam",
@@ -264,185 +470,6 @@
     }
   },
 
-  "arguments" : {
-    "--reference" : {
-      "description" : "The input reference fasta.",
-      "link to this task" : "build-tangram-reference",
-      "link to this argument" : "-ref",
-      "short form argument" : "-r",
-      "type" : "string"
-    },
-    "--moblist-reference" : {
-      "description" : "The input mobile element reference fasta.",
-      "link to this task" : "build-tangram-reference",
-      "link to this argument" : "-sp",
-      "short form argument" : "-mr",
-      "type" : "string"
-    },
-    "--output-reference" : {
-      "description" : "The output reference file for use with TANGRAM.",
-      "link to this task" : "build-tangram-reference",
-      "link to this argument" : "-out",
-      "short form argument" : "-or",
-      "type" : "string"
-    },
-    "--merged-reference" : {
-      "description" : "The merged reference fasta for aligning the reads (MOSAIK).",
-      "link to this task" : "merge-fasta",
-      "link to this argument" : "--out",
-      "type" : "string",
-      "short form argument" : "-ar"
-    },
-    "--hash-size" : {
-      "description" : "hash-size",
-      "link to this task" : "build-jump-database",
-      "link to this argument" : "-hs",
-      "type" : "integer",
-      "short form argument" : "-hs"
-    },
-    "--fastq" : {
-      "description" : "The input fastq file (first mate).",
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-fq1",
-      "short form argument" : "-q",
-      "type" : "string"
-    },
-    "--fastq2" : {
-      "description" : "The input fastq file (second mate).",
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-fq2",
-      "short form argument" : "-q2",
-      "type" : "string",
-      "required" : true
-    },
-    "--batch-size" : {
-      "description" : "Number of pairs to align per batch to determine read properties in premo (e.g. average read length).",
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-n",
-      "short form argument" : "-b",
-      "type" : "integer"
-    },
-    "--sequencing-technology" : {
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-st",
-      "short form argument" : "-st",
-      "type" : "string"
-    },
-    "--sequencing-technology" : {
-      "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'.",
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-st",
-      "short form argument" : "-st",
-      "type" : "string"
-    },
-    "--ann-se" : {
-      "description" : "Neural network file for Mosaik mapping quality scores (single end).",
-      "short form argument" : "-as",
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-annse",
-      "type" : "string"
-    },
-    "--ann-pe" : {
-      "description" : "Neural network file for Mosaik mapping quality scores (paired end).",
-      "short form argument" : "-ap",
-      "link to this task" : "generate-mosaik-parameters",
-      "link to this argument" : "-annpe",
-      "type" : "string"
-    },
-    "--median-fragment-length" : {
-      "description" : "The median fragment length for the read pairs.",
-      "link to this task" : "build-read-archive",
-      "link to this argument" : "-mfl",
-      "type" : "integer",
-      "short form argument" : "-mfl"
-    },
-    "--archive-name" : {
-      "description" : "The name of the read archive generated by MosaikBuild.",
-      "link to this task" : "build-read-archive",
-      "link to this argument" : "-out",
-      "short form argument" : "-an",
-      "type" : "string"
-    },
-    "--special-references" : {
-      "description" : "Specifies the prefixes of 'special' reference sequences.",
-      "link to this task" : "align",
-      "link to this argument" : "-sref",
-      "short form argument" : "-sr",
-      "type" : "string",
-      "required" : true
-    },
-    "--special-reference-hashes" : {
-      "description" : "Specifies the maximum number of hashes for the special reference sequences.",
-      "link to this task" : "align",
-      "link to this argument" : "-srefn",
-      "short form argument" : "-srh",
-      "type" : "integer",
-      "required" : true
-    },
-    "--tangram-directory" : {
-      "description" : "The directory containing the histogram and library files.",
-      "link to this task" : "scan-bam-files",
-      "link to this argument" : "-dir",
-      "short form argument" : "-td",
-      "type" : "string"
-    },
-    "--minimum-fragments" : {
-      "description" : "The minimum number of normal fragments in a library [10000].",
-      "link to this task" : "scan-bam-files",
-      "link to this argument" : "-mf",
-      "short form argument" : "-mf",
-      "type" : "integer"
-    },
-    "--detection-bam-list" : {
-      "description" : "A file containing a list of all BAM files to be processed by TANGRAM.",
-      "link to this task" : "detect-mei",
-      "link to this argument" : "-in",
-      "short form argument" : "-dl",
-      "type" : "string"
-    },
-    "--library-file" : {
-      "description" : "The file containing information on the read libraries.",
-      "link to this task" : "detect-mei",
-      "link to this argument" : "-lb",
-      "short form argument" : "-lb",
-      "type" : "string"
-    },
-    "--histogram-file" : {
-      "description" : "The file containing fragment length information.",
-      "link to this task" : "detect-mei",
-      "link to this argument" : "-ht",
-      "short form argument" : "-ht",
-      "type" : "string"
-    },
-    "--tangram-reference" : {
-      "description" : "The reference in a native format for use with TANGRAM.",
-      "link to this task" : "detect-mei",
-      "link to this argument" : "-ref",
-      "short form argument" : "-tr",
-      "type" : "string"
-    },
-    "--tangram-region" : {
-      "description" : "The region in which to search for variants.",
-      "link to this task" : "detect-mei",
-      "link to this argument" : "-rg",
-      "short form argument" : "-rg",
-      "type" : "string"
-    },
-    "--tangram-output" : {
-      "description" : "The output file (including path) [stdout].",
-      "link to this task" : "detect-mei",
-      "link to this argument" : "-out",
-      "short form argument" : "-to",
-      "type" : "string"
-    },
-    "--tangram-threads" : {
-      "description" : "The number of threads to use when detecting variants.",
-      "link to this task" : "detect-mei",
-      "link to this argument" : "-p",
-      "short form argument" : "-tt",
-      "type" : "integer"
-    }
-  },
   "delete files" : {
     "build-read-archive" : {
       "-out" : {
@@ -460,16 +487,6 @@
           "sort-multiple-bam"
         ]
       }
-    },
-    "sort-primary-bam" : {
-      "-out" : {
-        "output extension" : [
-          "sorted.bam"
-        ],
-        "delete after task" : [
-          "mark-duplicates"
-        ]
-      }
     }
   },
   "instances" : {
@@ -479,7 +496,6 @@
       "--merged-reference" : "merged-reference.fa",
       "--ann-se" : "$(RESOURCES)/tutorial/current/se.100.005.ann",
       "--ann-pe" : "$(RESOURCES)/tutorial/current/pe.100.01.ann",
-      "--special-reference-hashes" : "50",
       "--tangram-directory" : "tangram-files",
       "--tangram-output" : "tangram-calls"
     },

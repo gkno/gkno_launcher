@@ -1,0 +1,63 @@
+{
+  "description" : "Generate an index for a reference fasta file.",
+  "path" : "samtools",
+  "executable" : "samtools",
+  "modifier" : "faidx",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "Input FASTA file.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "command line argument" : "--fasta-reference",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".fasta|.fa",
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Output index file.",
+      "long form argument" : "--output",
+      "short form argument" : "-o",
+      "command line argument" : "--output",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".fai",
+      "include on command line" : false,
+      "construct filename" : {
+        "method" : "from tool argument",
+        "use argument" : "--fasta-reference",
+        "modify extension" : "append"
+      }
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : []
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "fasta",
+          "values" : ["files-for-testing-tools/test_genome.fa"],
+          "argument" : "--fasta-reference"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
+    }
+  ]
+}

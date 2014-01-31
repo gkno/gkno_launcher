@@ -1,0 +1,61 @@
+{
+  "description" : "Build the Mosaik reference",
+  "path" : "MOSAIK/bin",
+  "executable" : "MosaikBuild",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "The FASTA reference sequence file",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "command line argument" : "-fr",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".fasta|.fa"
+    },
+    {    
+      "description" : "The output Mosaik reference file",
+      "long form argument" : "--mosaik-reference",
+      "short form argument" : "-m",
+      "command line argument" : "-oa",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".dat",
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--fasta-reference",
+        "modify extension" : "replace"
+      }
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "values" : ["../resources/tutorial/current/test_genome.fa"],
+          "argument" : "--fasta-reference"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
+    }
+  ]
+}

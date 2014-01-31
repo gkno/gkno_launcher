@@ -1,8 +1,13 @@
 
-import os
+from __future__ import print_function
+
+import json
 import multiprocessing
+import os
 import subprocess
 import sys
+import tarfile
+import urllib
 
 ##################################################################
 # IMPORTANT: To add a new built-in tool, create a subclass
@@ -166,6 +171,61 @@ class BamUtil(GknoTool):
   def doUpdate(self):
     return self.make()
 
+# NCBI BLAST
+class Blast(GknoTool):
+  def __init__(self):
+    super(Blast, self).__init__()
+    self.name       = "blast"
+    self.installDir = "blast"
+
+  def doBuild(self):
+
+    # Read contents of 'targets.json'.
+    blastSettings = {}
+    targetsFile = open("targets.json")
+    try:
+      blastSettings = json.load(targetsFile)
+    except:
+      return False
+
+    # Determine proper URL depending on environment.
+    key = 'linux_32'
+    if sys.platform == 'darwin':
+      key = 'macosx'
+    else:
+      if sys.maxsize > 2**32:
+        key='linux_64'
+    url = blastSettings[key]
+
+    # Download tarball, extract contents, then erase tarball.
+    try:
+      filename, headers = urllib.urlretrieve(url) 
+      tar = tarfile.open(filename)
+      tar.extractall()
+      tar.close()
+      os.remove(filename)
+    except:
+      return False
+
+    # If we get here, return success.
+    return True
+   
+  def doUpdate(self):
+
+    # If nothing built yet, force build
+    filesList = os.listdir( os.getcwd() )
+    blastFiles = []
+    for f in filesList:
+      if f.startswith('.') or f == 'targets.json':
+        continue
+      else:
+        blastFiles.append(f)
+    if len(blastFiles) == 0 :
+      return doBuild()
+
+    # TODO: determine if update needed for existing install
+    return True
+
 # freebayes
 class Freebayes(GknoTool):
   def __init__(self):
@@ -207,6 +267,36 @@ class Gatk(GknoTool):
   # $ ant -Dcompile.scala.by.default=false
   def doUpdate(self):
     return self.ant()
+
+# Jellyfish
+class Jellyfish(GknoTool):
+  def __init__(self):
+    super(Jellyfish, self).__init__()
+    self.name       = "jellyfish"
+    self.installDir = "Jellyfish"
+
+  def doBuild(self):
+
+    # Install Yaggo.
+    if not self.runCommand("git clone https://github.com/gmarcais/yaggo.git") : return False
+    os.chdir("yaggo")
+    if not self.runCommand("ruby setup.rb config --prefix=. --siterubyver=./lib") : return False
+    if not self.runCommand("ruby setup.rb setup") : return False
+    if not self.runCommand("ruby setup.rb install --prefix=.") : return False
+    if not self.runCommand("export RUBYLIB="+os.getcwd()+"/lib") : return False
+    if not self.runCommand("chmod 755 bin/yaggo") : return False
+    os.chdir("..")
+
+    # Install Jellyfish.
+    if not self.runCommand("export YAGGO="+os.getcwd()+"/yaggo/bin/yaggo") : return False
+    if not self.runCommnad("autoreconf -i") : return False
+    if not self.runCommand("./configure --prefix="+os.getcwd()) : return False
+    if not self.make() : return False
+    return True;
+
+  # TODO: implement me
+  def doUpdate(self):
+    return self.make()
 
 # libStatGen
 class LibStatGen(GknoTool):
@@ -340,6 +430,29 @@ class SamTools(GknoTool):
   def doUpdate(self):
     return self.make()
 
+# Seqan (only building MASON for now)
+class Seqan(GknoTool):
+  def __init__(self):
+    super(Seqan, self).__init__()
+    self.name       = "seqan"
+    self.installDir = "seqan"
+
+  # mkdir build/Release
+  # cd build/Release
+  # cmake ../.. 
+  # make mason
+  def doBuild(self):
+    self.ensureMakeDir(os.getcwd() + "/build/Release")
+    os.chdir("build/Release")
+    if not self.cmake("../.. -DCMAKE_BUILD_TYPE=Release"): return False
+    if not self.make("mason"): return False
+    os.chdir("../..")
+    return True
+  
+  # TODO: check this
+  def doUpdate(self):
+    return doBuild()
+
 # tabix (& bgzip)
 class Tabix(GknoTool):
   def __init__(self):
@@ -403,15 +516,17 @@ class VcfLib(GknoTool):
 
 List = [ 
         BamTools(),
+        Blast(),
         Freebayes(),
         Gatk(),
-        LibStatGen(),
-        BamUtil(),
+        #Jellyfish(),
+        LibStatGen(), BamUtil(),
         Mosaik(),
         Ogap(),
         Picard(),
         Premo(),
-        SamTools(),
+        SamTools(), 
+        Seqan(),       
         Tabix(),
         Tangram(),
         VcfLib()
