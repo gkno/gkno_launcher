@@ -1,8 +1,13 @@
 
-import os
+from __future__ import print_function
+
+import json
 import multiprocessing
+import os
 import subprocess
 import sys
+import tarfile
+import urllib
 
 ##################################################################
 # IMPORTANT: To add a new built-in tool, create a subclass
@@ -166,6 +171,61 @@ class BamUtil(GknoTool):
   def doUpdate(self):
     return self.make()
 
+# NCBI BLAST
+class Blast(GknoTool):
+  def __init__(self):
+    super(Blast, self).__init__()
+    self.name       = "blast"
+    self.installDir = "blast"
+
+  def doBuild(self):
+
+    # Read contents of 'targets.json'.
+    blastSettings = {}
+    targetsFile = open("targets.json")
+    try:
+      blastSettings = json.load(targetsFile)
+    except:
+      return False
+
+    # Determine proper URL depending on environment.
+    key = 'linux_32'
+    if sys.platform == 'darwin':
+      key = 'macosx'
+    else:
+      if sys.maxsize > 2**32:
+        key='linux_64'
+    url = blastSettings[key]
+
+    # Download tarball, extract contents, then erase tarball.
+    try:
+      filename, headers = urllib.urlretrieve(url) 
+      tar = tarfile.open(filename)
+      tar.extractall()
+      tar.close()
+      os.remove(filename)
+    except:
+      return False
+
+    # If we get here, return success.
+    return True
+   
+  def doUpdate(self):
+
+    # If nothing built yet, force build
+    filesList = os.listdir( os.cwd() )
+    blastFiles = []
+    for f in filesList:
+      if f.startswith('.') or f == 'targets.json':
+        continue
+      else:
+        blastFiles.append(f)
+    if len(blastFiles) == 0 :
+      return doBuild()
+
+    # TODO: determine if update needed for existing install
+    return True
+
 # freebayes
 class Freebayes(GknoTool):
   def __init__(self):
@@ -276,6 +336,7 @@ class Ogap(GknoTool):
     return self.make()
 
 # picard 
+
 class Picard(GknoTool):
   def __init__(self):
     super(Picard, self).__init__()
@@ -401,10 +462,10 @@ class VcfLib(GknoTool):
 
 List = [ 
         BamTools(),
+        Blast(),
         Freebayes(),
         Gatk(),
-        LibStatGen(),
-        BamUtil(),
+        LibStatGen(), BamUtil(),
         Mosaik(),
         Ogap(),
         Picard(),
