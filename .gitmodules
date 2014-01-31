@@ -52,3 +52,6 @@
 [submodule "tools/Jellyfish"]
 	path = tools/Jellyfish
 	url = https://github.com/gkno/Jellyfish.git
+[submodule "tools/seqan"]
+	path = tools/seqan
+	url = https://github.com/gkno/seqan.git
