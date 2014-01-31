@@ -213,7 +213,7 @@ class Blast(GknoTool):
   def doUpdate(self):
 
     # If nothing built yet, force build
-    filesList = os.listdir( os.cwd() )
+    filesList = os.listdir( os.getcwd() )
     blastFiles = []
     for f in filesList:
       if f.startswith('.') or f == 'targets.json':
@@ -265,6 +265,36 @@ class Gatk(GknoTool):
   # $ ant -Dcompile.scala.by.default=false
   def doUpdate(self):
     return self.ant()
+
+# Jellyfish
+class Jellyfish(GknoTool):
+  def __init__(self):
+    super(Jellyfish, self).__init__()
+    self.name       = "jellyfish"
+    self.installDir = "Jellyfish"
+
+  def doBuild(self):
+
+    # Install Yaggo.
+    if not self.runCommand("git clone https://github.com/gmarcais/yaggo.git") : return False
+    os.chdir("yaggo")
+    if not self.runCommand("ruby setup.rb config --prefix=. --siterubyver=./lib") : return False
+    if not self.runCommand("ruby setup.rb setup") : return False
+    if not self.runCommand("ruby setup.rb install --prefix=.") : return False
+    if not self.runCommand("export RUBYLIB="+os.getcwd()+"/lib") : return False
+    if not self.runCommand("chmod 755 bin/yaggo") : return False
+    os.chdir("..")
+
+    # Install Jellyfish.
+    if not self.runCommand("export YAGGO="+os.getcwd()+"/yaggo/bin/yaggo") : return False
+    if not self.runCommnad("autoreconf -i") : return False
+    if not self.runCommand("./configure --prefix="+os.getcwd()) : return False
+    if not self.make() : return False
+    return True;
+
+  # TODO: implement me
+  def doUpdate(self):
+    return self.make()
 
 # libStatGen
 class LibStatGen(GknoTool):
@@ -336,7 +366,6 @@ class Ogap(GknoTool):
     return self.make()
 
 # picard 
-
 class Picard(GknoTool):
   def __init__(self):
     super(Picard, self).__init__()
@@ -465,6 +494,7 @@ List = [
         Blast(),
         Freebayes(),
         Gatk(),
+        #Jellyfish(),
         LibStatGen(), BamUtil(),
         Mosaik(),
         Ogap(),

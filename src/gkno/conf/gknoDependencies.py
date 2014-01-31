@@ -226,6 +226,16 @@ class Python(GknoDependency):
   def extractCurrentVersion(self):
     return self.extractNormalVersionNumber(self.errdata)  # STDERR
 
+# ruby
+class Ruby(GknoDependency):
+  def __init__(self, versionString=""):
+    super(Ruby, self).__init__(versionString)
+    self.name    = "ruby"  
+    self.command = "ruby --version"
+
+  def extractCurrentVersion(self):
+    return self.extractNormalVersionNumber(self.outdata) # STDOUT 
+
 # scala
 class Scala(GknoDependency):
   def __init__(self, versionString=""):
@@ -255,13 +265,14 @@ class Scalac(GknoDependency):
 List = [ 
         Ant("1.7.1"),
         Cmake("2.6.4"),
-        Gcc("4.0"),
+        Gcc("4.4"),
         Git("1.7"),
         Gplusplus("4.0"),
         Java("1.6"),
         Javac("1.6"),
         Make("3.80"),
-        Python("2.6")
+        Python("2.6"),
+        #Ruby("0.0")      # min version ??
         #Scala("2.7.7"),
         #Scalac("2.7.7")
        ]
