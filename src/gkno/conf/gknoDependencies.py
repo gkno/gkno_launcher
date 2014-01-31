@@ -264,7 +264,7 @@ class Scalac(GknoDependency):
 
 List = [ 
         Ant("1.7.1"),
-        Cmake("2.6.4"),
+        Cmake("2.8.2"),
         Gcc("4.4"),
         Git("1.7"),
         Gplusplus("4.0"),

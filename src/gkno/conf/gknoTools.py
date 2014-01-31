@@ -428,6 +428,29 @@ class SamTools(GknoTool):
   def doUpdate(self):
     return self.make()
 
+# Seqan (only building MASON for now)
+class Seqan(GknoTool):
+  def __init__(self):
+    super(Seqan, self).__init__()
+    self.name       = "seqan"
+    self.installDir = "seqan"
+
+  # mkdir build/Release
+  # cd build/Release
+  # cmake ../.. 
+  # make mason
+  def doBuild(self):
+    self.ensureMakeDir(os.getcwd() + "/build/Release")
+    os.chdir("build/Release")
+    if not self.cmake("../.. -DCMAKE_BUILD_TYPE=Release"): return False
+    if not self.make("mason"): return False
+    os.chdir("../..")
+    return True
+  
+  # TODO: check this
+  def doUpdate(self):
+    return doBuild()
+
 # tabix (& bgzip)
 class Tabix(GknoTool):
   def __init__(self):
@@ -491,6 +514,7 @@ class VcfLib(GknoTool):
 
 List = [ 
         BamTools(),
+        Seqan(),
         Blast(),
         Freebayes(),
         Gatk(),
@@ -500,7 +524,7 @@ List = [
         Ogap(),
         Picard(),
         Premo(),
-        SamTools(),
+        SamTools(),        
         Tabix(),
         Tangram(),
         VcfLib()
