@@ -65,8 +65,7 @@
         "build-reference" : "--mosaik-reference",
         "build-jump-database" : "--mosaik-reference",
         "align" : "--mosaik-reference"
-      },
-      "keep files" : true
+      }
     },
     {
       "ID" : "hash size",
@@ -93,8 +92,7 @@
       "tasks" : {
         "build-jump-database" : "--jump-database",
         "align" : "--jump-database"
-      },
-      "keep files" : true
+      }
     },
     {
       "ID" : "mosaik read archive",
@@ -144,8 +142,7 @@
       },
       "greedy tasks" : {
         "call" : "--bam"
-      },
-      "keep files" : true
+      }
     },
     {
       "ID" : "bam index",
@@ -161,8 +158,7 @@
       "tasks" : {
         "call" : "--vcf",
         "filter-variants" : "--in"
-      },
-      "keep files" : true
+      }
     },
     {
       "ID" : "test",
