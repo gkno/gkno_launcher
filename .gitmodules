@@ -46,3 +46,6 @@
 [submodule "configurationClass"]
     path = src/configurationClass
     url = git://github.com/gkno/configurationClass.git
+[submodule "tools/blast"]
+	path = tools/blast
+	url = https://github.com/gkno/blast.git
