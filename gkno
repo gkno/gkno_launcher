@@ -7,8 +7,11 @@ gkno_directory="`( cd \"$gkno_directory\" && pwd )`"
 # Store the current working directory.
 current_directory=$(pwd)
 
-# Get the most recent commit.
+# Get the most recent commit (ensure that we are in the gkno
+# directory before executing git log).
+cd $gkno_directory
 COMMITID=$(git log | head -n 1 | awk '{print $2}')
+cd $current_directory
 export GKNOCOMMITID=$COMMITID
 
 # -------------------------------------------------------
