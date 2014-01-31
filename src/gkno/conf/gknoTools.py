@@ -514,7 +514,6 @@ class VcfLib(GknoTool):
 
 List = [ 
         BamTools(),
-        Seqan(),
         Blast(),
         Freebayes(),
         Gatk(),
@@ -524,7 +523,8 @@ List = [
         Ogap(),
         Picard(),
         Premo(),
-        SamTools(),        
+        SamTools(), 
+        Seqan(),       
         Tabix(),
         Tangram(),
         VcfLib()
