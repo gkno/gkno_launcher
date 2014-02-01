@@ -55,3 +55,6 @@
 [submodule "tools/seqan"]
 	path = tools/seqan
 	url = https://github.com/gkno/seqan.git
+[submodule "tools/mutatrix"]
+	path = tools/mutatrix
+	url = https://github.com/gkno/mutatrix.git

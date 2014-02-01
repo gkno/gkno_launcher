@@ -2,9 +2,6 @@
   "description" : "Align fastq files using Mosaik (additional processing steps included).",
 
   "tasks" : {
-    "generate-mosaik-parameters" : {
-      "tool" : "premo"
-    },
     "build-read-archive" : {
       "tool" : "mosaik-build-fastq"
     },
@@ -29,7 +26,6 @@
       "long form argument" : "--fastq",
       "short form argument" : "-q",
       "tasks" : {
-        "generate-mosaik-parameters" : "--fastq",
         "build-read-archive" : "--fastq"
       }
     },
@@ -39,7 +35,6 @@
       "long form argument" : "--mosaik-reference",
       "short form argument" : "-m",
       "tasks" : {
-        "generate-mosaik-parameters" : "--mosaik-reference",
         "align" : "--mosaik-reference"
       }
     },
@@ -49,35 +44,7 @@
       "long form argument" : "--jump-database",
       "short form argument" : "-j",
       "tasks" : {
-        "generate-mosaik-parameters" : "--jump-database",
         "align" : "--jump-database"
-      }
-    },
-    {
-      "ID" : "batch size",
-      "description" : "Number of pairs to align per batch [1000].",
-      "long form argument" : "--reads-per-batch",
-      "short form argument" : "-rb",
-      "tasks" : {
-        "generate-mosaik-parameters" : "--reads-per-batch"
-      }
-    },
-    {
-      "ID" : "mosaik path",
-      "description" : "The location of the MOSAIK executables.",
-      "long form argument" : "--mosaik-path",
-      "short form argument" : "-mp",
-      "tasks" : {
-        "generate-mosaik-parameters" : "--mosaik-path"
-      }
-    },
-    {
-      "ID" : "temp directory",
-      "description" : "Temporary directory for temp files.",
-      "long form argument" : "--temp-directory",
-      "short form argument" : "-td",
-      "tasks" : {
-        "generate-mosaik-parameters" : "--temp-directory"
       }
     },
     {
@@ -86,7 +53,6 @@
       "long form argument" : "--hash-size",
       "short form argument" : "-hs",
       "tasks" : {
-        "generate-mosaik-parameters" : "--hash-size",
         "align" : "--hash-size"
       }
     },
@@ -96,7 +62,6 @@
       "long form argument" : "--sequencing-technology",
       "short form argument" : "-st",
       "tasks" : {
-        "generate-mosaik-parameters" : "--sequencing-technology",
         "build-read-archive" : "--sequencing-technology"
       }
     },
@@ -106,7 +71,6 @@
       "long form argument" : "--ann-se",
       "short form argument" : "-as",
       "tasks" : {
-        "generate-mosaik-parameters" : "--ann-single-end",
         "align" : "--ann-single-end"
       }
     },
@@ -116,18 +80,8 @@
       "long form argument" : "--ann-pe",
       "short form argument" : "-ap",
       "tasks" : {
-        "generate-mosaik-parameters" : "--ann-paired-end",
         "align" : "--ann-paired-end"
       }
-    },
-    {
-      "ID" : "build parameters",
-      "description" : "Linking only. Parameters from premo used in mosaik-build-fastq.",
-      "tasks" : {
-        "generate-mosaik-parameters" : "--out",
-        "build-read-archive" : "read json file"
-      },
-      "delete files" : true
     },
     {
       "ID" : "read archive",
@@ -252,15 +206,6 @@
         "index-primary-bam" : "--in",
         "get-alignment-stats" : "--in"
       }
-    },
-    {
-      "ID" : "single end processing",
-      "description" : "Set the tools to expect single end data.",
-      "long form argument" : "--single-end-only",
-      "short form argument" : "-se",
-      "tasks" : {
-        "generate-mosaik-parameters" : "--single-end-only"
-      }
     }
   ],
 
@@ -268,28 +213,7 @@
     {
       "ID" : "default",
       "description" : "Default instance requires user to input all input filenames.",
-      "nodes" : [
-        {
-          "ID" : "batch",
-          "argument" : "--reads-per-batch",
-          "values" : [1000]
-        },
-        {
-          "ID" : "temp directory",
-          "argument" : "--temp-directory",
-          "values" : ["$(PWD)/$(MAKEFILE_ID)_tmp"]
-        },
-        {
-          "ID" : "mosaik path",
-          "argument" : "--mosaik-path",
-          "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
-        },
-        {
-          "ID" : "single end processing",
-          "argument" : "--single-end-only",
-          "values" : ["set"]
-        }
-      ]
+      "nodes" : []
     },
 
     {
@@ -312,11 +236,6 @@
           "values" : ["./sim/simulated_1.fq"]
         },
         {
-          "ID" : "batch",
-          "argument" : "--reads-per-batch",
-          "values" : [1000]
-        },
-        {
           "ID" : "se neural net",
           "argument" : "--ann-se",
           "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"]
@@ -332,24 +251,9 @@
           "values" : [10]
         },
         {
-          "ID" : "temp directory",
-          "argument" : "--temp-directory",
-          "values" : ["$(PWD)/$(MAKEFILE_ID)_tmp"]
-        },
-        {
-          "ID" : "mosaik path",
-          "argument" : "--mosaik-path",
-          "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
-        },
-        {
           "ID" : "sequencing technology",
           "argument" : "--sequencing-technology",
           "values" : ["illumina"]
-        },
-        {
-          "ID" : "single end processing",
-          "argument" : "--single-end-only",
-          "values" : ["set"]
         }
       ]
     }
