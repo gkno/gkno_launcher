@@ -350,6 +350,23 @@ class Mosaik(GknoTool):
         pl='macosx64'
     self.BLD_PLATFORM = pl
 
+# Mutatrix
+class Mutatrix(GknoTool):
+  def __init__(self):
+    super(Mutatrix, self).__init__()
+    self.name       = "mutatrix"
+    self.installDir = "mutatrix"
+
+  # $ make -j N  
+  def doBuild(self):
+#    if not self.makeClean():
+#      return False
+    return self.doUpdate()
+
+  # $ make -j N
+  def doUpdate(self):
+    return self.make()
+
 # ogap
 class Ogap(GknoTool):
   def __init__(self):
@@ -522,6 +539,7 @@ List = [
         #Jellyfish(),
         LibStatGen(), BamUtil(),
         Mosaik(),
+        Mutatrix(),
         Ogap(),
         Picard(),
         Premo(),
