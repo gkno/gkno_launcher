@@ -221,7 +221,7 @@ class Blast(GknoTool):
       else:
         blastFiles.append(f)
     if len(blastFiles) == 0 :
-      return doBuild()
+      return self.doBuild()
 
     # TODO: determine if update needed for existing install
     return True
@@ -468,7 +468,7 @@ class Seqan(GknoTool):
   
   # TODO: check this
   def doUpdate(self):
-    return doBuild()
+    return self.doBuild()
 
 # tabix (& bgzip)
 class Tabix(GknoTool):

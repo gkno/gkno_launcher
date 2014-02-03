@@ -25,12 +25,9 @@ configuration_class_directory=$gkno_directory/src/configurationClass
  
 # configurationClass directory will be empty on first run.
 # If so, we need to fetch its source code before running main gkno.
-if ! [ "$(ls -A "$configuration_class_directory")" ]
-then             
-  cd $gkno_directory
-  git submodule update --quiet --init src/configurationClass
-  cd $current_directory
-fi   
+cd $gkno_directory
+git submodule update --quiet --init src/configurationClass
+cd $current_directory
 
 # Add configurationClass module(s) to python's module search path.
 PYTHONPATH=$PYTHONPATH:$configuration_class_directory:$configuration_class_directory/networkx 
