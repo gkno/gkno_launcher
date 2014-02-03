@@ -269,10 +269,12 @@ List = [
         Git("1.7"),
         Gplusplus("4.0"),
         Java("1.6"),
-        Javac("1.6"),
+        Javac("0.0"),    # No minimum: we just want to make sure 'javac' exists. 
+                         # We'll assume JRE version covers us here.
         Make("3.80"),
         Python("2.6"),
-        #Ruby("0.0")      # min version ??
+        Ruby("0.0")      # Any minimum version ??
+
         #Scala("2.7.7"),
         #Scalac("2.7.7")
        ]

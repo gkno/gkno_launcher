@@ -36,9 +36,9 @@ class GknoTool(object):
     # Default output destinations
     self.out = sys.stdout
     self.err = sys.stderr
-    
-    # Build platform attribute to be used to determine if linux, Mac, etc.
-    self.BLD_PLATFORM = ""
+
+    # Default environment variables
+    self.environ = os.environ
 
   # Define the build (e.g. compile) steps needed for the tool. 
   # Returns True/False for success/failure.
@@ -87,9 +87,7 @@ class GknoTool(object):
   # Uses the output destinations (stdout/stderr) set by earlier external caller
   # Converts command exit status to True/False (under assumption of common practice that exit status of 0 is success)
   def runCommand(self, command):
-    my_env = os.environ
-    my_env["BLD_PLATFORM"] = self.BLD_PLATFORM
-    p = subprocess.Popen(command.split(), env=my_env, stdout=self.out, stderr=self.err)
+    p = subprocess.Popen(command.split(), env=self.environ, stdout=self.out, stderr=self.err)
     p.wait()
     status = p.returncode
     return status == 0
@@ -98,9 +96,7 @@ class GknoTool(object):
   # Uses the output destinations (stdout/stderr) set by earlier external caller
   # Converts command exit status to True/False (under assumption of common practice that exit status of 0 is success)
   def runShellCommand(self, command):
-     my_env = os.environ
-     my_env["BLD_PLATFORM"] = self.BLD_PLATFORM
-     p = subprocess.Popen(command.split(), env=my_env, stdout=self.out, stderr=self.err, shell=True)
+     p = subprocess.Popen(command.split(), env=self.environ, stdout=self.out, stderr=self.err, shell=True)
      p.wait()
      status = p.returncode
      return status == 0
@@ -278,18 +274,19 @@ class Jellyfish(GknoTool):
   def doBuild(self):
 
     # Install Yaggo.
+    # Clones the repo, and installs the ruby libs & binary needed by Jellyfish build.
     if not self.runCommand("git clone https://github.com/gmarcais/yaggo.git") : return False
     os.chdir("yaggo")
     if not self.runCommand("ruby setup.rb config --prefix=. --siterubyver=./lib") : return False
     if not self.runCommand("ruby setup.rb setup") : return False
     if not self.runCommand("ruby setup.rb install --prefix=.") : return False
-    if not self.runCommand("export RUBYLIB="+os.getcwd()+"/lib") : return False
     if not self.runCommand("chmod 755 bin/yaggo") : return False
+    self.environ["RUBYLIB"] = os.getcwd()+"/lib"
     os.chdir("..")
 
-    # Install Jellyfish.
-    if not self.runCommand("export YAGGO="+os.getcwd()+"/yaggo/bin/yaggo") : return False
-    if not self.runCommnad("autoreconf -i") : return False
+    # Install Jellyfish - using autotools & make.
+    self.environ["YAGGO"] = os.getcwd()+"/yaggo/bin/yaggo"
+    if not self.runCommand("autoreconf -i") : return False
     if not self.runCommand("./configure --prefix="+os.getcwd()) : return False
     if not self.make() : return False
     return True;
@@ -321,34 +318,32 @@ class Mosaik(GknoTool):
     super(Mosaik, self).__init__()
     self.name       = "mosaik"
     self.installDir = "MOSAIK"
+    self.getPlatformType()
 
   # $ cd src
-  # (platform-specific export commands)
   # $ make clean
   # $ make -j N
   def doBuild(self):
     os.chdir("src")
-    self.doPlatformExports()
     if not self.makeClean():
       return False
     return self.make()
   
   # $ cd src
-  # (platform-specific export commands)
   # $ make -j N
   def doUpdate(self):
     os.chdir("src") 
-    self.doPlatformExports()
     return self.make()
 
-  # Mosaik has some platform-specific export commands
-  def doPlatformExports(self):
+  # Mosaik has a platform-specific environment 
+  # variable we need to set.
+  def getPlatformType(self):
     pl='linux'
     if sys.platform == 'darwin':
       pl='macosx'
       if sys.maxsize > 2**32:
         pl='macosx64'
-    self.BLD_PLATFORM = pl
+    self.environ["BLD_PLATFORM"] = pl
 
 # Mutatrix
 class Mutatrix(GknoTool):
@@ -536,8 +531,8 @@ List = [
         Blast(),
         Freebayes(),
         Gatk(),
-        #Jellyfish(),
-        LibStatGen(), BamUtil(),
+        Jellyfish(),
+        LibStatGen(), BamUtil(), # <-- Keep this order
         Mosaik(),
         Mutatrix(),
         Ogap(),
