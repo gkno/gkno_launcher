@@ -609,11 +609,11 @@ class gknoConfigurationFiles:
     # If the construction instructions indicate that values from another argument should be included
     # in the filename, include them here.
     if 'add argument values' in instructions:
-      modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues, hasExtension = True, extension = originalExtension)
+      modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues, hasExtension = True, extension = newExtension)
 
     # If the instructions indicate that additional text should be added to the filename, add it.
     if 'add additional text' in instructions:
-      modifiedValues = self.addAdditionalText(instructions, modifiedValues, hasExtension = True, extension = originalExtension)
+      modifiedValues = self.addAdditionalText(instructions, modifiedValues, hasExtension = True, extension = newExtension)
 
     # Reset the node values for the option and the file node.
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)

@@ -293,7 +293,8 @@ class makefileData:
         # not acceptable to just list all of the outputs at the start of the rule. In reality,
         # to ensure proper operation, a single output is listed and then an additional rule is
         # included after the task to check for the existence of the remaining outputs.
-        primaryOutput = taskOutputs.pop(0)
+        try: primaryOutput = taskOutputs.pop(0)
+        except: self.errors.noOutputFileGeneratingMakefile(task, config.pipeline.taskAttributes[task].tool)
         print(primaryOutput, end = ': ', file = fileHandle)
   
         # Write out the task dependencies separated by spaces.

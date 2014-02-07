@@ -17,9 +17,6 @@
     "sort-primary-bam" : {
       "tool" : "bamtools-sort"
     },
-    "sort-multiple-bam" : {
-      "tool" : "bamtools-sort"
-    },
     "recalibrate-bq" : {
       "tool" : "recab"
     },
@@ -159,20 +156,16 @@
       "description" : "Linking tasks. No argument.",
       "tasks" : {
         "align" : "--out",
-        "sort-primary-bam" : "--in",
-        "sort-multiple-bam" : "--in"
+        "sort-primary-bam" : "--in"
       },
       "extensions" : {
         "sort-primary-bam" : {
           "--in" : "bam"
-        },
-        "sort-multiple-bam" : {
-          "--in" : "multiple.bam"
         }
       }
     },
     {
-      "ID" : "covariate input",
+      "ID" : "recalibration",
       "description" : "Linking tasks. No argument.",
       "tasks" : {
         "sort-primary-bam" : "--out",

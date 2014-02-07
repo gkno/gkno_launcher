@@ -294,7 +294,18 @@ argument existed to set this value. Please see the documentation to see how to i
   # Errors with multiple runs/loops. #
   ####################################
 
+  ####################################
+  # Errors with makefile generation. #
+  ####################################
 
+  # No output files to write out.
+  def noOutputFileGeneratingMakefile(self, task, tool):
+    self.text.append('Error constructing makefile.')
+    self.text.append('The makefile generation is trying to get output files for the task \'' + task + '\' but none exist. Please ensure ' + \
+    'that output files are either supplied on the command line, that instructions appear in the tool (\'' + tool + '\') configuration ' + \
+    'file on how to construct the filename and that an output file argument is listed as required.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
 
 
 
