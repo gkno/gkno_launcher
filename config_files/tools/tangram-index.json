@@ -68,7 +68,7 @@
         },
         {
           "ID" : "output",
-          "argument" : "--out",
+          "argument" : "--tangram-reference",
           "values" : ["tangram-reference.dat"]
         },
         {
