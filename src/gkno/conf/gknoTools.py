@@ -549,7 +549,7 @@ List = [
         Freebayes(),
         Gatk(),
         Jellyfish(),
-        LibStatGen(), BamUtil(), FastQValidator() # <-- Keep this order
+        LibStatGen(), BamUtil(), FastQValidator(), # <-- Keep this order
         Mosaik(),
         Mutatrix(),
         Ogap(),
