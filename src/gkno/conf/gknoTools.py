@@ -222,6 +222,23 @@ class Blast(GknoTool):
     # TODO: determine if update needed for existing install
     return True
 
+# FastQValidator
+class FastQValidator(GknoTool):
+  def __init__(self):
+    super(FastQValidator, self).__init__()
+    self.name       = "fastQValidator"
+    self.installDir = "fastQValidator"
+
+  # $ make -j N   
+  def doBuild(self):
+#    if not self.makeClean(): 
+#      return False 
+    return self.make()
+
+  # $ make -j N   
+  def doUpdate(self):
+    return self.make()
+
 # freebayes
 class Freebayes(GknoTool):
   def __init__(self):
@@ -532,7 +549,7 @@ List = [
         Freebayes(),
         Gatk(),
         Jellyfish(),
-        LibStatGen(), BamUtil(), # <-- Keep this order
+        LibStatGen(), BamUtil(), FastQValidator() # <-- Keep this order
         Mosaik(),
         Mutatrix(),
         Ogap(),
