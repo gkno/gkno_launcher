@@ -60,4 +60,4 @@
 	url = https://github.com/gkno/mutatrix.git
 [submodule "tools/fastQValidator"]
 	path = tools/fastQValidator
-	url = git@github.com:gkno/fastQValidator.git
+	url = https://github.com/gkno/fastQValidator.git
