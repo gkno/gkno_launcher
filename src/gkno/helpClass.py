@@ -23,7 +23,8 @@ class helpClass:
     self.toolLength           = 0
 
     # Keep track of tools with malformed configuration files.
-    self.failedTools = {}
+    self.failedTools     = {}
+    self.failedPipelines = {}
 
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
@@ -207,6 +208,14 @@ class helpClass:
        self.writeFormattedText(pipeline + ':', self.availablePipelines[pipeline], self.pipelineLength + 5, 2, '')
     print(file = sys.stdout)
 
+    # Now list any pipeline configuratiobn files that have errors.
+    if self.failedPipelines:
+      print('     The following pipelines have malformed configuration files, so are currently unusable:', file = sys.stdout)
+      print(file = sys.stdout)
+      for pipeline in sorted(self.failedPipelines.keys()):
+        self.writeFormattedText(pipeline + ':', self.failedPipelines[pipeline], self.pipelineLength + 5, 2, '')
+      print(file = sys.stdout)
+
   # Get information on all avilable tools and pipelines.
   def getTools(self, config, gknoConfig, toolConfigurationFilesPath):
 
@@ -221,22 +230,33 @@ class helpClass:
       tool               = filename[:len(filename) - 5]
 
       # Open the tool configuration file and process the data.
-      configurationData = config.fileOperations.readConfigurationFile(filePath)
-      success = config.tools.processConfigurationData(tool, configurationData, allowTermination = False)
-      if success:
-        description       = config.tools.getGeneralAttribute(tool, 'description')
-        isHidden          = config.tools.getGeneralAttribute(tool, 'isHidden')
-      else:
-        try: description = config.tools.getGeneralAttribute(tool, 'description')
-        except: description = 'Description could not be found'
-        self.failedTools[tool] = description
+      openFileSuccess = True
+      try: configurationData = config.fileOperations.readConfigurationFile(filePath)
+      except:
+        openFileSuccess = False
+        self.failedTools[tool] = 'Description could not be found'
+
+      # If the configuration file is a valid json file, try and process the file.
+      if openFileSuccess:
+        success = config.tools.processConfigurationData(tool, configurationData, allowTermination = False)
+        if success:
+          description       = config.tools.getGeneralAttribute(tool, 'description')
+          isHidden          = config.tools.getGeneralAttribute(tool, 'isHidden')
+          self.availableTools[tool] = (description, isHidden)
+        else:
+          try: description = config.tools.getGeneralAttribute(tool, 'description')
+          except: description = 'Description could not be found'
+          self.failedTools[tool] = description
 
       # For the purposes of formatting the screen output, find the longest tool
       # name and use this to define the format length.
       if len(tool) > self.toolLength: self.toolLength = len(tool)
-      self.availableTools[tool] = (description, isHidden)
 
   def getPipelines(self, config, gknoConfig, pipelineConfigurationFilesPath):
+
+    # Some tools may have malformed configuration files. Instead of failing when those files are
+    # processed, the failed tools are logged and are noted in the help.
+    self.failedPipelines = {}
 
     # Open each pipeline file, check that it is a valid json file and get the pipeline description and
     # whether the tool is hidden.
@@ -245,15 +265,23 @@ class helpClass:
       pipeline = filename[:len(filename) - 5]
 
       # Open the pipeline configuration file and process the data.
-      configurationData = config.fileOperations.readConfigurationFile(filePath)
-      config.pipeline.clearPipeline()
-      config.pipeline.processConfigurationData(configurationData, pipeline, gknoConfig.jsonFiles['tools'])
-      description       = config.pipeline.attributes.description
+      openFileSuccess = True
+      try: configurationData = config.fileOperations.readConfigurationFile(filePath)
+      except:
+        openFileSuccess = False
+        self.failedPipelines[pipeline] = 'Description could not be found.'
+
+      if openFileSuccess:
+        config.pipeline.clearPipeline()
+        success = config.pipeline.processConfigurationData(configurationData, pipeline, gknoConfig.jsonFiles['tools'], allowTermination = False)
+        try: description = config.pipeline.attributes.description
+        except: description = 'Description could not be found.'
+        if success: self.availablePipelines[pipeline] = description
+        else: self.failedPipelines[pipeline] = description
 
       # For the purposes of formatting the screen output, find the longest tool
       # name and use this to define the format length.
       if len(pipeline) > self.pipelineLength: self.pipelineLength = len(pipeline)
-      self.availablePipelines[pipeline] = description
 
   # Get instances information.
   def getInstances(self, config, gknoConfig, toolConfigurationFilesPath, pipelineConfigurationFilesPath, mode, name):

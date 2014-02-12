@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.131"
+__version__ = "0.132"
 __date__ = "February 2014"
 
 def main():
@@ -149,7 +149,7 @@ def main():
       phoneHomeID               = 'pipes/' + runName
       filename                  = pipelineConfigurationFilesPath + runName + '.json'
       pipelineConfigurationData = config.fileOperations.readConfigurationFile(filename)
-      config.pipeline.processConfigurationData(pipelineConfigurationData, runName, gknoConfig.jsonFiles['tools'])
+      config.pipeline.processConfigurationData(pipelineConfigurationData, runName, gknoConfig.jsonFiles['tools'], allowTermination = True)
       config.instances.checkInstances(runName, pipelineConfigurationData['instances'], isPipeline, isExternal = False)
       config.instances.checkExternalInstances(config.fileOperations, filename, runName, gknoConfig.jsonFiles['tools'], isPipeline)
       del(pipelineConfigurationData)

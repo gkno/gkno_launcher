@@ -192,6 +192,10 @@ class makefileData:
     # If this phase has multiple data sets, write out which set this is.
     if self.makefilesInPhase[phaseID] > 1: print('### Data set ', str(iteration), ' of ', self.makefilesInPhase[phaseID], sep = '', file = fileHandle)
 
+    # If there are multiple iterations, include the iteration in the stdout and stderr names.
+    if iteration == 'all': stdoutName = pipelineName
+    else: stdoutName = pipelineName + '_' + str(iteration)
+
     print(file = fileHandle)
     print('### Paths to tools and resources.', file = fileHandle)
     print('GKNO_PATH=', sourcePath, "/src/gkno", sep = '', file = fileHandle)
@@ -200,8 +204,8 @@ class makefileData:
     print('MAKEFILE_ID=', makefileName.split('/')[-1].split('.')[0], sep = '', file = fileHandle)
     print(file = fileHandle)
     print('### Standard output and errors files.', file = fileHandle)
-    print('STDOUT=', self.outputPath, '/', pipelineName, '.stdout', sep = '', file = fileHandle)
-    print('STDERR=', self.outputPath, '/', pipelineName, '.stderr', sep = '', file = fileHandle)
+    print('STDOUT=', self.outputPath, '/', stdoutName, '.stdout', sep = '', file = fileHandle)
+    print('STDERR=', self.outputPath, '/', stdoutName, '.stderr', sep = '', file = fileHandle)
     print(file = fileHandle)
 
   # Write out all of the intermediate files.
