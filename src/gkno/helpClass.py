@@ -22,6 +22,9 @@ class helpClass:
     self.pipelineLength       = 0
     self.toolLength           = 0
 
+    # Keep track of tools with malformed configuration files.
+    self.failedTools = {}
+
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
   def checkForHelp(self, isPipeline, pipelineName, admin, mode):
@@ -181,6 +184,14 @@ class helpClass:
       if not self.availableTools[tool][1]: self.writeFormattedText(tool + ':', self.availableTools[tool][0], self.toolLength + 5, 2, '')
     print(file = sys.stdout)
 
+    # Now list any tool configuratiobn files that have errors.
+    if self.failedTools:
+      print('     The following tools have malformed configuration files, so are currently unusable:', file = sys.stdout)
+      print(file = sys.stdout)
+      for tool in sorted(self.failedTools.keys()):
+        self.writeFormattedText(tool + ':', self.failedTools[tool], self.toolLength + 5, 2, '')
+      print(file = sys.stdout)
+
   # Print usage information on the pipeline mode of operation.
   def printPipelineModeUsage(self):
     print('=================', file = sys.stdout)
@@ -199,6 +210,10 @@ class helpClass:
   # Get information on all avilable tools and pipelines.
   def getTools(self, config, gknoConfig, toolConfigurationFilesPath):
 
+    # Some tools may have malformed configuration files. Instead of failing when those files are
+    # processed, the failed tools are logged and are noted in the help.
+    self.failedTools = {}
+
     # Open each tool file, check that it is a valid json file and get the tool description and
     # whether the tool is hidden.
     for filename in gknoConfig.jsonFiles['tools']:
@@ -207,9 +222,14 @@ class helpClass:
 
       # Open the tool configuration file and process the data.
       configurationData = config.fileOperations.readConfigurationFile(filePath)
-      config.tools.processConfigurationData(tool, configurationData)
-      description       = config.tools.getGeneralAttribute(tool, 'description')
-      isHidden          = config.tools.getGeneralAttribute(tool, 'isHidden')
+      success = config.tools.processConfigurationData(tool, configurationData, allowTermination = False)
+      if success:
+        description       = config.tools.getGeneralAttribute(tool, 'description')
+        isHidden          = config.tools.getGeneralAttribute(tool, 'isHidden')
+      else:
+        try: description = config.tools.getGeneralAttribute(tool, 'description')
+        except: description = 'Description could not be found'
+        self.failedTools[tool] = description
 
       # For the purposes of formatting the screen output, find the longest tool
       # name and use this to define the format length.
