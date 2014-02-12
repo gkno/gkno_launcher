@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.129"
+__version__ = "0.130"
 __date__ = "February 2014"
 
 def main():
@@ -168,7 +168,7 @@ def main():
 
       # Ensure that the tool configuration file is well constructed and put all of the data
       # in data structures.  Each tool in each configuration file gets its own data structure.
-      config.tools.processConfigurationData(tool, toolConfigurationData)
+      config.tools.processConfigurationData(tool, toolConfigurationData, allowTermination = True)
       del(toolConfigurationData)
 
     # Check that any argument in a pipeline configuration file node taht defines a filename stub
@@ -216,7 +216,7 @@ def main():
 
     # Ensure that the tool configuration file is well constructed and put all of the data
     # in data structures.  Each tool in each configuration file gets its own data structure.
-    config.tools.processConfigurationData(runName, toolConfigurationData)
+    config.tools.processConfigurationData(runName, toolConfigurationData, allowTermination = True)
     config.instances.checkInstances(runName, toolConfigurationData['instances'], isPipeline, isExternal = False)
     config.instances.checkExternalInstances(config.fileOperations, toolFile, runName, gknoConfig.jsonFiles['tools'], isPipeline)
     del(toolConfigurationData)
