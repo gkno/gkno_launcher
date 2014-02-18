@@ -411,6 +411,22 @@ argument existed to set this value. Please see the documentation to see how to i
     self.writeFormattedText('error')
     self.terminate()
 
+  ########################
+  # Errors checking data #
+  ########################
+
+  # An argument is given multiple values when that isn't allowed.
+  def givenMultipleValues(self, task, longFormArgument, shortFormArgument, values):
+    self.text.append('Argument given multiple values')
+    self.text.append('The command line argument \'' + longFormArgument + ' (' + shortFormArgument + ')\' was given multiple values, but this ' + \
+    'argument is not permitted to take multiple values. The supplied values are:')
+    self.text.append('\t')
+    for value in values: self.text.append(str(value))
+    self.text.append('\t')
+    self.text.append('Please ensure that this value is only set once.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   ####################################
   # Errors with makefile generation. #
   ####################################

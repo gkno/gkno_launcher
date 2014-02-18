@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.136"
+__version__ = "0.137"
 __date__ = "February 2014"
 
 def main():
@@ -300,7 +300,7 @@ def main():
     gknoConfig.constructFilenames(pipelineGraph, config, isPipeline)
 
     # Check that all required files and values have been set. All files and parameters that are listed as
-    # required by the infividual tools should already have been checked, but if the pipeline has some
+    # required by the individual tools should already have been checked, but if the pipeline has some
     # additional requirements, these may not yet have been checked.
     config.checkRequiredFiles(pipelineGraph)
 

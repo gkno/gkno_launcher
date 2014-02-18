@@ -129,7 +129,7 @@
     },
     {
       "description" : "Write results to PARAM.fasta file instead of SEQUENCE.reads.fasta.Valid filetypes are: fasta, fa, fastq, and fq.",
-      "long form argument" : "--output-file",
+      "long form argument" : "--out",
       "short form argument" : "-o",
       "command line argument" : "--output-file",
       "input" : false,
@@ -552,7 +552,7 @@
     "--source-no-N",
     "--forward-only",
     "--reverse-only",
-    "--output-file",
+    "--out",
     "--simulate-qualities",
     "--include-read-information",
     "--mason-verbose",
@@ -597,6 +597,28 @@
       "ID" : "default",
       "description" : "Default instance requires the users input for all files.",
       "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "fastq",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "qualities",
+          "argument" : "--simulate-qualities",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "paired",
+          "argument" : "--mate-pairs",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "read length",
+          "argument" : "--read-length",
+          "values" : [100]
+        }
       ]
     }
   ]

@@ -132,7 +132,7 @@
       "ID" : "temp dir",
       "description" : "Temporary working directory.",
       "long form argument" : "--temp-directory",
-      "short form argument" : "-td",
+      "short form argument" : "-t",
       "tasks" : {
         "generate-mosaik-parameters" : "--temp-directory"
       }
@@ -161,7 +161,6 @@
       "description" : "The fastq file for the second mate.",
       "long form argument" : "--fastq2",
       "short form argument" : "-q2",
-      "required" : true,
       "tasks" : {
         "generate-mosaik-parameters" : "--fastq2",
         "build-read-archive" : "--fastq2"
@@ -265,7 +264,7 @@
       "ID" : "bandwidth",
       "description" : "The bandwidth for the striped Smith-Waterman algorithm in the Mosaik aligner.",
       "long form argument" : "--bandwidth",
-      "short form argument" : "-b",
+      "short form argument" : "-bw",
       "tasks" : {
         "align" : "--alignment-candidate-threshold"
       }
@@ -293,7 +292,7 @@
       "ID" : "moblist prefix",
       "description" : "The prefix for all mobile element reference sequences.",
       "long form argument" : "--special-reference-prefix",
-      "short form argument" : "-s",
+      "short form argument" : "-srp",
       "required" : true,
       "tasks" : {
         "align" : "--special-reference-prefix"
@@ -370,7 +369,7 @@
       "ID" : "fragments",
       "description" : "The minimum number of normal fragments in a library.",
       "long form argument" : "--minimum-fragments",
-      "short form argument" : "-mf",
+      "short form argument" : "-mfr",
       "tasks" : {
         "scan-bam-files" : "--minimum-fragments"
       }
@@ -393,15 +392,6 @@
       "tasks" : {
         "scan-bam-files" : "--histogram-file",
         "detect-mei" : "--histogram-file"
-      }
-    },
-    {
-      "ID" : "min fragments",
-      "description" : "The minimum number of normal fragments in a library.",
-      "long form argument" : "--minimum-fragments",
-      "short form argument" : "-mf",
-      "tasks" : {
-        "scan-bam-files" : "--minimum-fragments"
       }
     },
     {
@@ -430,6 +420,23 @@
       "description" : "Default instance requires user to input all input filenames.",
       "nodes" : [
         {
+          "ID" : "mosaik path",
+          "argument" : "--mosaik-path",
+          "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "illumina",
+      "description" : "Parameters assuming illumina sequencing of a human genome",
+      "nodes" : [
+        {
+          "ID" : "mosaik path",
+          "argument" : "--mosaik-path",
+          "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
+        },
+        {
           "ID" : "temp dir",
           "argument" : "--temp-directory",
           "values" : ["pipeline_temp"]
@@ -438,6 +445,36 @@
           "ID" : "directory",
           "argument" : "--tangram-directory",
           "values" : ["tangram_files"]
+        },
+        {
+          "ID" : "merged reference",
+          "argument" : "--merged-reference-fasta",
+          "values" : ["merged_reference.fa"]
+        },
+        {
+          "ID" : "hash size",
+          "argument" : "--hash-size",
+          "values" : [15]
+        },
+        {
+          "ID" : "se neural net",
+          "argument" : "--ann-single-end",
+          "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"]
+        },
+        {
+          "ID" : "pe neural net",
+          "argument" : "--ann-paired-end",
+          "values" : ["$(RESOURCES)/tutorial/current/pe.100.01.ann"]
+        },
+        {
+          "ID" : "bam list",
+          "argument" : "--bam-list",
+          "values" : ["bam_list.txt"]
+        },
+        {
+          "ID" : "tech",
+          "argument" : "--sequencing-technology",
+          "values" : ["illumina"]
         }
       ]
     },

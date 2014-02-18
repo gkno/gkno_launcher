@@ -847,7 +847,7 @@ class gknoConfigurationFiles:
             self.errors.missingArgument(graph, config, task, longFormArgument, shortFormArgument, description, True)
 
           # If the pipeline argument exists, just terminate.
-          else: self.errors.missingPipelineArgument(graph, config, longFormArgument, shortFormArgument, description)
+          else: self.errors.missingPipelineArgument(graph, config, pipelineLongFormArgument, pipelineShortFormArgument, description)
 
         # If gkno is being run in tool mode, terminate.
         self.errors.missingPipelineArgument(graph, config, longFormArgument, shortFormArgument, description)
@@ -861,10 +861,7 @@ class gknoConfigurationFiles:
           allowMultipleValues = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowMultipleValues')
 
           #TODO SORT OUT ERRORS.
-          if not allowMultipleValues and numberOfValues != 1:
-            print('GIVEN MULTIPLE VALUES WHEN NOT ALLOWED', values[iteration])
-            print(task, longFormArgument)
-            self.errors.terminate()
+          if not allowMultipleValues and numberOfValues != 1: self.errors.givenMultipleValues(task, longFormArgument, shortFormArgument, values[iteration])
 
           # Determine the expected data type
           expectedDataType = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'dataType')

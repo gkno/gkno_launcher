@@ -68,7 +68,12 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".vcf"
+      "extension" : ".vcf",
+      "construct filename" : {
+        "method": "define name",
+        "filename" : "tangram_calls",
+        "add extension" : true
+      }
     },
     {
       "description" : "Check for invalid libraries.",
@@ -239,11 +244,6 @@
           "ID" : "reference",
           "argument" : "--tangram-reference",
           "values" : ["tangram-reference.dat"]
-        },
-        {
-          "ID" : "output",
-          "argument" : "--out",
-          "values" : ["tangram-calls"]
         }
       ]
     },
@@ -276,11 +276,6 @@
           "ID" : "reference",
           "argument" : "--tangram-reference",
           "values" : ["files-for-testing-tools/tangram-reference.dat"]
-        },
-        {
-          "ID" : "output",
-          "argument" : "--vcf",
-          "values" : ["tangram-calls.vcf"]
         },
         {
           "ID" : "region",
