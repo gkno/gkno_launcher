@@ -35,7 +35,13 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".dat"
+      "extension" : ".dat",
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--fasta-reference",
+        "add additional text" : "tangram",
+        "modify extension" : "replace"
+      }
     }
   ],
 

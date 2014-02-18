@@ -1,0 +1,161 @@
+{
+  "description" : "Validate a fastq file.",
+  "path" : "fastQValidator/bin",
+  "executable" : "fastQValidator",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "FastQ filename with path to be processed.",
+      "long form argument" : "--fastq",
+      "short form argument" : "-q",
+      "command line argument" : "--file",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".fq|.fastq|.fq.gz|.fastq.gz"
+    },
+    {
+      "description" : "Output information about the fastq file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "--out",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".stats",
+      "include on command line" : false,
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--fastq",
+        "modify extension" : "replace"
+      }
+    },
+    {
+      "description" : "Minimum allowed read length (Defaults to 10).",
+      "long form argument" : "--minimum-read-length",
+      "short form argument" : "-mrl",
+      "command line argument" : "--minReadLen ",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Number of errors to allow before quitting reading/validating the file. -1 (default) indicates to not quit until the entire file is read. 0 indicates not to read/validate anything",
+      "long form argument" : "--maximum-errors",
+      "short form argument" : "-me",
+      "command line argument" : "--maxErrors ",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Maximum number of errors to print before suppressing them (Defaults to 20). Different than maxErrors since printableErrors will continue reading and validating the file until the end, but just doesn't print the errors.",
+      "long form argument" : "--printable-errors",
+      "short form argument" : "-pe",
+      "command line argument" : "--printableErrors ",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Ignore all errors (same as printableErrors = 0) overwrites the printableErrors option.",
+      "long form argument" : "--ignore-errors",
+      "short form argument" : "-ie",
+      "command line argument" : "--ignoreErrors ",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Print the Base Composition Statistics.",
+      "long form argument" : "--base-composition",
+      "short form argument" : "-bc",
+      "command line argument" : "--baseComposition ",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Print the average phred quality per cycle & overall average quality.",
+      "long form argument" : "--average-quality",
+      "short form argument" : "-aq",
+      "command line argument" : "--avgQual ",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Disable the unique sequence identifier check. Use this option to save memory since the sequence id check uses a lot of memory.",
+      "long form argument" : "--disable-sequence-ID-check",
+      "short form argument" : "-did",
+      "command line argument" : "--disableSeqIDCheck ",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Print the parameter settings.",
+      "long form argument" : "--print-parameters",
+      "short form argument" : "-pp",
+      "command line argument" : "--params ",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "Suppresses the display of errors and summary statistics. Does not affect the printing of Base Composition Statistics.",
+      "long form argument" : "--quiet",
+      "short form argument" : "-qu",
+      "command line argument" : "--quiet ",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "fastq",
+          "values" : ["../resources/tutorial/current/simulated_reads_1.fq"],
+          "argument" : "--fastq"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
+    }
+  ]
+}

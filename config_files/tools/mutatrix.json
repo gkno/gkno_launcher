@@ -1,0 +1,296 @@
+{
+  "description" : "Generates a simulated population with no linkage, but allele frequency spectrum drawn from 1/n, where n is the minor allele frequency.",
+  "path" : "mutatrix",
+  "executable" : "mutatrix",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "the input fasta reference file.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "command line argument" : "--fasta-reference",
+      "input" : true, 
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".fa|.fasta",
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "the output list of variants.",
+      "long form argument" : "--vcf",
+      "short form argument" : "-v",
+      "command line argument" : "--vcf",
+      "input" : false, 
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".vcf",
+      "modify argument name on command line" : "stdout",
+      "construct filename" : {
+        "method" : "from tool argument",
+        "use argument" : "--fasta-reference",
+        "modify extension" : "replace",
+        "add additional text" : "variants"
+      }
+    },
+    {
+      "description" : "the relative rate of point mutation per bp per chrom (default 0.001).",
+      "long form argument" : "--snp-rate",
+      "short form argument" : "-s",
+      "command line argument" : "--snp-rate",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "float",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "the geometric scaling probability for 2bp multi-nucleotide-polymorphisms relative to SNPs, relative to 3bp MNPs, etc. (default 0.01).",
+      "long form argument" : "--mnp-ratio",
+      "short form argument" : "-M",
+      "command line argument" : "--mnp-ratio",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "float",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "the rate of non-repeat indel mutations per bp per chrom (default 0.0001).",
+      "long form argument" : "--indel-rate",
+      "short form argument" : "-i",
+      "command line argument" : "--indel-rate",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "float",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "maximum indel length (default 1000).",
+      "long form argument" : "--indel-max",
+      "short form argument" : "-X",
+      "command line argument" : "--indel-max",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "generate indel lengths from a uniform distribution from 0 to indel-max.",
+      "long form argument" : "--uniform-indel",
+      "short form argument" : "-U",
+      "command line argument" : "--uniform-indel",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "the alpha parameter of the indel length frequency distribution (zeta(l), default 1.1) length N have probability zeta(N)",
+      "long form argument" : "--indel-alpha",
+      "short form argument" : "-z",
+      "command line argument" : "--indel-alpha",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "float",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "maximum size of exect repeat unit in the genome to detect (default 20).",
+      "long form argument" : "--repeat-max-size",
+      "short form argument" : "-q",
+      "command line argument" : "--repeat-max-size",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "the rate of microsatellite mutation at microsatellite sites (default 0.0001).",
+      "long form argument" : "--microsat-rate",
+      "short form argument" : "-m",
+      "command line argument" : "--microsat-rate",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "float",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "alpha parameter for microsatellite allele count (default 1.7).",
+      "long form argument" : "--microsat-afs-alpha",
+      "short form argument" : "-t",
+      "command line argument" : "--microsat-afs-alpha",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "float",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "alpha parameter for microsatellite mutation length (default 1.7).",
+      "long form argument" : "--microsat-len-alpha",
+      "short form argument" : "-j",
+      "command line argument" : "--microsat-len-alpha",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "float",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "the minimum number of bases in a repeat to consider it a microsatellite (default 1).",
+      "long form argument" : "--microsat-min-len",
+      "short form argument" : "-l",
+      "command line argument" : "--microsat-min-len",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "the allele frequency spectrum distribution scaling parameter (1/i * alpha, default 1.0).",
+      "long form argument" : "--afs-alpha",
+      "short form argument" : "-a",
+      "command line argument" : "--afs-alpha",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "float",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "ratio of transitions to transversions among SNPs (default 2.5).",
+      "long form argument" : "--ts-tv-ratio",
+      "short form argument" : "-T",
+      "command line argument" : "--ts-tv-ratio",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "float",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "ploidy of the population (default 1).",
+      "long form argument" : "--ploidy",
+      "short form argument" : "-p",
+      "command line argument" : "--ploidy",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "number of individuals in the population.",
+      "long form argument" : "--population-size",
+      "short form argument" : "-n",
+      "command line argument" : "--population-size",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "prefix output fasta files with this.",
+      "long form argument" : "--file-prefix",
+      "short form argument" : "-P",
+      "command line argument" : "--file-prefix",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "prefix sample names (numbers by default) with this.",
+      "long form argument" : "--sample-prefix",
+      "short form argument" : "-S",
+      "command line argument" : "--sample-prefix",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "provide the seed for pseudorandom generation (default, seconds since 1970).",
+      "long form argument" : "--random-seed",
+      "short form argument" : "-g",
+      "command line argument" : "--random-seed",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extension" : "no extension"
+    },
+    {
+      "description" : "don't write any fasta output files, just print VCF output.",
+      "long form argument" : "--dry-run",
+      "short form argument" : "-d",
+      "command line argument" : "--dry-run",
+      "input" : false, 
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extension" : "no extension"
+    }
+  ],
+
+  "argument order" : [
+    "--snp-rate",
+    "--mnp-ratio",
+    "--indel-rate",
+    "--indel-max",
+    "--uniform-indel",
+    "--indel-alpha",
+    "--repeat-max-size",
+    "--microsat-rate",
+    "--microsat-afs-alpha",
+    "--microsat-len-alpha",
+    "--microsat-min-len",
+    "--afs-alpha",
+    "--ts-tv-ratio",
+    "--ploidy",
+    "--population-size",
+    "--file-prefix",
+    "--sample-prefix",
+    "--random-seed",
+    "--dry-run",
+    "--fasta-reference",
+    "--vcf"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : []
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "Input reference file",
+          "values" : ["../resources/tutorial/current/test_genome.fa"],
+          "argument" : "--fasta-reference"
+        },
+        {
+          "ID" : "Output file prefix",
+          "values" : ["mutatrix"],
+          "argument" : "--file-prefix"
+        }
+      ]
+    }
+  ]
+}

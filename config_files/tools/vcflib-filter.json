@@ -146,9 +146,9 @@
           "argument" : "--in"
         },
         {
-          "ID" : "region",
-          "values" : ["20:60000-100000"],
-          "argument" : "--region"
+          "ID" : "quality",
+          "values" : ["\"QUAL > 10\""],
+          "argument" : "--info-filter"
         },
         {
           "ID" : "output path",

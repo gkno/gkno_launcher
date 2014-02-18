@@ -27,6 +27,9 @@ class loopData:
     # Define the number of data sets in the file.
     self.numberOfDataSets = 0
 
+    # Define the number of arguments with values in the file.
+    self.numberOfSetArguments = 0
+
     # Define a dictionary that will hold the values.
     self.values = {}
 
@@ -180,15 +183,12 @@ class gknoConfigurationFiles:
 
   # Check if multiple runs or internal loops have been requested. If so, check that only one file
   # has been provided.
-  def hasLoop(self, graph, config):
+  def hasLoop(self, graph, config, resourcePath, isPipeline, name):
     multipleRuns = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-MULTIPLE-RUNS', 'values')
     internalLoop = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-LOOP', 'values')
 
     # Either multiple runs or internal loops are allowed, but not both.
-    if multipleRuns and internalLoop:
-      #TODO ERROR
-      print('CANNOT DEFINE MULTIPLE RUN AND INTERNAL LOOP SIMULTANEOUSLY - hasMultipleRunsOrLoop')
-      self.errors.terminate()
+    if multipleRuns and internalLoop: self.errors.internalLoopAndMultipleRuns()
 
     # If no multiple runs or internal loops are requested, return.
     if not multipleRuns and not internalLoop: return False, False
@@ -204,42 +204,90 @@ class gknoConfigurationFiles:
       hasInternalLoop = True
 
     # There can only be a single file specified
-    if len(files) != 1:
-      # TODO ERROR
-      print('ONLY A SINGLE FILE CAN BE SPECIFIED FOR MULTIPLE RUN/INTERNAL LOOP - hasMultipleRunsOrLoop')
-      self.errors.terminate()
+    if len(files) != 1: self.errors.multipleMultipleRunsOrInternalLoops(hasMultipleRuns)
 
-    # TODO IMPLEMENT
     # Validate the file and import the information into a data structure.
-    data = config.fileOperations.readConfigurationFile(files[0])
-    self.validateMultipleRunsFiles(data)
-    self.processMultipleRunFileData(data)
+    filename = files[0].replace('$(RESOURCES)/', resourcePath) if files[0].startswith('$(RESOURCES)') else files[0]
+    data = config.fileOperations.readConfigurationFile(filename)
+    self.validateMultipleRunsFiles(graph, config, filename, hasMultipleRuns, data, isPipeline, name)
+
     return hasMultipleRuns, hasInternalLoop
 
-  # TODO
   # Validate the contents of a multiple run or internal loop file.
-  def validateMultipleRunsFiles(self, data):
-    pass
+  def validateMultipleRunsFiles(self, graph, config, filename, hasMultipleRuns, data, isPipeline, name):
+    allowedAttributes              = {}
+    allowedAttributes['arguments'] = (list, True)
+    allowedAttributes['values']    = (list, True)
 
-  # Parse the information from the multiple runs/internal loop file into data structures.
-  def processMultipleRunFileData(self, data):
- 
-    # Store the arguments contained in the loop file in the correct order.
-    for argument in data['arguments']: self.loopData.arguments.append(argument)
+    # Keep track of the observed required values.
+    observedAttributes = {}
 
-    # Loop over the sets of values and add to the data structure. Keep track of the number of
-    # data sets.
-    for iteration in data['values']:
-      self.loopData.numberOfDataSets += 1
-      self.loopData.values[iteration] = []
-      for value in data['values'][iteration]: self.loopData.values[iteration].append(value)
+    # Loop over all of the attributes in the configuration file.
+    for attribute in data:
+
+      # If the value is not in the allowedAttributes, it is not an allowed value and execution
+      # should be terminate with an error.
+      if attribute not in allowedAttributes:
+        self.errors.invalidAttributeInMultipleRunsFile(filename, hasMultipleRuns, attribute, allowedAttributes)
+
+      # Mark this values as having been observed,
+      observedAttributes[attribute] = True
+
+      # Check that the value given to the attribute is of the correct type. If the value is unicode,
+      # convert to a string first.
+      value = str(data[attribute]) if isinstance(data[attribute], unicode) else data[attribute]
+      if allowedAttributes[attribute][0] != type(value):
+        self.errors.incorrectTypeInMultipleRunsFile(filename, hasMultipleRuns, attribute, value, allowedAttributes[attribute][0])
+
+    # Having parsed all of the general attributes attributes, check that all those that are required
+    # are present.
+    for attribute in allowedAttributes:
+      if allowedAttributes[attribute][1] and attribute not in observedAttributes:
+        self.errors.missingAttributeInMultipleRunsFile(filename, hasMultipleRuns, attribute, allowedAttributes)
+
+    # Check that all supplied arguments are valid.
+    if isPipeline: self.checkMultipleRunsArgumentsPipeline(graph, config, data)
+    else: self.checkMultipleRunsArgumentsTool(graph, config, data, name)
+
+    # Now loop over all the data sets and store the argument values.
+    self.processValues(data, filename, hasMultipleRuns)
+
+  # Check that all arguments in the multiple runs/internal loop file are valid for the current
+  # pipeline.
+  def checkMultipleRunsArgumentsPipeline(self, graph, config, data):
+    self.loopData.numberOfSetArguments = len(data['arguments'])
+    for argument in data['arguments']:
+      self.loopData.arguments.append(config.pipeline.getLongFormArgument(graph, argument))
+
+  # Check that all arguments in the multiple runs/internal loop file are valid for the current
+  # pipeline.
+  def checkMultipleRunsArgumentsTool(self, graph, config, data, tool):
+    self.loopData.numberOfSetArguments = len(data['arguments'])
+    for argument in data['arguments']:
+      self.loopData.arguments.append(config.tools.getLongFormArgument(tool, argument))
+
+  # Process the argument values in the multiple run/internal loop file.
+  def processValues(self, data, filename, hasMultipleRuns):
+
+    # Record the number of data sets.
+    self.loopData.numberOfDataSets = len(data['values'])
+    for iteration, dataSet in enumerate(data['values']):
+
+      # Check that the data set is a list containing the same number of entries as there are
+      # arguments in the 'arguments' section of the file.
+      if not isinstance(dataSet, list): self.errors.incorrectTypeForDataSet(filename, hasMultipleRuns)
+      if len(dataSet) != self.loopData.numberOfSetArguments: self.errors.incorrectNumberOfValues(filename, hasMultipleRuns)
+
+      # Store the values.
+      self.loopData.values[iteration + 1] = []
+      for value in dataSet: self.loopData.values[iteration + 1].append(str(value))
 
   # Assign loop values to the graph.
   def addLoopValuesToGraph(self, graph, config):
 
     # Loop over each of the data sets and add to the correct iteration in the correct node.
     for iteration in range(1, self.loopData.numberOfDataSets + 1):
-      for argument, values in zip(self.loopData.arguments, self.loopData.values[str(iteration)]):
+      for argument, values in zip(self.loopData.arguments, self.loopData.values[iteration]):
 
         # Find the node for this argument.
         nodeID = config.pipeline.pipelineArguments[argument].ID
@@ -446,21 +494,17 @@ class gknoConfigurationFiles:
 
         # If gkno is being run in pipeline mode, check if this argument is a pipeline argument.
         if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'pipeline':
-          isPipelineArgument = False
-          if task in config.pipeline.pipelineArgument:
-            if taskArgument in config.pipeline.pipelineArgument[task]:
-               isPipelineArgument = True
-               longForm           = config.pipeline.pipelineArgument[task][taskArgument]
-               self.errors.missingArgumentInFilenameConstruction(graph, config, longForm)
+          longFormArgument, shortFormArgument = config.pipeline.getPipelineArgument(task, taskArgument)
+          if longFormArgument != None:
+            self.errors.missingArgumentInFilenameConstruction(graph, config, task, longFormArgument, shortFormArgument, True)
 
           # Running in pipeline mode, but the argument required for filename construction is not a
           # pipeline argument. Fail, but recommend that the pipeline configurtaion file be modified
           # to include this argument.
-          if not isPipelineArgument:
-            self.errors.missingArgumentInFilenameConstructionNotPipelineArgument(graph, config, task, taskArgument)
+          else: self.errors.missingArgumentInFilenameConstructionNotPipelineArgument(graph, config, task, taskArgument)
 
         # If gkno is being run in tool mode, write the correct error message.
-        self.errors.missingArgumentInFilenameConstruction(graph, config, taskArgument)
+        self.errors.missingArgumentInFilenameConstruction(graph, config, task, taskArgument, '', False)
       else:
         print('NOT HANDLED VALUES - gknoConfig.addArgumentValues')
         self.errors.terminate()

@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.132"
+__version__ = "0.133"
 __date__ = "February 2014"
 
 def main():
@@ -63,6 +63,7 @@ def main():
   gknoConfigurationFilePath      = sourcePath + '/config_files/'
   pipelineConfigurationFilesPath = sourcePath + '/config_files/pipes/'
   toolConfigurationFilesPath     = sourcePath + '/config_files/tools/'
+  resourcePath                   = sourcePath + '/resources/'
   toolsPath                      = sourcePath + '/tools/'
 
   # Get the latest commitID for gkno (the environment variable was set up in the shell script).
@@ -277,7 +278,7 @@ def main():
   write.writeDone()
 
   # Check if multiple runs or internal loops have been requested.
-  hasMultipleRuns, hasInternalLoop = gknoConfig.hasLoop(pipelineGraph, config)
+  hasMultipleRuns, hasInternalLoop = gknoConfig.hasLoop(pipelineGraph, config, resourcePath, isPipeline, runName)
   if hasMultipleRuns or hasInternalLoop:
     write.writeAssignLoopArguments(hasMultipleRuns)
     gknoConfig.addLoopValuesToGraph(pipelineGraph, config)
@@ -337,6 +338,7 @@ def main():
   config.identifyStreamingNodes(pipelineGraph)
 
   if generateMakefiles:
+
     # If there are multiple runs, multiple make files are created, using only the values for individual
     # iterations.
     make.determineMakefileStructure(pipelineGraph, config, hasMultipleRuns)

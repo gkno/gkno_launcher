@@ -1,0 +1,205 @@
+{
+  "description" : "Filter vcf files on a variety of parameters.",
+  "path" : "vcflib",
+  "executable" : "vcfintersect",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "The input vcf file.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "command line argument" : "--in",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "extension" : ".vcf|.vcf.gz",
+      "if input is stream" : "do not include",
+      "data type" : "string",
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Use intervals provided by this BED file.",
+      "long form argument" : "--bed",
+      "short form argument" : "-b",
+      "command line argument" : "--bed",
+      "input" : true,
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : ".bed"
+    },
+    {
+      "description" : "The output VCF file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "--out",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".vcf",
+      "modify argument name on command line" : "stdout",
+      "construct filename" : {
+        "method" : "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "replace",
+        "add additional text" : "intersected"
+      }
+    },
+    {
+      "description" : "invert the selection, printing only records which would not have been printed out.",
+      "long form argument" : "--invert",
+      "short form argument" : "-v",
+      "command line argument" : "--invert",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    {
+      "description" : "Use this VCF for set intersection generation.",
+      "long form argument" : "--intersect-vcf",
+      "short form argument" : "-iv",
+      "command line argument" : "--intersect-vcf",
+      "input" : true,
+      "output" : false,
+      "required" : false,
+      "extension" : ".vcf|.vcf.gz",
+      "data type" : "string"
+    },
+    {
+      "description" : "Use this VCF for set union generation.",
+      "long form argument" : "--union-vcf",
+      "short form argument" : "-u",
+      "command line argument" : "--union-vcf",
+      "input" : true,
+      "output" : false,
+      "required" : false,
+      "extension" : ".vcf|.vcf.gz",
+      "data type" : "string"
+    },
+    {
+      "description" : "Compare records up to this many bp away (default 30).",
+      "long form argument" : "--window-size",
+      "short form argument" : "-w",
+      "command line argument" : "--window-size",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "integer"
+    },
+    {
+      "description" : "FASTA reference file, required with --intersect-vcf and --union-vcf.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "command line argument" : "--reference",
+      "input" : true,
+      "output" : false,
+      "required" : false,
+      "extension" : ".fa|.fasta",
+      "data type" : "string"
+    },
+    {
+      "description" : "Output whole loci when one alternate allele matches.",
+      "long form argument" : "--loci",
+      "short form argument" : "-l",
+      "command line argument" : "--loci",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    {
+      "description" : "Intersect on the basis of record REF string.",
+      "long form argument" : "--reference-match",
+      "short form argument" : "-rm",
+      "command line argument" : "--ref-match",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    {
+      "description" : "Attach TAG to each record's info field if it would intersect.",
+      "long form argument" : "--tag",
+      "short form argument" : "-t",
+      "command line argument" : "--tag",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "flag"
+    },
+    {
+      "description" : "Use this value to indicate that the allele passes; '.' will be used otherwise.  default: 'PASS'",
+      "long form argument" : "--tag-value",
+      "short form argument" : "-tv",
+      "command line argument" : "--tag-value",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "extension" : "no extension",
+      "data type" : "string"
+    }
+  ],
+
+  "argument order" : [
+    "--bed",
+    "--invert",
+    "--intersect-vcf",
+    "--union-vcf",
+    "--window-size",
+    "--fasta-reference",
+    "--loci",
+    "--reference-match",
+    "--tag",
+    "--tag-value",
+    "--in",
+    "--out"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "vcf",
+          "argument" : "--in",
+          "values" : ["../resources/tutorial/current/simulated_reads.vcf"]
+        },
+        {
+          "ID" : "intersect",
+          "argument" : "--intersect-vcf",
+          "values" : ["../resources/tutorial/current/test_genome.dbSNP.snps.sites.vcf"]
+        },
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["../resources/tutorial/current/test_genome.fa"]
+        },
+        {
+          "ID" : "invert",
+          "argument" : "--invert",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "output path",
+          "argument" : "--output-path",
+          "values" : ["./"]
+        }
+      ]
+    }
+  ]
+}

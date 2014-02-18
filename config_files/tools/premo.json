@@ -132,7 +132,7 @@
       "command line argument" : "-n",
       "input" : false,
       "output" : false,
-      "required" : true,
+      "required" : false,
       "data type" : "integer",
       "extension" : "no extension"
     },

@@ -254,11 +254,16 @@ directory is correct, or create prior to execution of gkno. Automatic execution 
   #######################################
 
   # A argument required for building a filename is missing.
-  def missingArgumentInFilenameConstruction(self, graph, config, argument):
+  def missingArgumentInFilenameConstruction(self, graph, config, task, longFormArgument, shortFormArgument, isPipeline):
     if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
-    self.text = ['An argument required for constructing a filename is missing.']
-    self.text.append('gkno is attempting to the generate a filename using instructions from the tool configuration file. An argument required \
-to do this is missing, however. Please ensure that the argument \'' + argument + '\' is set.')
+    self.text.append('An argument required for constructing a filename is missing.')
+    if isPipeline:
+      self.text.append('The task \'' + task + '\' in the pipeline is attempting to construct a filename using other supplied commands. The ' + \
+      'command line argument \'' + longFormArgument + ' (' + shortFormArgument + ')\' is required for this construction. Please ensure that ' + \
+      'this argument is set.')
+    else:
+      self.text.append('gkno is attempting to the generate a filename using instructions from the tool configuration file. An argument required ' + \
+      'to do this is missing, however. Please ensure that the argument \'' + longFormArgument + '\' is set.')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
   
@@ -294,6 +299,118 @@ argument existed to set this value. Please see the documentation to see how to i
   # Errors with multiple runs/loops. #
   ####################################
 
+  # If a multiple run and internal loop file were simultaneously defined.
+  def internalLoopAndMultipleRuns(self):
+    self.text.append('Error with selected options.')
+    self.text.append('Both the \'--multiple-runs (-mr)\' and the \'--internal-loop (-il)\' options were set on the command line. These options ' + \
+    'are mututally exclusive, so they cannot both be set at the same time. Please check which of these options is required and remove the other ' + \
+    'from the command line.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # If more than one multlipe run or internal loop file were defined.
+  def multipleMultipleRunsOrInternalLoops(self, hasMultipleRuns):
+    self.text.append('Error with selected options.')
+    if hasMultipleRuns: text = '--multiple-runs (-mr)'
+    else: text = '--internal-loop (-il)'
+    self.text.append('The \'' + text + '\' argument was set on the command line multiple times. This option defines a file containing a list of ' + \
+    'arguments and associated values to be used and only a single file can be defined. Please ensure that the \'' + text + '\' argument only ' + \
+    'appears once on the command line.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # Invalid value in the file.
+  def invalidAttributeInMultipleRunsFile(self, filename, hasMultipleRuns, attribute, allowedAttributes):
+    self.text.append('Invalid attribute in file: ' + filename)
+    if hasMultipleRuns: text = '--multiple-runs (-mr)'
+    else: text = '--internal-loop (-il)'
+    self.text.append('The command line argument \'' + text + '\' was given the value \'' + filename + '\'. This file was found, but contains ' + \
+    'the attribute \'' + attribute  + '\' which is not allowed in this file. The allowed attributes are:')
+    self.text.append('\t')
+
+    # Create a sorted list of the allowed attributes.
+    allowed = []
+    for attribute in allowedAttributes: allowed.append(attribute)
+
+    # Add the attributes to the text to be written along with the expected type.
+    for attribute in sorted(allowed):
+      self.text.append(attribute + ':\t' + str(allowedAttributes[attribute][0]) + ', required = ' + str(allowedAttributes[attribute][1]))
+
+    self.text.append('\t')
+    self.text.append('Please remove or correct the invalid attribute in the configuration file.')
+    self.writeFormattedText('error')
+    self.terminate()
+
+  # The data type is incorrect.
+  def incorrectTypeInMultipleRunsFile(self, filename, hasMultipleRuns, attribute, value, expectedType):
+
+    # Find the given type.
+    isType    = self.findType(type(value))
+    needsType = self.findType(expectedType)
+    if isType == None: isType = 'Unknown'
+    if needsType == None: needsType = 'Unknown'
+
+    if hasMultipleRuns: argument = '--multiple-runs (-mr)'
+    else: argument = '--internal-loop'
+
+    self.text.append('Invalid attribute value in file: ' + filename)
+    text = 'The file specified with the command line argument \'' + argument + '\' contains the attribute \'' + attribute + '\'. This attribute '
+    if isType == 'list' or isType == 'dictionary':  text += 'is given a value '
+    else: text += 'is given the value \'' + str(value) + '\'. This value is '
+    text += 'of an incorrect type (' + isType + '); the expected type is \'' + needsType + '\'. Please correct ' + \
+    'this value in the file.'
+    self.text.append(text)
+    self.writeFormattedText('error')
+    self.terminate()
+
+  # An attribute is missing.
+  def missingAttributeInMultipleRunsFile(self, filename, hasMultipleRuns, attribute, allowedAttributes):
+    if hasMultipleRuns: argument = '--multiple-runs (-mr)'
+    else: argument = '--internal-loop'
+
+    self.text.append('Missing attribute in file: ' + filename)
+    self.text.append('The command line argument \'' + argument + '\' defined a file from which to take values to apply. The supplied ' + \
+    'file is missing an attribute that is required; all the required attributes are listed below:')
+    self.text.append('\t')
+
+    # Create a sorted list of the required attributes.
+    requiredAttributes = []
+    for attribute in allowedAttributes:
+       if allowedAttributes[attribute][1]: requiredAttributes.append(attribute)
+
+    # Add the attributes to the text to be written along with the expected type.
+    for attribute in sorted(requiredAttributes): self.text.append(attribute + ':\t' + str(allowedAttributes[attribute][0]))
+
+    self.text.append('\t')
+    self.text.append('Please add the missing attributes to the file.')
+    self.writeFormattedText('error')
+    self.terminate()
+
+  # A data set in the file is not a list.
+  def incorrectTypeForDataSet(self, filename, hasMultipleRuns):
+    if hasMultipleRuns: argument = '--multiple-runs (-mr)'
+    else: argument = '--internal-loop'
+
+    self.text.append('Invalid entry in file: ' + filename)
+    self.text.append('The file provided with the command line argument \'' + argument + '\' contains an invalid entry in the \'values\' ' + \
+    'section. The \'values\' section is a list of lists. Each of these lists should be values corresponding to the arguments defined ' + \
+    'in the \'arguments\' section of the file (in the same order). Please check the file and ensure that it conforms to these expectations.')
+    self.writeFormattedText('error')
+    self.terminate()
+
+  # A data set in the file has the wrong number of entries.
+  def incorrectNumberOfValues(self, filename, hasMultipleRuns):
+    if hasMultipleRuns: argument = '--multiple-runs (-mr)'
+    else: argument = '--internal-loop'
+
+    self.text.append('Invalid set of values in file: ' + filename)
+    self.text.append('The file provided with the command line argument \'' + argument + '\' contains an invalid entry in the \'values\' ' + \
+    'section. The \'values\' section is a list of lists. Each of these lists should be values corresponding to the arguments defined ' + \
+    'in the \'arguments\' section of the file (in the same order). One of the lists in this file does not have the same number of values as ' + \
+    'there are defined arguments. Please check the file and ensure that it conforms to these expectations.')
+    self.writeFormattedText('error')
+    self.terminate()
+
   ####################################
   # Errors with makefile generation. #
   ####################################
@@ -307,6 +424,19 @@ argument existed to set this value. Please see the documentation to see how to i
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  ####################
+  # General methods. #
+  ####################
+
+  # Given a value, return a string representation of the data type.
+  def findType(self, providedType):
+    if providedType == str: return 'string'
+    elif providedType == int: return 'integer'
+    elif providedType == float: return 'float'
+    elif providedType == bool: return 'Boolean'
+    elif providedType == dict: return 'dictionary'
+    elif providedType == list: return 'list'
+    else: return None
 
 
 

@@ -45,8 +45,8 @@
     },
     {
       "description" : "The output alignment file",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
+      "long form argument" : "--bam",
+      "short form argument" : "-b",
       "command line argument" : "-out",
       "input" : false,
       "output" : true,
@@ -144,7 +144,7 @@
     {
       "description" : "Specifies the Smith-Waterman bandwidth.  Default: 9",
       "long form argument" : "--bandwidth",
-      "short form argument" : "-b",
+      "short form argument" : "-bw",
       "command line argument" : "-bw",
       "input" : false,
       "output" : false,

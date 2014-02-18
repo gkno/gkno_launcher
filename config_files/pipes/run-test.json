@@ -155,7 +155,7 @@
       "ID" : "sort",
       "description" : "Linking tasks. No argument.",
       "tasks" : {
-        "align" : "--out",
+        "align" : "--bam",
         "sort-primary-bam" : "--in"
       },
       "extensions" : {
