@@ -8,10 +8,10 @@
     "align" : {
       "tool" : "mosaik-aligner"
     },
-    "sort-primary-bam" : {
+    "sort-bam" : {
       "tool" : "bamtools-sort"
     },
-    "index-primary-bam" : {
+    "index-bam" : {
       "tool" : "bamtools-index"
     },
     "get-alignment-stats" : {
@@ -188,11 +188,11 @@
       "ID" : "aligned bam",
       "description" : "Linking tasks only.",
       "tasks" : {
-        "align" : "--out",
-        "sort-primary-bam" : "--in"
+        "align" : "--bam",
+        "sort-bam" : "--in"
       },
       "extensions" : {
-        "sort-primary-bam" : {
+        "sort-bam" : {
           "--in" : "bam"
         }
       },
@@ -202,8 +202,8 @@
       "ID" : "index",
       "description" : "Linking tasks only.",
       "tasks" : {
-        "sort-primary-bam" : "--out",
-        "index-primary-bam" : "--in",
+        "sort-bam" : "--out",
+        "index-bam" : "--in",
         "get-alignment-stats" : "--in"
       }
     }
