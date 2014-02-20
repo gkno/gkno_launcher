@@ -2,6 +2,9 @@
   "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
 
   "tasks" : {
+    "simulate-reads" : {
+      "tool" : "mason-illumina-paired"
+    },
     "merge-fasta" : {
       "tool" : "concatenate-files"
     },
@@ -10,9 +13,6 @@
     },
     "create-sequence-dictionary" : {
       "tool" : "picard-create-sequence-dictionary"
-    },
-    "build-tangram-reference" : {
-      "tool" : "tangram-index"
     },
     "build-reference" : {
       "tool" : "mosaik-build-reference"
@@ -40,37 +40,110 @@
     },
     "index-duplicate-marked" : {
       "tool" : "bamtools-index"
-    },
-    "generate-bam-list" : {
-      "tool" : "generate-file-list"
-    },
-    "scan-bam-files" : {
-      "tool" : "tangram-scan"
-    },
-    "detect-mei" : {
-      "tool" : "tangram-detect"
     }
   },
 
   "nodes" : [
     {
+      "ID" : "mutated reference",
+      "description" : "Reference containing mutations from which to simulate reads.",
+      "long form argument" : "--mutated-reference",
+      "short form argument" : "-mf",
+      "tasks" : {
+        "simulate-reads" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "mates",
+      "description" : "Generate read pairs.",
+      "long form argument" : "--mate-pairs",
+      "short form argument" : "-mp",
+      "tasks" : {
+        "simulate-reads" : "--mate-pairs"
+      }
+    },
+    {
+      "ID" : "qualities",
+      "description" : "Simulate qualities, e.g. generate fastq, not fasta.",
+      "long form argument" : "--simulate-qualities",
+      "short form argument" : "-sq",
+      "tasks" : {
+        "simulate-reads" : "--mate-pairs"
+      }
+    },
+    {
+      "ID" : "read length",
+      "description" : "Length of the reads being generated.",
+      "long form argument" : "--read-length",
+      "short form argument" : "-n",
+      "tasks" : {
+        "simulate-reads" : "--read-length"
+      }
+    },
+    {
+      "ID" : "read number",
+      "description" : "The number of reads (pairs) to simulate.",
+      "long form argument" : "--number-of-reads",
+      "short form argument" : "-N",
+      "tasks" : {
+        "simulate-reads" : "--number-of-reads"
+      }
+    },
+    {
+      "ID" : "first mate",
+      "description" : "The simulated fastq file for the first mate in the pair.",
+      "long form argument" : "--fastq",
+      "short form argument" : "-q",
+      "tasks" : {
+        "simulate-reads" : "--out",
+        "generate-mosaik-parameters" : "--fastq",
+        "build-read-archive" : "--fastq"
+      },
+      "extensions" : {
+        "generate-mosaik-parameters" : {
+          "--fastq" : "_1.fq"
+        },
+        "build-read-archive" : {
+          "--fastq" : "_1.fq"
+        }
+      }
+    },
+    {
+      "ID" : "second mate",
+      "description" : "The simulated fastq file for the second mate in the pair.",
+      "long form argument" : "--fastq2",
+      "short form argument" : "-q2",
+      "tasks" : {
+        "simulate-reads" : "--out",
+        "generate-mosaik-parameters" : "--fastq2",
+        "build-read-archive" : "--fastq2"
+      },
+      "extensions" : {
+        "generate-mosaik-parameters" : {
+          "--fastq2" : "_2.fq"
+        },
+        "build-read-archive" : {
+          "--fastq2" : "_2.fq"
+        }
+      }
+    },
+    {
       "ID" : "reference fasta",
       "description" : "The reference fasta file.",
       "long form argument" : "--fasta-reference",
       "short form argument" : "-f",
+      "required" : true,
       "tasks" : {
-        "merge-fasta" : "--in",
-        "build-tangram-reference" : "--fasta-reference"
+        "merge-fasta" : "--in"
       }
     },
     {
       "ID" : "moblist reference fasta",
       "description" : "The mobile element reference fasta file.",
       "long form argument" : "--mobile-element-fasta",
-      "short form argument" : "-mf",
+      "short form argument" : "-mob",
       "tasks" : {
-        "merge-fasta" : "--in",
-        "build-tangram-reference" : "--special-reference"
+        "merge-fasta" : "--in"
       }
     },
     {
@@ -83,16 +156,6 @@
         "index-fasta" : "--fasta-reference",
         "create-sequence-dictionary" : "--fasta-reference",
         "build-reference" : "--fasta-reference"
-      }
-    },
-    {
-      "ID" : "tangram reference",
-      "description" : "The reference file created by Tangram index.",
-      "long form argument" : "--tangram-reference",
-      "short form argument" : "-tr",
-      "tasks" : {
-        "build-tangram-reference" : "--tangram-reference",
-        "detect-mei" : "--tangram-reference"
       }
     },
     {
@@ -147,30 +210,10 @@
       }
     },
     {
-      "ID" : "first mate",
-      "description" : "The fastq file for the first mate.",
-      "long form argument" : "--fastq",
-      "short form argument" : "-q",
-      "tasks" : {
-        "generate-mosaik-parameters" : "--fastq",
-        "build-read-archive" : "--fastq"
-      }
-    },
-    {
-      "ID" : "second mate",
-      "description" : "The fastq file for the second mate.",
-      "long form argument" : "--fastq2",
-      "short form argument" : "-q2",
-      "tasks" : {
-        "generate-mosaik-parameters" : "--fastq2",
-        "build-read-archive" : "--fastq2"
-      }
-    },
-    {
       "ID" : "mosaik path",
       "description" : "The path to the Mosaik executables.",
       "long form argument" : "--mosaik-path",
-      "short form argument" : "-mp",
+      "short form argument" : "-Mp",
       "tasks" : {
         "generate-mosaik-parameters" : "--mosaik-path"
       }
@@ -285,8 +328,7 @@
       "long form argument" : "--processors",
       "short form argument" : "-p",
       "tasks" : {
-        "align" : "--processors",
-        "detect-mei" : "--processors"
+        "align" : "--processors"
       }
     },
     {
@@ -339,78 +381,6 @@
       "tasks" : {
         "mark-duplicates" : "--out",
         "index-duplicate-marked" : "--in"
-      },
-      "greedy tasks" : {
-        "generate-bam-list" : "--in"
-      }
-    },
-    {
-      "ID" : "scan",
-      "description" : "The number of hashes for the mobile element reference sequences.",
-      "long form argument" : "--bam-list",
-      "short form argument" : "-bl",
-      "required" : true,
-      "tasks" : {
-        "generate-bam-list" : "--out",
-        "scan-bam-files" : "--in-list",
-        "detect-mei" : "--in-list"
-      }
-    },
-    {
-      "ID" : "tangram directory",
-      "description" : "The output directory for Tangram files.",
-      "long form argument" : "--tangram-directory",
-      "short form argument" : "-td",
-      "required" : true,
-      "tasks" : {
-        "scan-bam-files" : "--output-directory"
-      }
-    },
-    {
-      "ID" : "fragments",
-      "description" : "The minimum number of normal fragments in a library.",
-      "long form argument" : "--minimum-fragments",
-      "short form argument" : "-mfr",
-      "tasks" : {
-        "scan-bam-files" : "--minimum-fragments"
-      }
-    },
-    {
-      "ID" : "library file",
-      "description" : "Library information file (generated by tangram-scan).",
-      "long form argument" : "--library-file",
-      "short form argument" : "-l",
-      "tasks" : {
-        "scan-bam-files" : "--library-file",
-        "detect-mei" : "--library-file"
-      }
-    },
-    {
-      "ID" : "histogram file",
-      "description" : "Fragment length distribution information file (generated by tangram-scan).",
-      "long form argument" : "--histogram-file",
-      "short form argument" : "-ht",
-      "tasks" : {
-        "scan-bam-files" : "--histogram-file",
-        "detect-mei" : "--histogram-file"
-      }
-    },
-    {
-      "ID" : "region",
-      "description" : "Genomic region.",
-      "long form argument" : "--region",
-      "short form argument" : "-rg",
-      "tasks" : {
-        "detect-mei" : "--region"
-      }
-    },
-    {
-      "ID" : "vcf",
-      "description" : "Output MEIs.",
-      "long form argument" : "--vcf",
-      "short form argument" : "-v",
-      "tasks" : {
-        "detect-mei" : "--vcf"
       }
     }
   ],
@@ -424,6 +394,31 @@
           "ID" : "mosaik path",
           "argument" : "--mosaik-path",
           "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
+        },
+        {
+          "ID" : "merged reference",
+          "argument" : "--merged-reference-fasta",
+          "values" : ["merged_reference.fa"]
+        },
+        {
+          "ID" : "number",
+          "argument" : "--number-of-reads",
+          "values" : [100000]
+        },
+        {
+          "ID" : "qualities",
+          "argument" : "--simulate-qualities",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "pairs",
+          "argument" : "--mate-pairs",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "length",
+          "argument" : "--read-length",
+          "values" : [100]
         }
       ]
     },
@@ -433,24 +428,9 @@
       "description" : "Parameters assuming illumina sequencing of a human genome",
       "nodes" : [
         {
-          "ID" : "mosaik path",
-          "argument" : "--mosaik-path",
-          "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
-        },
-        {
           "ID" : "temp dir",
           "argument" : "--temp-directory",
           "values" : ["pipeline_temp"]
-        },
-        {
-          "ID" : "directory",
-          "argument" : "--tangram-directory",
-          "values" : ["tangram_files"]
-        },
-        {
-          "ID" : "merged reference",
-          "argument" : "--merged-reference-fasta",
-          "values" : ["merged_reference.fa"]
         },
         {
           "ID" : "hash size",
@@ -466,11 +446,6 @@
           "ID" : "pe neural net",
           "argument" : "--ann-paired-end",
           "values" : ["$(RESOURCES)/tutorial/current/pe.100.01.ann"]
-        },
-        {
-          "ID" : "bam list",
-          "argument" : "--bam-list",
-          "values" : ["bam_list.txt"]
         },
         {
           "ID" : "tech",
@@ -538,31 +513,6 @@
           "ID" : "temp dir",
           "argument" : "--temp-directory",
           "values" : ["pipeline_temp"]
-        },
-        {
-          "ID" : "bam list",
-          "argument" : "--bam-list",
-          "values" : ["bam_list.txt"]
-        },
-        {
-          "ID" : "directory",
-          "argument" : "--tangram-directory",
-          "values" : ["tangram_files"]
-        },
-        {
-          "ID" : "vcf",
-          "argument" : "--vcf",
-          "values" : ["tangram_mei_calls.vcf"]
-        },
-        {
-          "ID" : "region",
-          "argument" : "--region",
-          "values" : [20]
-        },
-        {
-          "ID" : "fragments",
-          "argument" : "--minimum-fragments",
-          "values" : [0]
         }
       ]
     }

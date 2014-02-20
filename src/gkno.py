@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.137"
+__version__ = "0.138"
 __date__ = "February 2014"
 
 def main():
@@ -263,12 +263,19 @@ def main():
   # Check to see if the requested instance is available.
   config.instances.checkRequestedInstance(configurationFilesPath, runName, instanceName, gknoConfig.jsonFiles, isPipeline)
 
-  # Check to see if any of the instance arguments are gkno specific arguments.
+  # Check to see if any of the instance arguments are gkno specific arguments. First check default
+  # arguments, then the specified instance.
+  gknoConfig.attachInstanceArgumentsToNodes(config, pipelineGraph, runName, 'default')
   gknoConfig.attachInstanceArgumentsToNodes(config, pipelineGraph, runName, instanceName)
 
-  # Now handle the rest of the instance arguments.
-  if isPipeline: config.attachPipelineInstanceArgumentsToNodes(pipelineGraph, runName, instanceName)
-  else: config.attachToolInstanceArgumentsToNodes(pipelineGraph, runName, instanceName)
+  # Now handle the rest of the instance arguments. Again, attach default instance arguments first. These will
+  # be overwritten if specified in the requested instance or the command line.
+  if isPipeline:
+    config.attachPipelineInstanceArgumentsToNodes(pipelineGraph, runName, 'default')
+    config.attachPipelineInstanceArgumentsToNodes(pipelineGraph, runName, instanceName)
+  else:
+    config.attachToolInstanceArgumentsToNodes(pipelineGraph, runName, 'default')
+    config.attachToolInstanceArgumentsToNodes(pipelineGraph, runName, instanceName)
   write.writeDone()
 
   # Attach the values of the pipeline arguments to the relevant nodes.
@@ -320,6 +327,13 @@ def main():
 
   # Check that all of the supplied values for the gkno specific nodes are valid.
   gknoConfig.checkNodeValues(pipelineGraph, config)
+
+  # All of the nodes have been checmked to ensure that they have data assosciated if required, but this is
+  # not always sufficient. In some cases, more than one pipeline argument can point to the same node. If
+  # both pipeline arguments are required, but only one is set, the node being pointed to will have data, so
+  # no error will be thrown. So, check that all pipeline arguments that are listed as required, have indeed
+  # been set.
+  config.checkArguments(pipelineGraph, commands, runName, instanceName)
 
   # If the --export-config has been set, then the user is attempting to create a
   # new configuration file based on the selected tool/pipeline.  This can only be

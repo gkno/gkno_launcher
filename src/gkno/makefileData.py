@@ -464,19 +464,24 @@ class makefileData:
           # filename stub, use the values attached to the option node. If it isn't, find the associated file
           # node and use the values from there.
           if isFile:
-            if not config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFilenameStub'):
+            #if not config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFilenameStub'):
+            isPredecessor = config.nodeMethods.isPredecessor(graph, nodeID, task)
+            if isPredecessor: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isFilenameStub')
+            else: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, task, nodeID, 'isFilenameStub')
+            if not isFilenameStub:
               for fileNodeID in config.nodeMethods.getAssociatedFileNodeIDs(graph, nodeID):
   
                 # Check that this file node points into or from the current task. Since this option may have been
                 # associated with a filename stub, not all of the associated files are necessarily required by
                 # this task.
                 if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isInput'):
-                  isAssociated = config.edgeMethods.checkIfEdgeExists(graph, fileNodeID, task)
+                  isAssociated = config.edgeMethods.checkIfEdgeAssociatedWithArgument(graph, fileNodeID, task, argument)
   
                   # Check that the iteration exists in the values of associated file nodes. Again, if not, use the
                   # values in the first iteration or all values if the argument is greedy.
                   if isAssociated:
-                    fileValues = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
+                    fileValues          = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
+                    commandLineArgument = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'commandLineArgument')
   
                     # Deal with greedy arguments.
                     if isGreedy:
@@ -495,6 +500,27 @@ class makefileData:
                         print(task, fileNodeID, config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument'), valueList)
                         self.errors.terminate()
   
+            # Filename stubs.
+            else:
+
+              # Some arguments are listed as file name stubs, but still require the extension. In this cases,
+              # ensure that the values all have the extension attached.
+              tool      = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+              extension = config.tools.getArgumentAttribute(tool, argument, 'extension')
+              if extension != 'no extension':
+                allowedExtensions = extension.split('|')
+
+                # Modify the values.
+                modifiedValues = []
+                for value in valueList:
+
+                  # Check if the value already has an allowed extension.
+                  givenExtension = str('.') + str(value.split('.')[-1])
+                  if givenExtension not in allowedExtensions: modifiedValues.append(value + allowedExtensions[0])
+                  else: modifiedValues.append(value)
+
+                valueList = deepcopy(modifiedValues)
+                 
                 # TODO DO I NEED TO LOOK AT OUTPUTS?
   
           for value in valueList:

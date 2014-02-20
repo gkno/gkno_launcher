@@ -1,5 +1,5 @@
 {
-  "description" : "Generate simulated Illumina reads.",
+  "description" : "Generate simulated Illumina paired end reads.",
   "path" : "seqan/build/Release/bin",
   "executable" : "mason",
   "modifier" : "illumina",
@@ -137,6 +137,11 @@
       "required" : true,
       "data type" : "string",
       "extension" : ".fq",
+      "is filename stub" : true,
+      "filename extensions" : [
+        "_1.fq",
+        "_2.fq"
+      ],
       "construct filename" : {
         "method" : "from tool argument",
         "use argument" : "--fasta-reference",
@@ -595,13 +600,6 @@
   "instances" : [
     {
       "ID" : "default",
-      "description" : "Default instance requires the users input for all files.",
-      "nodes" : [
-      ]
-    },
-
-    {
-      "ID" : "fastq",
       "description" : "Default instance requires the users input for all files.",
       "nodes" : [
         {

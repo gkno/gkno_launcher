@@ -277,10 +277,9 @@ class commandLine:
         # Handle command line arguments that correspond to a data node first.  Deal with arguments
         # pointing to a task node afterwards.
         if not config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'nodeType') == 'task':
-
-          #TODO ASSUMING THAT CREATING ADDITIONAL NODES FOR ARGUMENTS POINTING TO NODES WITH PREDECESSORS
-          # WORKED, IMPLEMENT HERE ASWELL.
-          config.nodeMethods.addValuesToGraphNode(graph, nodeID, self.argumentDictionary[argument], write = 'replace')
+          allowMultipleValues = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'allowMultipleValues')
+          writeValue          = 'append' if allowMultipleValues else 'replace'
+          config.nodeMethods.addValuesToGraphNode(graph, nodeID, self.argumentDictionary[argument], write = writeValue, iteration = 1)
 
         # Now deal with arguments pointing to task nodes.
         else:
@@ -495,7 +494,6 @@ class commandLine:
               if config.edgeMethods.checkIfEdgeExists(graph, task, fileNodeID): attachedFileNodeIDs.append(fileNodeID)
 
           # Determine if the file node is from a filename stub.
-          print
           if isInput: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, attachedFileNodeIDs[0], task, 'isFilenameStub')
           else: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, task, attachedFileNodeIDs[0], 'isFilenameStub')
 
