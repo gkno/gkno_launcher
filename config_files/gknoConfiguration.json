@@ -7,6 +7,13 @@
       "short form" : "-h",
       "value" : ["unset"]
     },
+    "GKNO-DEBUG" : {
+      "argument" : "--debug",
+      "data type" : "flag",
+      "description" : "Display debugging information.",
+      "short form" : "-db",
+      "value" : ["unset"]
+    },
     "GKNO-DNL" : {
       "argument" : "--do-not-log-usage",
       "data type" : "flag",
