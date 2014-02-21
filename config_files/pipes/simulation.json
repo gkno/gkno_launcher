@@ -68,7 +68,7 @@
       "long form argument" : "--simulate-qualities",
       "short form argument" : "-sq",
       "tasks" : {
-        "simulate-reads" : "--mate-pairs"
+        "simulate-reads" : "--simulate-qualities"
       }
     },
     {

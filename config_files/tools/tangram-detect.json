@@ -232,12 +232,12 @@
         },
         {
           "ID" : "library",
-          "argument" : "--library",
+          "argument" : "--library-file",
           "values" : ["tangram-files/library.dat"]
         },
         {
           "ID" : "histogram",
-          "argument" : "--histogram",
+          "argument" : "--histogram-file",
           "values" : ["tangram-files/histogram.dat"]
         },
         {
