@@ -739,6 +739,10 @@ class gknoConfigurationFiles:
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)
     config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, modifiedValues)
 
+    # If no filename has been constructed, there is a problem with the construction. Terminate with an
+    # error.
+    if not modifiedValues: self.errors.failedToConstructDefinedFilename(task, tool, argument)
+
     # Mark this node as having had its values constructed, rather than set by the user.
     config.nodeMethods.setGraphNodeAttribute(graph, optionNodeID, 'isConstructed', True)
 
@@ -860,8 +864,10 @@ class gknoConfigurationFiles:
           numberOfValues      = len(values[iteration])
           allowMultipleValues = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowMultipleValues')
 
-          #TODO SORT OUT ERRORS.
-          if not allowMultipleValues and numberOfValues != 1: self.errors.givenMultipleValues(task, longFormArgument, shortFormArgument, values[iteration])
+          # If there are no values associated with the iteration:
+          if numberOfValues == 0: self.errors.missingPipelineArgument(graph, config, longFormArgument, shortFormArgument, description)
+          if not allowMultipleValues and numberOfValues != 1:
+            self.errors.givenMultipleValues(task, longFormArgument, shortFormArgument, values[iteration])
 
           # Determine the expected data type
           expectedDataType = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'dataType')

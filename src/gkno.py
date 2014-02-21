@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.138"
+__version__ = "0.141"
 __date__ = "February 2014"
 
 def main():
@@ -112,12 +112,13 @@ def main():
   gknoConfig.addGknoSpecificNodes(pipelineGraph, config, isPipeline)
   gknoConfig.eraseConfigurationData()
 
-  # Check to see if gkno is being run in verbose mode or not.
-  isVerbose = commands.checkVerbose(pipelineGraph, config, admin)
+  # Check to see if gkno is being run in verbose mode or debug mode.
+  isVerbose, isDebug = commands.checkVerbose(pipelineGraph, config, admin)
 
   # Each of the tools available to gkno should have a config file to describe its operation,
   # purpose etc.  These are contained in config_files/tools.  Find all of the config files
   # and create a hash table with all available tools.
+  if isDebug: write.writeDebug('Finding all json configuration files.')
   gknoConfig.getJsonFiles(configurationFilesPath)
 
   # Check if the pipeline/tool name is valid.
@@ -294,11 +295,13 @@ def main():
   # Now that the command line argument has been parsed, all of the values supplied have been added to the
   # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
   commands.mirrorFileNodeValues(pipelineGraph, config)
+  if isDebug: write.writeDebug('Mirrored file node values')
 
   # Not all of the following operation need to be performed if an instance is being exported. Since exporting
   # an instance just requires that the supplied values are valid, but not that all values are supplied (since
   # gkno will not be executed).
   isExportInstance = True if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-EXPORT-INSTANCE', 'values') else False
+  if isDebug: write.writeDebug('Export instance: ' + str(isExportInstance))
   if not isExportInstance:
 
     # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
@@ -318,12 +321,14 @@ def main():
 
   # Check that all files have a path set.
   gknoConfig.setFilePaths(pipelineGraph, config)
+  if isDebug: write.writeDebug('Set file paths')
 
   # Prior to filling in missing filenames, check that all of the supplied data is consistent with
   # expectations.  This includes ensuring that the inputted data types are correct (for example, if
   # an argument expects an integer, check that the values are integers), filename extensions are valid
   # and that multiple values aren't given to arguments that are only allowed a single value.
   gknoConfig.checkData(pipelineGraph, config, not isExportInstance)
+  if isDebug: write.writeDebug('Checked data')
 
   # Check that all of the supplied values for the gkno specific nodes are valid.
   gknoConfig.checkNodeValues(pipelineGraph, config)

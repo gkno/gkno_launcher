@@ -98,3 +98,8 @@ class writeToScreen:
       print('\ngkno failed to complete successfully.  Please check the output files to identify the cause of the problem.', file = sys.stderr)
       self.errors.terminate()
     sys.stdout.flush()
+
+  # Write debugging text.
+  def writeDebug(self, text):
+    print('\tdebugging: ', text, file = sys.stdout)
+    sys.stdout.flush()

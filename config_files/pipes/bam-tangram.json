@@ -127,6 +127,11 @@
       "description" : "Default instance requires user to input all input filenames.",
       "nodes" : [
         {
+          "ID" : "tangram reference",
+          "argument" : "--tangram-reference",
+          "values" : ["$(PWD)/tangram_reference.dat"]
+        },
+        {
           "ID" : "tangram directoey",
           "argument" : "--tangram-directory",
           "values" : ["$(PWD)/tangram_files"]

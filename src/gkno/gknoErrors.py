@@ -279,6 +279,17 @@ argument existed to set this value. Please see the documentation to see how to i
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  # If constructing a filename with the 'define method' failed to produce a filename.
+  def failedToConstructDefinedFilename(self, task, tool, argument):
+    self.text.append('Failed to construct a filename.')
+    self.text.append('An attempt to construct the filename for an argument in task \'' + task + '\' failed. This construction failed to produce ' + \
+    'a filename, so there is an error in the construction process. This may result if the filename is being constructed using values obtained ' + \
+    'from a different argument which has not been given a value. Please check the instructions for constructing the filename for argument \'' + \
+    argument + '\' in the configuration file for tool \'' + tool + '\' and ensure that the instructions are well formed and that any other ' + \
+    'arguments required in this construction are set.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   ################################
   # Error with executable files. #
   ################################

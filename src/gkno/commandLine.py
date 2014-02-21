@@ -70,6 +70,10 @@ class commandLine:
 
   # Check to see if the verbose argument is set.
   def checkVerbose(self, graph, config, admin):
+    isVerbose = False
+    isDebug   = False
+
+    # Check for verbose.
     for count, argument in enumerate(sys.argv[1:]):
       if argument == '--verbose' or argument == '-vb':
 
@@ -78,9 +82,16 @@ class commandLine:
 
         # Update the 'GKNO-VERBOSE' node.
         config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-VERBOSE', ['set'], 'replace')
-        return True
+        isVerbose = True
 
-    return False
+      # Check for debugging.
+      if argument == '--debug' or argument == '-db':
+
+        # Update the 'GKNO-DEBUG' node.
+        config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-DEBUG', ['set'], 'replace')
+        isDebug = True
+
+    return isVerbose, isDebug
 
   # Parse through the command line and put all of the arguments into a list.
   def getCommandLineArguments(self, graph, config, gknoConfig, tool, isPipeline):
@@ -147,23 +158,23 @@ class commandLine:
   
               # If a pipeline is being run, check the arguments against those allowed by the
               # pipeline confuguration file.
-              if isPipeline: longForm = config.pipeline.getLongFormArgument(graph, argument)
+              if isPipeline: longFormArgument = config.pipeline.getLongFormArgument(graph, argument)
   
               # If gkno is being run in tool mode, check the arguments against those allowed by
               # the tool.
-              else: longForm = config.tools.getLongFormArgument(tool, argument)
+              else: longFormArgument = config.tools.getLongFormArgument(tool, argument)
   
               # Update the argumentDictionary.
-              if longForm not in self.argumentDictionary: self.argumentDictionary[longForm] = []
-              self.argumentDictionary[longForm].append('')
+              if longFormArgument not in self.argumentDictionary: self.argumentDictionary[longFormArgument] = []
+              self.argumentDictionary[longFormArgument].append('set')
     
           else:
-            if isPipeline: longForm = config.pipeline.getLongFormArgument(graph, argument)
-            else: longForm = config.tools.getLongFormArgument(tool, argument)
+            if isPipeline: longFormArgument = config.pipeline.getLongFormArgument(graph, argument)
+            else: longFormArgument = config.tools.getLongFormArgument(tool, argument)
   
             # Update the argumentDictionary.
-            if longForm not in self.argumentDictionary: self.argumentDictionary[longForm] = []
-            self.argumentDictionary[longForm].append(nextArgument)
+            if longFormArgument not in self.argumentDictionary: self.argumentDictionary[longFormArgument] = []
+            self.argumentDictionary[longFormArgument].append(nextArgument)
             count += 1
       count += 1
 
