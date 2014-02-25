@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.141"
+__version__ = "0.142"
 __date__ = "February 2014"
 
 def main():
@@ -418,7 +418,7 @@ def main():
         # Check that all of the input files exist.
         gknoConfig.checkFilesExist(pipelineGraph, config, graphDependencies, sourcePath)
   
-    # If there are files required for the makefiles to run and theu don't exist, write a warning to the
+    # If there are files required for the makefiles to run and they don't exist, write a warning to the
     # screen and ensure that the makefiles aren't executed.
     gknoConfig.writeMissingFiles(pipelineGraph, config)
   
@@ -462,7 +462,8 @@ def main():
   # If the makefile was succesfully run, finish gkno with the exit condition of 0.
   # If the makefile failed to run, finish with the exit condition 3.  A failure
   # prior to execution of the makefile uses the exit condition 2.
-  if success == 0: exit(0)
+  if success == 0 and not gknoConfig.missingFiles: exit(0)
+  elif success == 0 and gknoConfig.missingFiles: exit(4)
   else: exit(3)
 
 if __name__ == "__main__":

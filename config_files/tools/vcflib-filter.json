@@ -142,18 +142,18 @@
       "nodes" : [
         {
           "ID" : "vcf",
-          "values" : ["../resources/tutorial/current/simulated_reads.vcf"],
-          "argument" : "--in"
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
         },
         {
           "ID" : "quality",
-          "values" : ["\"QUAL > 10\""],
-          "argument" : "--info-filter"
+          "argument" : "--info-filter",
+          "values" : ["\"QUAL > 10\""]
         },
         {
           "ID" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
+          "argument" : "--output-path",
+          "values" : ["./"]
         }
       ]
     }

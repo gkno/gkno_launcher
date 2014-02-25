@@ -64,12 +64,12 @@
       "nodes" : [
         {
           "ID" : "reference",
-          "values" : ["../resources/tutorial/current/test_genome.fa"],
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"],
           "argument" : "--fasta-reference"
         },
         {
           "ID" : "special reference",
-          "values" : ["../resources/tutorial/current/mobile_element_sequences.fa"],
+          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"],
           "argument" : "--special-reference"
         },
         {

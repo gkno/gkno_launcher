@@ -2,6 +2,9 @@
   "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
 
   "tasks" : {
+    "merge-reference" : {
+      "tool" : "concatenate-files"
+    },
     "build-reference" : {
       "tool" : "mosaik-build-reference"
     },
@@ -12,7 +15,7 @@
       "tool" : "mosaik-build-fastq"
     },
     "align" : {
-      "tool" : "mosaik-aligner"
+      "tool" : "mosaik-aligner-special"
     },
     "sort-primary-bam" : {
       "tool" : "bamtools-sort"
@@ -26,17 +29,6 @@
     "index-final-bam" : {
       "tool" : "bamtools-index"
     },
-    "filter-bam" : {
-      "tool" : "bamtools-filter",
-      "output to stream" : true
-    },
-    "realign-gaps" : {
-      "tool" : "ogap",
-      "output to stream" : true
-    },
-    "left-align-indels" : {
-      "tool" : "bamleftalign"
-    },
     "variant-call" : {
       "tool" : "freebayes"
     }
@@ -49,10 +41,27 @@
       "long form argument" : "--fasta-reference",
       "short form argument" : "-r",
       "tasks" : {
+        "merge-reference" : "--initial-file"
+      }
+    },
+    {
+      "ID" : "moblist reference",
+      "description" : "The input mobile element sequence fasta.",
+      "long form argument" : "--mobile-element-reference",
+      "short form argument" : "-mob",
+      "tasks" : {
+        "merge-reference" : "--file1"
+      }
+    },
+    {
+      "ID" : "merged reference",
+      "description" : "The merged reference fasta.",
+      "long form argument" : "--merged-reference",
+      "short form argument" : "-mf",
+      "tasks" : {
+        "merge-reference" : "--out",
         "build-reference" : "--fasta-reference",
         "recalibrate-bq" : "--fasta-reference",
-        "realign-gaps" : "--fasta-reference",
-        "left-align-indels" : "--fasta-reference",
         "variant-call" : "--fasta-reference"
       }
     },
@@ -118,7 +127,7 @@
       "ID" : "fragment length",
       "description" : "The median length for the read fragments.",
       "long form argument" : "--median-fragment-length",
-      "short form argument" : "-mf",
+      "short form argument" : "-mfl",
       "tasks" : {
         "build-read-archive" : "--median-fragment-length"
       }
@@ -131,6 +140,24 @@
       "tasks" : {
         "build-read-archive" : "--read-archive",
         "align" : "--read-archive"
+      }
+    },
+    {
+      "ID" : "special references",
+      "description" : "Specifies the prefixes of 'special' reference sequences.",
+      "long form argument" : "--special-reference-prefix",
+      "short form argument" : "-srp",
+      "tasks" : {
+        "align" : "--special-reference-prefix"
+      }
+    },
+    {
+      "ID" : "special reference hashes",
+      "description" : "Specifies the maximum number of hashes for the special reference sequences.",
+      "long form argument" : "--special-reference-hashes",
+      "short form argument" : "-sh",
+      "tasks" : {
+        "align" : "--special-reference-hashes"
       }
     },
     {
@@ -194,31 +221,14 @@
       "ID" : "filter",
       "description" : "Linking tasks. No argument.",
       "tasks" : {
-        "mark-duplicates" : "--out",
-        "filter-bam" : "--in"
-      }
-    },
-    {
-      "ID" : "realign gaps",
-      "description" : "Linking tasks. No argument.",
-      "tasks" : {
-        "filter-bam" : "--out",
-        "realign-gaps" : "--in"
-      }
-    },
-    { 
-      "ID" : "left align",
-      "description" : "Linking tasks. No argument.",
-      "tasks" : {
-        "realign-gaps" : "--out",
-        "left-align-indels" : "--in"
+        "mark-duplicates" : "--out"
       }
     },
     {
       "ID" : "call",
       "description" : "Linking tasks. No argument.",
       "tasks" : {
-        "left-align-indels" : "--out",
+        "mark-duplicates" : "--out",
         "index-final-bam" : "--in",
         "variant-call" : "--bam"
       }
@@ -239,24 +249,44 @@
       "description" : "The default instance sets all the parameters for the pipeline to run.",
       "nodes" : [
         {
-          "ID" : "fasta references",
+          "ID" : "fasta reference",
           "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/tutorial/current/test_genome.fa"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "ID" : "moblist reference",
+          "argument" : "--mobile-element-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"]
+        },
+        {
+          "ID" : "merged reference",
+          "argument" : "--merged-reference",
+          "values" : ["$(PWD)/chr20_moblist.fa"]
         },
         {
           "ID" : "hash size",
           "argument" : "-hs",
-          "values" : ["10"]
+          "values" : [10]
         },
         {
           "ID" : "fastq",
           "argument" : "--fastq",
-          "values" : ["$(RESOURCES)/tutorial/current/simulated_reads_1.fq"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
         },
         {
           "ID" : "fastq2",
           "argument" : "--fastq2",
-          "values" : ["$(RESOURCES)/tutorial/current/simulated_reads_2.fq"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_2.fq"]
+        },
+        {
+          "ID" : "prefix",
+          "argument" : "--special-reference-prefix",
+          "values" : ["moblist"]
+        },
+        {
+          "ID" : "special hashes",
+          "argument" : "--special-reference-hashes",
+          "values" : [50]
         },
         {
           "ID" : "annse",
@@ -276,7 +306,7 @@
         {
           "ID" : "dbsnp",
           "argument" : "--dbsnp",
-          "values" : ["$(RESOURCES)/tutorial/current/test_genome.dbSNP.snps.sites.vcf"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"]
         }
       ]
     }

@@ -49,13 +49,13 @@
       "nodes" : [
         {
           "ID" : "fasta",
-          "values" : ["files-for-testing-tools/test_genome.fa"],
-          "argument" : "--fasta-reference"
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
         },
         {
           "ID" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
+          "argument" : "--output-path",
+          "values" : ["./"]
         }
       ]
     }

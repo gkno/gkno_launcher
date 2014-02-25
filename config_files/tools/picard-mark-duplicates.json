@@ -76,18 +76,18 @@
       "nodes" : [
         {
           "ID" : "bam",
-          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
-          "argument" : "--in"
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {
           "ID" : "temp dir",
-          "values" : ["./"],
-          "argument" : "--temp-dir"
+          "argument" : "--temp-dir",
+          "values" : ["./"]
         },
         {
           "ID" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
+          "argument" : "--output-path",
+          "values" : ["./"]
         }
       ]
     }

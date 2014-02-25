@@ -6,8 +6,8 @@
   "help" : "--help|-h",
   "arguments" : [
     {
-      "description" : "Input files to be joined.",
-      "long form argument" : "--in",
+      "description" : "First file include. All other files will be added to the end of this file.",
+      "long form argument" : "--initial-file",
       "short form argument" : "-i",
       "command line argument" : "none",
       "input" : true,
@@ -16,6 +16,45 @@
       "data type" : "string",
       "extension" : "no extension",
       "allow multiple values" : true,
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Additional files to be joined whose order is irrelevant.",
+      "long form argument" : "--file",
+      "short form argument" : "-f",
+      "command line argument" : "none",
+      "input" : true,
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : "no extension",
+      "allow multiple values" : true,
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "The second file to be included in the joining.",
+      "long form argument" : "--file1",
+      "short form argument" : "-f1",
+      "command line argument" : "none",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extension" : "no extension",
+      "allow multiple values" : false,
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "The third file to be included in the joining.",
+      "long form argument" : "--file2",
+      "short form argument" : "-f2",
+      "command line argument" : "none",
+      "input" : true,
+      "output" : false,
+      "required" : false,
+      "data type" : "string",
+      "extension" : "no extension",
+      "allow multiple values" : false,
       "modify argument name on command line" : "hide"
     },
     {
@@ -33,7 +72,10 @@
   ],
 
   "argument order" : [
-    "--in",
+    "--initial-file",
+    "--file1",
+    "--file2",
+    "--file",
     "--out"
   ],
 
@@ -49,19 +91,24 @@
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
-          "ID" : "input",
-          "values" : ["../resources/tutorial/current/test_genome.fa", "../resources/tutorial/current/mobile_element_sequences.fa"],
-          "argument" : "--in"
+          "ID" : "first file",
+          "argument" : "--initial-file",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "ID" : "second file",
+          "argument" : "--file1",
+          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"]
         },
         {
           "ID" : "output",
-          "values" : ["concatenated_file.fa"],
-          "argument" : "--out"
+          "argument" : "--out",
+          "values" : ["concatenated_file.fa"]
         },
         {
           "ID" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
+          "argument" : "--output-path",
+          "values" : ["./"]
         }
       ]
     }

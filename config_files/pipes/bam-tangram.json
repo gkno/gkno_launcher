@@ -27,7 +27,7 @@
       "ID" : "moblist reference fasta",
       "description" : "The mobile element reference fasta file.",
       "long form argument" : "--mobile-element-fasta",
-      "short form argument" : "-mf",
+      "short form argument" : "-mob",
       "tasks" : {
         "build-tangram-reference" : "--special-reference"
       }
@@ -53,7 +53,7 @@
     },
     {
       "ID" : "bam list",
-      "description" : "Generate a list of bam files.",
+      "description" : "List of bam files.",
       "long form argument" : "--bam-list",
       "short form argument" : "-bl",
       "required" : true,
@@ -146,7 +146,7 @@
         {
           "ID" : "fasta reference",
           "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/tutorial/current/test_genome.fa"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         },
         {
           "ID" : "moblist",
@@ -156,7 +156,7 @@
         {
           "ID" : "bam list",
           "argument" : "--bam-list",
-          "values" : ["bam_list.txt"]
+          "values" : ["$(RESOURCES)/tutorial/current/bam_list.txt"]
         },
         {
           "ID" : "vcf",

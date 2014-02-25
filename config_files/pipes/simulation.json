@@ -134,7 +134,7 @@
       "short form argument" : "-f",
       "required" : true,
       "tasks" : {
-        "merge-fasta" : "--in"
+        "merge-fasta" : "--initial-file"
       }
     },
     {
@@ -143,7 +143,7 @@
       "long form argument" : "--mobile-element-fasta",
       "short form argument" : "-mob",
       "tasks" : {
-        "merge-fasta" : "--in"
+        "merge-fasta" : "--file1"
       }
     },
     {

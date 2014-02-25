@@ -69,7 +69,7 @@
       "nodes" : [
         {
           "ID" : "vcf",
-          "values" : ["../resources/tutorial/current/test_genome.dbSNP.snps.sites.vcf"],
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"],
           "argument" : "--in"
         },
         {

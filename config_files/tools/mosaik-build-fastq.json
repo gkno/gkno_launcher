@@ -135,12 +135,12 @@
       "nodes" : [
         {
           "ID" : "fastq",
-          "values" : ["../resources/tutorial/current/simulated_reads_1.fq"],
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"],
           "argument" : "--fastq"
         },
         {
           "ID" : "fastq2",
-          "values" : ["../resources/tutorial/current/simulated_reads_2.fq"],
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_2.fq"],
           "argument" : "--fastq2"
         },
         {

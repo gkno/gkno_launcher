@@ -27,7 +27,7 @@
       "tool" : "mosaik-build-fastq"
     },
     "align" : {
-      "tool" : "mosaik-aligner"
+      "tool" : "mosaik-aligner-special"
     },
     "sort-bam" : {
       "tool" : "bamtools-sort"
@@ -59,7 +59,7 @@
       "long form argument" : "--fasta-reference",
       "short form argument" : "-f",
       "tasks" : {
-        "merge-fasta" : "--in",
+        "merge-fasta" : "--initial-file",
         "build-tangram-reference" : "--fasta-reference"
       }
     },
@@ -67,9 +67,9 @@
       "ID" : "moblist reference fasta",
       "description" : "The mobile element reference fasta file.",
       "long form argument" : "--mobile-element-fasta",
-      "short form argument" : "-mf",
+      "short form argument" : "-mob",
       "tasks" : {
-        "merge-fasta" : "--in",
+        "merge-fasta" : "--file1",
         "build-tangram-reference" : "--special-reference"
       }
     },
@@ -487,7 +487,7 @@
         {
           "ID" : "fasta reference",
           "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/tutorial/current/test_genome.fa"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         },
         {
           "ID" : "moblist",
@@ -497,7 +497,7 @@
         {
           "ID" : "merged reference",
           "argument" : "--merged-reference-fasta",
-          "values" : ["test_genome_moblist.fa"]
+          "values" : ["chr20_fragment_moblist.fa"]
         },
         {
           "ID" : "hash size",
@@ -515,6 +515,16 @@
           "values" : ["$(RESOURCES)/tutorial/current/pe.100.01.ann"]
         },
         {
+          "ID" : "prefix",
+          "argument" : "--special-reference-prefix",
+          "values" : ["moblist"]
+        },
+        {
+          "ID" : "special hashes",
+          "argument" : "--special-reference-hashes",
+          "values" : [50]
+        },
+        {
           "ID" : "mosaik path",
           "argument" : "--mosaik-path",
           "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
@@ -522,12 +532,12 @@
         {
           "ID" : "fastq",
           "argument" : "--fastq",
-          "values" : ["$(RESOURCES)/tutorial/current/simulated_reads_1.fq"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
         },
         {
           "ID" : "fastq2",
           "argument" : "--fastq2",
-          "values" : ["$(RESOURCES)/tutorial/current/simulated_reads_2.fq"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_2.fq"]
         },
         {
           "ID" : "tech",
@@ -563,6 +573,11 @@
           "ID" : "fragments",
           "argument" : "--minimum-fragments",
           "values" : [0]
+        },
+        {
+          "ID" : "processors",
+          "argument" : "--processors",
+          "values" : [2]
         }
       ]
     }

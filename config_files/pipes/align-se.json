@@ -1,15 +1,12 @@
 {
-  "description" : "Align fastq files using Mosaik (additional processing steps included).",
+  "description" : "Align single-end fastq files using Mosaik (additional processing steps included).",
 
   "tasks" : {
-    "generate-mosaik-parameters" : {
-      "tool" : "premo"
-    },
     "build-read-archive" : {
       "tool" : "mosaik-build-fastq"
     },
     "align" : {
-      "tool" : "mosaik-aligner"
+      "tool" : "mosaik-aligner-standard"
     },
     "sort-bam" : {
       "tool" : "bamtools-sort"
@@ -29,19 +26,7 @@
       "long form argument" : "--fastq",
       "short form argument" : "-q",
       "tasks" : {
-        "generate-mosaik-parameters" : "--fastq",
         "build-read-archive" : "--fastq"
-      }
-    },
-    {
-      "ID" : "fastq2",
-      "description" : "The input fastq file (second mate).",
-      "long form argument" : "--fastq2",
-      "short form argument" : "-q2",
-      "required" : true,
-      "tasks" : {
-        "generate-mosaik-parameters" : "--fastq2",
-        "build-read-archive" : "--fastq2"
       }
     },
     {
@@ -50,7 +35,6 @@
       "long form argument" : "--mosaik-reference",
       "short form argument" : "-m",
       "tasks" : {
-        "generate-mosaik-parameters" : "--mosaik-reference",
         "align" : "--mosaik-reference"
       }
     },
@@ -60,35 +44,7 @@
       "long form argument" : "--jump-database",
       "short form argument" : "-j",
       "tasks" : {
-        "generate-mosaik-parameters" : "--jump-database",
         "align" : "--jump-database"
-      }
-    },
-    {
-      "ID" : "batch size",
-      "description" : "Number of pairs to align per batch [1000].",
-      "long form argument" : "--reads-per-batch",
-      "short form argument" : "-rb",
-      "tasks" : {
-        "generate-mosaik-parameters" : "--reads-per-batch"
-      }
-    },
-    {
-      "ID" : "mosaik path",
-      "description" : "The location of the MOSAIK executables.",
-      "long form argument" : "--mosaik-path",
-      "short form argument" : "-mp",
-      "tasks" : {
-        "generate-mosaik-parameters" : "--mosaik-path"
-      }
-    },
-    {
-      "ID" : "temp directory",
-      "description" : "Temporary directory for temp files.",
-      "long form argument" : "--temp-directory",
-      "short form argument" : "-td",
-      "tasks" : {
-        "generate-mosaik-parameters" : "--temp-directory"
       }
     },
     {
@@ -97,7 +53,6 @@
       "long form argument" : "--hash-size",
       "short form argument" : "-hs",
       "tasks" : {
-        "generate-mosaik-parameters" : "--hash-size",
         "align" : "--hash-size"
       }
     },
@@ -107,7 +62,6 @@
       "long form argument" : "--sequencing-technology",
       "short form argument" : "-st",
       "tasks" : {
-        "generate-mosaik-parameters" : "--sequencing-technology",
         "build-read-archive" : "--sequencing-technology"
       }
     },
@@ -117,7 +71,6 @@
       "long form argument" : "--ann-se",
       "short form argument" : "-as",
       "tasks" : {
-        "generate-mosaik-parameters" : "--ann-single-end",
         "align" : "--ann-single-end"
       }
     },
@@ -127,26 +80,7 @@
       "long form argument" : "--ann-pe",
       "short form argument" : "-ap",
       "tasks" : {
-        "generate-mosaik-parameters" : "--ann-paired-end",
         "align" : "--ann-paired-end"
-      }
-    },
-    {
-      "ID" : "build parameters",
-      "description" : "Linking only. Parameters from premo used in mosaik-build-fastq.",
-      "tasks" : {
-        "generate-mosaik-parameters" : "--out",
-        "build-read-archive" : "read json file"
-      },
-      "delete files" : true
-    },
-    {
-      "ID" : "fragment length",
-      "description" : "Median fragment length.",
-      "long form argument" : "--median-fragment-length",
-      "short form argument" : "-mfl",
-      "tasks" : {
-        "build-read-archive" : "--median-fragment-length"
       }
     },
     {
@@ -206,24 +140,6 @@
       }
     },
     {
-      "ID" : "special references",
-      "description" : "Specifies the prefixes of 'special' reference sequences.",
-      "long form argument" : "--special-reference-prefix",
-      "short form argument" : "-s",
-      "tasks" : {
-        "align" : "--special-reference-prefix"
-      }
-    },
-    {
-      "ID" : "special reference hashes",
-      "description" : "Specifies the maximum number of hashes for the special reference sequences.",
-      "long form argument" : "--special-reference-hashes",
-      "short form argument" : "-sh",
-      "tasks" : {
-        "align" : "--special-reference-hashes"
-      }
-    },
-    {
       "ID" : "threads",
       "description" : "Specifies the number of threads to use for the aligner.",
       "long form argument" : "--processors",
@@ -279,23 +195,7 @@
     {
       "ID" : "default",
       "description" : "Default instance requires user to input all input filenames.",
-      "nodes" : [
-        {
-          "ID" : "batch",
-          "argument" : "--reads-per-batch",
-          "values" : [1000]
-        },
-        {
-          "ID" : "temp directory",
-          "argument" : "--temp-directory",
-          "values" : ["$(PWD)/$(MAKEFILE_ID)_tmp"]
-        },
-        {
-          "ID" : "mosaik path",
-          "argument" : "--mosaik-path",
-          "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
-        }
-      ]
+      "nodes" : []
     },
 
     {
@@ -305,27 +205,17 @@
         {
           "ID" : "jump database",
           "argument" : "--jump-database",
-          "values" : ["$(RESOURCES)/tutorial/current/test_genome_10"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist_10"]
         },
         {
           "ID" : "reference",
           "argument" : "--mosaik-reference",
-          "values" : ["$(RESOURCES)/tutorial/current/test_genome.dat"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.dat"]
         },
         {
           "ID" : "fastq",
           "argument" : "--fastq",
-          "values" : ["./sim/simulated_1.fq"]
-        },
-        {
-          "ID" : "fastq mate",
-          "argument" : "--fastq2",
-          "values" : ["./sim/simulated_2.fq"]
-        },
-        {
-          "ID" : "batch",
-          "argument" : "--reads-per-batch",
-          "values" : [1000]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
         },
         {
           "ID" : "se neural net",
@@ -341,16 +231,6 @@
           "ID" : "hash size",
           "argument" : "--hash-size",
           "values" : [10]
-        },
-        {
-          "ID" : "temp directory",
-          "argument" : "--temp-directory",
-          "values" : ["$(PWD)/$(MAKEFILE_ID)_tmp"]
-        },
-        {
-          "ID" : "mosaik path",
-          "argument" : "--mosaik-path",
-          "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
         },
         {
           "ID" : "sequencing technology",

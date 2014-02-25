@@ -100,7 +100,7 @@
       "nodes" : [
         {
           "ID" : "reference",
-          "values" : ["../resources/tutorial/current/test_genome.dat"],
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.dat"],
           "argument" : "--mosaik-reference"
         },
         {

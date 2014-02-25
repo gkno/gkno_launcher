@@ -188,17 +188,17 @@
         {
           "ID" : "reference",
           "argument" : "--fasta-reference",
-          "values" : ["../resources/tutorial/current/test_genome.fa"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
         },
         {
           "ID" : "bam",
           "argument" : "--in",
-          "values" : ["../resources/tutorial/current/simulated_reads.bam"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {
           "ID" : "dbSNP",
           "argument" : "--known-sites",
-          "values" : ["../resources/tutorial/current/test_genome.dbSNP.snps.sites.vcf"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"]
         },
         {
           "ID" : "log",

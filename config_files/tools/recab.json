@@ -203,18 +203,18 @@
       "nodes" : [
         {
           "ID" : "BAM1",
-          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
-          "argument" : "--in"
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {
           "ID" : "reference",
-          "values" : ["../resources/tutorial/current/test_genome.fa"],
-          "argument" : "--fasta-reference"
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         },
         {
           "ID" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
+          "argument" : "--output-path",
+          "values" : ["./"]
         }
       ]
     }

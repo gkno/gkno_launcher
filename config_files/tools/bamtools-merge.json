@@ -74,7 +74,7 @@
       "nodes" : [
         {
           "ID" : "BAM1",
-          "values" : ["../resources/tutorial/current/simulated_reads.bam", "../resources/tutorial/current/simulated_reads.marked.bam"],
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam", "$(RESOURCES)/tutorial/current/mutated_genome.bam"],
           "argument" : "--in"
         },
         {

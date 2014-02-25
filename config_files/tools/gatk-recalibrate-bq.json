@@ -155,17 +155,17 @@
         {
           "ID" : "reference",
           "argument" : "--fasta-reference",
-          "values" : ["../resources/tutorial/current/test_genome.fa"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
         },
         {
           "ID" : "bam",
           "argument" : "--in",
-          "values" : ["../resources/tutorial/current/simulated_reads.bam"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         }, 
         {
           "ID" : "covariates",
           "argument" : "--covariates-file",
-          "values" : ["../resources/tutorial/current/simulated_reads.csv"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.csv"]
         },
         {
           "ID" : "output path",

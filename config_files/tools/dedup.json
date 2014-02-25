@@ -115,8 +115,8 @@
       "nodes" : [
         {
           "ID" : "bam",
-          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
-          "argument" : "--in"
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {
           "ID" : "output path",

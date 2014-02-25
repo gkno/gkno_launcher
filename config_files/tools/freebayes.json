@@ -294,18 +294,21 @@
       "nodes" : [
         {
           "ID" : "BAM1",
-          "values" : ["../resources/tutorial/current/simulated_reads.bam", "../resources/tutorial/current/simulated_reads.marked.bam"],
-          "argument" : "--bam"
+          "argument" : "--bam",
+          "values" : [
+            "$(RESOURCES)/tutorial/current/mutated_genome.bam",
+            "$(RESOURCES)/tutorial/current/mutated_genome.bam"
+          ]
         },
         {
           "ID" : "reference",
-          "values" : ["../resources/tutorial/current/test_genome.fa"],
-          "argument" : "--fasta-reference"
+          "argument" : "--fasta-reference",
+          "values" : ["../resources/tutorial/current/chr20_fragment_moblist.fa"]
         },
         {
           "ID" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
+          "argument" : "--output-path",
+          "values" : ["./"]
         }
       ]
     }

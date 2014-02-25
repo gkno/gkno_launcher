@@ -47,7 +47,7 @@
       "nodes" : [
         {
           "ID" : "reference",
-          "values" : ["../resources/tutorial/current/test_genome.fa"],
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"],
           "argument" : "--fasta-reference"
         },
         {

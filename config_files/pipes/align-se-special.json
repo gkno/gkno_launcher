@@ -1,0 +1,271 @@
+{
+  "description" : "Align single-end fastq files using Mosaik. In this version additional 'special' reference sequences are included (usually mobile element insertions) in the reference.",
+
+  "tasks" : {
+    "build-read-archive" : {
+      "tool" : "mosaik-build-fastq"
+    },
+    "align" : {
+      "tool" : "mosaik-aligner-special"
+    },
+    "sort-bam" : {
+      "tool" : "bamtools-sort"
+    },
+    "index-bam" : {
+      "tool" : "bamtools-index"
+    },
+    "get-alignment-stats" : {
+      "tool" : "bamtools-stats"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "fastq",
+      "description" : "The input fastq file (first mate).",
+      "long form argument" : "--fastq",
+      "short form argument" : "-q",
+      "tasks" : {
+        "build-read-archive" : "--fastq"
+      }
+    },
+    {
+      "ID" : "reference",
+      "description" : "The Mosaik format reference genome (.dat).",
+      "long form argument" : "--mosaik-reference",
+      "short form argument" : "-m",
+      "tasks" : {
+        "align" : "--mosaik-reference"
+      }
+    },
+    {
+      "ID" : "jump database",
+      "description" : "The input Mosaik jump database stub.",
+      "long form argument" : "--jump-database",
+      "short form argument" : "-j",
+      "tasks" : {
+        "align" : "--jump-database"
+      }
+    },
+    {
+      "ID" : "hash size",
+      "description" : "The hash-size used in Mosaik [4 - 32].",
+      "long form argument" : "--hash-size",
+      "short form argument" : "-hs",
+      "tasks" : {
+        "align" : "--hash-size"
+      }
+    },
+    {
+      "ID" : "sequencing technology",
+      "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'.",
+      "long form argument" : "--sequencing-technology",
+      "short form argument" : "-st",
+      "tasks" : {
+        "build-read-archive" : "--sequencing-technology"
+      }
+    },
+    {
+      "ID" : "single end neural net",
+      "description" : "Neural network file for Mosaik mapping quality scores (single end).",
+      "long form argument" : "--ann-se",
+      "short form argument" : "-as",
+      "tasks" : {
+        "align" : "--ann-single-end"
+      }
+    },
+    {
+      "ID" : "paired end neural net",
+      "description" : "Neural network file for Mosaik mapping quality scores (paired end).",
+      "long form argument" : "--ann-pe",
+      "short form argument" : "-ap",
+      "tasks" : {
+        "align" : "--ann-paired-end"
+      }
+    },
+    {
+      "ID" : "read archive",
+      "description" : "The output read archive.",
+      "long form argument" : "--read-archive",
+      "short form argument" : "-a",
+      "tasks" : {
+        "build-read-archive" : "--read-archive",
+        "align" : "--read-archive"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "sample",
+      "description" : "The sample name. e.g. NA12878.",
+      "long form argument" : "--sample-name",
+      "short form argument" : "-sam",
+      "tasks" : {
+        "build-read-archive" : "--sample-name"
+      }
+    },
+    {
+      "ID" : "center",
+      "description" : "The sequencing center name.",
+      "long form argument" : "--center-name",
+      "short form argument" : "-c",
+      "tasks" : {
+        "build-read-archive" : "--center-name"
+      }
+    },
+    {
+      "ID" : "read group",
+      "description" : "The read group ID. e.g. SRR009060.",
+      "long form argument" : "--read-group-id",
+      "short form argument" : "-id",
+      "tasks" : {
+        "build-read-archive" : "--read-group-id"
+      }
+    },
+    {
+      "ID" : "library",
+      "description" : "The library name. e.g. g1k-sc-NA18944-JPT-1.",
+      "long form argument" : "--lane",
+      "short form argument" : "-l",
+      "tasks" : {
+        "build-read-archive" : "--lane"
+      }
+    },
+    {
+      "ID" : "platform",
+      "description" : "The platform unit. e.g. IL12_490_5.",
+      "long form argument" : "--platform",
+      "short form argument" : "-pu",
+      "tasks" : {
+        "build-read-archive" : "--platform"
+      }
+    },
+    {
+      "ID" : "special references",
+      "description" : "Specifies the prefixes of 'special' reference sequences.",
+      "long form argument" : "--special-reference-prefix",
+      "short form argument" : "-s",
+      "tasks" : {
+        "align" : "--special-reference-prefix"
+      }
+    },
+    {
+      "ID" : "special reference hashes",
+      "description" : "Specifies the maximum number of hashes for the special reference sequences.",
+      "long form argument" : "--special-reference-hashes",
+      "short form argument" : "-sh",
+      "tasks" : {
+        "align" : "--special-reference-hashes"
+      }
+    },
+    {
+      "ID" : "threads",
+      "description" : "Specifies the number of threads to use for the aligner.",
+      "long form argument" : "--processors",
+      "short form argument" : "-p",
+      "tasks" : {
+        "align" : "--processors"
+      }
+    },
+    {
+      "ID" : "candidates",
+      "description" : "Specifies the minimum length of an alignment candidate.",
+      "long form argument" : "--alignment-candidate-threshold",
+      "short form argument" : "-act",
+      "tasks" : {
+        "align" : "--alignment-candidate-threshold"
+      }
+    },
+    {
+      "ID" : "max hash",
+      "description" : "Specifies the maximum number of positions stored for each hash.",
+      "long form argument" : "--maximum-hashes-per-seed",
+      "short form argument" : "-mhp",
+      "tasks" : {
+        "align" : "--maximum-hashes-per-seed"
+      }
+    },
+    {
+      "ID" : "aligned bam",
+      "description" : "Linking tasks only.",
+      "tasks" : {
+        "align" : "--bam",
+        "sort-bam" : "--in"
+      },
+      "extensions" : {
+        "sort-bam" : {
+          "--in" : "bam"
+        }
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "index",
+      "description" : "Linking tasks only.",
+      "tasks" : {
+        "sort-bam" : "--out",
+        "index-bam" : "--in",
+        "get-alignment-stats" : "--in"
+      }
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires user to input all input filenames.",
+      "nodes" : []
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Test instance for the test harness.",
+      "nodes" : [
+        {
+          "ID" : "jump database",
+          "argument" : "--jump-database",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist_10"]
+        },
+        {
+          "ID" : "reference",
+          "argument" : "--mosaik-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.dat"]
+        },
+        {
+          "ID" : "fastq",
+          "argument" : "--fastq",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
+        },
+        {
+          "ID" : "se neural net",
+          "argument" : "--ann-se",
+          "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"]
+        },
+        {
+          "ID" : "pe neural net",
+          "argument" : "--ann-pe",
+          "values" : ["$(RESOURCES)/tutorial/current/pe.100.01.ann"]
+        },
+        {
+          "ID" : "hash size",
+          "argument" : "--hash-size",
+          "values" : [10]
+        },
+        {
+          "ID" : "prefix",
+          "argument" : "--special-reference-prefix",
+          "values" : ["moblist"]
+        },
+        {
+          "ID" : "special hash",
+          "argument" : "--special-reference-hashes",
+          "values" : [10]
+        },
+        {
+          "ID" : "sequencing technology",
+          "argument" : "--sequencing-technology",
+          "values" : ["illumina"]
+        }
+      ]
+    }
+  ]
+}

@@ -22,11 +22,20 @@
   "nodes" : [
     {
       "ID" : "reference fasta",
-      "description" : "Reference fasta file{s}.",
+      "description" : "Reference fasta file.",
       "long form argument" : "--fasta-reference",
-      "short form argument" : "-f",
+      "short form argument" : "-r",
       "tasks" : {
-        "merge-fasta" : "--in"
+        "merge-fasta" : "--initial-file"
+      }
+    },
+    {
+      "ID" : "moblist fasta",
+      "description" : "The mobile element reference fasta file.",
+      "long form argument" : "--mobile-element-fasta",
+      "short form argument" : "-mob",
+      "tasks" : {
+        "merge-fasta" : "--file1"
       }
     },
     {
@@ -64,7 +73,13 @@
     {
       "ID" : "default",
       "description" : "Default instance requires user to input all input filenames.",
-      "nodes" : []
+      "nodes" : [
+        {
+          "ID" : "output",
+          "argument" : "--out",
+          "values" : ["merged_reference.fa"]
+        }
+      ]
     },
 
     {
@@ -74,17 +89,17 @@
         {
           "ID" : "reference fasta",
           "argument" : "--fasta-reference",
-          "values" : ["files-for-testing-tools/test_genome.fa", "files-for-testing-tools/mobile_element_sequences.fa"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "ID" : "moblist",
+          "argument" : "--mobile-element-fasta",
+          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"]
         },
         {
           "ID" : "hash size",
           "argument" : "--hash-size",
           "values" : [10]
-        },
-        {
-          "ID" : "output",
-          "argument" : "--out",
-          "values" : ["test_genome_moblist.fa"]
         },
         {
           "ID" : "output path",

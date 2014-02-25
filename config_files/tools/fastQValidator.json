@@ -147,13 +147,13 @@
       "nodes" : [
         {
           "ID" : "fastq",
-          "values" : ["../resources/tutorial/current/simulated_reads_1.fq"],
-          "argument" : "--fastq"
+          "argument" : "--fastq",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
         },
         {
           "ID" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
+          "argument" : "--output-path",
+          "values" : ["./"]
         }
       ]
     }

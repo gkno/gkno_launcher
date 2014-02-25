@@ -82,7 +82,7 @@
         {
           "ID" : "BAM1",
           "argument" : "--in",
-          "values" : ["../resources/tutorial/current/simulated_reads.bam"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {
           "ID" : "output path",
