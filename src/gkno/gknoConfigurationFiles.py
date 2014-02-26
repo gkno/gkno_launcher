@@ -595,7 +595,13 @@ class gknoConfigurationFiles:
     # available, pick one that has a predecessor node itself. TODO SORT THIS OUT
     baseNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument, 'option')
     if len(baseNodeIDs) == 1: baseNodeID = baseNodeIDs[0]
-    elif len(baseNodeIDs) == 0: self.errors.unsetBaseNode(graph, config, task, argument, baseArgument)
+    elif len(baseNodeIDs) == 0:
+
+      # It can be the case that the node is linked to file nodes only. If so, find the
+      # associated option node.
+      baseNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument, 'file')
+      if baseNodeIDs: baseNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(baseNodeIDs[0])
+      else: self.errors.unsetBaseNode(graph, config, task, argument, baseArgument)
     else: baseNodeID = config.nodeMethods.getNodeIDWithPredecessor(graph, baseNodeIDs, task)
 
     # Find all predecessor file nodes and then identify the file associated with the baseNodeID.
@@ -951,8 +957,10 @@ class gknoConfigurationFiles:
 
     # Check floats...
     elif expectedType == 'float':
-      if isinstance(value, float): return True, value
-      else: return False, value
+      try: floatValue = float(value)
+      except: return False, value
+
+      return True, floatValue
 
     # and strings.
     elif expectedType == 'string':

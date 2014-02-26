@@ -32,14 +32,14 @@
     "sort-bam" : {
       "tool" : "bamtools-sort"
     },
-    "index-bam" : {
-      "tool" : "bamtools-index"
-    },
     "mark-duplicates" : {
       "tool" : "dedup"
     },
     "index-duplicate-marked" : {
       "tool" : "bamtools-index"
+    },
+    "call-short-variants" : {
+      "tool" : "freebayes"
     }
   },
 
@@ -155,7 +155,8 @@
         "merge-fasta" : "--out",
         "index-fasta" : "--fasta-reference",
         "create-sequence-dictionary" : "--fasta-reference",
-        "build-reference" : "--fasta-reference"
+        "build-reference" : "--fasta-reference",
+        "call-short-variants" : "--fasta-reference"
       }
     },
     {
@@ -388,26 +389,26 @@
       "description" : "Index sorted bam.",
       "tasks" : {
         "sort-bam" : "--out",
-        "index-bam" : "--in",
         "mark-duplicates" : "--in"
       },
       "delete files" : true
     },
     {
-      "ID" : "delete sorted index",
-      "description" : "Remove sorted bam index.",
-      "tasks" : {
-        "index-bam" : "--out"
-      },
-      "delete files" : true
-    },
-    {
-      "ID" : "bam list",
+      "ID" : "index deduped bam",
       "description" : "Generate a list of bam files.",
       "required" : true,
       "tasks" : {
         "mark-duplicates" : "--out",
-        "index-duplicate-marked" : "--in"
+        "index-duplicate-marked" : "--in",
+        "call-short-variants" : "--bam"
+      }
+    },
+    {
+      "ID" : "bam index",
+      "description" : "Ensure bam file is indexed.",
+      "tasks" : {
+        "index-duplicate-marked" : "--out",
+        "call-short-variants" : "--bam-index"
       }
     }
   ],

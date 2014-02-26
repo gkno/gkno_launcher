@@ -5,6 +5,8 @@ from __future__ import print_function
 import gknoErrors
 from gknoErrors import *
 
+import inspect
+from inspect import currentframe, getframeinfo
 import os
 import sys
 
@@ -101,5 +103,6 @@ class writeToScreen:
 
   # Write debugging text.
   def writeDebug(self, text):
-    print('\tdebugging: ', text, file = sys.stdout)
+    frameInfo = getframeinfo(currentframe().f_back)
+    print('\tdebugging - ', frameInfo.filename, ' line ', frameInfo.lineno, ': ', text, sep = '', file = sys.stdout)
     sys.stdout.flush()

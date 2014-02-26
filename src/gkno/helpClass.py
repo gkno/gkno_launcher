@@ -401,23 +401,7 @@ class helpClass:
       sys.stdout.flush()
 
     # Write out all of the values included in the selected instance, if there are any.
-    if config.instances.getArguments(tool, instanceName, isPipeline = False):
-      print('     Instance parameters for instance: ', instanceName, sep = '', file = sys.stdout)
-  
-      # Get the length of the longest argument in the instance.
-      argumentLength = 0
-      for argument, values in config.instances.getArguments(tool, instanceName, isPipeline = False):
-        if len(argument) > argumentLength: argumentLength = len(argument)
-  
-      # Write out the values.
-      for argument, values in config.instances.getArguments(tool, instanceName, isPipeline = False):
-        firstValue = True
-        for value in values:
-          if firstValue:
-            self.writeFormattedText(argument + ':', str(value), argumentLength + 5, 2, '')
-            firstValue = False
-          else:
-            self.writeFormattedText('', str(value), argumentLength + 5, 2, '')
+    if config.instances.getArguments(tool, instanceName, isPipeline = False): self.writeInstanceParameters(config, tool, instanceName)
 
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
@@ -522,30 +506,38 @@ class helpClass:
       associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
       isHidden       = self.availableTools[associatedTool][1]
       if not isHidden: self.writeFormattedText('--' + task + ':', associatedTool, length + 5, 2, '')
+    print(file = sys.stdout)
     sys.stdout.flush()
 
     # Write out all of the values included in the selected instance, if there are any.
-    if config.instances.getArguments(name, instanceName, isPipeline = True):
-      print('', file = sys.stdout)
-      print('     Instance parameters for instance: ', instanceName, sep = '', file = sys.stdout)
- 
-      # Get the length of the longest argument in the instance.
-      argumentLength = 0
-      for argument, values in config.instances.getArguments(name, instanceName, isPipeline = True):
-        if len(argument) > argumentLength: argumentLength = len(argument)
- 
-      # Write out the values.
-      for argument, values in config.instances.getArguments(name, instanceName, isPipeline = True):
-        firstValue = True
-        for value in values:
-          if firstValue:
-            self.writeFormattedText(argument + ':', str(value), argumentLength + 5, 2, '')
-            firstValue = False
-          else:
-            self.writeFormattedText('', str(value), argumentLength + 5, 2, '')
+    if config.instances.getArguments(name, instanceName, isPipeline = True): self.writeInstanceParameters(config, name, instanceName)
 
     # Terminate.
     exit(3)
+
+  # Write out instance parameters.
+  def writeInstanceParameters(self, config, tool, instanceName):
+    if instanceName == 'default': print('     Instance parameters for instance: ', instanceName, sep = '', file = sys.stdout)
+    else: print('     Instance parameters for instance (includes default parameters): ', instanceName, sep = '', file = sys.stdout)
+
+    # Get the length of the longest argument in the instance.
+    argumentLength = 0
+    for argument, values in config.instances.getArguments(tool, 'default', isPipeline = False):
+      if len(argument) > argumentLength: argumentLength = len(argument)
+    for argument, values in config.instances.getArguments(tool, instanceName, isPipeline = False):
+      if len(argument) > argumentLength: argumentLength = len(argument)
+
+    # Write out the values.
+    arguments = {}
+    for argument, values in config.instances.getArguments(tool, 'default', isPipeline = False): arguments[argument] = values
+    for argument, values in config.instances.getArguments(tool, instanceName, isPipeline = False): arguments[argument] = values
+    for argument in sorted(arguments):
+      firstValue = True
+      for value in arguments[argument]:
+        if firstValue:
+          self.writeFormattedText(argument + ':', str(value), argumentLength + 5, 2, '')
+          firstValue = False
+        else: self.writeFormattedText('', str(value), argumentLength + 5, 2, '')
 
   # Write out the gkno specific options.
   def gknoOptions(self, graph, config):

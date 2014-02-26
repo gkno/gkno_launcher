@@ -294,7 +294,7 @@
     {
       "description" : "Haplotype SNP rate. Default: 0.001.",
       "long form argument" : "--haplotype-snp-rate",
-      "short form argument" : "-hs",
+      "short form argument" : "-hsr",
       "command line argument" : "--haplotype-snp-rate",
       "input" : false,
       "output" : false,
@@ -305,7 +305,7 @@
     {
       "description" : "Haplotype indel rate. Default: 0.001.",
       "long form argument" : "--haplotype-indel-rate",
-      "short form argument" : "-hi",
+      "short form argument" : "-hir",
       "command line argument" : "--haplotype-indel-rate",
       "input" : false,
       "output" : false,
