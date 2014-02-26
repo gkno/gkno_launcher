@@ -560,7 +560,12 @@ class helpClass:
       if len(argumentText) > argumentLength: argumentLength = len(argumentText)
 
     # Write out the arguments.
+    arguments = {}
     for nodeID in config.nodeMethods.getNodes(graph, 'general'):
+      arguments[config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'longFormArgument')] = nodeID
+
+    for longFormArgument in sorted(arguments):
+      nodeID            = arguments[longFormArgument]
       longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'longFormArgument')
       shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'shortFormArgument')
       argumentText      = longFormArgument + ' (' + shortFormArgument + ')'
