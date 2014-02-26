@@ -27,7 +27,7 @@
       "tool" : "mosaik-build-fastq"
     },
     "align" : {
-      "tool" : "mosaik-aligner"
+      "tool" : "mosaik-aligner-special"
     },
     "sort-bam" : {
       "tool" : "bamtools-sort"

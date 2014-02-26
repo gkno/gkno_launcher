@@ -401,16 +401,16 @@ class helpClass:
       sys.stdout.flush()
 
     # Write out all of the values included in the selected instance, if there are any.
-    if config.instances.getArguments(tool, instanceName):
+    if config.instances.getArguments(tool, instanceName, isPipeline = False):
       print('     Instance parameters for instance: ', instanceName, sep = '', file = sys.stdout)
   
       # Get the length of the longest argument in the instance.
       argumentLength = 0
-      for argument, values in config.instances.getArguments(tool, instanceName):
+      for argument, values in config.instances.getArguments(tool, instanceName, isPipeline = False):
         if len(argument) > argumentLength: argumentLength = len(argument)
   
       # Write out the values.
-      for argument, values in config.instances.getArguments(tool, instanceName):
+      for argument, values in config.instances.getArguments(tool, instanceName, isPipeline = False):
         firstValue = True
         for value in values:
           if firstValue:
@@ -525,17 +525,17 @@ class helpClass:
     sys.stdout.flush()
 
     # Write out all of the values included in the selected instance, if there are any.
-    if config.instances.getArguments(name, instanceName):
+    if config.instances.getArguments(name, instanceName, isPipeline = True):
       print('', file = sys.stdout)
       print('     Instance parameters for instance: ', instanceName, sep = '', file = sys.stdout)
  
       # Get the length of the longest argument in the instance.
       argumentLength = 0
-      for argument, values in config.instances.getArguments(name, instanceName):
+      for argument, values in config.instances.getArguments(name, instanceName, isPipeline = True):
         if len(argument) > argumentLength: argumentLength = len(argument)
  
       # Write out the values.
-      for argument, values in config.instances.getArguments(name, instanceName):
+      for argument, values in config.instances.getArguments(name, instanceName, isPipeline = True):
         firstValue = True
         for value in values:
           if firstValue:
