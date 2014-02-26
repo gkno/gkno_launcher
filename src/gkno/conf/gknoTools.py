@@ -306,11 +306,20 @@ class Jellyfish(GknoTool):
     if not self.runCommand("autoreconf -i") : return False
     if not self.runCommand("./configure --prefix="+os.getcwd()) : return False
     if not self.make() : return False
-    return True;
+    return True
 
   # TODO: implement me
   def doUpdate(self):
-    return self.make()
+    os.chdir("yaggo")
+    self.environ["RUBYLIB"] = os.getcwd()+"/lib"
+    os.chdir("..")
+
+    self.environ["YAGGO"] = os.getcwd()+"/yaggo/bin/yaggo"
+    if not self.runCommand("autoreconf -i") : return False
+    if not self.runCommand("./configure --prefix="+os.getcwd()) : return False
+    if not self.make() : return False
+    return True
+    #return self.make()
 
 # libStatGen
 class LibStatGen(GknoTool):

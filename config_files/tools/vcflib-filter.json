@@ -1,6 +1,6 @@
 {
   "description" : "Filter vcf files on a variety of parameters.",
-  "path" : "vcflib",
+  "path" : "vcflib/bin",
   "executable" : "vcffilter",
   "hide tool" : true,
   "help" : "--help|-h",

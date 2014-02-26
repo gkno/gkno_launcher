@@ -1,6 +1,6 @@
 {
   "description" : "Sort a vcf file.",
-  "path" : "vcflib",
+  "path" : "vcflib/bin",
   "executable" : "vcfsort",
   "hide tool" : false,
   "help" : "--help|-h",
@@ -46,7 +46,8 @@
   "instances" : [
     {
       "ID" : "default",
-      "description" : "Default instance requires the users input for all files."
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : []
     },
 
     {
@@ -55,7 +56,7 @@
       "nodes" : [
         {
           "ID" : "vcf",
-          "values" : ["../resources/tutorial/current/simulated_reads.vcf"],
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"],
           "argument" : "--in"
         },
         {

@@ -1,6 +1,6 @@
 {
   "description" : "Filter vcf files on a variety of parameters.",
-  "path" : "vcflib",
+  "path" : "vcflib/bin",
   "executable" : "vcfintersect",
   "help" : "--help|-h",
   "arguments" : [
@@ -177,17 +177,17 @@
         {
           "ID" : "vcf",
           "argument" : "--in",
-          "values" : ["../resources/tutorial/current/simulated_reads.vcf"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
         },
         {
           "ID" : "intersect",
           "argument" : "--intersect-vcf",
-          "values" : ["../resources/tutorial/current/test_genome.dbSNP.snps.sites.vcf"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.meis.vcf"]
         },
         {
           "ID" : "reference",
           "argument" : "--fasta-reference",
-          "values" : ["../resources/tutorial/current/test_genome.fa"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         },
         {
           "ID" : "invert",
