@@ -1033,30 +1033,32 @@ class gknoConfigurationFiles:
       # Check predecessor file nodes.
       for nodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
         longFormArgument   = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument')
-        terminateIfPresent = config.tools.getArgumentAttribute(tool, longFormArgument, 'terminateIfPresent')
-        if terminateIfPresent: filesToCheck.append(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
+        if longFormArgument != None:
+          terminateIfPresent = config.tools.getArgumentAttribute(tool, longFormArgument, 'terminateIfPresent')
+          if terminateIfPresent: filesToCheck.append(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
 
       # Check successor file nodes.
       for nodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
         longFormArgument   = config.edgeMethods.getEdgeAttribute(graph, task, nodeID, 'longFormArgument')
-        terminateIfPresent = config.tools.getArgumentAttribute(tool, longFormArgument, 'terminateIfPresent')
-        if terminateIfPresent: filesToCheck.append(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
+        if longFormArgument != None:
+          terminateIfPresent = config.tools.getArgumentAttribute(tool, longFormArgument, 'terminateIfPresent')
+          if terminateIfPresent: filesToCheck.append(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
 
       # Check option predecessor nodes for directories.
       for nodeID in config.nodeMethods.getPredecessorOptionNodes(graph, task):
         longFormArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument')
-        isDirectory      = config.tools.getArgumentAttribute(tool, longFormArgument, 'isDirectory')
-        if isDirectory:
-          terminateIfPresent = config.tools.getArgumentAttribute(tool, longFormArgument, 'terminateIfPresent')
-          if terminateIfPresent: filesToCheck.append(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
+        if longFormArgument != None:
+          if config.tools.getArgumentAttribute(tool, longFormArgument, 'isDirectory'):
+            terminateIfPresent = config.tools.getArgumentAttribute(tool, longFormArgument, 'terminateIfPresent')
+            if terminateIfPresent: filesToCheck.append(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
 
       # Check successor option nodes for directories.
       for nodeID in config.nodeMethods.getSuccessorOptionNodes(graph, task):
         longFormArgument = config.edgeMethods.getEdgeAttribute(graph, task, nodeID, 'longFormArgument')
-        isDirectory      = config.tools.getArgumentAttribute(tool, longFormArgument, 'isDirectory')
-        if isDirectory:
-          terminateIfPresent = config.tools.getArgumentAttribute(tool, longFormArgument, 'terminateIfPresent')
-          if terminateIfPresent: filesToCheck.append(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
+        if longFormArgument != None:
+          if config.tools.getArgumentAttribute(tool, longFormArgument, 'isDirectory'):
+            terminateIfPresent = config.tools.getArgumentAttribute(tool, longFormArgument, 'terminateIfPresent')
+            if terminateIfPresent: filesToCheck.append(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
 
     # Loop over the filesToCheck and check if any of them already exist.
     for entry in filesToCheck:
