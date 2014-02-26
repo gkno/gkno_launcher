@@ -39,6 +39,7 @@
       "extension" : ".dat",
       "include on command line" : false,
       "hide in help" : true,
+      "terminate if present" : true,
       "construct filename" : {
         "method": "define name",
         "directory argument" : "--output-directory",
@@ -58,6 +59,7 @@
       "extension" : ".dat",
       "hide in help" : true,
       "include on command line" : false,
+      "terminate if present" : true,
       "construct filename" : {
         "method": "define name",
         "directory argument" : "--output-directory",

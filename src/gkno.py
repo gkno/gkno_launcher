@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.143"
+__version__ = "0.144"
 __date__ = "February 2014"
 
 def main():
@@ -422,6 +422,9 @@ def main():
     # screen and ensure that the makefiles aren't executed.
     gknoConfig.writeMissingFiles(pipelineGraph, config)
   
+    # Check for files/directories that cannot be present for the pipeline to run.
+    gknoConfig.checkForDisallowedFiles(pipelineGraph, config, resourcePath)
+
     # Check that all of the executable files exist.
     gknoConfig.checkExecutables(config, pipelineGraph, toolsPath)
 

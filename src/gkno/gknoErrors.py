@@ -235,10 +235,24 @@ of the following extensions:')
   def missingFiles(self, graph, config, files):
     if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
     tool = 'tool' if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'tool' else 'pipeline'
-    self.text = ['Required files are missing.']
+    self.text.append('Required files are missing.')
     self.text.append('The following files are required for this ' + tool + ' to run:')
     self.text.append('\t')
     for filename in files: self.text.append('\t' + filename)
+    self.text.append('\t')
+    self.writeFormattedText(errorType = 'warning')
+
+  # If files/directories are present when they are not allowed to be, warn the user, but don't terminate gkno.
+  def removeFiles(self, graph, config, files):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    tool = 'tool' if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'tool' else 'pipeline'
+    self.text.append('Files are present that are not allowed.')
+    self.text.append('The following files are present, but their presence will cause execution of the ' + tool + ' to fail:')
+    self.text.append('\t')
+    for filename in files: self.text.append('\t' + filename)
+    self.text.append('\t')
+    self.text.append('Please remove these files prior to executing the ' + tool + '.')
+    self.text.append('\t')
     self.writeFormattedText(errorType = 'warning')
 
   # If input files are missing, warn the user, but don't terminate gkno.

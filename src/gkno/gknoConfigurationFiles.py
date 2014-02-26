@@ -57,8 +57,10 @@ class gknoConfigurationFiles:
     self.validLongFormArguments  = {}
     self.validShortFormArguments = {}
 
-    # Define a structure to hold missing files.
-    self.missingFiles = []
+    # Define a structure to hold missing files and one for files that need to be
+    # removed prior to execution.
+    self.missingFiles  = []
+    self.filesToRemove = []
 
   # Search a directory for json files and return a reference
   # to a list.
@@ -1010,7 +1012,58 @@ class gknoConfigurationFiles:
     # If the filename does not have the '.dot' extension, add it.
     if not filename.endswith('.dot'): filename += '.dot'
     draw.drawDot(graph, config.nodeMethods, config.edgeMethods, config.tools, filename, nodes = 'file')
-  
+
+  # Check to see if there are any files/directories present that are not allowed.  
+  def checkForDisallowedFiles(self, graph, config, resourcePath):
+
+    # Create a list of files/directories that cannot be present if the pipeline is to run
+    # successfully.
+    filesToCheck = []
+    for task in config.pipeline.workflow:
+      tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+
+      # Check predecessor file nodes.
+      for nodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
+        longFormArgument   = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument')
+        terminateIfPresent = config.tools.getArgumentAttribute(tool, longFormArgument, 'terminateIfPresent')
+        if terminateIfPresent: filesToCheck.append(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
+
+      # Check successor file nodes.
+      for nodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
+        longFormArgument   = config.edgeMethods.getEdgeAttribute(graph, task, nodeID, 'longFormArgument')
+        terminateIfPresent = config.tools.getArgumentAttribute(tool, longFormArgument, 'terminateIfPresent')
+        if terminateIfPresent: filesToCheck.append(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
+
+      # Check option predecessor nodes for directories.
+      for nodeID in config.nodeMethods.getPredecessorOptionNodes(graph, task):
+        longFormArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument')
+        isDirectory      = config.tools.getArgumentAttribute(tool, longFormArgument, 'isDirectory')
+        if isDirectory:
+          terminateIfPresent = config.tools.getArgumentAttribute(tool, longFormArgument, 'terminateIfPresent')
+          if terminateIfPresent: filesToCheck.append(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
+
+      # Check successor option nodes for directories.
+      for nodeID in config.nodeMethods.getSuccessorOptionNodes(graph, task):
+        longFormArgument = config.edgeMethods.getEdgeAttribute(graph, task, nodeID, 'longFormArgument')
+        isDirectory      = config.tools.getArgumentAttribute(tool, longFormArgument, 'isDirectory')
+        if isDirectory:
+          terminateIfPresent = config.tools.getArgumentAttribute(tool, longFormArgument, 'terminateIfPresent')
+          if terminateIfPresent: filesToCheck.append(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
+
+    # Loop over the filesToCheck and check if any of them already exist.
+    for entry in filesToCheck:
+      for iteration in entry:
+        for filename in entry[iteration]:
+          if filename.startswith('$(RESOURCES)'): filename = filename.replace('$(RESOURCES)', resourcePath)
+          if filename.startswith('$(PWD)'): filename = filename.replace('$(PWD)', os.getcwd())
+          if os.path.exists(filename): self.filesToRemove.append(filename)
+
+    # If there are files that need to be removed prior to execution, inform the user, and ensure
+    # that the makefile isn't executed.
+    if self.filesToRemove:
+      self.errors.removeFiles(graph, config, self.filesToRemove)
+      config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-DO-NOT-EXECUTE', ['set'], write = 'replace')
+
   # Check that all of the executables required exist.
   def checkExecutables(self, config, graph, toolsPath):
     executablesList       = []
