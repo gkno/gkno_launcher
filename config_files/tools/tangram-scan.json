@@ -21,7 +21,7 @@
       "short form argument" : "-d",
       "command line argument" : "-dir",
       "input" : false,
-      "output" : false,
+      "output" : true,
       "required" : true,
       "directory" : true,
       "data type" : "string",

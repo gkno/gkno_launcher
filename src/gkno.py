@@ -44,8 +44,8 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.148"
-__date__ = "February 2014"
+__version__ = "0.149"
+__date__ = "March 2014"
 
 def main():
 
@@ -358,69 +358,15 @@ def main():
 
   if generateMakefiles:
 
-    # If there are multiple runs, multiple make files are created, using only the values for individual
-    # iterations.
-    make.determineMakefileStructure(pipelineGraph, config, hasMultipleRuns)
-    makeFilename = make.getFilename(runName)
-  
-    # Set the output path for use in the makefile generation.
-    make.getOutputPath(pipelineGraph, config)
-  
-    for phaseID in make.makefileNames:
-      for iteration, makefileName in enumerate(make.makefileNames[phaseID]):
-  
-        # If multiple runs are being performed, the iteration needs to be sent to the various following
-        # routines in order to pick the files necessary for the particular makefile. Otherwise, all
-        # iterations of data should be used in the makefile (there is either only one iteration or
-        # internal loops are required in which case, all of the iterations are used in the same file).
-        # Set the 'key' to the iteration or 'all' depending on the run type.
-        if hasMultipleRuns: key = iteration + 1
-        else: key = 'all'
-  
-        # Open the makefile.
-        makefileHandle = make.openMakefile(makefileName)
-  
-        # Write header information to all of the makefiles.
-        make.writeHeaderInformation(sourcePath, runName, makefileName, makefileHandle, phaseID, key, __version__, __date__, gknoCommitID)
-  
-        # Write out the executable paths for all of the tools being used in the makefile.
-        make.writeExecutablePaths(pipelineGraph, config, makefileHandle, make.tasksInPhase[phaseID])
-  
-        # Detemine which files are dependencies, outputs and intermediate files. Begin by marking all
-        # intermediate file nodes. If a file node has both a predecessor and a successor, it is an
-        # intermediate file. Mark the file node as such unless the pipeline configuration file specifically
-        # states that the file should be kept.
-        graphDependencies  = config.determineGraphDependencies(pipelineGraph, make.tasksInPhase[phaseID], key = key)
-        graphOutputs       = config.determineGraphOutputs(pipelineGraph, make.tasksInPhase[phaseID], key = key)
-        graphIntermediates = config.determineGraphIntermediateFiles(pipelineGraph, make.tasksInPhase[phaseID], key = key)
-  
-        # Write the intermediate files to the makefile.
-        make.writeIntermediateFiles(makefileHandle, graphIntermediates)
-  
-        # Write the pipeline outputs to the makefile.
-        make.writeOutputFiles(makefileHandle, graphOutputs)
-  
-        # Determine the task in which each intermediate file is last used. This will allow the files to
-        # be deleted as early as possible in the pipeline.
-        deleteList = config.setWhenToDeleteFiles(pipelineGraph, graphIntermediates)
-  
-        # Search through the tasks in the workflow and check for tasks outputting to a stream. Generate a
-        # list of tasks for generating the makefiles. Each entry in the list should be a list of all tasks
-        # that are piped together (in a pipeline with no streaming, this list will just be the workflow).
-        taskList = make.determineStreamingTaskList(pipelineGraph, config, make.tasksInPhase[phaseID])
-  
-        # Write out the information for running each task.
-        make.writeTasks(pipelineGraph, config, makefileName, makefileHandle, taskList, deleteList, key)
-  
-        # Close the makefile in preparation for execution.
-        make.closeMakefile(makefileHandle)
-  
-        # Check that all of the input files exist.
-        gknoConfig.checkFilesExist(pipelineGraph, config, graphDependencies, sourcePath)
-  
+    # Generate the makefiles. The manner in which the files are created depend on whether there are
+    # multiple runs (and so multiple makefiles) or a single tool/pipeline or an internal loop for
+    # which there is only one makefile.
+    if hasMultipleRuns: make.generateMultipleMakefiles(pipelineGraph, config, runName, sourcePath, gknoCommitID, __version__, __date__)
+    else: make.generateSingleMakefile(pipelineGraph, config, runName, sourcePath, gknoCommitID, __version__, __date__)
+
     # If there are files required for the makefiles to run and they don't exist, write a warning to the
     # screen and ensure that the makefiles aren't executed.
-    gknoConfig.writeMissingFiles(pipelineGraph, config)
+    gknoConfig.writeMissingFiles(pipelineGraph, config, make.missingFiles)
   
     # Check for files/directories that cannot be present for the pipeline to run.
     gknoConfig.checkForDisallowedFiles(pipelineGraph, config, resourcePath)
@@ -449,9 +395,10 @@ def main():
     write.writeDone()
   write.writeBlankLine()
 
-  # Execute the generated script unless the execute flag has been unset.
+  # Execute the generated script unless the execute flag has been unset or if multiple runs were used.
   success = 0
-  if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DO-NOT-EXECUTE', 'values')[1][0] == 'unset':
+  isExecute = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DO-NOT-EXECUTE', 'values')[1][0]
+  if not hasMultipleRuns and isExecute == 'unset':
     for phaseID in make.makefileNames:
       for iteration, makefileName in enumerate(make.makefileNames[phaseID]):
 
@@ -465,7 +412,7 @@ def main():
   # If the makefile was succesfully run, finish gkno with the exit condition of 0.
   # If the makefile failed to run, finish with the exit condition 3.  A failure
   # prior to execution of the makefile uses the exit condition 2.
-  if success == 0 and not gknoConfig.missingFiles: exit(0)
+  if success == 0 and not make.missingFiles: exit(0)
   elif success == 0 and gknoConfig.missingFiles: exit(4)
   else: exit(3)
 

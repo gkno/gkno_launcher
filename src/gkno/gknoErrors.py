@@ -304,6 +304,20 @@ argument existed to set this value. Please see the documentation to see how to i
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  # If the number of output iterations is not equal to the number of input iterations, and is
+  # not equal to one.
+  def invalidNumberOfOutputIterations(self, task, longFormArgument, shortFormArgument, givenNumber, expectedNumber):
+    self.text.append('Failed to populate output filenames.')
+    self.text.append('The task \'' + task + '\' has been given multiple sets (' + str(expectedNumber) + ') of input arguments, so this task will ' + \
+    'run multiple times in the execution of this pipeline. The output argument \'' + longFormArgument + ' (' + shortFormArgument + ')\' is ' + \
+    'defined and has a different number of data sets as the input. In the event that only one data set is defined, the values can be modified ' + \
+    'to generate the correct number of data sets, however, this argument already has ' + str(givenNumber) + ' values defined. It is unclear how ' + \
+    'to proceed. Please check if values for this output argument have been defined and that the number of given values is either consistent with ' + \
+    'the number of input data sets or that only a single value is defined. Alternatively, if the output argument can be constructed, this ' + \
+    'argument can be omitted from the command line.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   ################################
   # Error with executable files. #
   ################################
@@ -443,8 +457,8 @@ argument existed to set this value. Please see the documentation to see how to i
   # An argument is given multiple values when that isn't allowed.
   def givenMultipleValues(self, task, longFormArgument, shortFormArgument, values):
     self.text.append('Argument given multiple values')
-    self.text.append('The command line argument \'' + longFormArgument + ' (' + shortFormArgument + ')\' was given multiple values, but this ' + \
-    'argument is not permitted to take multiple values. The supplied values are:')
+    self.text.append('The command line argument \'' + longFormArgument + ' (' + shortFormArgument + ')\' associated with task \'' + task + '\' ' + \
+    'was given multiple values, but this argument is not permitted to take multiple values. The supplied values are:')
     self.text.append('\t')
     for value in values: self.text.append(str(value))
     self.text.append('\t')

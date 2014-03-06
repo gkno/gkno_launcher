@@ -11,21 +11,12 @@ import sys
 
 class makefileData:
   def __init__(self):
-    self.addedInformation       = {}
-    self.arguments              = {}
-    self.coreArguments          = {}
-    self.dependencies           = {}
+
+    # Define the errors class.
     self.errors                 = gknoErrors()
-    self.finalArguments         = {}
-    self.hasPipes               = False
-    self.intermediateFiles      = []
-    self.outputs                = {}
+
+    # Define the output path.
     self.outputPath             = ''
-    self.phonyTargetID          = 1
-    self.phonyTargets           = []
-    self.taskBlocks             = []
-    self.taskBlocksOutputs      = []
-    self.taskBlocksDependencies = []
 
     # Define information on the makefile structure. This is information on the number of phases 
     # and how many makefile each phase has.
@@ -38,78 +29,183 @@ class makefileData:
     # Store the paths of all executable files.
     self.executablePaths = {}
 
-  def determineMakefileStructure(self, graph, config, hasMultipleRuns):
+    # Define a structure to hold missing files and one for files that need to be
+    # removed prior to execution.
+    self.missingFiles = []
 
-    # If the pipeline is not being run with multiple runs, there is a single makefile generated,
-    # so all tasks are added to the same phase and have one file in that phase.
-    if not hasMultipleRuns:
-      for task in config.pipeline.workflow: self.makefileStructure[task] = (1, 1)
-      self.makefilesInPhase[1] = 1
-      self.tasksInPhase[1]     = config.pipeline.workflow
+  # Generate the makefile for a tool/pipeline with a single set of data or an internal loop.
+  # Only one makefile is required in this case.
+  def generateSingleMakefile(self, graph, config, runName, sourcePath, gknoCommitID, version, date):
 
-    # If the pipeline is being in multiple runs mode, determine the structure.
-    else:
-      firstTask         = True
-      self.currentPhase = 1
-      for task in config.pipeline.workflow:
-  
-        # Determine the number of iterations of input and output files.
-        numberOfInputDataSets  = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getPredecessorFileNodes(graph, task))
-        numberOfOutputDataSets = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getSuccessorFileNodes(graph, task))
+    # Set the output path for use in the makefile generation.
+    self.getOutputPath(graph, config)
 
-        if numberOfOutputDataSets > numberOfInputDataSets:
-          #TODO ERROR
-          print('makefileData.determineMakefileStructure')
-          print('More output data sets than input data sets.')
-          self.errors.terminate()
+    # Open the makefile.                          
+    makefileName             = runName + '.make'
+    self.makefileNames[1]    = [makefileName]
+    makefileHandle           = self.openMakefile(makefileName)
+    self.makefilesInPhase[1] = 1
 
-        # If this is the first task in the workflow, determine how many makefiles are required
-        # for this task. This is the number of input or output data sets. Set the current makefiles
-        # to these.
-        if firstTask:
-          self.numberOfFilesinPhase            = numberOfInputDataSets
-          self.makefileStructure[task]         = (self.currentPhase, self.numberOfFilesinPhase)
-          self.makefilesInPhase[1]             = numberOfInputDataSets
-          self.tasksInPhase[self.currentPhase] = []
-          firstTask                            = False
+    # Write header information to the makefile if this hasn't already been done..
+    self.writeHeaderInformation(sourcePath, runName, makefileName, makefileHandle, 1, 'all', version, date, gknoCommitID)
+
+    # Write out the executable paths for all of the tools being used in the makefile.
+    self.writeExecutablePaths(graph, config, makefileHandle, config.pipeline.workflow)
+
+    # Detemine which files are dependencies, outputs and intermediate files.
+    graphDependencies  = config.getGraphDependencies(graph, config.pipeline.workflow, key = 'all')
+    graphOutputs       = config.getGraphOutputs(graph, config.pipeline.workflow, key = 'all')
+    graphIntermediates = config.getGraphIntermediateFiles(graph, config.pipeline.workflow)
+
+    # Write the intermediate files to the makefile.
+    self.writeIntermediateFiles(makefileHandle, graphIntermediates, 'all')
+
+    # Write the pipeline outputs to the makefile.
+    self.writeOutputFiles(makefileHandle, graphOutputs)
+
+    # Search through the tasks in the workflow and check for tasks outputting to a stream. Generate a
+    # list of tasks for generating the makefiles. Each entry in the list should be a list of all tasks
+    # that are piped together (in a pipeline with no streaming, this list will just be the workflow).
+    taskList = self.determineStreamingTaskList(graph, config, config.pipeline.workflow)
+
+    # Write out the information for running each task.
+    self.writeTasks(graph, config, makefileName, makefileHandle, taskList, 'all', graphIntermediates)
+
+    # Close the makefile in preparation for execution. Again, if an internal loop is being run, the
+    # file should only be closed at the end of the pipeline.
+    self.closeMakefile(makefileHandle)
+
+    # Check that all of the input files exist.
+    self.checkFilesExist(graph, config, graphDependencies, sourcePath)
+
+  # If multiple runs were requested, there are multiple makefiles to be generated.
+  def generateMultipleMakefiles(self, graph, config, runName, sourcePath, gknoCommitID, version, date):
+
+    # Determine the structure of the pipeline and break it up into phases and iterations.
+    # Each phase and iteration within it needs its own makefile.
+    self.determineMakefileStructure(graph, config)
+
+    # Set the names of the makefiles.
+    self.setMakefilenames(runName)
+
+    # Set the output path for use in the makefile generation.
+    self.getOutputPath(graph, config)
+
+    # Loop over the phases and iterations and construct the makefiles.
+    for phaseID in range(1, len(self.makefileNames) + 1):
+
+      # Detemine intermediate files for this phase. The intermediate files are put in a dictionary
+      # with the data set iteration as the key.
+      graphIntermediates = config.getGraphIntermediateFiles(graph, self.tasksInPhase[phaseID])
+
+      for iteration, makefileName in enumerate(self.makefileNames[phaseID]):
+                                                      
+        # The iteration needs to be sent to the various following routines in order to pick the files
+        # necessary for the particular makefile.
+        key = iteration + 1
+
+        # Open the makefile.                          
+        makefileHandle = self.openMakefile(makefileName)
+
+        # Write header information to the makefile if this hasn't already been done..
+        self.writeHeaderInformation(sourcePath, runName, makefileName, makefileHandle, phaseID, key, version, date, gknoCommitID)
+
+        # Write out the executable paths for all of the tools being used in the makefile.
+        self.writeExecutablePaths(graph, config, makefileHandle, self.tasksInPhase[phaseID])
+
+        # Detemine which files are dependencies and outputs files.
+        graphDependencies  = config.getGraphDependencies(graph, self.tasksInPhase[phaseID], key = key)
+        graphOutputs       = config.getGraphOutputs(graph, self.tasksInPhase[phaseID], key = key)
+
+        # Write the intermediate files to the makefile.
+        self.writeIntermediateFiles(makefileHandle, graphIntermediates, key)
+
+        # Write the pipeline outputs to the makefile.
+        self.writeOutputFiles(makefileHandle, graphOutputs)
+
+        # Search through the tasks in the workflow and check for tasks outputting to a stream. Generate a
+        # list of tasks for generating the makefiles. Each entry in the list should be a list of all tasks
+        # that are piped together (in a pipeline with no streaming, this list will just be the workflow).
+        taskList = self.determineStreamingTaskList(graph, config, self.tasksInPhase[phaseID])
+
+        # Write out the information for running each task.
+        self.writeTasks(graph, config, makefileName, makefileHandle, taskList, key, graphIntermediates)
+
+        # Close the makefile in preparation for execution. Again, if an internal loop is being run, the
+        # file should only be closed at the end of the pipeline.
+        self.closeMakefile(makefileHandle)
+
+        # Check that all of the input files exist.
+        self.checkFilesExist(graph, config, graphDependencies, sourcePath)
+
+  # Define the makefile structure. This involved identifying which tasks can be run in parallel
+  # and how many data sets each task has. This results in breaking the pipeline into phases
+  # which need to be executed sequentially, with iterations within each phase that can be run
+  # in parallel.
+  def determineMakefileStructure(self, graph, config):
+    firstTask         = True
+    self.currentPhase = 1
+    for task in config.pipeline.workflow:
+
+      # Determine the number of iterations of input and output files.
+      numberOfInputDataSets  = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getPredecessorFileNodes(graph, task))
+      numberOfOutputDataSets = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getSuccessorFileNodes(graph, task))
+
+      if numberOfOutputDataSets > numberOfInputDataSets:
+        #TODO ERROR
+        print('makefileData.determineMakefileStructure')
+        print('More output data sets than input data sets.')
+        self.errors.terminate()
+
+      # If this is the first task in the workflow, determine how many makefiles are required
+      # for this task. This is the number of input or output data sets. Set the current makefiles
+      # to these.
+      if firstTask:
+        self.numberOfFilesinPhase            = numberOfInputDataSets
+        self.makefileStructure[task]         = (self.currentPhase, self.numberOfFilesinPhase)
+        self.makefilesInPhase[1]             = numberOfInputDataSets
+        self.tasksInPhase[self.currentPhase] = []
+        firstTask                            = False
+      else:
+
+        # If there are more input data sets than output data sets, this must be the start of a 
+        # new phase.
+        if numberOfInputDataSets > numberOfOutputDataSets:
+
+          # If the number of input data sets is not equal to the number of files in the current phase,
+          # an error has occured.
+          if numberOfInputDataSets != self.numberOfFilesinPhase:
+            #TODO ERROR
+            print('makefileData.determineMakefileStructure')
+            print('Number of input data sets is different to the number of files in the phase.')
+            print(numberOfInputDataSets, self.numberOfFilesinPhase)
+            self.errors.terminate()
+ 
+          # If the number of output data sets is smaller than the number of input data sets, there
+          # must be a single output data set only. This essentially means that the task is taking the
+          # outputs from multiple tasks and using them all to run. If this is the case, there must
+          # be a single output data set.
+          if numberOfOutputDataSets != 1:
+            #TODO ERROR
+            print('makefileData.determineMakefileStructure')
+            print('A greedy task is accepting multiple inputs, but has more than one output data set.')
+            self.errors.terminate()
+
+          self.createNewPhase(1)
+
+        # If the number of input data sets is equal to the number of output data sets, whether this
+        # is the start of a new phase or not depends on the number of data sets output by the previous
+        # phase.
         else:
 
-          # If there are more input data sets than output data sets, this must be the start of a 
-          # new phase.
-          if numberOfInputDataSets > numberOfOutputDataSets:
+          # If the number of input data sets differs from the number of output data sets from the
+          # last task, this is the start of a new phase.
+          if numberOfInputDataSets != self.numberOfFilesinPhase: self.createNewPhase(numberOfInputDataSets)
 
-            # If the number of input data sets is not equal to the number of files in the current phase,
-            # an error has occured.
-            if numberOfInputDataSets != self.numberOfFilesinPhase:
-              #TODO ERROR
-              print('makefileData.determineMakefileStructure')
-              print('Number of input data sets is different to the number of files in the phase.')
-              self.errors.terminate()
- 
-            # If the number of output data sets is smaller than the number of input data sets, there
-            # must be a single output data set only. This essentially means that the task is taking the
-            # outputs from multiple tasks and using them all to run. If this is the case, there must
-            # be a single output data set.
-            if numberOfOutputDataSets != 1:
-              #TODO ERROR
-              print('makefileData.determineMakefileStructure')
-              print('A greedy task is accepting multiple inputs, but has more than one output data set.')
-              self.errors.terminate()
-
-            self.createNewPhase(1)
-
-          # If the number of input data sets is equal to the number of output data sets, whether this
-          # is the start of a new phase or not depends on the number of data sets output by the previous
-          # phase.
-          else:
-
-            # If the number of input data sets differs from the number of output data sets from the
-            # last task, this is the start of a new phase.
-            if numberOfInputDataSets != self.numberOfFilesinPhase: self.createNewPhase(numberOfInputDataSets)
-
-          # Add this task to the makefile structure.
-          self.makefileStructure[task] = (self.currentPhase, self.numberOfFilesinPhase)
-        self.tasksInPhase[self.currentPhase].append(task)
+        # Add this task to the makefile structure.
+        self.makefileStructure[task] = (self.currentPhase, self.numberOfFilesinPhase)
+        if self.numberOfFilesinPhase != 1: config.nodeMethods.setGraphNodeAttribute(graph, task, 'hasMultipleIterations', True)
+      self.tasksInPhase[self.currentPhase].append(task)
 
   # Get the number of data sets for a node.
   def getNumberOfDataSets(self, graph, config, task, nodeIDs):
@@ -118,6 +214,8 @@ class makefileData:
     for nodeID in nodeIDs:
       optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(nodeID)
       numberOfDataSets = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'numberOfDataSets')
+      try: argument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
+      except: argument = config.edgeMethods.getEdgeAttribute(graph, task, optionNodeID, 'longFormArgument')
 
       # Check to see if this particular argument is greedy.
       isGreedy = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'isGreedy')
@@ -136,7 +234,7 @@ class makefileData:
 
   # Set the names of the makefiles to be created.  If this is a single run, a single name
   # is required, otherwise, there will be a list of names for each of the created makefiles.
-  def getFilename(self, text):
+  def setMakefilenames(self, text):
  
     # If there is only a single phase, there is no need for phase information in the makefile
     # name.
@@ -148,13 +246,12 @@ class makefileData:
 
     # If there are phases, include the phase in the name of the makefiles.
     else:
-      text = text + '_phase_'
       for phaseID in range(1, self.numberOfPhases + 1):
         self.makefileNames[phaseID] = []
-        if self.makefilesInPhase[phaseID] == 1: self.makefileNames[phaseID].append(text + str(phaseID) + '.make')
+        if self.makefilesInPhase[phaseID] == 1: self.makefileNames[phaseID].append(text + '_phase_' + str(phaseID) + '.make')
         else:
           for count in range(1, self.makefilesInPhase[phaseID] + 1):
-            self.makefileNames[phaseID].append(text + str(phaseID) + '_' + str(count) + '.make')
+            self.makefileNames[phaseID].append(text + '_phase_' + str(phaseID) + '_' + str(count) + '.make')
 
   # Get the output path for use with generating the makefiles.
   def getOutputPath(self, graph, config):
@@ -209,13 +306,24 @@ class makefileData:
     print(file = fileHandle)
 
   # Write out all of the intermediate files.
-  def writeIntermediateFiles(self, fileHandle, intermediates):
+  def writeIntermediateFiles(self, fileHandle, intermediates, key):
     print('.DELETE_ON_ERROR:', file = fileHandle)
     print('.PHONY: all', file = fileHandle)
     print('.INTERMEDIATE:', end = ' ', file = fileHandle)
     if intermediates:
-      for nodeID, intermediateFile in intermediates:
-        print(intermediateFile, end = ' ', file = fileHandle)
+
+      # Write out all intermediates. This is the case when only one makefile is
+      # being written.
+      if key == 'all':
+        for iteration in intermediates:
+          for nodeID, intermediateFile in intermediates[iteration]: print(intermediateFile, end = ' ', file = fileHandle)
+
+
+      # If only intermediates for a particular iteration are required.
+      else:
+        if key in intermediates:
+          for nodeID, intermediateFile in intermediates[key]: print(intermediateFile, end = ' ', file = fileHandle)
+
     print(file = fileHandle)
     print(file = fileHandle)
 
@@ -257,7 +365,7 @@ class makefileData:
 
   # Loop over all of the tasks in the workflow and write out all of the information for
   # executing each task.
-  def writeTasks(self, graph, config, makefileName, fileHandle, taskList, deleteList, iteration):
+  def writeTasks(self, graph, config, makefileName, fileHandle, taskList, iteration, graphIntermediates):
 
     # Loop over the tasks. Note that each entry in taskList is a list of tasks that are piped
     # together. If there are no pipes, then the list will only contain a single task.
@@ -276,13 +384,19 @@ class makefileData:
       # Loop over the iterations.
       for counter in range(minIteration, maxIteration + 1):
 
+        # Determine the task in which each intermediate file is last used. This will allow the files to
+        # be deleted as early as possible in the pipeline.
+        deleteList = {}
+        if counter in graphIntermediates: deleteList = config.setWhenToDeleteFiles(graph, graphIntermediates[counter])
+
         # Loop over all the tasks in this piped grouping to find the dependencies and outputs. An output that
         # is piped into the next tool is not an output and shouldn't be considered. Similarly, an input stream
         # should not be included.
         taskDependencies = []
         taskOutputs      = []
         for task in tasks:
-          for dependency in config.getTaskDependencies(graph, task, iteration = counter): taskDependencies.append(dependency)
+          isGreedy = config.nodeMethods.getGraphNodeAttribute(graph, task, 'isGreedy')
+          for dependency in config.getTaskDependencies(graph, task, isGreedy, iteration = counter): taskDependencies.append(dependency)
           for output in config.getTaskOutputs(graph, task, iteration = counter): taskOutputs.append(output)
 
         # Write out some text to the makefile.
@@ -566,6 +680,19 @@ class makefileData:
   # Close the Makefile.
   def closeMakefile(self, fileHandle):
     fileHandle.close()
+
+  # Check that all required files exist prior to executing any makefiles.
+  def checkFilesExist(self, graph, config, filenames, sourcePath):
+    for nodeID, filename in filenames:
+
+      # If the filename begins with $(PWD), replace it with the path of the current working
+      # directory.
+      if filename.startswith('$(PWD)'): filename = os.getcwd() + filename.split('$(PWD)')[1]
+
+      # If the filename begins with $(RESOURCES), include the full path of the resources directory.
+      elif filename.startswith('$(RESOURCES)'): filename = sourcePath + '/resources/' + filename.split('$(RESOURCES)')[1]
+
+      if not os.path.exists(filename): self.missingFiles.append(filename)
 
   # Define the order in which to write out the command line arguments.
   def defineArgumentOrder(self, config, tool, arguments):

@@ -78,6 +78,7 @@
       "construct filename" : {
         "method": "define name",
         "filename" : "$(MAKEFILE_ID)_mosaikParameters",
+        "for multiple runs connect to" : "--fastq",
         "add extension" : true
       }
     },
@@ -109,7 +110,8 @@
       "short form argument" : "-t",
       "command line argument" : "-tmp",
       "input" : false,
-      "output" : false,
+      "output" : true,
+      "directory" : true,
       "required" : true,
       "data type" : "string",
       "extension" : "no extension"

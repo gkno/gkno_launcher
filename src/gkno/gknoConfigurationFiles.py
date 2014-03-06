@@ -59,7 +59,6 @@ class gknoConfigurationFiles:
 
     # Define a structure to hold missing files and one for files that need to be
     # removed prior to execution.
-    self.missingFiles  = []
     self.filesToRemove = []
 
   # Search a directory for json files and return a reference
@@ -319,7 +318,8 @@ class gknoConfigurationFiles:
   # determine how to construct the filename and populate the node with the value.
   def constructFilenames(self, graph, config, isPipeline):
     for task in config.pipeline.workflow:
-      tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+      numberOfIterations = 0
+      tool               = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
 
       # Input files are predecessor nodes to the task.  Deal with the input files first.
       for fileNodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
@@ -351,16 +351,19 @@ class gknoConfigurationFiles:
             self.errors.missingArgument(graph, config, task, longFormArgument, shortFormArgument, description, isPipeline)
 
           # Build the input filename using the described method.
-          else: self.constructFilename(graph, config, method, task, fileNodeID, isInput = True)
+          else: self.constructFilename(graph, config, method, task, fileNodeID, numberOfIterations, isInput = True)
+
+        # Keep track of the maximum number of iterations for any of the input files.
+        iterations = len(config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values'))
+        numberOfIterations = iterations if iterations > numberOfIterations else numberOfIterations
 
       # Now deal with output files,  These are all successor nodes.
       for fileNodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
         longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'longFormArgument')
         shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'shortFormArgument')
         optionNodeID      = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-                                 
-        isRequired = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
-        isSet      = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'hasValue')
+        isRequired        = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
+        isSet             = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'hasValue')
         if isRequired and not isSet:
           method = self.constructionInstructions(graph, config, task, longFormArgument, fileNodeID)
 
@@ -372,7 +375,12 @@ class gknoConfigurationFiles:
   
           # If the tool configuration file has instructions on how to construct the filename,
           # built it using these instructions.
-          else: self.constructFilename(graph, config, method, task, fileNodeID, isInput = False)
+          else: self.constructFilename(graph, config, method, task, fileNodeID, numberOfIterations, isInput = False)
+
+        # Check that there are as many interations in the generated values as there are in the inputs. If the
+        # values were defined on the command line, it is possible that this is not the case.
+        if len(config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')) != numberOfIterations:
+          self.modifyNumberOfOutputIterations(graph, config, fileNodeID, numberOfIterations, task, longFormArgument, shortFormArgument)
 
   # If a filename is not defined, check to see if there are instructions on how to 
   # construct the filename.
@@ -380,11 +388,11 @@ class gknoConfigurationFiles:
     return config.tools.getConstructionMethod(config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool'), argument)
 
   # Construct a filename from instructions.
-  def constructFilename(self, graph, config, method, task, fileNodeID, isInput):
+  def constructFilename(self, graph, config, method, task, fileNodeID, numberOfIterations, isInput):
     if method == 'from tool argument': self.constructFilenameFromToolArgument(graph, config, task, fileNodeID, isInput)
 
     # If a known file is being constructed, set the name here.
-    elif method == 'define name': self.constructKnownFilename(graph, config, task, fileNodeID)
+    elif method == 'define name': self.constructKnownFilename(graph, config, task, fileNodeID, numberOfIterations)
 
     # TODO ERRORS
     else:
@@ -711,12 +719,18 @@ class gknoConfigurationFiles:
     return modifiedValues
 
   # Construct a file of known name.
-  def constructKnownFilename(self, graph, config, task, fileNodeID):
+  def constructKnownFilename(self, graph, config, task, fileNodeID, numberOfIterations):
     modifiedValues   = {}
     tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
     optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
     argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
     instructions     = config.tools.getArgumentAttribute(tool, argument, 'constructionInstructions')
+
+    # Get the filename and determine if the extensions needs to be added.
+    filename     = config.tools.getAttributeFromDefinedConstruction(tool, argument, 'filename')
+    addExtension = config.tools.getAttributeFromDefinedConstruction(tool, argument, 'add extension')
+    baseArgument = config.tools.getAttributeFromDefinedConstruction(tool, argument, 'for multiple runs connect to')
+    baseNodeID   = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument, 'option')[0]
 
     # Check to see if the filenames to be created should be in a different directory.
     directoryArgument = instructions['directory argument'] if 'directory argument' in instructions else None
@@ -730,18 +744,26 @@ class gknoConfigurationFiles:
       directoryValues = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
       for iteration in directoryValues: modifiedValues[iteration] = [value + '/' for value in directoryValues[iteration]]
 
-    # If there is no directory argument, initialise the first iteration.
-    else: modifiedValues[1] = []
+    # If there is no directory argument, use the connected argument to define the list of values. The
+    # alues thamselves are irrelevant, but the number of iterations etc will be correctly defined.
+    else: modifiedValues = deepcopy(config.nodeMethods.getGraphNodeAttribute(graph, baseNodeID, 'values'))
 
-    # Get the filename and determine if the extensions needs to be added.
-    filename     = config.tools.getFilenameFromConstruction(tool, argument)
-    addExtension = config.tools.addExtensionFromConstruction(tool, argument)
+    numberOfIterations = len(modifiedValues)
     for iteration in modifiedValues:
+
+      # Clear the value. This was pulled in from the values associated with the base argument, but the
+      # value itself is not needed.
+      modifiedValues[iteration] = []
+
       if addExtension: extension = config.tools.getArgumentAttribute(tool, argument, 'extension').split('|')[0]
       else: extension = ''
-      filename = filename + extension
-      modifiedValues[iteration] = [value + filename for value in modifiedValues[iteration]]
-      if not modifiedValues[iteration]: modifiedValues[iteration].append(str(filename))
+
+      # If there are multiple iterations, add the iteration to the name.
+      if numberOfIterations > 1: finalFilename = str(filename) + '_' + str(iteration) + str(extension)
+      else: finalFilename = str(filename) + str(extension)
+
+      modifiedValues[iteration] = [value + finalFilename for value in modifiedValues[iteration]]
+      if not modifiedValues[iteration]: modifiedValues[iteration].append(finalFilename)
 
     # Set the values.
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)
@@ -753,6 +775,104 @@ class gknoConfigurationFiles:
 
     # Mark this node as having had its values constructed, rather than set by the user.
     config.nodeMethods.setGraphNodeAttribute(graph, optionNodeID, 'isConstructed', True)
+
+  # If an input argument is greedy and is given multiple sets of input values, collapse them into a single
+  # data set.
+  def setGreedyInputs(self, graph, config, fileNodeID, optionNodeID, task, longFormArgument):
+
+    # Only modify the values if there is more than one set of data values.
+    if len(config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')) > 1: self.setGreedyNodeValues(graph, config, optionNodeID)
+
+    # Now perform the same tasks with the file node.
+    if len(config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')) > 1: self.setGreedyNodeValues(graph, config, fileNodeID)
+
+  # Update the node values.
+  def setGreedyNodeValues(self, graph, config, nodeID):
+
+    # Collapse all data sets into one.
+    modifiedValues = []
+    values         = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
+    for iteration in values:
+      for value in values[iteration]:
+        modifiedValues.append(value)
+    config.nodeMethods.addValuesToGraphNode(graph, nodeID, modifiedValues, write = 'replace', iteration = None)
+
+  # Modify the number of iterations in a generated set of output values.
+  def modifyNumberOfOutputIterations(self, graph, config, nodeID, numberOfIterations, task, longFormArgument, shortFormArgument):
+
+    # Get the associated option node ID. It will be necessary to update the values associated
+    # with the option node as well as the file nodes.
+    optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(nodeID)
+
+    # Get the values associated with the file node.
+    values = deepcopy(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
+
+    # Determine if this task is greedy. If it is and there is already a single value, return without providing
+    # any modifications.
+    isGreedy = config.nodeMethods.getGraphNodeAttribute(graph, task, 'isGreedy')
+    if isGreedy and len(values) == 1: return
+
+    # If there is more than one iteration in the values, terminate. This routine only works if there
+    # are supposed to be multiple iterations, but only one was defined (e.g. a value was given on the
+    # command line, but the value appears in multiple iterations and so the values must be unique for
+    # each iteration to avoid multiple processes attempting to write to the same file). If there are
+    # three defined input iterations and two output iterations, for example, it is not known how to
+    # proceed.
+    if len(values) != 1: self.errors.invalidNumberOfOutputIterations(task, longFormArgument, shortFormArgument, len(values), numberOfIterations)
+
+    # Check if there is an extension associated with this argument.
+    allowedExtensions = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'allowedExtensions')
+
+    # If there is no associated extension, modify the current values to be appended by '_1', then
+    # add the required number of new iterations, each appended with the iteration ID.
+    if allowedExtensions == ['no extension']:
+      modifiedValues = [value + str('_1') for value in values[1]]
+      config.nodeMethods.addValuesToGraphNode(graph, nodeID, modifiedValues, write = 'replace', iteration = None)
+      for counter in range(2, numberOfIterations + 1):
+        modifiedValues = [value + '_' + str(counter) for value in values[1]]
+        config.nodeMethods.addValuesToGraphNode(graph, nodeID, modifiedValues, write = 'iteration', iteration = None)
+
+    # If there are associated extensions, check that the values are appended with the extension. If not,
+    # append the extension.
+    else:
+      baseValues    = []
+      baseExtension = ''
+      for value in values[1]:
+        hasExtension = False
+        for extension in allowedExtensions:
+          if value.endswith(extension):
+            hasExtension  = True
+            baseExtension = extension
+            break
+
+        # If the value did not have an extension, add one.
+        if not hasExtension: baseValues.append(value)
+        else:
+          baseValue = value.replace(baseExtension, '')
+          baseValues.append(baseValue)
+
+      # Now replace the existing values with values appended with the iteration ID, 1.
+      if baseExtension == '': baseExtension = allowedExtensions[0]
+      modifiedValues = [value + '_1' + baseExtension for value in baseValues]
+      config.nodeMethods.addValuesToGraphNode(graph, nodeID, modifiedValues, write = 'replace', iteration = None)
+      for counter in range(2, numberOfIterations + 1):
+        modifiedValues = [value + '_' + str(counter) + baseExtension for value in baseValues]
+        config.nodeMethods.addValuesToGraphNode(graph, nodeID, modifiedValues, write = 'iteration', iteration = None)
+
+    # Having updated the file nodes, update the option node. If the option node is for a filename stub,
+    # ensure that the lack of extension is preserved.
+    isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'isFilenameStub')
+
+    if not isFilenameStub:
+      modifiedValues = deepcopy(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
+      config.nodeMethods.addValuesToGraphNode(graph, optionNodeID, modifiedValues[1], write = 'replace', iteration = None)
+      for counter in range(2, len(modifiedValues) + 1):
+        config.nodeMethods.addValuesToGraphNode(graph, optionNodeID, modifiedValues[counter], write = 'iteration', iteration = None)
+    else:
+      #TODO
+      print('NOT YET IMPLEMENTED.')
+      print('gknoConfig.modifyNumberOfOutputIterations')
+      self.errors.terminate()
 
   # Set file paths for all of the files.
   def setFilePaths(self, graph, config):
@@ -985,31 +1105,19 @@ class gknoConfigurationFiles:
 
     return False
 
-  # Check that all required files exist prior to executing any makefiles.
-  def checkFilesExist(self, graph, config, filenames, sourcePath):
-    for nodeID, filename in filenames:
-
-      # If the filename begins with $(PWD), replace it with the path of the current working
-      # directory.
-      if filename.startswith('$(PWD)'): filename = os.getcwd() + filename.split('$(PWD)')[1]
-
-      # If the filename begins with $(RESOURCES), include the full path of the resources directory.
-      elif filename.startswith('$(RESOURCES)'): filename = sourcePath + '/resources/' + filename.split('$(RESOURCES)')[1]
-
-      if not os.path.exists(filename): self.missingFiles.append(filename)
-
-  def writeMissingFiles(self, graph, config):
+  # Write out the list of missing files.
+  def writeMissingFiles(self, graph, config, missingFiles):
     modifiedList = []
 
     # If there were files missing, write a warning and ensure that gkno will not execute.
-    if self.missingFiles:
+    if missingFiles:
 
       # Check if any files appear multiple times.
-      for missingFile in self.missingFiles:
+      for missingFile in missingFiles:
         if missingFile not in modifiedList: modifiedList.append(missingFile)
-      self.missingFiles = modifiedList
+      missingFiles = modifiedList
 
-      self.errors.missingFiles(graph, config, self.missingFiles)
+      self.errors.missingFiles(graph, config, missingFiles)
       config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-DO-NOT-EXECUTE', ['set'], write = 'replace')
 
   # Draw the pipeline graph.
