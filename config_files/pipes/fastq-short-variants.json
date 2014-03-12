@@ -1,5 +1,5 @@
 {
-  "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
+  "description" : "Starting from fasta and fastq files, prepare MOSAIK reference files, align reads and call short variants.",
 
   "tasks" : {
     "build-reference" : {
@@ -151,6 +151,15 @@
         "generate-mosaik-parameters" : "--sequencing-technology",
         "build-read-archive" : "--sequencing-technology"
       }
+    },
+    {
+      "ID" : "build parameters",
+      "description" : "Linking only. Parameters from premo used in mosaik-build-fastq.",
+      "tasks" : {
+        "generate-mosaik-parameters" : "--out",
+        "build-read-archive" : "read json file"
+      },
+      "delete files" : true
     },
     {
       "ID" : "read archive",

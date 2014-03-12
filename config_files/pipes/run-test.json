@@ -1,5 +1,5 @@
 {
-  "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
+  "description" : "Test pipeline to ensure proper operation.",
 
   "tasks" : {
     "merge-reference" : {

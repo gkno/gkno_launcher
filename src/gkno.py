@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.149"
+__version__ = "0.150"
 __date__ = "March 2014"
 
 def main():
@@ -332,13 +332,15 @@ def main():
 
   # Check that all of the supplied values for the gkno specific nodes are valid.
   gknoConfig.checkNodeValues(pipelineGraph, config)
+  if isDebug: write.writeDebug('Checked node values')
 
-  # All of the nodes have been checmked to ensure that they have data assosciated if required, but this is
+  # All of the nodes have been checked to ensure that they have data assosciated if required, but this is
   # not always sufficient. In some cases, more than one pipeline argument can point to the same node. If
   # both pipeline arguments are required, but only one is set, the node being pointed to will have data, so
   # no error will be thrown. So, check that all pipeline arguments that are listed as required, have indeed
   # been set.
   config.checkArguments(pipelineGraph, commands, runName, instanceName)
+  if isDebug: write.writeDebug('Checked arguments')
 
   # If the --export-config has been set, then the user is attempting to create a
   # new configuration file based on the selected tool/pipeline.  This can only be
@@ -352,9 +354,11 @@ def main():
 
   # Find the maximum number of datasets for each task.
   config.getNumberOfDataSets(pipelineGraph)
+  if isDebug: write.writeDebug('Got number of data sets')
 
   # Identify file nodes that are streaming.
   config.identifyStreamingNodes(pipelineGraph)
+  if isDebug: write.writeDebug('Streaming nodes identified')
 
   if generateMakefiles:
 
@@ -363,16 +367,20 @@ def main():
     # which there is only one makefile.
     if hasMultipleRuns: make.generateMultipleMakefiles(pipelineGraph, config, runName, sourcePath, gknoCommitID, __version__, __date__)
     else: make.generateSingleMakefile(pipelineGraph, config, runName, sourcePath, gknoCommitID, __version__, __date__)
+    if isDebug: write.writeDebug('Generated makefiles')
 
     # If there are files required for the makefiles to run and they don't exist, write a warning to the
     # screen and ensure that the makefiles aren't executed.
     gknoConfig.writeMissingFiles(pipelineGraph, config, make.missingFiles)
+    if isDebug: write.writeDebug('Missing files written')
   
     # Check for files/directories that cannot be present for the pipeline to run.
     gknoConfig.checkForDisallowedFiles(pipelineGraph, config, resourcePath)
+    if isDebug: write.writeDebug('Disallowed files identified')
 
     # Check that all of the executable files exist.
     gknoConfig.checkExecutables(config, pipelineGraph, toolsPath)
+    if isDebug: write.writeDebug('Executable check complete')
 
   # If the pipeline contains any isolated nodes, print a warning to screen.
   if hasIsolatedNode:
@@ -382,10 +390,12 @@ def main():
     doNotExecute   = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DO-NOT-EXECUTE', 'values')[1][0]
     noHardWarnings = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-NO-HARD-WARNINGS', 'values')[1][0]
     if doNotExecute == 'unset' and noHardWarnings == 'unset': raw_input('Press Enter to continue...')
+  if isDebug: write.writeDebug('Isolated nodes handled')
 
   # Check if a plotting the pipeline was requested. If so, check that a name for the output file was given and
   # draw the pipeline.
   if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DRAW-PIPELINE', 'values'): gknoConfig.drawPipeline(pipelineGraph, config, draw)
+  if isDebug: write.writeDebug('Plotting requirements fulfilled')
 
   # Having established the mode of operation and checked that the command lines are
   # valid etc., ping the website to log use of gkno.
