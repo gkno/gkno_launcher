@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.150"
+__version__ = "0.151"
 __date__ = "March 2014"
 
 def main():
