@@ -1,5 +1,5 @@
 {
-  "description" : "Parse a 1000 Genomes sequence index file and generate a json file with information on the paired end reads (to be used as input to other gkno pipelines.",
+  "description" : "Parse a 1000 Genomes sequence index file and generate a json file with information on the single end reads (to be used as input to other gkno pipelines.",
   "path" : "scripts",
   "executable" : "sequence-index-1000G.sh",
   "help" : "--help|-h",
@@ -17,19 +17,20 @@
       "modify argument name on command line" : "hide"
     },
     {
-      "description" : "Paired end output file.",
-      "long form argument" : "--paired-end-output",
-      "short form argument" : "-p",
-      "command line argument" : "--paired-end-output",
+      "description" : "Single end output file.",
+      "long form argument" : "--single-end-output",
+      "short form argument" : "-s",
+      "command line argument" : "--single-end-output",
       "input" : false,
       "output" : true,
       "required" : true,
       "data type" : "string",
       "extension" : ".json",
       "include on command line" : false,
+      "hide in help" : true,
       "construct filename" : {
         "method": "define name",
-        "filename" : "paired_end_read",
+        "filename" : "single_end_reads",
         "for multiple runs connect to" : "--index-file",
         "add extension" : true
       }
@@ -44,6 +45,7 @@
       "required" : true,
       "data type" : "string",
       "extension" : "no extension",
+      "hide in help" : true,
       "modify argument name on command line" : "hide"
     },
     {
@@ -77,7 +79,7 @@
     "--index-file",
     "--merge-samples",
     "--fastq-path",
-    "--paired-end-output"
+    "--single-end-output"
   ],
 
   "instances" : [
@@ -88,7 +90,7 @@
         {
           "ID" : "paired",
           "argument" : "--read-type",
-          "values" : ["p"]
+          "values" : ["s"]
         }
       ]
     }

@@ -17,6 +17,24 @@
       "modify argument name on command line" : "hide"
     },
     {
+      "description" : "Single end output file.",
+      "long form argument" : "--single-end-output",
+      "short form argument" : "-s",
+      "command line argument" : "--single-end-output",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extension" : ".json",
+      "include on command line" : false,
+      "construct filename" : {
+        "method": "define name",
+        "filename" : "single_end_reads",
+        "for multiple runs connect to" : "--index-file",
+        "add extension" : true
+      }
+    },
+    {
       "description" : "Paired end output file.",
       "long form argument" : "--paired-end-output",
       "short form argument" : "-p",
@@ -29,7 +47,7 @@
       "include on command line" : false,
       "construct filename" : {
         "method": "define name",
-        "filename" : "paired_end_read",
+        "filename" : "paired_end_reads",
         "for multiple runs connect to" : "--index-file",
         "add extension" : true
       }
@@ -77,6 +95,7 @@
     "--index-file",
     "--merge-samples",
     "--fastq-path",
+    "--single-end-output",
     "--paired-end-output"
   ],
 
@@ -88,7 +107,7 @@
         {
           "ID" : "paired",
           "argument" : "--read-type",
-          "values" : ["p"]
+          "values" : ["b"]
         }
       ]
     }
