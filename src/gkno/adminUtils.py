@@ -52,6 +52,10 @@ class adminUtils:
     self.ensureMakeDir(self.toolsPath)
     self.ensureMakeDir(self.logsPath)
 
+    # Keep track of which tools successfully compiled.
+    self.builtTools = {}
+    self.allBuilt   = True
+
   # -------------------------------------------
   # Main entry point for running admin mode
   # -------------------------------------------
@@ -138,9 +142,12 @@ class adminUtils:
       sys.stdout.flush()
       if self.buildTool(tool):
         print("done.", file=sys.stdout)
+        self.builtTools[tool] = True
       else:
         self.error.toolBuildFailed(tool.name, dest=sys.stdout)
-        return False
+        self.builtTools[tool] = False
+        self.allBuilt         = False
+        #return False
 
     # Fetch all default resources (current releases only)
     print("Fetching default resources:", file=sys.stdout)

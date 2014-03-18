@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.152"
+__version__ = "0.153"
 __date__ = "March 2014"
 
 def main():
@@ -252,7 +252,12 @@ def main():
   # No need to bother with running tools or pipes.
   if admin.isRequested:
     success = admin.run(sys.argv)
-    if success: exit(0)
+    if success:
+
+      # Check that all of the tools were successfully built. If not, post a warning about which tools cannot
+      # be used.
+      if admin.allBuilt: exit(0)
+      else: errors.failedToolBuilds(admin.builtTools)
     else: errors.terminate()
   
   # Print information about the pipeline to screen.
