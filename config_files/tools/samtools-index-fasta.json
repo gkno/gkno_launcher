@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fasta|.fa",
+      "extensions" : [".fasta", ".fa"],
       "modify argument name on command line" : "hide"
     },
     {
@@ -26,7 +26,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fai",
+      "extensions" : [".fai"],
       "include on command line" : false,
       "construct filename" : {
         "method" : "from tool argument",

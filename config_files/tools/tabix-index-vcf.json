@@ -15,7 +15,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "vcf.gz",
+      "extensions" : ["vcf.gz"],
       "modify argument name on command line" : "hide",
       "if input is stream" : "do not include"
     },
@@ -28,7 +28,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".tbi",
+      "extensions" : [".tbi"],
       "hide in help" : true,
       "include on command line" : false,
       "if input is stream" : "do not include",

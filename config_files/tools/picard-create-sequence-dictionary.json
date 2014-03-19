@@ -15,7 +15,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fa|.fasta"
+      "extensions" : [".fa", ".fasta"]
     },
     {    
       "description" : "the output sequence dictionary.",
@@ -26,7 +26,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".dict",
+      "extensions" : [".dict"],
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--fasta-reference",

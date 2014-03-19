@@ -13,7 +13,7 @@
       "input" : true,
       "output" : false,
       "required" : true,
-      "extension" : ".vcf|.vcf.gz",
+      "extensions" : [".vcf", ".vcf.gz"],
       "if input is stream" : "do not include",
       "data type" : "string",
       "modify argument name on command line" : "hide"
@@ -27,7 +27,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".vcf",
+      "extensions" : [".vcf"],
       "modify argument name on command line" : "stdout",
       "construct filename" : {
         "method" : "from tool argument",
@@ -45,7 +45,7 @@
       "output" : false,
       "required" : false,
       "allow multiple values" : true,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "string"
     },
     {
@@ -56,7 +56,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "string"
     },
     {
@@ -67,7 +67,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "string"
     },
     {
@@ -78,7 +78,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "flag"
     },
     {
@@ -89,7 +89,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "flag"
     },
     {
@@ -100,7 +100,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "flag"
     },
     {
@@ -111,7 +111,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "string"
     }
   ],

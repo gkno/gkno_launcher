@@ -13,7 +13,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Path of the output directory.  This must be empty or non-existent.",
@@ -25,7 +25,7 @@
       "required" : true,
       "directory" : true,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Automatically generated file.",
@@ -36,7 +36,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".dat",
+      "extensions" : [".dat"],
       "include on command line" : false,
       "hide in help" : true,
       "terminate if present" : true,
@@ -44,6 +44,7 @@
         "method": "define name",
         "directory argument" : "--output-directory",
         "filename" : "lib_table",
+        "for multiple runs connect to" : "--in-list",
         "add extension" : true
       }
     },
@@ -56,7 +57,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".dat",
+      "extensions" : [".dat"],
       "hide in help" : true,
       "include on command line" : false,
       "terminate if present" : true,
@@ -64,6 +65,7 @@
         "method": "define name",
         "directory argument" : "--output-directory",
         "filename" : "hist",
+        "for multiple runs connect to" : "--in-list",
         "add extension" : true
       }
     },
@@ -76,7 +78,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Trim rate for the fragment length distribution [0.02]",
@@ -87,7 +89,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Minimum mapping quality for a normal read pair",
@@ -98,7 +100,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "The minimum number of normal fragments in a library [10000].",
@@ -109,7 +111,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     }
   ],
 
@@ -126,7 +128,7 @@
       "nodes" : [
         {
           "ID" : "list",
-          "values" : ["./files-for-testing-tools/tangram-bam-list.txt"],
+          "values" : ["$(RESOURCES)/tutorial/current/tangram-bam-list.txt"],
           "argument" : "--in-list"
         },
         {

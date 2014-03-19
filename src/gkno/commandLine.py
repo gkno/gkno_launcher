@@ -248,7 +248,7 @@ class commandLine:
         self.errors.terminate()
 
       # Get the argument that is to be used for these filenames.
-      extension = config.tools.getArgumentAttribute(tool, argument, '')
+      #extensions = config.tools.getArgumentAttribute(tool, argument, '')
       for filename in filenames:
         print(filename)
     exit(0)

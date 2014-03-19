@@ -12,7 +12,7 @@
       "input" : true,
       "output" : false,
       "required" : true,
-      "extension" : ".vcf|.vcf.gz",
+      "extensions" : [".vcf", ".vcf.gz"],
       "if input is stream" : "do not include",
       "data type" : "string",
       "modify argument name on command line" : "hide"
@@ -26,7 +26,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : ".bed"
+      "extensions" : [".bed"]
     },
     {
       "description" : "The output VCF file.",
@@ -37,7 +37,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".vcf",
+      "extensions" : [".vcf"],
       "modify argument name on command line" : "stdout",
       "construct filename" : {
         "method" : "from tool argument",
@@ -54,7 +54,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "flag"
     },
     {
@@ -65,7 +65,7 @@
       "input" : true,
       "output" : false,
       "required" : false,
-      "extension" : ".vcf|.vcf.gz",
+      "extensions" : [".vcf", ".vcf.gz"],
       "data type" : "string"
     },
     {
@@ -76,7 +76,7 @@
       "input" : true,
       "output" : false,
       "required" : false,
-      "extension" : ".vcf|.vcf.gz",
+      "extensions" : [".vcf", ".vcf.gz"],
       "data type" : "string"
     },
     {
@@ -87,7 +87,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "integer"
     },
     {
@@ -98,7 +98,7 @@
       "input" : true,
       "output" : false,
       "required" : false,
-      "extension" : ".fa|.fasta",
+      "extensions" : [".fa", ".fasta"],
       "data type" : "string"
     },
     {
@@ -109,7 +109,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "flag"
     },
     {
@@ -120,7 +120,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "flag"
     },
     {
@@ -131,7 +131,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "flag"
     },
     {
@@ -142,7 +142,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "string"
     }
   ],

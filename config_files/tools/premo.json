@@ -13,7 +13,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fq|.fastq|.fq.gz|.fastq.gz"
+      "extensions" : [".fq", ".fastq", ".fq.gz", ".fastq.gz"]
     },
     {
       "description" : "The input fastq file (second mate).",
@@ -24,7 +24,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : ".fq|.fastq|.fq.gz|.fastq.gz"
+      "extensions" : [".fq", ".fastq", ".fq.gz", ".fastq.gz"]
     },
     {
       "description" : "Mosaik reference archive.",
@@ -35,7 +35,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".dat"
+      "extensions" : [".dat"]
     },
     {
       "description" : "Stub for Mosaik jump table files.",
@@ -46,7 +46,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "is filename stub" : true,
       "filename extensions" : [
         "_keys.jmp",
@@ -63,7 +63,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Output json file.",
@@ -74,7 +74,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".json",
+      "extensions" : [".json"],
       "construct filename" : {
         "method": "define name",
         "filename" : "$(MAKEFILE_ID)_mosaikParameters",
@@ -91,7 +91,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".ann"
+      "extensions" : [".ann"]
     },
     {
       "description" : "Neural network file (paired end).",
@@ -102,7 +102,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".ann"
+      "extensions" : [".ann"]
     },
     {
       "description" : "Scratch directory for generated files.",
@@ -114,7 +114,7 @@
       "directory" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'.",
@@ -125,7 +125,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Number of pairs to align per batch.",
@@ -136,7 +136,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Mosaik hash size.",
@@ -147,7 +147,7 @@
       "output" : false,
       "required" : true,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Specify that only single end reads are used as input.",
@@ -157,7 +157,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "flag"
     }
   ],

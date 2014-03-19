@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.153"
+__version__ = "0.154"
 __date__ = "March 2014"
 
 def main():
@@ -428,7 +428,7 @@ def main():
   # If the makefile failed to run, finish with the exit condition 3.  A failure
   # prior to execution of the makefile uses the exit condition 2.
   if success == 0 and not make.missingFiles: exit(0)
-  elif success == 0 and gknoConfig.missingFiles: exit(4)
+  elif success == 0 and gknoConfig.hasMissingFiles: exit(4)
   else: exit(3)
 
 if __name__ == "__main__":

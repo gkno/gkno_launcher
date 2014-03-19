@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fa|.fasta",
+      "extensions" : [".fa", ".fasta"],
       "modify argument name on command line" : "hide"
     },
     {
@@ -26,7 +26,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "The seed for Rng. Default: 0.",
@@ -37,7 +37,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Number of reads (or mate pairs) to simulate. Default: 1000.",
@@ -48,7 +48,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Length of random source sequence. Default: 1000000.",
@@ -59,7 +59,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Propabilibty for A in randomly generated sequence. Default: 0.25.",
@@ -70,7 +70,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Propabilibty for C in randomly generated sequence. Default: 0.25.",
@@ -81,7 +81,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Propabilibty for G in randomly generated sequence. Default: 0.25.",
@@ -92,7 +92,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "If set then no Ns are generated in the random source sequence.",
@@ -103,7 +103,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Simulate from forward strand only.",
@@ -114,7 +114,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Simulate from reverse strand only.",
@@ -125,7 +125,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Write results to PARAM.fasta file instead of SEQUENCE.reads.fasta.Valid filetypes are: fasta, fa, fastq, and fq.",
@@ -136,7 +136,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fq",
+      "extensions" : [".fq"],
       "is filename stub" : true,
       "filename extensions" : [
         "_1.fq",
@@ -157,7 +157,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Include additional read information in reads file.",
@@ -168,7 +168,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Verbosity mode.",
@@ -179,7 +179,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "High verbosity mode, implies verbosity mode.",
@@ -190,7 +190,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Path to TSV file that maps contig ids to read counts.",
@@ -201,7 +201,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Path to VCF file to synthesize the haplotype from.",
@@ -212,7 +212,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Mate-pair mean library length. Default: 1000.",
@@ -223,7 +223,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Mate-pair library tolerance. Default: 100.",
@@ -234,7 +234,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Mate-pair library length is uniform.",
@@ -245,7 +245,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Enable mate pair simulation.",
@@ -256,7 +256,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Read naming scheme in FASTQ/FASTA files. See section on read namingbelow. In range [0..2]. Default: 0.",
@@ -267,7 +267,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Read name prefix. Default is output file name.",
@@ -278,7 +278,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Number of haplotypes to simulate. Default: 1.",
@@ -289,7 +289,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Haplotype SNP rate. Default: 0.001.",
@@ -300,7 +300,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Haplotype indel rate. Default: 0.001.",
@@ -311,7 +311,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Haplotype indel size min. Default: 1.",
@@ -322,7 +322,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Haplotype indel size max. Default: 6.",
@@ -333,7 +333,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Do not allow Ns to be substituted or inserted into N. Default: Isallowed.",
@@ -344,7 +344,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "The length of the reads to simulate. All resulting reads will havethe same length. Default: 36.",
@@ -355,7 +355,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Probability of an insertion. Default: 0.001.",
@@ -366,7 +366,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Probability of a deletion. Default: 0.001.",
@@ -377,7 +377,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Mismatch probability path. If set, probability distribution isloaded from argument.",
@@ -388,7 +388,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Scale to apply for probability mismatch. Default: 1.0.",
@@ -399,7 +399,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Average mismatch probability. Default: 0.004.",
@@ -410,7 +410,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Probability of a mismatch at the first base. Default: 0.002.",
@@ -421,7 +421,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Probability of a mismatch at the last base. Default: 0.012.",
@@ -432,7 +432,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Relative position of raise point. Default: 0.66.",
@@ -443,7 +443,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "If set then no Ns will be introduced in the reads.",
@@ -454,7 +454,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Quality mean at first base. Default: 40.",
@@ -465,7 +465,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Quality mean at last base. Default: 39.5.",
@@ -476,7 +476,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Quality standard deviation at first base. Default: 0.05.",
@@ -487,7 +487,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Quality standard deviation at last base. Default: 10.",
@@ -498,7 +498,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Mismatch quality mean at first base. Default: 39.5.",
@@ -509,7 +509,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Mismatch quality mean at last base. Default: 30.",
@@ -520,7 +520,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Mismatch quality standard deviation at first base. Default: 3.",
@@ -531,7 +531,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Mismatch quality standard deviation at last base. Default: 15.",
@@ -542,7 +542,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     }
   ],
 

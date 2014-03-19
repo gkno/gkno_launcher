@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".bam"
+      "extensions" : [".bam"]
     },
     {
       "description" : "the output marked BAM file.",
@@ -25,7 +25,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".bam",
+      "extensions" : [".bam"],
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--in",
@@ -42,7 +42,7 @@
       "output" : true,
       "required" : false,
       "data type" : "string",
-      "extension" : ".stats"
+      "extensions" : [".stats"]
     },
     {
       "description" : "generates a fragment-length stats file from the input BAM. Data is written to file specified using the -stats option. MarkPairs Mode Settings are DISABLED.",
@@ -53,7 +53,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "generates an output BAM with alignments marked with proper-pair status. Stats data is read from file specified using the -stats option. MakeStats Mode settings are DISABLED.",
@@ -64,7 +64,7 @@
       "input" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "combines the -makeStats & -markPairs modes into a single command.  However, due to the two-pass nature of paired-end resolution, piping BAM data via stdin is DISABLED. You must supply an explicit input BAM file. Output BAM may be piped to stdout, however, if desired. All MakeStats & MarkPairs Mode Settings are available. The intermediate stats file if not necessary, but if the -stats options is used, then one will be generated. You may find this useful for documentation purposes.",
@@ -75,7 +75,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "minimum map quality. Used in -makeStats mode as a heuristic for determining a mate's uniqueness. Used in -markPairs mode as a filter for marking candidate proper pairs.",
@@ -86,7 +86,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     }
   ],
 

@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".bam"
+      "extensions" : [".bam"]
     },
     {
       "description" : "Output BAM file name (same order with original file).",
@@ -25,7 +25,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".bam",
+      "extensions" : [".bam"],
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--in",
@@ -42,7 +42,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Log and summary statistics (default: [outfile].log, or stderr if --out starts with '-').",
@@ -53,7 +53,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : ".log"
+      "extensions" : [".log"]
     },
     {
       "description" : "Treat reads with mates on different chromosomes as single-ended.",
@@ -64,7 +64,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Remove duplicates (default is to mark duplicates).",
@@ -75,7 +75,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Allow an already mark-duplicated BAM file, unmarking any previously marked duplicates and apply this duplicate marking logic.  Default is to throw errors and exit when trying to run on an already mark-duplicated BAM.",
@@ -86,7 +86,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Do not expect an EOF block on a bam file.",
@@ -97,7 +97,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     }
   ],
 
@@ -116,7 +116,7 @@
         {
           "ID" : "bam",
           "argument" : "--in",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_nodup.bam"]
         },
         {
           "ID" : "output path",

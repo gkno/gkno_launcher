@@ -13,7 +13,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fastq|.fq|.fastq.gz|.fq.gz"
+      "extensions" : [".fastq", ".fq", ".fastq.gz", ".fq.gz"]
     },
     {    
       "description" : "The FASTQ 2nd mate",
@@ -24,7 +24,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : ".fastq|.fq|.fastq.gz|.fq.gz"
+      "extensions" : [".fastq", ".fq", ".fastq.gz", ".fq.gz"]
     },
     {    
       "description" : "The output read file",
@@ -35,7 +35,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".mkb",
+      "extensions" : [".mkb"],
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--fastq",
@@ -50,7 +50,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "string"
     },
     {    
@@ -61,7 +61,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "integer"
     },
     {    
@@ -72,7 +72,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "string"
     },
     {    
@@ -83,7 +83,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "string"
     },
     {    
@@ -94,7 +94,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "string"
     },
     {    
@@ -105,7 +105,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "string"
     },
     {    
@@ -116,7 +116,7 @@
       "input" : false,
       "output" : false,
       "required" : true,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "string"
     }
   ],

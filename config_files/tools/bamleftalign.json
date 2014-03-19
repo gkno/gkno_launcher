@@ -14,7 +14,7 @@
       "input" : true,
       "output" : true,
       "required" : true,
-      "extension" : ".bam",
+      "extensions" : [".bam"],
       "data type" : "string",
       "hide in help" : true,
       "include on command line" : false
@@ -27,7 +27,7 @@
       "input" : false,
       "output" : true,
       "required" : true,
-      "extension" : ".bam",
+      "extensions" : [".bam"],
       "data type" : "string",
       "modify argument name on command line" : "stdout",
       "if output to stream" : "do not include",
@@ -47,7 +47,7 @@
       "input" : true,
       "output" : false,
       "required" : true,
-      "extension" : ".fa|.fasta",
+      "extensions" : [".fa", ".fasta"],
       "data type" : "string"
     },
     {
@@ -58,7 +58,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "integer"
     }
   ],

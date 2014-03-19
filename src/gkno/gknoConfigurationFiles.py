@@ -61,6 +61,9 @@ class gknoConfigurationFiles:
     # removed prior to execution.
     self.filesToRemove = []
 
+    # Keep track of missing files.
+    self.hasMissingFiles = False
+
   # Search a directory for json files and return a reference
   # to a list.
   def getJsonFiles(self, path):
@@ -354,8 +357,9 @@ class gknoConfigurationFiles:
           else: self.constructFilename(graph, config, method, task, fileNodeID, numberOfIterations, isInput = True)
 
         # Keep track of the maximum number of iterations for any of the input files.
-        iterations = len(config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values'))
+        iterations         = len(config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values'))
         numberOfIterations = iterations if iterations > numberOfIterations else numberOfIterations
+        config.nodeMethods.setGraphNodeAttribute(graph, task, 'numberOfDataSets', numberOfIterations)
 
       # Now deal with output files,  These are all successor nodes.
       for fileNodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
@@ -427,8 +431,8 @@ class gknoConfigurationFiles:
 
     # Generate the filename for the option node.  Since this is a filename stub, this will not have any
     # extension.
-    originalExtension = config.tools.getArgumentAttribute(tool, baseArgument, 'extension')
-    modifiedValues    = self.modifyExtensions(values, originalExtension, '', replace = True)
+    originalExtensions = config.tools.getArgumentAttribute(tool, baseArgument, 'extensions')
+    modifiedValues     = self.modifyExtensions(values, originalExtensions, '', replace = True)
     for iteration in modifiedValues: modifiedValues[iteration] = [value.split('/')[-1] for value in modifiedValues[iteration]]
 
     # If the construction instructions indicate that values from another argument should be included
@@ -557,7 +561,7 @@ class gknoConfigurationFiles:
       modifiedValues[iteration] = modifiedList
 
   # Add additional text to the constructed filename.
-  def addAdditionalText(self, instructions, values, hasExtension = False, extension = ''):
+  def addAdditionalText(self, instructions, values, hasExtension = False, extensions = ['']):
     text = instructions['add additional text']
     for iteration in values:
       modifiedValues = []
@@ -565,22 +569,17 @@ class gknoConfigurationFiles:
 
         # If the value has an extension, remove it, then replace it.
         if hasExtension:
+          fileHasExtension = False
+          for specificExtension in extensions:
+            if value.endswith(specificExtension):
+              fileHasExtension = True
+              break
+          extension = specificExtension
 
-          # The supplied extension can be a list of extensions separated by a '|'. Check
-          # if the file finishes with any of these extensions. Store the specific extension.
-          if '|' in extension:
-            extensions = extension.split('|')
-            fileHasExtension = False
-            for specificExtension in extensions:
-              if value.endswith(specificExtension):
-                fileHasExtension = True
-                break
-            extension = specificExtension
-
-            if not fileHasExtension:
-              #TODO ERROR
-              print('Unexpected extension - addAdditionalText')
-              self.errors.terminate()
+          if not fileHasExtension:
+            #TODO ERROR
+            print('Unexpected extension - addAdditionalText')
+            self.errors.terminate()
 
           newValue = str(value.split(extension)[0] + '.' + str(text) + extension)
           modifiedValues.append(newValue)
@@ -656,24 +655,24 @@ class gknoConfigurationFiles:
         else: modifiedValues[iteration] = [value.split('/')[-1] for value in values[iteration]]
 
     # If the extension is to be replaced, do that here. First check if the file has an extension.
-    originalExtension = config.tools.getArgumentAttribute(tool, baseArgument, 'extension')
+    originalExtensions = config.tools.getArgumentAttribute(tool, baseArgument, 'extensions')
     if modifyExtension == 'replace':
-      newExtension      = config.tools.getArgumentAttribute(tool, argument, 'extension')
-      modifiedValues    = self.modifyExtensions(modifiedValues, originalExtension, newExtension, replace = True)
+      newExtensions     = config.tools.getArgumentAttribute(tool, argument, 'extensions')
+      modifiedValues    = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = True)
 
     # If the new extension should be appended to the end of the original file.
     elif modifyExtension == 'append':
-      newExtension      = config.tools.getArgumentAttribute(tool, argument, 'extension')
-      modifiedValues    = self.modifyExtensions(modifiedValues, originalExtension, newExtension, replace = False)
+      newExtensions     = config.tools.getArgumentAttribute(tool, argument, 'extensions')
+      modifiedValues    = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = False)
 
     # If the construction instructions indicate that values from another argument should be included
     # in the filename, include them here.
     if 'add argument values' in instructions:
-      modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues, hasExtension = True, extension = newExtension)
+      modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues, hasExtension = True, extensions = newExtensions)
 
     # If the instructions indicate that additional text should be added to the filename, add it.
     if 'add additional text' in instructions:
-      modifiedValues = self.addAdditionalText(instructions, modifiedValues, hasExtension = True, extension = newExtension)
+      modifiedValues = self.addAdditionalText(instructions, modifiedValues, hasExtension = True, extensions = newExtensions)
 
     # Reset the node values for the option and the file node.
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)
@@ -683,23 +682,19 @@ class gknoConfigurationFiles:
     config.nodeMethods.setGraphNodeAttribute(graph, optionNodeID, 'isConstructed', True)
 
   # Modify the extensions for files.
-  def modifyExtensions(self, values, extA, extB, replace):
+  def modifyExtensions(self, values, extensionsA, extensionsB, replace):
     modifiedValues = {}
-
-    # The extensions may be a list of allowed extension separated by '|'.  Break the extensions
-    # into lists of allowed extensions.
-    extAList = extA.split('|')
 
     # The replacement extension may also be a list of allowed values.  Choose the first value in
     # this list as the extension to use.
-    if extB == '': replaceExtension = ''
-    else: replaceExtension = str(extB.split('|')[0])
+    if extensionsB == '': replaceExtension = ''
+    else: replaceExtension = str(extensionsB[0])
 
     # Loop over all values and change the extension.
     for valueID in values:
       newValuesList = []
       for value in values[valueID]:
-        for extension in extAList:
+        for extension in extensionsA:
 
           # If the value ends with the given extension, or the extension is not known.
           if value.endswith(extension) or extension == 'no extension':
@@ -729,8 +724,9 @@ class gknoConfigurationFiles:
     # Get the filename and determine if the extensions needs to be added.
     filename     = config.tools.getAttributeFromDefinedConstruction(tool, argument, 'filename')
     addExtension = config.tools.getAttributeFromDefinedConstruction(tool, argument, 'add extension')
-    baseArgument = config.tools.getAttributeFromDefinedConstruction(tool, argument, 'for multiple runs connect to')
-    baseNodeID   = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument, 'option')[0]
+
+    # Determine the number of iterations of data vailes.
+    numberOfDataSets = config.nodeMethods.getGraphNodeAttribute(graph, task, 'numberOfDataSets')
 
     # Check to see if the filenames to be created should be in a different directory.
     directoryArgument = instructions['directory argument'] if 'directory argument' in instructions else None
@@ -745,17 +741,13 @@ class gknoConfigurationFiles:
       for iteration in directoryValues: modifiedValues[iteration] = [value + '/' for value in directoryValues[iteration]]
 
     # If there is no directory argument, use the connected argument to define the list of values. The
-    # alues thamselves are irrelevant, but the number of iterations etc will be correctly defined.
-    else: modifiedValues = deepcopy(config.nodeMethods.getGraphNodeAttribute(graph, baseNodeID, 'values'))
+    # values themselves are irrelevant, but the number of iterations etc will be correctly defined.
+    else:
+      for counter in range(0, numberOfDataSets): modifiedValues[counter + 1] = []
 
     numberOfIterations = len(modifiedValues)
     for iteration in modifiedValues:
-
-      # Clear the value. This was pulled in from the values associated with the base argument, but the
-      # value itself is not needed.
-      modifiedValues[iteration] = []
-
-      if addExtension: extension = config.tools.getArgumentAttribute(tool, argument, 'extension').split('|')[0]
+      if addExtension: extension = config.tools.getArgumentAttribute(tool, argument, 'extensions')[0]
       else: extension = ''
 
       # If there are multiple iterations, add the iteration to the name.
@@ -1111,6 +1103,7 @@ class gknoConfigurationFiles:
 
     # If there were files missing, write a warning and ensure that gkno will not execute.
     if missingFiles:
+      self.hasMissingFiles = True
 
       # Check if any files appear multiple times.
       for missingFile in missingFiles:

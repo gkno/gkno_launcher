@@ -14,7 +14,7 @@
       "input" : true,
       "output" : false,
       "required" : true,
-      "extension" : ".bam",
+      "extensions" : [".bam"],
       "data type" : "string",
       "if input is stream" : "do not include",
       "hide in help" : true,
@@ -28,7 +28,7 @@
       "input" : false,
       "output" : true,
       "required" : true,
-      "extension" : ".bam",
+      "extensions" : [".bam"],
       "data type" : "string",
       "if output to stream" : "do not include",
       "modify argument name on command line" : "stdout",
@@ -49,7 +49,7 @@
       "input" : true,
       "output" : false,
       "required" : true,
-      "extension" : ".fa|.fasta",
+      "extensions" : [".fa", ".fasta"],
       "data type" : "string"
     },
     {    
@@ -60,7 +60,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "integer"
     },
     {    
@@ -72,7 +72,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Trigger realignment if the sum of quality scores of soft clipped bases is >= N",
@@ -83,7 +83,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Only accept realignments if they have <= N soft clips",
@@ -94,7 +94,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "use entropy scaling for the gap open penalty",
@@ -105,7 +105,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "penalize non-repeat-unit gaps in repeat sequence (default 15.0, set to 0 to disable)",
@@ -116,7 +116,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     }
   ],
 

@@ -13,7 +13,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fq|.fastq|.fq.gz|.fastq.gz"
+      "extensions" : [".fq", ".fastq", ".fq.gz", ".fastq.gz"]
     },
     {
       "description" : "Output information about the fastq file.",
@@ -24,7 +24,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".stats",
+      "extensions" : [".stats"],
       "include on command line" : false,
       "construct filename" : {
         "method": "from tool argument",
@@ -41,7 +41,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Number of errors to allow before quitting reading/validating the file. -1 (default) indicates to not quit until the entire file is read. 0 indicates not to read/validate anything",
@@ -52,7 +52,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Maximum number of errors to print before suppressing them (Defaults to 20). Different than maxErrors since printableErrors will continue reading and validating the file until the end, but just doesn't print the errors.",
@@ -63,7 +63,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Ignore all errors (same as printableErrors = 0) overwrites the printableErrors option.",
@@ -74,7 +74,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Print the Base Composition Statistics.",
@@ -85,7 +85,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Print the average phred quality per cycle & overall average quality.",
@@ -96,7 +96,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Disable the unique sequence identifier check. Use this option to save memory since the sequence id check uses a lot of memory.",
@@ -107,7 +107,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Print the parameter settings.",
@@ -118,7 +118,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Suppresses the display of errors and summary statistics. Does not affect the printing of Base Composition Statistics.",
@@ -129,7 +129,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     }
   ],
 

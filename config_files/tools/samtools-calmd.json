@@ -15,7 +15,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Convert the read base to = if it is identical to the aligned reference base.",
@@ -25,7 +25,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "flag"
     },
     {    
@@ -37,7 +37,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Output compressed BAM.",
@@ -47,7 +47,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "flag"
     },
     {    
@@ -58,7 +58,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "flag"
     },
     {    
@@ -69,7 +69,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "integer"
     },
     {    
@@ -81,7 +81,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Extended BAQ calculation. This option trades specificity for sensitivity, though the effect is minor.",
@@ -91,7 +91,7 @@
       "input" : false,
       "output" : false,
       "required" : false,
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "data type" : "flag"
     },
     {    
@@ -103,7 +103,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".bam",
+      "extensions" : [".bam"],
       "if input is stream" : "replace",
       "replace argument with" : {
         "argument" : "--stdin",
@@ -120,7 +120,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "modify argument name on command line" : "hide"
     }
   ],

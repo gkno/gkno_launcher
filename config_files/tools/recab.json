@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".bam"
+      "extensions" : [".bam"]
     },
     {    
       "description" : "Output recalibrated BAM file name.",
@@ -25,7 +25,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".bam",
+      "extensions" : [".bam"],
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--in",
@@ -42,7 +42,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : ".log"
+      "extensions" : [".log"]
     },
     {    
       "description" : "Do not expect an EOF block on a bam file.",
@@ -53,7 +53,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Reference file name.",
@@ -64,7 +64,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fa|.fasta"
+      "extensions" : [".fa", ".fasta"]
     },
     {    
       "description" : "dbsnp file of positions.",
@@ -75,7 +75,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : ".vcf"
+      "extensions" : [".vcf"]
     },
     {    
       "description" : "Minimum base quality of bases to recalibrate (default: 5).",
@@ -86,7 +86,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Maximum recalibrated base quality (default: 50).",
@@ -97,7 +97,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Blended model weight.",
@@ -108,7 +108,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Check if the logistic regression model fits the data overriden by fast, but automatically applied by useLogReg.",
@@ -119,7 +119,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "use a compact representation that only allows:|* at most 256 Read Groups|* maximum quality 63|* at most 127 cycles|overrides fitModel, but is overridden by useLogReg uses up to about 2.25G more memory than running without --fast.",
@@ -130,7 +130,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Do not exclude entries where the previous base is in dbsnp when building the recalibration table. By default they are excluded from the table.",
@@ -141,7 +141,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Do not exclude entries where the previous base is not adjacent (not a Cigar M/X/=) when building the recalibration table.  By default they are excluded from the table (except the first cycle).",
@@ -152,7 +152,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Use logistic regression calculated quality for the new quality automatically applies fitModel and overrides fast.",
@@ -163,7 +163,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Tag to get the starting base quality (default is to get it from the Quality field).",
@@ -174,7 +174,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {    
       "description" : "Tag to store the previous quality into.",
@@ -185,7 +185,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     }
   ],
 

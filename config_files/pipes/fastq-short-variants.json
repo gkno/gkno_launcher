@@ -370,12 +370,7 @@
         {
           "ID" : "fasta reference",
           "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
-        },
-        {
-          "ID" : "moblist",
-          "argument" : "--mobile-element-fasta",
-          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
         },
         {
           "ID" : "hash size",

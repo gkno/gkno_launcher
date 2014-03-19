@@ -13,7 +13,7 @@
       "input" : true,
       "output" : false,
       "required" : true,
-      "extension" : ".vcf|.vcf.gz",
+      "extensions" : [".vcf", ".vcf.gz"],
       "if input is stream" : "do not include",
       "data type" : "string"
     },
@@ -26,7 +26,7 @@
       "input" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".vcf",
+      "extensions" : [".vcf"],
       "if output to stream" : "do not include",
       "modify argument name on command line" : "stdout",
       "construct filename" : {

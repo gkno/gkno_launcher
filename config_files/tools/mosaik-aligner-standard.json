@@ -13,7 +13,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".mkb"
+      "extensions" : [".mkb"]
     },
     {
       "description" : "The input reference file (Mosaik native dat file)",
@@ -24,7 +24,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".dat"
+      "extensions" : [".dat"]
     },
     {
       "description" : "The Mosaik jump database",
@@ -35,7 +35,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "is filename stub" : true,
       "filename extensions" : [
         "_keys.jmp",
@@ -52,7 +52,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "is filename stub" : true,
       "filename extensions" : [
         ".bam"
@@ -72,7 +72,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".ann"
+      "extensions" : [".ann"]
     },
     {
       "description" : "Neural network file for paired end read mapping qualities",
@@ -83,7 +83,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".ann"
+      "extensions" : [".ann"]
     },
     {
       "description" : "Alignment algorithm: [fast, single, multi, all]. def: all",
@@ -94,7 +94,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },    
     {
       "description" : "Alignment mode: [unique, all]. def: all",
@@ -105,7 +105,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },    
     {
       "description" : "Hash size [4 - 32].",
@@ -116,7 +116,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },    
     {
       "description" : "The percentage of mismatches allowed [0.0 - 1.0]",
@@ -127,7 +127,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },    
     {
       "description" : "The alignment candidate threshold (length)",
@@ -138,7 +138,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },    
     {
       "description" : "Specifies the Smith-Waterman bandwidth.  Default: 9",
@@ -149,7 +149,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },    
     {
       "description" : "The maximum number of positions stored per seed",
@@ -160,7 +160,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },    
     {
       "description" : "Uses the specified number of processors",
@@ -171,7 +171,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     }
   ],
 

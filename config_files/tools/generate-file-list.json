@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "allow multiple values" : true,
       "modify argument name on command line" : "hide"
     },
@@ -27,7 +27,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : "no extension",
+      "extensions" : ["no extension"],
       "modify argument name on command line" : "stdout"
     }
   ],

@@ -13,7 +13,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fa|.fasta"
+      "extensions" : [".fa", ".fasta"]
     },
     {
       "description" : "The input reference file containing the insertion sequences.",
@@ -24,7 +24,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fa|.fasta"
+      "extensions" : [".fa", ".fasta"]
     },
     {
       "description" : "The output reference file.",
@@ -35,7 +35,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".dat",
+      "extensions" : [".dat"],
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--fasta-reference",

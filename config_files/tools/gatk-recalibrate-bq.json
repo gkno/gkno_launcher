@@ -14,7 +14,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fasta|.fa"
+      "extensions" : [".fasta", ".fa"]
     },
     {
       "description" : "the reference fasta index file",
@@ -26,7 +26,7 @@
       "required" : true,
       "data type" : "string",
       "include on command line" : false,
-      "extension" : ".fai",
+      "extensions" : [".fai"],
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--fasta-reference",
@@ -43,7 +43,7 @@
       "required" : true,
       "data type" : "string",
       "include on command line" : false,
-      "extension" : ".dict",
+      "extensions" : [".dict"],
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--fasta-reference",
@@ -59,7 +59,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".sam|.bam"
+      "extensions" : [".sam", ".bam"]
     },
     {
       "description" : "input SAM or BAM index file(s)",
@@ -71,7 +71,7 @@
       "required" : true,
       "data type" : "string",
       "include on command line" : false,
-      "extension" : ".bai",
+      "extensions" : [".bai"],
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--in",
@@ -87,7 +87,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".bam",
+      "extensions" : [".bam"],
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--in",
@@ -104,7 +104,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".csv"
+      "extensions" : [".csv"]
     },
     {
       "description" : "type of analysis to run",
@@ -115,7 +115,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "Do not write out the original qualities as an extra tag in the BAM file",
@@ -126,7 +126,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     }
   ],
 

@@ -13,7 +13,7 @@
       "output" : false,
       "required" : true,
       "data type" : "string",
-      "extension" : ".fa|.fasta",
+      "extensions" : [".fa", ".fasta"],
       "modify argument name on command line" : "hide"
     },
     {
@@ -25,7 +25,7 @@
       "output" : true,
       "required" : true,
       "data type" : "string",
-      "extension" : ".vcf",
+      "extensions" : [".vcf"],
       "modify argument name on command line" : "stdout",
       "construct filename" : {
         "method" : "from tool argument",
@@ -43,7 +43,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "the geometric scaling probability for 2bp multi-nucleotide-polymorphisms relative to SNPs, relative to 3bp MNPs, etc. (default 0.01).",
@@ -54,7 +54,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "the rate of non-repeat indel mutations per bp per chrom (default 0.0001).",
@@ -65,7 +65,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "maximum indel length (default 1000).",
@@ -76,7 +76,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "generate indel lengths from a uniform distribution from 0 to indel-max.",
@@ -87,7 +87,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "the alpha parameter of the indel length frequency distribution (zeta(l), default 1.1) length N have probability zeta(N)",
@@ -98,7 +98,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "maximum size of exect repeat unit in the genome to detect (default 20).",
@@ -109,7 +109,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "the rate of microsatellite mutation at microsatellite sites (default 0.0001).",
@@ -120,7 +120,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "alpha parameter for microsatellite allele count (default 1.7).",
@@ -131,7 +131,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "alpha parameter for microsatellite mutation length (default 1.7).",
@@ -142,7 +142,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "the minimum number of bases in a repeat to consider it a microsatellite (default 1).",
@@ -153,7 +153,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "the allele frequency spectrum distribution scaling parameter (1/i * alpha, default 1.0).",
@@ -164,7 +164,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "ratio of transitions to transversions among SNPs (default 2.5).",
@@ -175,7 +175,7 @@
       "output" : false,
       "required" : false,
       "data type" : "float",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "ploidy of the population (default 1).",
@@ -186,7 +186,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "number of individuals in the population.",
@@ -197,7 +197,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "prefix output fasta files with this.",
@@ -208,7 +208,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "prefix sample names (numbers by default) with this.",
@@ -219,7 +219,7 @@
       "output" : false,
       "required" : false,
       "data type" : "string",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "provide the seed for pseudorandom generation (default, seconds since 1970).",
@@ -230,7 +230,7 @@
       "output" : false,
       "required" : false,
       "data type" : "integer",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     },
     {
       "description" : "don't write any fasta output files, just print VCF output.",
@@ -241,7 +241,7 @@
       "output" : false,
       "required" : false,
       "data type" : "flag",
-      "extension" : "no extension"
+      "extensions" : ["no extension"]
     }
   ],
 

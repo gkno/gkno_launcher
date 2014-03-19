@@ -619,10 +619,9 @@ class makefileData:
 
               # Some arguments are listed as file name stubs, but still require the extension. In this cases,
               # ensure that the values all have the extension attached.
-              tool      = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-              extension = config.tools.getArgumentAttribute(tool, argument, 'extension')
-              if extension != 'no extension':
-                allowedExtensions = extension.split('|')
+              tool       = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+              extensions = config.tools.getArgumentAttribute(tool, argument, 'extensions')
+              if extensions != ['no extension']:
 
                 # Modify the values.
                 modifiedValues = []
@@ -630,7 +629,7 @@ class makefileData:
 
                   # Check if the value already has an allowed extension.
                   givenExtension = str('.') + str(value.split('.')[-1])
-                  if givenExtension not in allowedExtensions: modifiedValues.append(value + allowedExtensions[0])
+                  if givenExtension not in extensions: modifiedValues.append(value + extensions[0])
                   else: modifiedValues.append(value)
 
                 valueList = deepcopy(modifiedValues)
