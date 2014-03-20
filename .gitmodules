@@ -61,3 +61,6 @@
 [submodule "tools/fastQValidator"]
 	path = tools/fastQValidator
 	url = https://github.com/gkno/fastQValidator.git
+[submodule "tools/Rufus"]
+	path = tools/Rufus
+	url = https://github.com/gkno/RUFUS.git
