@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.158"
+__version__ = "0.159"
 __date__ = "March 2014"
 
 def main():
@@ -124,6 +124,7 @@ def main():
 
   # Check if the pipeline/tool name is valid.
   if commands.mode != 'admin': gknoConfig.checkPipelineName(gknoHelp, isPipeline, runName)
+  if isDebug: write.writeDebug('Checked pipeline name.')
 
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line. If help has been requested, print out the required
@@ -228,11 +229,14 @@ def main():
     # of the tool. Set the tasks structure in the pipeline configuration object as well.
     config.pipeline.definePipelineAttributesForTool(runName)
     config.buildTaskGraph(pipelineGraph, config.pipeline.taskAttributes.keys())
+  if isDebug: write.writeDebug('Read configuration files.')
 
   # Parse the command line and put all of the arguments into a list.
-  write.writeReadingCommandLineArguments()
-  commands.getCommandLineArguments(pipelineGraph, config, gknoConfig, runName, isPipeline)
-  write.writeDone()
+  if commands.mode != 'admin':
+    write.writeReadingCommandLineArguments()
+    commands.getCommandLineArguments(pipelineGraph, config, gknoConfig, runName, isPipeline)
+    write.writeDone()
+  if isDebug: write.writeDebug('Parsed command line.')
 
   # If help was requested or there were problems (e.g. the tool name or pipeline
   # name did not exist), print out the required usage information.
