@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.154"
+__version__ = "0.155"
 __date__ = "March 2014"
 
 def main():
@@ -104,6 +104,7 @@ def main():
   # or the tool if being run in tool mode.
   admin.isRequested, admin.mode = commands.isAdminMode(admin.allModes)
   isPipeline                    = commands.setMode(admin.isRequested)
+  config.isPipeline             = isPipeline
   runName                       = commands.getPipelineName(isPipeline)
 
   # Read in information from the gkno specific configuration file.

@@ -32,7 +32,7 @@
         "_positions.jmp"
       ],
       "construct filename" : {
-        "method": "from tool argument",
+        "method" : "from tool argument",
         "use argument" : "--mosaik-reference",
         "modify extension" : "omit",
         "add argument values" : [

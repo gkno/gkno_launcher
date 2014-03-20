@@ -30,7 +30,11 @@
       "tool" : "bamtools-index"
     },
     "variant-call" : {
-      "tool" : "freebayes"
+      "tool" : "freebayes",
+      "output to stream" : true
+    },
+    "filter-variants" : {
+      "tool" : "vcflib-filter"
     }
   },
 
@@ -201,7 +205,6 @@
     },
     {
       "ID" : "dbsnp",
-      "description" : "Linking tasks. No argument.",
       "description" : "A database of known polymorphic sites to skip over in the recalibration algorithm.",
       "long form argument" : "--dbsnp",
       "short form argument" : "-db",
@@ -231,6 +234,32 @@
         "mark-duplicates" : "--out",
         "index-final-bam" : "--in",
         "variant-call" : "--bam"
+      }
+    },
+    {
+      "ID" : "filter",
+      "description" : "Linking tasks. No argument.",
+      "tasks" : {
+        "variant-call" : "--vcf",
+        "filter-variants" : "--in"
+      }
+    },
+    {
+      "ID" : "filter field",
+      "description" : "Define the filter to apply to the vcf info field.",
+      "long form argument" : "--info-filter",
+      "short form argument" : "-f",
+      "tasks" : {
+        "filter-variants" : "--info-filter"
+      }
+    },
+    {
+      "ID" : "tag filtered",
+      "description" : "Tag the passed variants and do not excise failed records.",
+      "long form argument" : "--tag-pass",
+      "short form argument" : "-t",
+      "tasks" : {
+        "filter-variants" : "--tag-pass"
       }
     },
     {
@@ -307,6 +336,16 @@
           "ID" : "dbsnp",
           "argument" : "--dbsnp",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"]
+        },
+        {
+          "ID" : "filter",
+          "argument" : "--info-filter",
+          "values" : ["\"QUAL > 10\""]
+        },
+        {
+          "ID" : "tag",
+          "argument" : "--tag-pass",
+          "values" : ["PASS"]
         }
       ]
     }

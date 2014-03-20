@@ -429,14 +429,15 @@ class makefileData:
           print('...\c"', file = fileHandle)
   
         # Loop over all of the tasks and write the executable commands.
-        for task in tasks:
+        for taskCounter, task in enumerate(tasks):
+          inputIsStream = True if taskCounter != 0 else False
 
           # Determine if this task outputs to the stream. If so, just write a pipe and move on to the
           # next command.
           if task == tasks[0]: print('\t@', end = '', file = fileHandle)
           else: print('\t| ', end = '', file = fileHandle)
 
-          stdoutUsed = self.writeCommand(graph, config, fileHandle, task, counter)
+          stdoutUsed = self.writeCommand(graph, config, fileHandle, task, counter, inputIsStream)
   
           # If the task does not output to a stream, finish the command.
           if task == tasks[-1]:
@@ -482,7 +483,7 @@ class makefileData:
     print(file = fileHandle)
 
   # Write the command line for the current task.
-  def writeCommand(self, graph, config, fileHandle, task, iteration):
+  def writeCommand(self, graph, config, fileHandle, task, iteration, inputIsStream):
     stdoutUsed = False
 
     # Define some tool attributes. These are extracted from the task node.
@@ -571,14 +572,13 @@ class makefileData:
           # bam file, but the output index file is created based on the name of the input file and
           # is not specified by the user. Check to see if this is the case.
           includeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'includeOnCommandLine')
-  
+
           # If the option refers to a file, then check, whether the option is a filename stub. Since the same
           # option can point to multiple tasks and the option can be a filename stub for one task, but a file
           # for another, determine this using the edge describing the individual argument. If the option is a
           # filename stub, use the values attached to the option node. If it isn't, find the associated file
           # node and use the values from there.
           if isFile:
-            #if not config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFilenameStub'):
             isPredecessor = config.nodeMethods.isPredecessor(graph, nodeID, task)
             if isPredecessor: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isFilenameStub')
             else: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, task, nodeID, 'isFilenameStub')
@@ -637,6 +637,13 @@ class makefileData:
                 # TODO DO I NEED TO LOOK AT OUTPUTS?
   
           for value in valueList:
+
+            # If the input to this task is a stream and this argument has specific instructions for
+            # this case, ensure that the command is properly handled.
+            if inputIsStream and config.tools.getArgumentAttribute(tool, argument, 'inputStream'):
+              includeArgument = self.checkInputStream(config, tool, argument, includeArgument)
+
+            # If anything needs to be written to the makefile, write it.
             if includeArgument:
   
               # Determine the argument delimiter for this tool.
@@ -663,6 +670,27 @@ class makefileData:
                 if value == 'set': print('\t', commandLineArgument, ' \\', sep = '', file = fileHandle)
 
     return stdoutUsed
+
+  # If the input is a stream and the argument has specific instructions, ensure that the argument is correctly handled.
+  def checkInputStream(self, config, tool, argument, includeArgument):
+
+    # If the command line argument needs to be replace by a different value.
+    #TODO
+    if config.tools.getArgumentAttribute(tool, argument, 'inputStream') == 'replace':
+      print('NOT YET HANDLED')
+      print('INPUT IS STREAM AND ARGUMENT IS REPLACED. gkno/makefileData.py - 647')
+      self.errors.terminate()
+
+    # If the argument should be omitted from the command line, set includeArgument to False.
+    elif config.tools.getArgumentAttribute(tool, argument, 'inputStream') == 'do not include':
+      return False
+
+    # Any other values are invalid.
+    else:
+      #TODO ERRROR
+      print('Unknown value for "input is stream":', config.tools.getArgumentAttribute(tool, argument, 'inputStream'))
+      print('make.checkInputStream')
+      self.errors.terminate()
 
   # Write outputs and errors to the stdout and stderr files.
   def writeStdouts(self, stdoutUsed, fileHandle):

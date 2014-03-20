@@ -487,7 +487,7 @@ class gknoConfigurationFiles:
       if len(argumentNodeIDs) == 0:
         if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'pipeline':
           self.errors.missingArgumentInFilenameConstructionNotPipelineArgument(graph, config, task, taskArgument)
-        self.errors.missingArgumentInFilenameConstruction(graph, config, taskArgument)
+        self.errors.missingArgumentInFilenameConstruction(graph, config, task, taskArgument, '', config.isPipeline)
 
       # TODO HANDLE THE CASE OF MULTIPLE VALUES
       elif len(argumentNodeIDs) != 1:
