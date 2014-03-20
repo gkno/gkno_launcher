@@ -450,6 +450,24 @@ class Premo(GknoTool):
   def doUpdate(self):
     return self.doBuild()
 
+# Rufus
+class Rufus(GknoTool):
+  def __init__(self):
+    super(Rufus, self).__init__()
+    self.name       = "Rufus"
+    self.installDir = "Rufus"
+
+  # $ make clean
+  # $ make -j N
+  def doBuild(self):
+    if not self.makeClean():
+      return False
+    return self.make()
+
+  # $ make -j N
+  def doUpdate(self):
+    return self.make()
+
 # samtools
 class SamTools(GknoTool):
   def __init__(self):
@@ -564,6 +582,7 @@ List = [
         Ogap(),
         Picard(),
         Premo(),
+        Rufus(),
         SamTools(), 
         Seqan(),       
         Tabix(),
