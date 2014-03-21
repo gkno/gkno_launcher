@@ -484,10 +484,12 @@ class gknoConfigurationFiles:
       # If there is no node defined, the argument required to construct the filename has not been
       # defined. As such, it is impossible to construct the filename, so terminate gkno with an error
       # message.
+      #TODO FORCE A VALUE TO BE REQUIRED
       if len(argumentNodeIDs) == 0:
-        if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'pipeline':
-          self.errors.missingArgumentInFilenameConstructionNotPipelineArgument(graph, config, task, taskArgument)
-        self.errors.missingArgumentInFilenameConstruction(graph, config, task, taskArgument, '', config.isPipeline)
+        return modifiedValues
+        #if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'pipeline':
+        #  self.errors.missingArgumentInFilenameConstructionNotPipelineArgument(graph, config, task, taskArgument)
+        #self.errors.missingArgumentInFilenameConstruction(graph, config, task, taskArgument, '', config.isPipeline)
 
       # TODO HANDLE THE CASE OF MULTIPLE VALUES
       elif len(argumentNodeIDs) != 1:
