@@ -33,6 +33,9 @@ class makefileData:
     # removed prior to execution.
     self.missingFiles = []
 
+    # Keep track of phony targets.
+    self.phonyTargets = []
+
   # Generate the makefile for a tool/pipeline with a single set of data or an internal loop.
   # Only one makefile is required in this case.
   def generateSingleMakefile(self, graph, config, runName, sourcePath, gknoCommitID, version, date):
@@ -61,7 +64,7 @@ class makefileData:
     self.writeIntermediateFiles(makefileHandle, graphIntermediates, 'all')
 
     # Write the pipeline outputs to the makefile.
-    self.writeOutputFiles(makefileHandle, graphOutputs)
+    self.writeOutputFiles(graph, config, makefileHandle, graphOutputs)
 
     # Search through the tasks in the workflow and check for tasks outputting to a stream. Generate a
     # list of tasks for generating the makefiles. Each entry in the list should be a list of all tasks
@@ -121,7 +124,7 @@ class makefileData:
         self.writeIntermediateFiles(makefileHandle, graphIntermediates, key)
 
         # Write the pipeline outputs to the makefile.
-        self.writeOutputFiles(makefileHandle, graphOutputs)
+        self.writeOutputFiles(graph, config, makefileHandle, graphOutputs)
 
         # Search through the tasks in the workflow and check for tasks outputting to a stream. Generate a
         # list of tasks for generating the makefiles. Each entry in the list should be a list of all tasks
@@ -308,7 +311,6 @@ class makefileData:
   # Write out all of the intermediate files.
   def writeIntermediateFiles(self, fileHandle, intermediates, key):
     print('.DELETE_ON_ERROR:', file = fileHandle)
-    print('.PHONY: all', file = fileHandle)
     print('.INTERMEDIATE:', end = ' ', file = fileHandle)
     if intermediates:
 
@@ -328,13 +330,35 @@ class makefileData:
     print(file = fileHandle)
 
   # Write out all of the output files.
-  def writeOutputFiles(self, fileHandle, outputs):
+  def writeOutputFiles(self, graph, config, fileHandle, outputs):
+
+    # Check if any of the tools in the pipeline (or the single tool being executed) produce
+    # no output. If this is the case, the name of the task is added as output in 'all'. This
+    # will be identified as a phony target and used as the target for that tool to ensure that
+    # it is executed.
+    self.phonyTargets = []
+    for task in config.pipeline.workflow:
+      tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+      if config.tools.getGeneralAttribute(tool, 'noOutput'): self.phonyTargets.append(task)
+
     print('all:', end = ' ', file = fileHandle)
+
+    # Add all phony targets.
+    if self.phonyTargets:
+      for phonyTarget in self.phonyTargets: print(phonyTarget, end = ' ', file = fileHandle)
+
+    # Add all outputs.
     if outputs:
-      for nodeID, outputFile in outputs:
-        print(outputFile, end = ' ', file = fileHandle)
+      for nodeID, outputFile in outputs: print(outputFile, end = ' ', file = fileHandle)
     print(file = fileHandle)
     print(file = fileHandle)
+
+    # If there were phony targets, list these.
+    if self.phonyTargets:
+      print('.PHONY:', end = ' ', file = fileHandle)
+      for phonyTarget in self.phonyTargets: print(phonyTarget, end = ' ', file = fileHandle)
+      print(file = fileHandle)
+      print(file = fileHandle)
 
   # Write out all of the executable paths that are used in the makefile.
   def writeExecutablePaths(self, graph, config, fileHandle, taskList):
@@ -412,7 +436,14 @@ class makefileData:
         # to ensure proper operation, a single output is listed and then an additional rule is
         # included after the task to check for the existence of the remaining outputs.
         try: primaryOutput = taskOutputs.pop(0)
-        except: self.errors.noOutputFileGeneratingMakefile(task, config.pipeline.taskAttributes[task].tool)
+        except:
+
+          # If there are no taskOutputs, this might be because the task has not output and a phony
+          # target exists. Check if this is the case.
+          if self.phonyTargets:
+            if task in self.phonyTargets: primaryOutput = task
+          else:
+            self.errors.noOutputFileGeneratingMakefile(task, config.pipeline.taskAttributes[task].tool)
         print(primaryOutput, end = ': ', file = fileHandle)
   
         # Write out the task dependencies separated by spaces.
