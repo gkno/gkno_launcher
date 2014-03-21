@@ -437,7 +437,7 @@ class gknoConfigurationFiles:
 
     # If the construction instructions indicate that values from another argument should be included
     # in the filename, include them here.
-    if 'add argument values' in instructions: modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues, hasExtension = False)
+    if 'add argument values' in instructions: modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues)
 
     # If the instructions indicate that additional text should be added to the filename, add it.
     if 'add additional text' in instructions: modifiedValues = self.addAdditionalText(instructions, modifiedValues, hasExtension = False)
@@ -468,7 +468,7 @@ class gknoConfigurationFiles:
       config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, fileValues)
 
   # Add additional argument values to the filename.
-  def addArgumentValues(self, graph, config, instructions, task, modifiedValues, hasExtension):
+  def addArgumentValues(self, graph, config, instructions, task, modifiedValues):
     numberOfValues = len(modifiedValues)
 
     # The modifiedValues structure is a dictionary.  This contains values for each iteration of the
@@ -657,22 +657,26 @@ class gknoConfigurationFiles:
     # If the extension is to be replaced, do that here. First check if the file has an extension.
     originalExtensions = config.tools.getArgumentAttribute(tool, baseArgument, 'extensions')
     if modifyExtension == 'replace':
-      newExtensions     = config.tools.getArgumentAttribute(tool, argument, 'extensions')
-      modifiedValues    = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = True)
+      newExtensions             = config.tools.getArgumentAttribute(tool, argument, 'extensions')
+      modifiedValues, extension = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = True)
 
     # If the new extension should be appended to the end of the original file.
     elif modifyExtension == 'append':
-      newExtensions     = config.tools.getArgumentAttribute(tool, argument, 'extensions')
-      modifiedValues    = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = False)
+      newExtensions             = config.tools.getArgumentAttribute(tool, argument, 'extensions')
+      modifiedValues, extension = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = False)
 
     # If the construction instructions indicate that values from another argument should be included
     # in the filename, include them here.
     if 'add argument values' in instructions:
-      modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues, hasExtension = True)
+      modifiedValues = self.updateExtensions(modifiedValues, extension, 'strip')
+      modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues)
+      modifiedValues = self.updateExtensions(modifiedValues, extension, 'restore')
 
     # If the instructions indicate that additional text should be added to the filename, add it.
     if 'add additional text' in instructions:
+      modifiedValues = self.updateExtensions(modifiedValues, extension, 'strip')
       modifiedValues = self.addAdditionalText(instructions, modifiedValues, hasExtension = True, extensions = newExtensions)
+      modifiedValues = self.updateExtensions(modifiedValues, extension, 'restore')
 
     # Reset the node values for the option and the file node.
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)
@@ -680,6 +684,26 @@ class gknoConfigurationFiles:
 
     # Mark this node as having had its values constructed, rather than set by the user.
     config.nodeMethods.setGraphNodeAttribute(graph, optionNodeID, 'isConstructed', True)
+
+  # Strip the extensions from a set of values.
+  def updateExtensions(self, values, extension, action):
+    modifiedValues = {}
+    for iteration in values:
+      modifiedValues[iteration] = []
+      for value in values[iteration]:
+        if action == 'strip' and not value.endswith(extension):
+          #TODO ERROR
+          print('Unexpected extension - gknoConfig.updateExtensions', extension)
+          self.errors.terminate()
+
+        if action == 'strip': modifiedValues[iteration].append(value.replace(extension, '', -1))
+        elif action == 'restore': modifiedValues[iteration].append(value + str(extension))
+        else:
+          #TODO ERROR
+          print('Unknown action - gknoConfig.updateExtensions', action)
+          self.errors.terminate()
+
+    return modifiedValues
 
   # Modify the extensions for files.
   def modifyExtensions(self, values, extensionsA, extensionsB, replace):
@@ -711,7 +735,7 @@ class gknoConfigurationFiles:
       # Update the modifiedValues dictionary to reflect the modified extensions.
       modifiedValues[valueID] = newValuesList
 
-    return modifiedValues
+    return modifiedValues, replaceExtension
 
   # Construct a file of known name.
   def constructKnownFilename(self, graph, config, task, fileNodeID, numberOfIterations):

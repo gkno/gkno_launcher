@@ -72,6 +72,7 @@ class helpClass:
 
     # gkno tool mode usage.
     elif self.toolHelp:
+      print('HI')
       self.getTools(config, gknoConfig, toolConfigurationFilesPath)
       if self.invalidTool:
         self.printToolModeUsage()
