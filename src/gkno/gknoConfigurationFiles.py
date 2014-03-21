@@ -506,21 +506,25 @@ class gknoConfigurationFiles:
       if numberOfValues == numberOfNodeValues: self.setModifiedValuesA(modifiedValues, argumentNodeValues)
       elif numberOfValues == 1 and numberOfNodeValues > 1: self.setModifiedValuesB(modifiedValues, argumentNodeValues)
       elif numberOfValues > 1 and numberOfNodeValues == 1: self.setModifiedValuesC(modifiedValues, argumentNodeValues)
-      elif numberOfNodeValues == 0:
 
+      # If the values aren't set, nothing is added.
+      #TODO Determine if this is desired behaviour. Force user to supply a value or include in configuration
+      # file that this doesn't need to be set?
+      elif numberOfNodeValues == 0:
+        pass
         # If gkno is being run in pipeline mode, check if this argument is a pipeline argument.
-        if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'pipeline':
-          longFormArgument, shortFormArgument = config.pipeline.getPipelineArgument(task, taskArgument)
-          if longFormArgument != None:
-            self.errors.missingArgumentInFilenameConstruction(graph, config, task, longFormArgument, shortFormArgument, True)
+        #if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'pipeline':
+        #  longFormArgument, shortFormArgument = config.pipeline.getPipelineArgument(task, taskArgument)
+        #  if longFormArgument != None:
+        #    self.errors.missingArgumentInFilenameConstruction(graph, config, task, longFormArgument, shortFormArgument, True)
 
           # Running in pipeline mode, but the argument required for filename construction is not a
           # pipeline argument. Fail, but recommend that the pipeline configurtaion file be modified
           # to include this argument.
-          else: self.errors.missingArgumentInFilenameConstructionNotPipelineArgument(graph, config, task, taskArgument)
+        #  else: self.errors.missingArgumentInFilenameConstructionNotPipelineArgument(graph, config, task, taskArgument)
 
         # If gkno is being run in tool mode, write the correct error message.
-        self.errors.missingArgumentInFilenameConstruction(graph, config, task, taskArgument, '', False)
+        #self.errors.missingArgumentInFilenameConstruction(graph, config, task, taskArgument, '', False)
       else:
         print('NOT HANDLED VALUES - gknoConfig.addArgumentValues')
         self.errors.terminate()
