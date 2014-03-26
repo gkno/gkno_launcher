@@ -431,8 +431,8 @@ class gknoConfigurationFiles:
 
     # Generate the filename for the option node.  Since this is a filename stub, this will not have any
     # extension.
-    originalExtensions = config.tools.getArgumentAttribute(tool, baseArgument, 'extensions')
-    modifiedValues     = self.modifyExtensions(values, originalExtensions, '', replace = True)
+    originalExtensions        = config.tools.getArgumentAttribute(tool, baseArgument, 'extensions')
+    modifiedValues, extension = self.modifyExtensions(values, originalExtensions, '', replace = True)
     for iteration in modifiedValues: modifiedValues[iteration] = [value.split('/')[-1] for value in modifiedValues[iteration]]
 
     # If the construction instructions indicate that values from another argument should be included
