@@ -681,7 +681,7 @@ class gknoConfigurationFiles:
     # If the instructions indicate that additional text should be added to the filename, add it.
     if 'add additional text' in instructions:
       modifiedValues = self.updateExtensions(modifiedValues, extension, 'strip')
-      modifiedValues = self.addAdditionalText(instructions, modifiedValues, hasExtension = True, extensions = newExtensions)
+      modifiedValues = self.addAdditionalText(instructions, modifiedValues, hasExtension = False, extensions = newExtensions)
       modifiedValues = self.updateExtensions(modifiedValues, extension, 'restore')
 
     # Reset the node values for the option and the file node.
@@ -979,12 +979,13 @@ class gknoConfigurationFiles:
     for optionNodeID in config.nodeMethods.getNodes(graph, 'option'):
 
       # Check if there are any values associated with this node and if it is required.
-      values            = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
-      isRequired        = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
-      task              = graph.successors(optionNodeID)[0]
-      longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
-      shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'shortFormArgument')
-      description       = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
+      values              = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
+      isRequired          = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
+      task                = graph.successors(optionNodeID)[0]
+      longFormArgument    = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
+      shortFormArgument   = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'shortFormArgument')
+      description         = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
+      isCommandToEvaluate = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isCommandToEvaluate')
 
       # If the option is required but unset, terminate. The checkRequired flag allows the data checking
       # to proceed without failing if required files are not present. In particular, if an instance is being
@@ -1007,7 +1008,7 @@ class gknoConfigurationFiles:
         self.errors.missingPipelineArgument(graph, config, longFormArgument, shortFormArgument, description)
 
       # Loop over the remaining values.
-      if values:
+      if values and not isCommandToEvaluate:
         for iteration in values:
 
           # First check to see if multiple values have been given erroneously.

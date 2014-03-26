@@ -14,12 +14,12 @@ def main():
 
   # The name of the tool for which parameters are required is the third
   # argument in the command line.
-  tool     = sys.argv[2]
+  tool = sys.argv[2]
 
   # Open the json file
   jsonData = open(filename)
   data     = json.load(jsonData)
-  command  = ""
+  command  = ''
   for parameter in data['parameters'][tool]:
     command += str(parameter) + ' ' + str(data['parameters'][tool][parameter]) + ' '
 

@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.164"
+__version__ = "0.165"
 __date__ = "March 2014"
 
 def main():
@@ -333,6 +333,11 @@ def main():
   gknoConfig.setFilePaths(pipelineGraph, config)
   if isDebug: write.writeDebug('Set file paths')
 
+  # Check if there are instructions for evaluating commands and if so, attach them to the required
+  # nodes.
+  config.evaluateCommands(pipelineGraph)
+  if isDebug: write.writeDebug('Identified commands to evaluate')
+
   # Prior to filling in missing filenames, check that all of the supplied data is consistent with
   # expectations.  This includes ensuring that the inputted data types are correct (for example, if
   # an argument expects an integer, check that the values are integers), filename extensions are valid
@@ -370,6 +375,7 @@ def main():
   config.identifyStreamingNodes(pipelineGraph)
   if isDebug: write.writeDebug('Streaming nodes identified')
 
+  # Generate the makefiles.
   if generateMakefiles:
 
     # Generate the makefiles. The manner in which the files are created depend on whether there are
