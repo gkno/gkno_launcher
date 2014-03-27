@@ -2059,7 +2059,6 @@ argument existed to set this value. Please see the documentation to see how to i
 
   # If some of the tools failed to build, write a warning.
   def failedToolBuilds(self, tools):
-    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
     self.text.append('Not all tools were built successfully.')
     self.text.append('While building gkno, some of the tools failed to compile successfully. Please check the log files to determine the ' + \
     'cause of the failures and rebuild. In the meantime, all other tools and pipelines not containing the failed tools can be used. The ' + \
