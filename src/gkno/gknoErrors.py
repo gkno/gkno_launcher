@@ -1989,8 +1989,16 @@ argument existed to set this value. Please see the documentation to see how to i
   def gitUpdateFailed(self, dest=sys.stderr):
     print("ERROR: See logs/gkno_update.* files for more details.", file=dest)
 
+  # If the specified file containing the list of files to skip is missing.
+  def cannotSkipAndCompile(self, dest=sys.stderr):
+    self.text.append('Invalid arguments for gkno build.')
+    self.text.append('The \'--skip-tools (-st)\' argument was set in conjuction with the \'--compile-tools (-ct)\'. These arguments cannot ' + \
+    'set simultaneously. Please provide either a list of tools to skip or to compile, but not both')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   # The user requested that not all tools be built, but failed to provide a list of tools to skip.
-  def missingSlipList(self, dest=sys.stderr):
+  def missingSkipList(self, dest=sys.stderr):
     self.text.append('Missing list of tools to skip.')
     self.text.append('The \'--skip-tools (-st)\' argument was set when attempting to build gkno. If set, a json format file containing a list ' + \
     'of all the tools to be skipped needs to be supplied. Please either build all tools using \'gkno build\' or remove tools by using the ' + \
