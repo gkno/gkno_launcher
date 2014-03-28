@@ -359,6 +359,8 @@ class Mosaik(GknoTool):
   # $ make -j N
   def doUpdate(self):
     os.chdir("src") 
+    if not self.makeClean():
+      return False
     return self.make()
 
   # Mosaik has a platform-specific environment 
