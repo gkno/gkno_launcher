@@ -135,6 +135,13 @@ class adminUtils:
       self.error.gitSubmoduleUpdateFailed(dest=sys.stdout)
       return False
 
+    # Before building the tools, check if the user has requested that not all tools
+    # are built. To do this, the --skip-tools parameter must be set with a file. Alternatively,
+    # the user could have requested that only are subset are built using the --compile-tools
+    # argument.
+    self.skipTools()
+    self.compileTools()
+
     # Build all tools
     print("Building tools: ", file=sys.stdout)
     for tool in conf.tools:
@@ -163,6 +170,80 @@ class adminUtils:
     os.chdir(originalWorkingDir)
     self.userSettings["isBuilt"] = True
     return True
+
+  # Check if the user has requested that not all tools be built.
+  def skipTools(self):
+    if '--skip-tools' in sys.argv or '-st' in sys.argv:
+
+      # Check that the --compile-tools argument was not also set.
+      if '--compile-tools' in sys.argv or '-ct' is sys.argv: self.error.cannotSkipAndCompile(dest=sys.argv)
+
+      try: index = sys.argv.index('--skip-tools')
+      except: index = sys.argv.index('-st')
+
+      # Get the name of the file with the tool list.
+      try: skipList = sys.argv[index + 1]
+      except: self.error.missingSkipList(dest=sys.stdout)
+
+      # Attempt to open the list.
+      try: skipFile = open(skipList)
+      except: self.error.missingSkipListFile(skipList, dest=sys.stdout)
+
+      # Put the tools in the toolsToSkip list and strip off the end of line.
+      toolsToSkip = skipFile.readlines()
+      toolsToSkip = [tool.rstrip('\n') for tool in toolsToSkip]
+      skipFile.close()
+
+      # Set up the list of available tools.
+      availableTools = []
+      for tool in conf.tools: availableTools.append(tool.name)
+
+      # Check that all of the tools are valid tools in gkno.
+      for tool in toolsToSkip:
+        if tool not in availableTools: self.error.invalidToolToSkip(skipList, tool, availableTools, dest=sys.stdout)
+
+      # Check for dependencies. Some tools cannot be compiled without the presence of other
+      # tools. If a tool has not been listed, but a prerequisite tool has, terminate.
+      # TODO CHECK DEPENDENCY
+
+      # Remove the tools in the toolsToSkip list from conf.tools.
+      for counter, tool in reversed(list(enumerate(conf.tools))):
+        if tool.name in toolsToSkip: del(conf.tools[counter])
+
+  # Check if the user has requested that not only a set of tools be built.
+  def compileTools(self):
+    if '--compile-tools' in sys.argv or '-ct' in sys.argv:
+      try: index = sys.argv.index('--compile-tools')
+      except: index = sys.argv.index('-ct')
+
+      # Get the name of the file with the tool list.
+      try: compileList = sys.argv[index + 1]
+      except: self.error.missingCompileList(dest=sys.stdout)
+
+      # Attempt to open the list.
+      try: compileFile = open(compileList)
+      except: self.error.missingCompileListFile(compileList, dest=sys.stdout)
+
+      # Put the tools in the toolsToSkip list and strip off the end of line.
+      toolsToCompile = compileFile.readlines()
+      toolsToCompile = [tool.rstrip('\n') for tool in toolsToCompile]
+      compileFile.close()
+
+      # Set up the list of available tools.
+      availableTools = []
+      for tool in conf.tools: availableTools.append(tool.name)
+
+      # Check that all of the tools are valid tools in gkno.
+      for tool in toolsToCompile:
+        if tool not in availableTools: self.error.invalidToolToCompile(compileList, tool, availableTools, dest=sys.stdout)
+
+      # Check for dependencies. Some tools cannot be compiled without the presence of other
+      # tools. If a tool has not been listed, but a prerequisite tool has, terminate.
+      # TODO CHECK DEPENDENCY
+
+      # Remove the tools in the toolsToSkip list from conf.tools.
+      for counter, tool in reversed(list(enumerate(conf.tools))):
+        if tool.name not in toolsToCompile: del(conf.tools[counter])
 
   # "gkno version" 
   # 

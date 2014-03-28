@@ -1989,6 +1989,63 @@ argument existed to set this value. Please see the documentation to see how to i
   def gitUpdateFailed(self, dest=sys.stderr):
     print("ERROR: See logs/gkno_update.* files for more details.", file=dest)
 
+  # The user requested that not all tools be built, but failed to provide a list of tools to skip.
+  def missingSlipList(self, dest=sys.stderr):
+    self.text.append('Missing list of tools to skip.')
+    self.text.append('The \'--skip-tools (-st)\' argument was set when attempting to build gkno. If set, a json format file containing a list ' + \
+    'of all the tools to be skipped needs to be supplied. Please either build all tools using \'gkno build\' or remove tools by using the ' + \
+    'command \'gkno build --skip-list list.json\'.')
+    self.writeFormattedText(errorType = 'error')
+
+  # If the specified file containing the list of files to skip is missing.
+  def missingSkipListFile(self, filename, dest=sys.stderr):
+    self.text.append('Missing file containing list of tools to skip.')
+    self.text.append('The \'--skip-tools (-st)\' argument was set when attempting to build gkno. If set, a json format file containing a list ' + \
+    'of all the tools to be skipped needs to be supplied. The specified file \'' + filename + '\' cannot be found. Please check the name of ' + \
+    'the supplied file.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # If a tool listed as a tool to skip is not a tool in gkno.
+  def invalidToolToSkip(self, filename, tool, availableTools, dest=sys.stdout):
+    self.text.append('Invalid tool in list of tools to not compile.')
+    self.text.append('The \'--skip-tools (-st)\' argument was set when attempting to build gkno. If set, a text file containing a list ' + \
+    'of all the tools to be skipped needs to be supplied. The specified file \'' + filename + '\' contains the tool \'' + tool + '\' which ' + \
+    'is not a tool in gkno. Please ensure that all of the tools listed in the file are present in the following list of available tools:')
+    self.text.append('\t')
+    for tool in availableTools: self.text.append(tool)
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # The user requested that not all tools be built, but failed to provide a list of tools to skip.
+  def missingCompileList(self, dest=sys.stderr):
+    self.text.append('Missing list of tools to compile.')
+    self.text.append('The \'--compile-tools (-ct)\' argument was set when attempting to build gkno. If set, a text file containing a list ' + \
+    'of all the tools to be compiled needs to be supplied. Please either build all tools using \'gkno build\' or select the tools to compile ' + \
+    'by using the command \'gkno build --compile-list list.json\'.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # If the specified file containing the list of files to skip is missing.
+  def missingCompileListFile(self, filename, dest=sys.stderr):
+    self.text.append('Missing file containing list of tools to compile.')
+    self.text.append('The \'--compile-tools (-ct)\' argument was set when attempting to build gkno. If set, a text file containing a list ' + \
+    'of all the tools to be compiled needs to be supplied. The specified file \'' + filename + '\' cannot be found. Please check the name of ' + \
+    'the supplied file.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # If a tool listed as a tool to skip is not a tool in gkno.
+  def invalidToolToCompile(self, filename, tool, availableTools, dest=sys.stdout):
+    self.text.append('Invalid tool in list of tools to compile.')
+    self.text.append('The \'--compile-tools (-ct)\' argument was set when attempting to build gkno. If set, a text file containing a list ' + \
+    'of all the tools to be compiled needs to be supplied. The specified file \'' + filename + '\' contains the tool \'' + tool + '\' which ' + \
+    'is not a tool in gkno. Please ensure that all of the tools listed in the file are present in the following list of available tools:')
+    self.text.append('\t')
+    for tool in availableTools: self.text.append(tool)
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   def gknoAlreadyBuilt(self):
     print("Already built.", file=sys.stdout)
 
