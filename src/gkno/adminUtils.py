@@ -176,7 +176,7 @@ class adminUtils:
     if '--skip-tools' in sys.argv or '-st' in sys.argv:
 
       # Check that the --compile-tools argument was not also set.
-      if '--compile-tools' in sys.argv or '-ct' is sys.argv: self.error.cannotSkipAndCompile(dest=sys.argv)
+      if '--compile-tools' in sys.argv or '-ct' in sys.argv: self.error.cannotSkipAndCompile(dest=sys.argv)
 
       try: index = sys.argv.index('--skip-tools')
       except: index = sys.argv.index('-st')
