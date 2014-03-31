@@ -724,7 +724,7 @@ class adminUtils:
       return json.load(targetFile)
     except:
       exc_type, exc_value, exc_traceback = sys.exc_info()
-      self.error.jsonOpenError(True, 1, exc_value, targetFile)
+      self.error.jsonOpenError(True, exc_value, targetFile)
       self.error.terminate()
 
   # -------------------------------------------
@@ -937,7 +937,7 @@ class adminUtils:
         self.userSettings = json.load(settingsFile)
       except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        self.error.jsonOpenError(True, 1, exc_value, settingsFile)
+        self.error.jsonOpenError(True, exc_value, self.userSettingsFilename())
         self.error.terminate()
   
   # Write settings to file in JSON format

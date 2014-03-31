@@ -536,7 +536,7 @@ argument existed to set this value. Please see the documentation to see how to i
     self.text.append(text)
     text = "The file '" + filename + "' could not be located."
     self.text.append(text)
-    self.writeFormattedText()
+    self.writeFormattedText('error')
     self.hasError = True
 
   # If the requested json file cannot be succesfully read into a data structure, terminate citing
@@ -547,7 +547,7 @@ argument existed to set this value. Please see the documentation to see how to i
     self.text.append(text)
     text = str(error) + '.'
     self.text.append(text)
-    self.writeFormattedText()
+    self.writeFormattedText('error')
     self.hasError = True
 
   ################################
