@@ -324,6 +324,10 @@ class adminUtils:
       self.error.gitSubmoduleUpdateFailed(dest=sys.stdout)
       return False
 
+    # Prior to updating the tools, modify conf.tools to only include the tools included
+    # in the user_settings.
+    self.getCompiledTools()
+
     # Update all built-in tools 
     print("Checking tools: ", file=sys.stdout)
     for tool in conf.tools:
@@ -349,6 +353,12 @@ class adminUtils:
     # Return success
     return True
     
+
+  # Parse the user_settings to get the compiled tools.
+  def getCompiledTools(self):
+    for counter, tool in reversed(list(enumerate(conf.tools))):
+      if tool.name not in self.userSettings['compiled tools']: del(conf.tools[counter])
+
   # "gkno add-resource [organism] [options]"
   #
   # Depending on input parameters, either lists available resources/releases or 
