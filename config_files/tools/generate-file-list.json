@@ -1,5 +1,6 @@
 {
   "description" : "Generate a text file containing a list of files",
+  "tools" : [],
   "path" : "scripts",
   "hide tool" : true,
   "executable" : "generate-file-list.sh",

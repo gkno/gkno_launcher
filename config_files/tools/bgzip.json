@@ -1,5 +1,6 @@
 {
   "description" : "Compress a file using bgzip.",
+  "tools" : ["tabix"],
   "path" : "tabix",
   "hide tool" : true,
   "executable" : "bgzip",

@@ -1,5 +1,6 @@
 {
   "description" : "Filter a BAM file on many parameters or combinations of parameters.",
+  "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "merge",

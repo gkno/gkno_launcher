@@ -1,5 +1,6 @@
 {
   "description" : "Prints general alignment statistics.",
+  "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "stats",

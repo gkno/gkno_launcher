@@ -1,5 +1,6 @@
 {
   "description" : "Compress a file using gzip.",
+  "tools" : [],
   "path" : "no path",
   "hide tool" : true,
   "executable" : "gzip",

@@ -1,5 +1,6 @@
 {
   "description" : "Create an indexed reference file including the mobile elements",
+  "tools" : ["tangram"],
   "path" : "Tangram/bin",
   "executable" : "tangram_index",
   "help" : "--help|-h",

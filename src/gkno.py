@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.173"
+__version__ = "0.174"
 __date__ = "March 2014"
 
 def main():
@@ -241,7 +241,7 @@ def main():
   # If help was requested or there were problems (e.g. the tool name or pipeline
   # name did not exist), print out the required usage information.
   if gknoHelp.printHelp and not gknoHelp.specificPipelineHelp:
-    gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, sourcePath, runName)
+    gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath, runName, instanceName)
 
   # Populate the tl.arguments structure with the arguments with defaults from the tool configuration files.
   # The x.arguments structures for each of the classes used in gkno has the same format (a dictionary whose

@@ -1,5 +1,6 @@
 {
   "description" : "Parse a 1000 Genomes sequence index file and generate a json file with information on the paired end reads (to be used as input to other gkno pipelines.",
+  "tool" : "no tool",
   "path" : "scripts",
   "executable" : "sequence-index-1000G.sh",
   "help" : "--help|-h",

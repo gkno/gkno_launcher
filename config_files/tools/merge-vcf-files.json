@@ -1,5 +1,6 @@
 {
   "description" : "Merge multiple compressed vcf files and use bgzip to compess and tabix to index.",
+  "tools" : [],
   "path" : "scripts",
   "executable" : "merge-vcf.sh",
   "hide tool" : true,

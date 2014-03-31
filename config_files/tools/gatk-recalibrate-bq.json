@@ -1,5 +1,6 @@
 {
   "description" : "Recalibrate base qualities",
+  "tools" : ["gatk"],
   "path" : "gatk/dist",
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx2g -jar",

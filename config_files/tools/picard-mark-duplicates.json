@@ -1,5 +1,6 @@
 {
   "description" : "Mark duplicate reads.",
+  "tools" : ["picard"],
   "path" : "picard/dist",
   "executable" : "MarkDuplicates.jar",
   "precommand" : "java -Xmx8g -jar",

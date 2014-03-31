@@ -1,5 +1,6 @@
 {
   "description" : "Resolves paired-end reads (marking the IsProperPair flag as needed).",
+  "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "resolve",

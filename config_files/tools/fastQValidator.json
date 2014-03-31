@@ -1,5 +1,6 @@
 {
   "description" : "Validate a fastq file.",
+  "tools" : ["fastQValidator"],
   "path" : "fastQValidator/bin",
   "executable" : "fastQValidator",
   "help" : "--help|-h",

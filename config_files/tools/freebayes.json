@@ -1,5 +1,6 @@
 {
   "description" : "Bayesian variant and haplotype calling",
+  "tools" : ["freebayes"],
   "path" : "freebayes/bin",
   "executable" : "freebayes",
   "help" : "--help|-h",

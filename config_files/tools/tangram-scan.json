@@ -1,5 +1,6 @@
 {
   "description" : "Generate a histogram of the fragment length distributions of the input libraries.",
+  "tools" : ["tangram"],
   "path" : "Tangram/bin",
   "executable" : "tangram_scan",
   "help" : "--help|-h",

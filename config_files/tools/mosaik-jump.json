@@ -1,5 +1,6 @@
 {
   "description" : "Generate the jump database for a Mosaik reference",
+  "tools" : ["mosaik"],
   "path" : "MOSAIK/bin",
   "executable" : "MosaikJump",
   "help" : "--help|-h",

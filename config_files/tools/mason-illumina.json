@@ -1,5 +1,6 @@
 {
   "description" : "Generate simulated Illumina reads.",
+  "tools" : ["seqan"],
   "path" : "seqan/build/Release/bin",
   "executable" : "mason",
   "modifier" : "illumina",

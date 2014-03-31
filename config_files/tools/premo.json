@@ -1,5 +1,6 @@
 {
   "description" : "Determine MosaikAligner parameters based on read and fragment length",
+  "tools" : ["premo", "mosaik"],
   "path" : "premo/bin",
   "executable" : "premo",
   "help" : "--help|-h",

@@ -1,5 +1,6 @@
 {
   "description" : "Build the Mosaik read archive",
+  "tools" : ["mosaik"],
   "path" : "MOSAIK/bin",
   "executable" : "MosaikBuild",
   "help" : "--help|-h",

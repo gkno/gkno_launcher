@@ -1,5 +1,6 @@
 {
   "description" : "Modify base quality based on Hidden Markov model.",
+  "tools" : ["samtools"],
   "path" : "samtools",
   "executable" : "samtools",
   "modifier" : "calmd",

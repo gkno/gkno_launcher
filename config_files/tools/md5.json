@@ -1,5 +1,6 @@
 {
   "description" : "Generate the MD5 checksum for a file.",
+  "tools" : [],
   "path" : "no path",
   "executable" : "md5sum",
   "help" : "--help|-h",

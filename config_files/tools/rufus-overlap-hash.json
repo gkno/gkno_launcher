@@ -1,0 +1,168 @@
+{
+  "description" : "Overlap hashes.",
+  "tools" : ["Rufus"],
+  "path" : "Rufus/bin",
+  "executable" : "Overlap19",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "Input fastq file.",
+      "long form argument" : "--fastq",
+      "short form argument" : "-q",
+      "command line argument" : "--fastq",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".fq", ".fastq"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Output.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "--output",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : ["rov"],
+      "modify argument name on command line" : "hide",
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--fastq",
+        "modify extension" : "replace"
+      }
+    },
+    {
+      "description" : "Report stub.",
+      "long form argument" : "--stub",
+      "short form argument" : "-s",
+      "command line argument" : "--stub",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Minimum percent.",
+      "long form argument" : "--minimum-percent",
+      "short form argument" : "-m",
+      "command line argument" : "--minimum-percent",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "float",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Minimum overlap",
+      "long form argument" : "--minimum-overlap",
+      "short form argument" : "-mo",
+      "command line argument" : "--minimum-overlap",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Minimum coverage.",
+      "long form argument" : "--minimum-coverage",
+      "short form argument" : "-mc",
+      "command line argument" : "--minimum-coverage",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Search hash size.",
+      "long form argument" : "--search-hash-size",
+      "short form argument" : "-shs",
+      "command line argument" : "--search-hash-size",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "LCendTrimEpth.",
+      "long form argument" : "--lc",
+      "short form argument" : "-l",
+      "command line argument" : "--lc",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "ACT.",
+      "long form argument" : "--act",
+      "short form argument" : "-a",
+      "command line argument" : "--act",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Number of processors.",
+      "long form argument" : "--processors",
+      "short form argument" : "-p",
+      "command line argument" : "--threads",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    }
+  ],
+
+  "argument order" : [
+    "--fastq",
+    "--minimum-percent",
+    "--minimum-overlap",
+    "--minimum-coverage",
+    "--stub",
+    "--search-hash-size",
+    "--act",
+    "--out",
+    "--lc",
+    "--processors"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "processors",
+          "argument" : "--processors",
+          "values" : [1]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 {
   "description" : "Mark duplicate reads in a BAM file (University of Michigan).",
+  "tools" : ["bamUtil", "libStatGen"],
   "path" : "bamUtil/bin",
   "executable" : "bam",
   "modifier" : "dedup",

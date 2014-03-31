@@ -72,10 +72,9 @@ class helpClass:
 
     # gkno tool mode usage.
     elif self.toolHelp:
-      print('HI')
       self.getTools(config, gknoConfig, toolConfigurationFilesPath)
       if self.invalidTool:
-        self.printToolModeUsage()
+        self.printToolModeUsage(config, admin)
         self.invalidToolMessage(name)
       else: self.toolUsage(graph, config, gknoConfig, name, toolConfigurationFilesPath, instanceName)
 
@@ -105,7 +104,7 @@ class helpClass:
     self.printAdminModeUsage(admin)
 
     # Print out a list of available tools.
-    self.printToolModeUsage()
+    self.printToolModeUsage(config, admin)
 
     # Print out pipeline help.
     self.printPipelineModeUsage()
@@ -172,7 +171,7 @@ class helpClass:
     print(file = sys.stdout)
 
   # Print usage information on the tool mode of operation.
-  def printToolModeUsage(self):
+  def printToolModeUsage(self, config, admin):
     print('=============', file = sys.stdout)
     print('  tool mode', file = sys.stdout)
     print('=============', file = sys.stdout)
@@ -183,7 +182,14 @@ class helpClass:
 
     # Write the tools to screen.
     for tool in sorted(self.availableTools.keys()):
-      if not self.availableTools[tool][1]: self.writeFormattedText(tool + ':', self.availableTools[tool][0], self.toolLength + 5, 2, '')
+      allToolsCompiled = True
+      for requiredTool in config.tools.getGeneralAttribute(tool, 'requiredCompiledTools'):
+        if requiredTool not in admin.userSettings['compiled tools']: allToolsCompiled = False
+
+      # If the tool requires tools to be compiled and they are not, prepend the tool name with a '!'. This
+      # indicates that the tool is not available.
+      toolText = tool if allToolsCompiled else str('!') + tool
+      if not self.availableTools[tool][1]: self.writeFormattedText(toolText + ':', self.availableTools[tool][0], self.toolLength + 5, 2, '')
     print(file = sys.stdout)
 
     # Now list any tool configuratiobn files that have errors.

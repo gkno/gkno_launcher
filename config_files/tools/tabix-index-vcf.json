@@ -1,5 +1,6 @@
 {
   "description" : "Index a VCF file using tabix.",
+  "tools" : ["tabix"],
   "path" : "tabix",
   "hide tool" : true,
   "executable" : "tabix",

@@ -1,5 +1,6 @@
 {
   "description" : "Detect and genotype structural variation events.",
+  "tools" : ["tangram"],
   "path" : "Tangram/bin",
   "executable" : "tangram_detect",
   "help" : "--help|-h",

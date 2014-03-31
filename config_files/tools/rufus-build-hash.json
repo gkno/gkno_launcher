@@ -1,0 +1,142 @@
+{
+  "description" : "Build hashes.",
+  "tools" : ["Rufus"],
+  "path" : "Rufus/bin",
+  "executable" : "RUFUSv6.BuildHash",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "First set of k-mer counts (reference strain).",
+      "long form argument" : "--k-mer-count1",
+      "short form argument" : "-k1",
+      "command line argument" : "--k-mer-count1",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".tab"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "First set of k-mer counts (query strain).",
+      "long form argument" : "--k-mer-count2",
+      "short form argument" : "-k2",
+      "command line argument" : "--k-mer-count2",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".tab"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Output file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "--output",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".hl"],
+      "modify argument name on command line" : "hide",
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--k-mer-count2",
+        "modify extension" : "replace"
+      }
+    },
+    {
+      "description" : "Length of k-mer..",
+      "long form argument" : "--k-mer",
+      "short form argument" : "-k",
+      "command line argument" : "--k-mer",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Maximum depth in reference strain.",
+      "long form argument" : "--max-depth-reference",
+      "short form argument" : "-mr",
+      "command line argument" : "--max-depth-reference",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Minimum depth in query.",
+      "long form argument" : "--min-depth-query",
+      "short form argument" : "-mq",
+      "command line argument" : "--min-depth-query",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Maximum depth.",
+      "long form argument" : "--max-depth",
+      "short form argument" : "-d",
+      "command line argument" : "--max-depth",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Number of processors.",
+      "long form argument" : "--processors",
+      "short form argument" : "-p",
+      "command line argument" : "--threads",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    }
+  ],
+
+  "argument order" : [
+    "--k-mer-count1",
+    "--k-mer-count2",
+    "--out",
+    "--k-mer",
+    "--max-depth-reference",
+    "--min-depth-query",
+    "--max-depth",
+    "--processors"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "processors",
+          "argument" : "--processors",
+          "values" : [1]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

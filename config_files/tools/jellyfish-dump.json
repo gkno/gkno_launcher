@@ -1,0 +1,110 @@
+{
+  "description" : "Dump k-mer counts.",
+  "tools" : ["jellyfish"],
+  "path" : "Jellyfish/bin",
+  "executable" : "jellyfish",
+  "modifier" : "dump",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "The k-mer count file.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "command line argument" : "-in",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".jf"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Output file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "--output",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".tab"],
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--in",
+        "add argument values" : [
+          "--lower-count",
+          "--upper-count"
+        ],
+        "modify extension" : "replace"
+      }
+    },
+    {
+      "description" : "Column format (default: false).",
+      "long form argument" : "--column",
+      "short form argument" : "-c",
+      "command line argument" : "--column",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extensions" : ["no extension"]
+    },
+    {
+      "description" : "Tab separator (default:false).",
+      "long form argument" : "--tab",
+      "short form argument" : "-t",
+      "command line argument" : "--tab",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "flag",
+      "extensions" : ["no extension"]
+    },
+    {
+      "description" : "Don't output k-mer with count < lower-count.",
+      "long form argument" : "--lower-count",
+      "short form argument" : "-l",
+      "command line argument" : "--lower-count",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extensions" : ["no extension"]
+    },
+    {
+      "description" : "Don't output k-mer with count > upper-count.",
+      "long form argument" : "--upper-count",
+      "short form argument" : "-u",
+      "command line argument" : "--upper-count",
+      "input" : false,
+      "output" : false,
+      "required" : false,
+      "data type" : "integer",
+      "extensions" : ["no extension"]
+    }
+  ],
+
+  "argument order" : [
+    "--column",
+    "--tab",
+    "--lower-count",
+    "--upper-count",
+    "--out",
+    "--in"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : []
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

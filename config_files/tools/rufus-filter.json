@@ -1,0 +1,143 @@
+{
+  "description" : "Filter.",
+  "tools" : ["Rufus"],
+  "path" : "Rufus/bin",
+  "executable" : "RUFUSv5.Filter",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "Input hash list.",
+      "long form argument" : "--hash-list",
+      "short form argument" : "-h",
+      "command line argument" : "--hash-list",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".hl"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Fastq file.",
+      "long form argument" : "--fastq",
+      "short form argument" : "-q",
+      "command line argument" : "--fastq",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".fq", ".fq.gz", ".fastq", ".fastq.gz"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Output file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "--output",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".fq", ".fastq"],
+      "modify argument name on command line" : "hide",
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--fastq",
+        "modify extension" : "replace",
+        "add additional text" : "_filtered"
+      }
+    },
+    {
+      "description" : "Length of k-mer.",
+      "long form argument" : "--k-mer",
+      "short form argument" : "-k",
+      "command line argument" : "--k-mer",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Minimum base quality.",
+      "long form argument" : "--min-base-quality",
+      "short form argument" : "-mq",
+      "command line argument" : "--min-base-quality",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Hash count threshold.",
+      "long form argument" : "--hash-threshold",
+      "short form argument" : "-t",
+      "command line argument" : "--hash-threshold",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Window.",
+      "long form argument" : "--window",
+      "short form argument" : "-w",
+      "command line argument" : "--window",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Number of processors.",
+      "long form argument" : "--processors",
+      "short form argument" : "-p",
+      "command line argument" : "--threads",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    }
+  ],
+
+  "argument order" : [
+    "--hash-list",
+    "--fastq",
+    "--out",
+    "--k-mer",
+    "--min-base-quality",
+    "--hash-threshold",
+    "--window",
+    "--processors"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "processors",
+          "argument" : "--processors",
+          "values" : [1]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "description" : "Replace spaces with tabs.",
+  "tools" : [],
+  "path" : "scripts",
+  "executable" : "replace-space-tab.sh",
+  "help" : "--help|-h",
+  "no output" : true,
+  "arguments" : [
+    {
+      "description" : "File to modify.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "command line argument" : "--in",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

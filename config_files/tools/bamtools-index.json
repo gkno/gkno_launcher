@@ -1,5 +1,6 @@
 {
   "description" : "Index a BAM file.",
+  "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "index",

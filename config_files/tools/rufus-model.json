@@ -1,0 +1,147 @@
+{
+  "description" : "Model.",
+  "tools" : ["Rufus"],
+  "path" : "Rufus/bin",
+  "executable" : "ModelDist2",
+  "help" : "--help|-h",
+  "arguments" : [
+    {
+      "description" : "Input histogram.",
+      "long form argument" : "--histogram",
+      "short form argument" : "-h",
+      "command line argument" : "--histogram",
+      "input" : true,
+      "output" : false,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".histo"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Output file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "--output",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".rml"],
+      "modify argument name on command line" : "stdout",
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--histogram",
+        "modify extension" : "replace"
+      }
+    },
+    {
+      "description" : "Output dist file.",
+      "long form argument" : "--output-dist",
+      "short form argument" : "-od",
+      "command line argument" : "--output-dist",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".dist"],
+      "include on command line" : false,
+      "hide in help" : true,
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--histogram",
+        "modify extension" : "append"
+      }
+    },
+    {
+      "description" : "Output model file.",
+      "long form argument" : "--output-model",
+      "short form argument" : "-om",
+      "command line argument" : "--output-model",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".model"],
+      "include on command line" : false,
+      "hide in help" : true,
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--histogram",
+        "modify extension" : "append"
+      }
+    },
+    {
+      "description" : "Output prob file.",
+      "long form argument" : "--output-prob",
+      "short form argument" : "-op",
+      "command line argument" : "--output-prob",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : [".prob"],
+      "include on command line" : false,
+      "hide in help" : true,
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--histogram",
+        "modify extension" : "append"
+      }
+    },
+    {
+      "description" : "Length of k-mer.",
+      "long form argument" : "--k-mer",
+      "short form argument" : "-k",
+      "command line argument" : "--k-mer",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Number of processors.",
+      "long form argument" : "--processors",
+      "short form argument" : "-p",
+      "command line argument" : "--threads",
+      "input" : false,
+      "output" : false,
+      "required" : true,
+      "data type" : "integer",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide"
+    }
+  ],
+
+  "argument order" : [
+    "--histogram",
+    "--k-mer",
+    "--processors",
+    "--out",
+    "--output-dist",
+    "--output-model",
+    "--output-prob"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "processors",
+          "argument" : "--processors",
+          "values" : [1]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+      ]
+    }
+  ]
+}
