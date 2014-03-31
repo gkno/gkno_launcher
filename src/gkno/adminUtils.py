@@ -32,11 +32,12 @@ class adminUtils:
     self.modeDescriptions["update-resource"] = "Update resource data for an organism."
 
     # General data members
-    self.error        = gknoErrors()
-    self.isRequested  = False
-    self.isVerbose    = False
-    self.mode         = ""
-    self.userSettings = { }
+    self.error                          = gknoErrors()
+    self.isRequested                    = False
+    self.isVerbose                      = False
+    self.mode                           = ""
+    self.userSettings                   = {}
+    self.userSettings['compiled tools'] = []
 
     # Commonly used path names
     self.sourcePath    = sourcePath 
@@ -150,6 +151,7 @@ class adminUtils:
       if self.buildTool(tool):
         print("done.", file=sys.stdout)
         self.builtTools[tool] = True
+        self.userSettings['compiled tools'].append(tool.name)
       else:
         self.error.toolBuildFailed(tool.name, dest=sys.stdout)
         self.builtTools[tool] = False

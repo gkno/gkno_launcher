@@ -2004,6 +2004,7 @@ argument existed to set this value. Please see the documentation to see how to i
     'of all the tools to be skipped needs to be supplied. Please either build all tools using \'gkno build\' or remove tools by using the ' + \
     'command \'gkno build --skip-list list.json\'.')
     self.writeFormattedText(errorType = 'error')
+    self.terminate()
 
   # If the specified file containing the list of files to skip is missing.
   def missingSkipListFile(self, filename, dest=sys.stderr):
@@ -2129,6 +2130,6 @@ argument existed to set this value. Please see the documentation to see how to i
     'cause of the failures and rebuild. In the meantime, all other tools and pipelines not containing the failed tools can be used. The ' + \
     'tools that failed to build are:')
     self.text.append('\t')
-    for tool in tools: self.text.append('\t' + tool)
+    for tool in tools: self.text.append('\t' + tool.name)
     self.text.append('\t')
     self.writeFormattedText(errorType = 'warning')
