@@ -671,6 +671,17 @@ class gknoConfigurationFiles:
       newExtensions             = config.tools.getArgumentAttribute(tool, argument, 'extensions')
       modifiedValues, extension = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = False)
 
+    # If the extension is to remain unchanged.
+    elif modifyExtension == 'retain':
+      extension     = originalExtensions[0] if originalExtensions[0] != 'no extension' else '.' + values[1][0].rsplit('.')[-1]
+      newExtensions = [extension]
+
+    # TODO ERROR
+    else:
+      print('gknoConfig.constructFilenameFromToolArgumentNotStub')
+      print('unknown extension operation')
+      self.errors.terminate()
+
     # If the construction instructions indicate that values from another argument should be included
     # in the filename, include them here.
     if 'add argument values' in instructions:

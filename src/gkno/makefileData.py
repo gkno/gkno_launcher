@@ -504,7 +504,16 @@ class makefileData:
     for counter in range(0, len(outputs)): print(outputs[counter], end = ' ', file = fileHandle)
     print(lastOutput, end = ': ', file = fileHandle)
     for filename in dependencies: print(filename, end = ' ', file = fileHandle)
-    print(file = fileHandle)
+
+    # Add the primaryOutput to the list of dependencies. This is the file that is listed as the output for
+    # the rule. If running with multiple threads and none of the files exist, the original rule is executed
+    # since the output file does not exist. This rule for the additional outputs is the executed in parallel
+    # since none of these additional files exist either. By including the primaryOutput as a dependency, we
+    # ensure that the original rule gets to run first and this check isn't performed until it has been
+    # completed.
+    print(primaryOutput, file = fileHandle)
+
+    #print(file = fileHandle)
     print('\t@if test -f $@; then \\', file = fileHandle)
     print('\t  touch $@; \\', file = fileHandle)
     print('\telse \\', file = fileHandle)
