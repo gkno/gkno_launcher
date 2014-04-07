@@ -54,7 +54,8 @@ class writeToScreen:
     sys.stdout.flush()
   
   def writePipelineWorkflow(self, graph, config, gknoHelp):
-  
+    print(file = sys.stdout)
+
     # Determine the length of the longest tool name.
     length  = 0
     for task in config.pipeline.workflow:
@@ -85,6 +86,10 @@ class writeToScreen:
     print('Checking instance information...', end = '', file = sys.stdout)
     sys.stdout.flush()
   
+  def writeCheckingEvaluateCommands(self):
+    print('Checking for commands to execute at command line...', end = '', file = sys.stdout)
+    sys.stdout.flush()
+
   def writeTracking(self, ID):
     print("Logging gkno usage with ID: ", ID, "...", sep = '', end = '', file = sys.stdout)
     sys.stdout.flush()

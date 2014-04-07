@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.175"
+__version__ = "0.176"
 __date__ = "March 2014"
 
 def main():
@@ -266,7 +266,7 @@ def main():
     else: errors.terminate()
   
   # Print information about the pipeline to screen.
-  if isPipeline: write.writePipelineWorkflow(pipelineGraph, config, gknoHelp)
+  #if isPipeline: write.writePipelineWorkflow(pipelineGraph, config, gknoHelp)
 
   # Check if an instance was requested by the user.  If so, get the data and add the values to the data nodes.
   write.writeCheckingInstanceInformation()
@@ -334,8 +334,14 @@ def main():
   if isDebug: write.writeDebug('Set file paths')
 
   # Check if there are instructions for evaluating commands and if so, attach them to the required
-  # nodes.
+  # nodes. Then recalculate the workflow, since some of the tasks may now use outputs from previous
+  # tasks for evaluating these commands, creating new dependencies.
+  write.writeCheckingEvaluateCommands()
   config.evaluateCommands(pipelineGraph)
+  write.writeDone()
+  if config.hasCommandToEvaluate: config.pipeline.workflow = config.generateWorkflow(pipelineGraph)
+  if isPipeline: write.writePipelineWorkflow(pipelineGraph, config, gknoHelp)
+    
   if isDebug: write.writeDebug('Identified commands to evaluate')
 
   # Prior to filling in missing filenames, check that all of the supplied data is consistent with
