@@ -70,6 +70,19 @@ class gknoErrors:
     print('================================================================================================', file=sys.stderr)
     exit(2)
 
+  ##################################
+  # Errors with configuration file #
+  ##################################
+
+  # The help class cannot find the tool. Most likely a problem with the configuration file.
+  def problemWithTool(self, tool):
+    self.text.append('Problem with configuration file for tool: ' + tool)
+    self.text.append('Help cannot be displayed for the requested tool \'' + tool + '\'. A configuration file for the tool exists, however ' + \
+    'the contents have not been successfully parsed. Please type \'gkno <tool>\' without the request for help. This should display an error ' + \
+    'with the configuration file that requires fixing prior to requesting help with the tool')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   #####################################
   # Error with pipeline construction. #
   #####################################

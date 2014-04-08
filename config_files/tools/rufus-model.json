@@ -27,7 +27,7 @@
       "required" : true,
       "data type" : "string",
       "extensions" : [".rml"],
-      "modify argument name on command line" : "stdout",
+      "modify argument name on command line" : "omit",
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--histogram",
@@ -44,7 +44,7 @@
       "required" : true,
       "data type" : "string",
       "extensions" : [".dist"],
-      "include on command line" : false,
+      "modify argument name on command line" : "omit",
       "hide in help" : true,
       "construct filename" : {
         "method": "from tool argument",
@@ -62,7 +62,7 @@
       "required" : true,
       "data type" : "string",
       "extensions" : [".model"],
-      "include on command line" : false,
+      "modify argument name on command line" : "omit",
       "hide in help" : true,
       "construct filename" : {
         "method": "from tool argument",
@@ -80,7 +80,7 @@
       "required" : true,
       "data type" : "string",
       "extensions" : [".prob"],
-      "include on command line" : false,
+      "modify argument name on command line" : "omit",
       "hide in help" : true,
       "construct filename" : {
         "method": "from tool argument",

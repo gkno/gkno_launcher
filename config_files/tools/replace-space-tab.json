@@ -4,7 +4,6 @@
   "path" : "scripts",
   "executable" : "replace-space-tab.sh",
   "help" : "--help|-h",
-  "no output" : true,
   "arguments" : [
     {
       "description" : "File to modify.",
@@ -17,7 +16,31 @@
       "data type" : "string",
       "extensions" : ["no extension"],
       "modify argument name on command line" : "hide"
+    },
+    {
+      "description" : "Output file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "command line argument" : "--out",
+      "input" : false,
+      "output" : true,
+      "required" : true,
+      "data type" : "string",
+      "extensions" : ["no extension"],
+      "modify argument name on command line" : "hide",
+      "modify argument name on command line" : "stdout",
+      "construct filename" : {
+        "method": "from tool argument",
+        "use argument" : "--in",
+        "modify extension" : "retain",
+        "add additional text" : "_tab"
+      }
     }
+  ],
+
+  "argument order" : [
+    "--in",
+    "--out"
   ],
 
   "instances" : [

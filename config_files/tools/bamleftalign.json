@@ -18,7 +18,7 @@
       "extensions" : [".bam"],
       "data type" : "string",
       "hide in help" : true,
-      "include on command line" : false
+      "modify argument name on command line" : "omit"
     },
     {
       "description" : "The output BAM file.",

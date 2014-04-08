@@ -19,7 +19,7 @@
       "data type" : "string",
       "if input is stream" : "do not include",
       "hide in help" : true,
-      "include on command line" : false
+      "modify argument name on command line" : "omit"
     },
     {    
       "description" : "The output BAM file.",
@@ -34,7 +34,7 @@
       "if output to stream" : "do not include",
       "modify argument name on command line" : "stdout",
       "hide in help" : true,
-      "include on command line" : false,
+      "modify argument name on command line" : "omit",
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--in",

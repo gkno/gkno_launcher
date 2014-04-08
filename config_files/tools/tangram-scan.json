@@ -38,7 +38,7 @@
       "required" : true,
       "data type" : "string",
       "extensions" : [".dat"],
-      "include on command line" : false,
+      "modify argument name on command line" : "omit",
       "hide in help" : true,
       "terminate if present" : true,
       "construct filename" : {
@@ -60,7 +60,7 @@
       "data type" : "string",
       "extensions" : [".dat"],
       "hide in help" : true,
-      "include on command line" : false,
+      "modify argument name on command line" : "omit",
       "terminate if present" : true,
       "construct filename" : {
         "method": "define name",

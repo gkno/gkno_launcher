@@ -33,7 +33,7 @@
       "extensions" : [".bai"],
       "data type" : "string",
       "allow multiple values" : true,
-      "include on command line" : false,
+      "modify argument name on command line" : "omit",
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--bam",

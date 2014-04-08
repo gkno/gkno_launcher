@@ -2,6 +2,9 @@
 
 from __future__ import print_function
 
+import gknoErrors
+from gknoErrors import *
+
 import os
 import sys
 
@@ -25,6 +28,9 @@ class helpClass:
     # Keep track of tools with malformed configuration files.
     self.failedTools     = {}
     self.failedPipelines = {}
+
+    # Define the errors class.
+    self.errors = gknoErrors()
 
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
@@ -349,7 +355,8 @@ class helpClass:
 
     # Print out the tool description.
     print('     Description:', file = sys.stdout)
-    self.writeFormattedText(self.availableTools[tool][0], ' ', 2, 2, ' ')
+    try: self.writeFormattedText(self.availableTools[tool][0], ' ', 2, 2, ' ')
+    except: self.errors.problemWithTool(tool)
     print(file = sys.stdout)
     sys.stdout.flush()
 

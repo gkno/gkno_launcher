@@ -26,7 +26,7 @@
       "required" : true,
       "data type" : "string",
       "extensions" : [".stats"],
-      "include on command line" : false,
+      "modify argument name on command line" : "omit",
       "construct filename" : {
         "method": "from tool argument",
         "use argument" : "--fastq",
