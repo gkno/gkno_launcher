@@ -1,5 +1,6 @@
 {
   "description" : "Build the Mosaik reference",
+  "category" : "reference processing",
   "tools" : ["mosaik"],
   "path" : "MOSAIK/bin",
   "executable" : "MosaikBuild",

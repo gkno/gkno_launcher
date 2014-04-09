@@ -1,5 +1,6 @@
 {
   "description" : "Pairwise alignment of a read archive",
+  "category" : "align",
   "tools" : ["mosaik"],
   "path" : "MOSAIK/bin",
   "executable" : "MosaikAligner",

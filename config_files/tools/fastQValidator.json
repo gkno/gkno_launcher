@@ -1,5 +1,6 @@
 {
   "description" : "Validate a fastq file.",
+  "category" : "sequence preprocessing",
   "tools" : ["fastQValidator"],
   "path" : "fastQValidator/bin",
   "executable" : "fastQValidator",

@@ -1,5 +1,6 @@
 {
   "description" : "Index a VCF file using tabix.",
+  "category" : "variant postprocessing",
   "tools" : ["tabix"],
   "path" : "tabix",
   "hide tool" : true,

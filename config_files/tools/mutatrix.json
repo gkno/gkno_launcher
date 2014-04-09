@@ -1,5 +1,6 @@
 {
   "description" : "Generates a simulated population with no linkage, but allele frequency spectrum drawn from 1/n, where n is the minor allele frequency.",
+  "category" : "simulation",
   "tools" : ["mutatrix"],
   "path" : "mutatrix",
   "executable" : "mutatrix",

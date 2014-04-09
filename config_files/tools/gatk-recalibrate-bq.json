@@ -1,5 +1,6 @@
 {
   "description" : "Recalibrate base qualities",
+  "category" : "alignment processing",
   "tools" : ["gatk"],
   "path" : "gatk/dist",
   "executable" : "GenomeAnalysisTK.jar",

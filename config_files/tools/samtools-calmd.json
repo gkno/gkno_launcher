@@ -1,5 +1,6 @@
 {
   "description" : "Modify base quality based on Hidden Markov model.",
+  "category" : "alignment processing",
   "tools" : ["samtools"],
   "path" : "samtools",
   "executable" : "samtools",

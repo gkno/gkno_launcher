@@ -1,5 +1,6 @@
 {
   "description" : "Overlap hashes.",
+  "category" : "kmer processing",
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",
   "executable" : "Overlap19",

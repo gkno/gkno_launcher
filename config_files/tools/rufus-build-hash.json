@@ -1,5 +1,6 @@
 {
   "description" : "Build hashes.",
+  "category" : "kmer preprocessing",
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",
   "executable" : "RUFUSv6.BuildHash",

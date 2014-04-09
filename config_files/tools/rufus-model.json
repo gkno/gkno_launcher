@@ -1,5 +1,6 @@
 {
   "description" : "Model.",
+  "category" : "kmer processing",
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",
   "executable" : "ModelDist2",

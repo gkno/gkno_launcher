@@ -1,5 +1,6 @@
 {
   "description" : "Realigns alignments optimized to open gaps in low-entropy sequence.",
+  "category" : "alignment processing",
   "tools" : ["ogap"],
   "path" : "ogap",
   "executable" : "ogap",

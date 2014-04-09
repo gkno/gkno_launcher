@@ -1,5 +1,6 @@
 {
   "description" : "Mark duplicate reads.",
+  "category" : "alignment processing",
   "tools" : ["picard"],
   "path" : "picard/dist",
   "executable" : "MarkDuplicates.jar",

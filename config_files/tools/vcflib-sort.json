@@ -1,5 +1,6 @@
 {
   "description" : "Sort a vcf file.",
+  "category" : "variant postprocessing",
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
   "executable" : "vcfsort",

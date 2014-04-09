@@ -1,5 +1,6 @@
 {
   "description" : "Prints general alignment statistics.",
+  "category" : "alignment processing",
   "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",

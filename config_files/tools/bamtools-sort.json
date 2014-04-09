@@ -1,5 +1,6 @@
 {
   "description" : "Sort a BAM file",
+  "category" : "alignment processing",
   "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",

@@ -1,5 +1,6 @@
 {
   "description" : "Generate simulated Illumina paired end reads.",
+  "category" : "simulation",
   "tools" : ["seqan"],
   "path" : "seqan/build/Release/bin",
   "executable" : "mason",

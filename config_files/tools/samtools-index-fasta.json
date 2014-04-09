@@ -1,5 +1,6 @@
 {
   "description" : "Generate an index for a reference fasta file.",
+  "category" : "reference processing",
   "tools" : ["samtools"],
   "path" : "samtools",
   "executable" : "samtools",

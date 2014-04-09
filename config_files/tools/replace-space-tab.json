@@ -1,5 +1,6 @@
 {
   "description" : "Replace spaces with tabs.",
+  "category" : "file processing",
   "tools" : [],
   "path" : "scripts",
   "executable" : "replace-space-tab.sh",
