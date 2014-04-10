@@ -1,4 +1,5 @@
 {
+  "id" : "bamtools-filter",
   "description" : "Filter a BAM file on many parameters or combinations of parameters.",
   "category" : "alignment processing",
   "tools" : ["bamtools"],

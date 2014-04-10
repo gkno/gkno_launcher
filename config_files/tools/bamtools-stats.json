@@ -1,4 +1,5 @@
 {
+  "id" : "bamtools-stats",
   "description" : "Prints general alignment statistics.",
   "category" : "alignment processing",
   "tools" : ["bamtools"],

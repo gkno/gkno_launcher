@@ -1,4 +1,5 @@
 {
+  "id" : "vcflib-primitives",
   "description" : "Split single vcf records into multiple primitives (gaps, mismatches).",
   "category" : "variant postprocessing",
   "tools" : ["vcflib"],

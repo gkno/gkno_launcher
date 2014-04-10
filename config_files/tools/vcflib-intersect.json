@@ -1,4 +1,5 @@
 {
+  "id" : "vcflib-intersect",
   "description" : "Filter vcf files on a variety of parameters.",
   "category" : "variant postprocessing",
   "tools" : ["vcflib"],

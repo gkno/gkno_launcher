@@ -1,4 +1,5 @@
 {
+  "id" : "freebayes",
   "description" : "Bayesian variant and haplotype calling",
   "category" : "variant discovery",
   "tools" : ["freebayes"],

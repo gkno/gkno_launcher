@@ -1,4 +1,5 @@
 {
+  "id" : "1000G-index-paired",
   "description" : "Parse a 1000 Genomes sequence index file and generate a json file with information on the paired end reads (to be used as input to other gkno pipelines.",
   "category" : "file processing",
   "tools" : [],

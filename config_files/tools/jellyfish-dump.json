@@ -1,4 +1,5 @@
 {
+  "id" : "jellyfish-dump",
   "description" : "Dump k-mer counts.",
   "category" : "kmer preprocessing",
   "tools" : ["jellyfish"],

@@ -1,4 +1,5 @@
 {
+  "id" : "jellyfish-count",
   "description" : "Count k-mers in fasta or fastq files.",
   "category" : "kmer preprocessing",
   "tools" : ["jellyfish"],

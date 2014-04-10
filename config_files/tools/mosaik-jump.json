@@ -1,4 +1,5 @@
 {
+  "id" : "mosaik-jump",
   "description" : "Generate the jump database for a Mosaik reference",
   "category" : "reference processing",
   "tools" : ["mosaik"],

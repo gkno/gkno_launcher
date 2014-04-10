@@ -1,4 +1,5 @@
 {
+  "id" : "rufus-model",
   "description" : "Model.",
   "category" : "kmer processing",
   "tools" : ["Rufus"],

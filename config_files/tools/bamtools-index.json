@@ -1,4 +1,5 @@
 {
+  "id" : "bamtools-index",
   "description" : "Index a BAM file.",
   "category" : "alignment processing",
   "tools" : ["bamtools"],

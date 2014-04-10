@@ -1,4 +1,5 @@
 {
+  "id" : "replace-space-tab",
   "description" : "Replace spaces with tabs.",
   "category" : "file processing",
   "tools" : [],

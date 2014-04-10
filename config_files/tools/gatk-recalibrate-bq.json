@@ -1,4 +1,5 @@
 {
+  "id" : "gatk-recalibrate-bq",
   "description" : "Recalibrate base qualities",
   "category" : "alignment processing",
   "tools" : ["gatk"],

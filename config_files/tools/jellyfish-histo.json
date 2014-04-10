@@ -1,4 +1,5 @@
 {
+  "id" : "jellyfish-histo",
   "description" : "Create a histogram of k-mer occurrences.",
   "category" : "kmer prepocessing",
   "tools" : ["jellyfish"],

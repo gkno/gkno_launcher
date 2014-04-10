@@ -1,4 +1,5 @@
 {
+  "id" : "tangram-index",
   "description" : "Create an indexed reference file including the mobile elements",
   "category" : "reference processing",
   "tools" : ["tangram"],

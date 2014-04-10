@@ -1,4 +1,5 @@
 {
+  "id" : "bamleftalign",
   "description" : "Left-aligns and merges the insertions and deletions in all alignments in stdin.  Iterates until each alignment is stable through a left-realignment step.",
   "category" : "alignment processing",
   "tools" : ["freebayes"],

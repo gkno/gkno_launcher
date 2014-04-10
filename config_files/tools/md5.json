@@ -1,4 +1,5 @@
 {
+  "id" : "md5",
   "description" : "Generate the MD5 checksum for a file.",
   "category" : "file processing",
   "tools" : [],

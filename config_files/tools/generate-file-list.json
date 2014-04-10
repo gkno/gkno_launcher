@@ -1,4 +1,5 @@
 {
+  "id" : "generate-file-list",
   "description" : "Generate a text file containing a list of files",
   "category" : "file processing",
   "tools" : [],

@@ -1,4 +1,5 @@
 {
+  "id" : "fastQValidator",
   "description" : "Validate a fastq file.",
   "category" : "sequence preprocessing",
   "tools" : ["fastQValidator"],

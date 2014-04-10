@@ -1,4 +1,5 @@
 {
+  "id" : "tangram-merge",
   "description" : "Merges fragment length distributions from multiple BAM files.",
   "category" : "alignment processing",
   "tools" : ["tangram"],

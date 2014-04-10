@@ -1,4 +1,5 @@
 {
+  "id" : "picard-mark-duplicates",
   "description" : "Mark duplicate reads.",
   "category" : "alignment processing",
   "tools" : ["picard"],

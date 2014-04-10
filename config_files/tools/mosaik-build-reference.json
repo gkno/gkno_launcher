@@ -1,4 +1,5 @@
 {
+  "id" : "mosaik-build-reference",
   "description" : "Build the Mosaik reference",
   "category" : "reference processing",
   "tools" : ["mosaik"],

@@ -1,4 +1,5 @@
 {
+  "id" : "picard-create-sequence-dictionary",
   "description" : "Generate a dictionary containing all of the sequences in the input reference fasta.",
   "category" : "reference processing",
   "tools" : ["picard"],

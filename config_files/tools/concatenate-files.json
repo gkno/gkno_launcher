@@ -1,4 +1,5 @@
 {
+  "id" : "concatenate-files",
   "description" : "Join multiple files",
   "category" : "file processing",
   "tools" : [],

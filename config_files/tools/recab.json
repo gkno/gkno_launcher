@@ -1,4 +1,5 @@
 {
+  "id" : "recab",
   "description" : "Recalibrate base qualities in a BAM file (University of Michigan).",
   "category" : "alignment processing",
   "tools" : ["bamUtil", "libStatGen"],

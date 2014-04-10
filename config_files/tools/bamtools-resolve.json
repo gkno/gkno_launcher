@@ -1,4 +1,5 @@
 {
+  "id" : "bamtools-resolve",
   "description" : "Resolves paired-end reads (marking the IsProperPair flag as needed).",
   "category" : "alignment processing",
   "tools" : ["bamtools"],

@@ -1,4 +1,5 @@
 {
+  "id" : "gatk-count-covariates",
   "description" : "Count covariates",
   "category" : "alignment processing",
   "tools" : ["gatk"],

@@ -1,4 +1,5 @@
 {
+  "id" : "premo",
   "description" : "Determine MosaikAligner parameters based on read and fragment length",
   "category" : "align",
   "tools" : ["premo", "mosaik"],

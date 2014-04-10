@@ -1,4 +1,5 @@
 {
+  "id" : "dedup",
   "description" : "Mark duplicate reads in a BAM file (University of Michigan).",
   "category" : "alignment processing",
   "tools" : ["bamUtil", "libStatGen"],

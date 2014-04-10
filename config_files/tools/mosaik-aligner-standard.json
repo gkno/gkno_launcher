@@ -1,4 +1,5 @@
 {
+  "id" : "mosaik-aligner-standard",
   "description" : "Pairwise alignment of a read archive.",
   "category" : "align",
   "tools" : ["mosaik"],

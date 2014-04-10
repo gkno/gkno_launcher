@@ -1,4 +1,5 @@
 {
+  "id" : "mason-illumina-paired",
   "description" : "Generate simulated Illumina reads.",
   "category" : "simulation",
   "tools" : ["seqan"],

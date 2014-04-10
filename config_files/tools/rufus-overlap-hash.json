@@ -1,4 +1,5 @@
 {
+  "id" : "rufus-overlap-hash",
   "description" : "Overlap hashes.",
   "category" : "kmer processing",
   "tools" : ["Rufus"],

@@ -1,4 +1,5 @@
 {
+  "id" : "tangram-detect",
   "description" : "Detect and genotype structural variation events.",
   "category" : "variant discovery",
   "tools" : ["tangram"],

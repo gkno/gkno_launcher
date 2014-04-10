@@ -1,4 +1,5 @@
 {
+  "id" : "mosaik-build-fastq",
   "description" : "Build the Mosaik read archive",
   "category" : "sequence preprocessing",
   "tools" : ["mosaik"],

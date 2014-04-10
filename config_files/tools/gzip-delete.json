@@ -1,4 +1,5 @@
 {
+  "id" : "gzip-delete",
   "description" : "Compress a file using gzip.",
   "category" : "file processing",
   "tools" : [],

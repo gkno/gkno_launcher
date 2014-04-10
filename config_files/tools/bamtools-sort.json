@@ -1,4 +1,5 @@
 {
+  "id" : "bamtools-sort",
   "description" : "Sort a BAM file",
   "category" : "alignment processing",
   "tools" : ["bamtools"],

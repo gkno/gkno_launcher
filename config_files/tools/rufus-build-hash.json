@@ -1,4 +1,5 @@
 {
+  "id" : "rufus-build-hash",
   "description" : "Build hashes.",
   "category" : "kmer preprocessing",
   "tools" : ["Rufus"],
