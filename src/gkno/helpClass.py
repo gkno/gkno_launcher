@@ -377,45 +377,44 @@ class helpClass:
     # Write out all of the gkno options.
     self.gknoOptions(graph, config)
 
-    # Split the tool inputs into a required and an optional set.
-    optionalArguments = {}
-    requiredArguments = {}
-    argumentLength    = 0
+    # Sort the arguments by the argument group.
+    arguments      = {}
+    argumentLength = 0
     for longFormArgument in config.tools.argumentAttributes[tool].keys():
       if not config.tools.getArgumentAttribute(tool, longFormArgument, 'hideInHelp'):
         shortFormArgument = config.tools.getArgumentAttribute(tool, longFormArgument, 'shortFormArgument')
+        argumentGroup     = config.tools.getArgumentAttribute(tool, longFormArgument, 'argumentGroup')
+        isRequired        = config.tools.getArgumentAttribute(tool, longFormArgument, 'isRequired')
+        if argumentGroup not in arguments: arguments[argumentGroup] = {}
+        arguments[argumentGroup][longFormArgument] = (shortFormArgument, isRequired)
+
+        # Compare the argument length to others in all groups.
         if (len(longFormArgument) + len(shortFormArgument)) > argumentLength: argumentLength = len(longFormArgument) + len(shortFormArgument)
-        if config.tools.getArgumentAttribute(tool, longFormArgument, 'isRequired'): requiredArguments[longFormArgument] = shortFormArgument
-        else: optionalArguments[longFormArgument] = shortFormArgument
 
-    # Sort the required and optional arguments.
-    sortedRequiredArguments = sorted(requiredArguments.keys())
-    sortedOptionalArguments = sorted(optionalArguments.keys())
-
-    # Print out the required arguments.
-    if sortedRequiredArguments:
-      print('     Required arguments:', file = sys.stdout)
-      for argument in sortedRequiredArguments:
-        argumentText  = argument + ' (' + requiredArguments[argument] + '):'
-        description   = config.tools.getArgumentAttribute(tool, argument, 'description')
-        dataType      = config.tools.getArgumentAttribute(tool, argument, 'dataType')
-        self.writeFormattedText(argumentText, description, argumentLength + 5, 2, dataType)
-      print(file = sys.stdout)
-      sys.stdout.flush()
-
-    # Print out the optional arguments.
-    if sortedOptionalArguments:
-      print('     Optional arguments:', file = sys.stdout)
-      for argument in sortedOptionalArguments:
-        argumentText  = argument + ' (' + optionalArguments[argument] + '):'
-        description   = config.tools.getArgumentAttribute(tool, argument, 'description')
-        dataType      = config.tools.getArgumentAttribute(tool, argument, 'dataType')
-        self.writeFormattedText(argumentText, description, argumentLength + 5, 2, dataType)
-      print(file = sys.stdout)
-      sys.stdout.flush()
+    # Print out all the input files.
+    self.printToolArguments(config, tool, 'input files', arguments.pop('inputs'), argumentLength)
+    self.printToolArguments(config, tool, 'output files', arguments.pop('outputs'), argumentLength)
+    for group in arguments: self.printToolArguments(config, tool, group, arguments[group], argumentLength)
 
     # Write out all of the values included in the selected instance, if there are any.
     if config.instances.getArguments(tool, instanceName, isPipeline = False): self.writeInstanceParameters(config, tool, instanceName)
+
+  # Print out arguments.
+  def printToolArguments(self, config, tool, argumentGroup, arguments, length):
+    print('     ', argumentGroup, ':', sep = '', file = sys.stdout)
+
+    sortedArguments = sorted(arguments.keys())
+    if sortedArguments:
+      for longFormArgument in sortedArguments:
+        shortFormArgument = arguments[longFormArgument][0]
+        isRequired        = arguments[longFormArgument][1]
+        argumentText      = longFormArgument + ' (' + shortFormArgument + '):'
+        description       = config.tools.getArgumentAttribute(tool, longFormArgument, 'description')
+        dataType          = config.tools.getArgumentAttribute(tool, longFormArgument, 'dataType')
+        if isRequired: description += ' [REQUIRED]'
+        self.writeFormattedText(argumentText, description, length + 5, 2, dataType)
+      print(file = sys.stdout)
+      sys.stdout.flush()
 
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
