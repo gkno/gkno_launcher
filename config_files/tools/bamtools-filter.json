@@ -6,73 +6,68 @@
   "executable" : "bamtools",
   "modifier" : "filter",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "the input BAM file.",
-      "long form argument" : "--in",
-      "short form argument" : "-i",
-      "command line argument" : "-in",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".bam"],
-      "allow multiple values" : true
-    },
-    {
-      "description" : "the input BAM file list (in json format).",
-      "long form argument" : "--in-list",
-      "short form argument" : "-l",
-      "command line argument" : "-in",
-      "input" : true,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "extensions" : [".bam"],
-      "list of input files" : true,
-      "apply by repeating this argument" : "--in"
-    },
-    {
-      "description" : "the output BAM file.",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
-      "command line argument" : "-out",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".bam"],
-      "if output to stream" : "do not include",
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--in",
-        "modify extension" : "replace",
-        "add additional text" : "filtered"
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "the input BAM file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "-in",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bam"],
+        "allow multiple values" : true
+      },
+      {
+        "description" : "the input BAM file list (in json format).",
+        "long form argument" : "--in-list",
+        "short form argument" : "-l",
+        "command line argument" : "-in",
+        "data type" : "string",
+        "extensions" : [".bam"],
+        "list of input files" : true,
+        "apply by repeating this argument" : "--in"
+      },
+      {
+        "description" : "the filter script file (see bamtools documentation for more information).",
+        "long form argument" : "--script",
+        "short form argument" : "-s",
+        "command line argument" : "-script",
+        "extensions" : [".json"],
+        "data type" : "string"
       }
-    },
-    {
-      "description" : "only read data from this genomic region.",
-      "long form argument" : "--region",
-      "short form argument" : "-r",
-      "command line argument" : "-region",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "extensions" : ["no extension"],
-      "data type" : "string"
-    },
-    {
-      "description" : "the filter script file (see bamtools documentation for more information).",
-      "long form argument" : "--script",
-      "short form argument" : "-s",
-      "command line argument" : "-script",
-      "input" : true,
-      "output" : false,
-      "required" : false,
-      "extensions" : [".json"],
-      "data type" : "string"
-    }
-  ],
+    ],
+
+    "outputs" : [
+      {
+        "description" : "the output BAM file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "-out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bam"],
+        "if output to stream" : "do not include",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "add additional text" : "filtered"
+        }
+      }
+    ],
+
+    "options" : [
+      {
+        "description" : "only read data from this genomic region.",
+        "long form argument" : "--region",
+        "short form argument" : "-r",
+        "command line argument" : "-region",
+        "extensions" : ["no extension"],
+        "data type" : "string"
+      }
+    ]
+  },
 
   "instances" : [
     {

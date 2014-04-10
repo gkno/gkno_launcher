@@ -7,46 +7,74 @@
   "executable" : "tabix",
   "modifier" : "-p vcf",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "The file to be indexed.",
-      "long form argument" : "--in",
-      "short form argument" : "-i",
-      "command line argument" : "--in",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["vcf.gz"],
-      "modify argument name on command line" : "hide",
-      "if input is stream" : "do not include"
-    },
-    {
-      "description" : "The output index file.",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
-      "command line argument" : "--out",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".tbi"],
-      "hide in help" : true,
-      "modify argument name on command line" : "omit",
-      "if input is stream" : "do not include",
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--in",
-        "modify extension" : "append"
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The file to be indexed.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--in",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["vcf.gz"],
+        "modify argument name on command line" : "hide",
+        "if input is stream" : "do not include"
       }
-    }
-  ],
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The output index file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".tbi"],
+        "hide in help" : true,
+        "modify argument name on command line" : "omit",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "append"
+        }
+      }
+    ],
+
+    "options" : [
+      {
+        "description" : "Overwrite existing index.",
+        "long form argument" : "--force-overwrite",
+        "short form argument" : "-f",
+        "command line argument" : "-f",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
 
   "instances" : [
     {
       "ID" : "default",
       "description" : "Default instance requires the users input for all files.",
       "nodes" : []
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "input",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+        },
+        {
+          "ID" : "overwrite",
+          "argument" : "--force-overwrite",
+          "values" : ["set"]
+        }
+      ]
     }
   ]
 }

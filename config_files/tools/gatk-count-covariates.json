@@ -6,154 +6,136 @@
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx2g -jar",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "the reference fasta file",
-      "long form argument" : "--fasta-reference",
-      "short form argument" : "-r",
-      "command line argument" : "--reference_sequence",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".fasta", ".fa"]
-    },
-    {
-      "description" : "the reference fasta index file",
-      "long form argument" : "--fasta-reference-index",
-      "short form argument" : "-ri",
-      "command line argument" : "--fasta-reference-index",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "modify argument name on command line" : "omit",
-      "extensions" : [".fai"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--fasta-reference",
-        "modify extension" : "append"
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "the reference fasta file",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "--reference_sequence",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fasta", ".fa"]
+      },
+      {
+        "description" : "the reference fasta index file",
+        "long form argument" : "--fasta-reference-index",
+        "short form argument" : "-ri",
+        "command line argument" : "--fasta-reference-index",
+        "required" : true,
+        "data type" : "string",
+        "modify argument name on command line" : "omit",
+        "extensions" : [".fai"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "append"
+        }
+      },
+      {
+        "description" : "the reference fasta dictionary file",
+        "long form argument" : "--fasta-reference-dictionary",
+        "short form argument" : "-rd",
+        "command line argument" : "--fasta-reference-dictionary",
+        "required" : true,
+        "data type" : "string",
+        "modify argument name on command line" : "omit",
+        "extensions" : [".dict"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "replace"
+        }
+      },
+      {
+        "description" : "input SAM or BAM file(s)",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--input_file",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".sam", ".bam"]
+      },
+      {
+        "description" : "input SAM or BAM index file(s)",
+        "long form argument" : "--in-index",
+        "short form argument" : "-ii",
+        "command line argument" : "--in-index",
+        "required" : true,
+        "data type" : "string",
+        "modify argument name on command line" : "omit",
+        "extensions" : [".bai"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "append"
+        }
+      },
+      {
+        "description" : "vcf file containing known variant sites",
+        "long form argument" : "--known-sites",
+        "short form argument" : "-k",
+        "command line argument" : "-knownSites",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".vcf", ".vcf.gz"]
       }
-    },
-    {
-      "description" : "the reference fasta dictionary file",
-      "long form argument" : "--fasta-reference-dictionary",
-      "short form argument" : "-rd",
-      "command line argument" : "--fasta-reference-dictionary",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "modify argument name on command line" : "omit",
-      "extensions" : [".dict"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--fasta-reference",
-        "modify extension" : "replace"
+    ],
+
+    "outputs" : [
+      {
+        "description" : "output covariates table recalibration file",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".csv"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace"
+        }
       }
-    },
-    {
-      "description" : "input SAM or BAM file(s)",
-      "long form argument" : "--in",
-      "short form argument" : "-i",
-      "command line argument" : "--input_file",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".sam", ".bam"]
-    },
-    {
-      "description" : "input SAM or BAM index file(s)",
-      "long form argument" : "--in-index",
-      "short form argument" : "-ii",
-      "command line argument" : "--in-index",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "modify argument name on command line" : "omit",
-      "extensions" : [".bai"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--in",
-        "modify extension" : "append"
+    ],
+
+    "options" : [
+      {
+        "description" : "minimum level of logging",
+        "long form argument" : "--logging-level",
+        "short form argument" : "-l",
+        "command line argument" : "--logging_level",
+        "data type" : "string",
+        "short form argument" : "-l",
+        "extensions" : [".vcf"]
+      },
+      {
+        "description" : "type of analysis to run",
+        "long form argument" : "--analysis-type",
+        "short form argument" : "-a",
+        "command line argument" : "--analysis_type",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "covariates to be used",
+        "long form argument" : "--covariate",
+        "short form argument" : "-c",
+        "command line argument" : "--covariate",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "allow multiple values" : true
+      },
+      {
+        "description" : "disable indel recalibration (not available in GATK-Lite)",
+        "long form argument" : "--disable-indel-quals",
+        "short form argument" : "-d",
+        "command line argument" : "--disable_indel_quals",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
       }
-    },
-    {
-      "description" : "output covariates table recalibration file",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
-      "command line argument" : "--out",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".csv"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--in",
-        "modify extension" : "replace"
-      }
-    },
-    {
-      "description" : "vcf file containing known variant sites",
-      "long form argument" : "--known-sites",
-      "short form argument" : "-k",
-      "command line argument" : "-knownSites",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".vcf", ".vcf.gz"]
-    },
-    {
-      "description" : "minimum level of logging",
-      "long form argument" : "--logging-level",
-      "short form argument" : "-l",
-      "command line argument" : "--logging_level",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "short form argument" : "-l",
-      "extensions" : [".vcf"]
-    },
-    {
-      "description" : "type of analysis to run",
-      "long form argument" : "--analysis-type",
-      "short form argument" : "-a",
-      "command line argument" : "--analysis_type",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "covariates to be used",
-      "long form argument" : "--covariate",
-      "short form argument" : "-c",
-      "command line argument" : "--covariate",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "extensions" : ["no extension"],
-      "allow multiple values" : true
-    },
-    {
-      "description" : "disable indel recalibration (not available in GATK-Lite)",
-      "long form argument" : "--disable-indel-quals",
-      "short form argument" : "-d",
-      "command line argument" : "--disable_indel_quals",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    }
-  ],
+    ]
+  },
 
   "instances" : [
     {

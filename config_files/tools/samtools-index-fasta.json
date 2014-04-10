@@ -6,37 +6,38 @@
   "executable" : "samtools",
   "modifier" : "faidx",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "Input FASTA file.",
-      "long form argument" : "--fasta-reference",
-      "short form argument" : "-r",
-      "command line argument" : "--fasta-reference",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".fasta", ".fa"],
-      "modify argument name on command line" : "hide"
-    },
-    {
-      "description" : "Output index file.",
-      "long form argument" : "--output",
-      "short form argument" : "-o",
-      "command line argument" : "--output",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".fai"],
-      "modify argument name on command line" : "omit",
-      "construct filename" : {
-        "method" : "from tool argument",
-        "use argument" : "--fasta-reference",
-        "modify extension" : "append"
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "Input FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "--fasta-reference",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fasta", ".fa"],
+        "modify argument name on command line" : "hide"
       }
-    }
-  ],
+    ],
+
+    "outputs" : [
+      {
+        "description" : "Output index file.",
+        "long form argument" : "--output",
+        "short form argument" : "-o",
+        "command line argument" : "--output",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fai"],
+        "modify argument name on command line" : "omit",
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "append"
+        }
+      }
+    ]
+  },
 
   "instances" : [
     {

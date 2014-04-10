@@ -1,552 +1,430 @@
 {
-  "description" : "Generate simulated Illumina paired end reads.",
+  "description" : "Generate simulated Illumina reads.",
   "category" : "simulation",
   "tools" : ["seqan"],
   "path" : "seqan/build/Release/bin",
   "executable" : "mason",
   "modifier" : "illumina",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "The input FASTA sequence file.",
-      "long form argument" : "--fasta-reference",
-      "short form argument" : "-r",
-      "command line argument" : "--fasta-reference",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".fa", ".fasta"],
-      "modify argument name on command line" : "hide"
-    },
-    {
-      "description" : "Allow N from genome. Default: false.",
-      "long form argument" : "--allow-N-from-genome",
-      "short form argument" : "-aNg",
-      "command line argument" : "--allow-N-from-genome",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "The seed for Rng. Default: 0.",
-      "long form argument" : "--seed",
-      "short form argument" : "-s",
-      "command line argument" : "--seed",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Number of reads (or mate pairs) to simulate. Default: 1000.",
-      "long form argument" : "--number-of-reads",
-      "short form argument" : "-N",
-      "command line argument" : "--num-reads",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Length of random source sequence. Default: 1000000.",
-      "long form argument" : "--source-length",
-      "short form argument" : "-sn",
-      "command line argument" : "--source-length",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Propabilibty for A in randomly generated sequence. Default: 0.25.",
-      "long form argument" : "--source-probability-A",
-      "short form argument" : "-spA",
-      "command line argument" : "--source-probability-A",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Propabilibty for C in randomly generated sequence. Default: 0.25.",
-      "long form argument" : "--source-probability-C",
-      "short form argument" : "-spC",
-      "command line argument" : "--source-probability-C",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Propabilibty for G in randomly generated sequence. Default: 0.25.",
-      "long form argument" : "--source-probability-G",
-      "short form argument" : "-spG",
-      "command line argument" : "--source-probability-G",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "If set then no Ns are generated in the random source sequence.",
-      "long form argument" : "--source-no-N",
-      "short form argument" : "-snN",
-      "command line argument" : "--source-no-N",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Simulate from forward strand only.",
-      "long form argument" : "--forward-only",
-      "short form argument" : "-f",
-      "command line argument" : "--forward-only",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Simulate from reverse strand only.",
-      "long form argument" : "--reverse-only",
-      "short form argument" : "-ro",
-      "command line argument" : "--reverse-only",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Write results to PARAM.fasta file instead of SEQUENCE.reads.fasta.Valid filetypes are: fasta, fa, fastq, and fq.",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
-      "command line argument" : "--output-file",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".fq"],
-      "is filename stub" : true,
-      "filename extensions" : [
-        "_1.fq",
-        "_2.fq"
-      ],
-      "construct filename" : {
-        "method" : "from tool argument",
-        "use argument" : "--fasta-reference",
-        "modify extension" : "replace"
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The input FASTA sequence file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "--fasta-reference",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fa", ".fasta"],
+        "modify argument name on command line" : "hide"
       }
-    },
-    {
-      "description" : "Simulate qualities, generate FASTQ instead of FASTA.",
-      "long form argument" : "--simulate-qualities",
-      "short form argument" : "-sq",
-      "command line argument" : "--simulate-qualities",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Include additional read information in reads file.",
-      "long form argument" : "--include-read-information",
-      "short form argument" : "-i",
-      "command line argument" : "--include-read-information",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Verbosity mode.",
-      "long form argument" : "--mason-verbose",
-      "short form argument" : "-mv",
-      "command line argument" : "--mason-verbose",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "High verbosity mode, implies verbosity mode.",
-      "long form argument" : "--very-verbose",
-      "short form argument" : "-vv",
-      "command line argument" : "--very-verbose",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Path to TSV file that maps contig ids to read counts.",
-      "long form argument" : "--sample-counts-file",
-      "short form argument" : "-scf",
-      "command line argument" : "--sample-counts-file",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Path to VCF file to synthesize the haplotype from.",
-      "long form argument" : "--vcf-allele-file",
-      "short form argument" : "-vcf",
-      "command line argument" : "--vcf-allele-file",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Mate-pair mean library length. Default: 1000.",
-      "long form argument" : "--library-length-mean",
-      "short form argument" : "-ll",
-      "command line argument" : "--library-length-mean",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Mate-pair library tolerance. Default: 100.",
-      "long form argument" : "--library-length-error",
-      "short form argument" : "-le",
-      "command line argument" : "--library-length-error",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Mate-pair library length is uniform.",
-      "long form argument" : "--library-length-uniform",
-      "short form argument" : "-lu",
-      "command line argument" : "--library-length-uniform",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Enable mate pair simulation.",
-      "long form argument" : "--mate-pairs",
-      "short form argument" : "-mp",
-      "command line argument" : "--mate-pairs",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Read naming scheme in FASTQ/FASTA files. See section on read namingbelow. In range [0..2]. Default: 0.",
-      "long form argument" : "--read-naming",
-      "short form argument" : "-rn",
-      "command line argument" : "--read-naming",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Read name prefix. Default is output file name.",
-      "long form argument" : "--read-name-prefix",
-      "short form argument" : "-rnp",
-      "command line argument" : "--read-name-prefix",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Number of haplotypes to simulate. Default: 1.",
-      "long form argument" : "--num-haplotypes",
-      "short form argument" : "-hn",
-      "command line argument" : "--num-haplotypes",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Haplotype SNP rate. Default: 0.001.",
-      "long form argument" : "--haplotype-snp-rate",
-      "short form argument" : "-hsr",
-      "command line argument" : "--haplotype-snp-rate",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Haplotype indel rate. Default: 0.001.",
-      "long form argument" : "--haplotype-indel-rate",
-      "short form argument" : "-hir",
-      "command line argument" : "--haplotype-indel-rate",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Haplotype indel size min. Default: 1.",
-      "long form argument" : "--haplotype-indel-range-min",
-      "short form argument" : "-hm",
-      "command line argument" : "--haplotype-indel-range-min",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Haplotype indel size max. Default: 6.",
-      "long form argument" : "--haplotype-indel-range-max",
-      "short form argument" : "-hM",
-      "command line argument" : "--haplotype-indel-range-max",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Do not allow Ns to be substituted or inserted into N. Default: Isallowed.",
-      "long form argument" : "--haplotype-no-N",
-      "short form argument" : "-hnN",
-      "command line argument" : "--haplotype-no-N",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "The length of the reads to simulate. All resulting reads will havethe same length. Default: 36.",
-      "long form argument" : "--read-length",
-      "short form argument" : "-n",
-      "command line argument" : "--read-length",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Probability of an insertion. Default: 0.001.",
-      "long form argument" : "--prob-insert",
-      "short form argument" : "-pi",
-      "command line argument" : "--prob-insert",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Probability of a deletion. Default: 0.001.",
-      "long form argument" : "--prob-delete",
-      "short form argument" : "-pd",
-      "command line argument" : "--prob-delete",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Mismatch probability path. If set, probability distribution isloaded from argument.",
-      "long form argument" : "--prob-mismatch-file",
-      "short form argument" : "-pmmf",
-      "command line argument" : "--prob-mismatch-file",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Scale to apply for probability mismatch. Default: 1.0.",
-      "long form argument" : "--prob-mismatch-scale",
-      "short form argument" : "-pmms",
-      "command line argument" : "--prob-mismatch-scale",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Average mismatch probability. Default: 0.004.",
-      "long form argument" : "--prob-mismatch",
-      "short form argument" : "-pmm",
-      "command line argument" : "--prob-mismatch",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Probability of a mismatch at the first base. Default: 0.002.",
-      "long form argument" : "--prob-mismatch-begin",
-      "short form argument" : "-pmmb",
-      "command line argument" : "--prob-mismatch-begin",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Probability of a mismatch at the last base. Default: 0.012.",
-      "long form argument" : "--prob-mismatch-end",
-      "short form argument" : "-pmme",
-      "command line argument" : "--prob-mismatch-end",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Relative position of raise point. Default: 0.66.",
-      "long form argument" : "--position-raise",
-      "short form argument" : "-pr",
-      "command line argument" : "--position-raise",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "If set then no Ns will be introduced in the reads.",
-      "long form argument" : "--no-N",
-      "short form argument" : "-nN",
-      "command line argument" : "--no-N",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Quality mean at first base. Default: 40.",
-      "long form argument" : "--quality-mean-begin",
-      "short form argument" : "-qmb",
-      "command line argument" : "--quality-mean-begin",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Quality mean at last base. Default: 39.5.",
-      "long form argument" : "--quality-mean-end",
-      "short form argument" : "-qme",
-      "command line argument" : "--quality-mean-end",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Quality standard deviation at first base. Default: 0.05.",
-      "long form argument" : "--quality-std-dev-begin",
-      "short form argument" : "-qsdb",
-      "command line argument" : "--quality-std-dev-begin",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Quality standard deviation at last base. Default: 10.",
-      "long form argument" : "--quality-std-dev-end",
-      "short form argument" : "-qsde",
-      "command line argument" : "--quality-std-dev-end",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Mismatch quality mean at first base. Default: 39.5.",
-      "long form argument" : "--mismatch-quality-mean-begin",
-      "short form argument" : "-mmqmb",
-      "command line argument" : "--mismatch-quality-mean-begin",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Mismatch quality mean at last base. Default: 30.",
-      "long form argument" : "--mismatch-quality-mean-end",
-      "short form argument" : "-mmqme",
-      "command line argument" : "--mismatch-quality-mean-end",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Mismatch quality standard deviation at first base. Default: 3.",
-      "long form argument" : "--mismatch-quality-std-dev-begin",
-      "short form argument" : "-mmqsdb",
-      "command line argument" : "--mismatch-quality-std-dev-begin",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Mismatch quality standard deviation at last base. Default: 15.",
-      "long form argument" : "--mismatch-quality-std-dev-end",
-      "short form argument" : "-mmqsde",
-      "command line argument" : "--mismatch-quality-std-dev-end",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    }
-  ],
+    ],
+
+    "outputs" : [
+      {
+        "description" : "Write results to PARAM.fasta file instead of SEQUENCE.reads.fasta.Valid filetypes are: fasta, fa, fastq, and fq.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--output-file",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fq"],
+        "is filename stub" : true,
+        "filename extensions" : [
+          "_1.fq",
+          "_2.fq"
+        ],
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "replace"
+        }
+      }
+    ],
+
+    "main options" : [
+      {
+        "description" : "Allow N from genome. Default: false.",
+        "long form argument" : "--allow-N-from-genome",
+        "short form argument" : "-aNg",
+        "command line argument" : "--allow-N-from-genome",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "The seed for Rng. Default: 0.",
+        "long form argument" : "--seed",
+        "short form argument" : "-s",
+        "command line argument" : "--seed",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Number of reads (or mate pairs) to simulate. Default: 1000.",
+        "long form argument" : "--number-of-reads",
+        "short form argument" : "-N",
+        "command line argument" : "--num-reads",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Length of random source sequence. Default: 1000000.",
+        "long form argument" : "--source-length",
+        "short form argument" : "-sn",
+        "command line argument" : "--source-length",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Propabilibty for A in randomly generated sequence. Default: 0.25.",
+        "long form argument" : "--source-probability-A",
+        "short form argument" : "-spA",
+        "command line argument" : "--source-probability-A",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Propabilibty for C in randomly generated sequence. Default: 0.25.",
+        "long form argument" : "--source-probability-C",
+        "short form argument" : "-spC",
+        "command line argument" : "--source-probability-C",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Propabilibty for G in randomly generated sequence. Default: 0.25.",
+        "long form argument" : "--source-probability-G",
+        "short form argument" : "-spG",
+        "command line argument" : "--source-probability-G",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "If set then no Ns are generated in the random source sequence.",
+        "long form argument" : "--source-no-N",
+        "short form argument" : "-snN",
+        "command line argument" : "--source-no-N",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Simulate from forward strand only.",
+        "long form argument" : "--forward-only",
+        "short form argument" : "-f",
+        "command line argument" : "--forward-only",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Simulate from reverse strand only.",
+        "long form argument" : "--reverse-only",
+        "short form argument" : "-ro",
+        "command line argument" : "--reverse-only",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Simulate qualities, generate FASTQ instead of FASTA.",
+        "long form argument" : "--simulate-qualities",
+        "short form argument" : "-sq",
+        "command line argument" : "--simulate-qualities",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Include additional read information in reads file.",
+        "long form argument" : "--include-read-information",
+        "short form argument" : "-i",
+        "command line argument" : "--include-read-information",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Verbosity mode.",
+        "long form argument" : "--mason-verbose",
+        "short form argument" : "-mv",
+        "command line argument" : "--mason-verbose",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "High verbosity mode, implies verbosity mode.",
+        "long form argument" : "--very-verbose",
+        "short form argument" : "-vv",
+        "command line argument" : "--very-verbose",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Path to TSV file that maps contig ids to read counts.",
+        "long form argument" : "--sample-counts-file",
+        "short form argument" : "-scf",
+        "command line argument" : "--sample-counts-file",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Path to VCF file to synthesize the haplotype from.",
+        "long form argument" : "--vcf-allele-file",
+        "short form argument" : "-vcf",
+        "command line argument" : "--vcf-allele-file",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      }
+    ],
+
+    "mate pair options" : [
+      {
+        "description" : "Mate-pair mean library length. Default: 1000.",
+        "long form argument" : "--library-length-mean",
+        "short form argument" : "-ll",
+        "command line argument" : "--library-length-mean",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Mate-pair library tolerance. Default: 100.",
+        "long form argument" : "--library-length-error",
+        "short form argument" : "-le",
+        "command line argument" : "--library-length-error",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Mate-pair library length is uniform.",
+        "long form argument" : "--library-length-uniform",
+        "short form argument" : "-lu",
+        "command line argument" : "--library-length-uniform",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Enable mate pair simulation.",
+        "long form argument" : "--mate-pairs",
+        "short form argument" : "-mp",
+        "command line argument" : "--mate-pairs",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Read naming scheme in FASTQ/FASTA files. See section on read namingbelow. In range [0..2]. Default: 0.",
+        "long form argument" : "--read-naming",
+        "short form argument" : "-rn",
+        "command line argument" : "--read-naming",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Read name prefix. Default is output file name.",
+        "long form argument" : "--read-name-prefix",
+        "short form argument" : "-rnp",
+        "command line argument" : "--read-name-prefix",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      }
+    ],
+
+    "haplotype options" : [
+      {
+        "description" : "Number of haplotypes to simulate. Default: 1.",
+        "long form argument" : "--num-haplotypes",
+        "short form argument" : "-hn",
+        "command line argument" : "--num-haplotypes",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Haplotype SNP rate. Default: 0.001.",
+        "long form argument" : "--haplotype-snp-rate",
+        "short form argument" : "-hsr",
+        "command line argument" : "--haplotype-snp-rate",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Haplotype indel rate. Default: 0.001.",
+        "long form argument" : "--haplotype-indel-rate",
+        "short form argument" : "-hir",
+        "command line argument" : "--haplotype-indel-rate",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Haplotype indel size min. Default: 1.",
+        "long form argument" : "--haplotype-indel-range-min",
+        "short form argument" : "-hm",
+        "command line argument" : "--haplotype-indel-range-min",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Haplotype indel size max. Default: 6.",
+        "long form argument" : "--haplotype-indel-range-max",
+        "short form argument" : "-hM",
+        "command line argument" : "--haplotype-indel-range-max",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Do not allow Ns to be substituted or inserted into N. Default: Isallowed.",
+        "long form argument" : "--haplotype-no-N",
+        "short form argument" : "-hnN",
+        "command line argument" : "--haplotype-no-N",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      }
+    ],
+
+    "illumina read lengths" : [
+      {
+        "description" : "The length of the reads to simulate. All resulting reads will havethe same length. Default: 36.",
+        "long form argument" : "--read-length",
+        "short form argument" : "-n",
+        "command line argument" : "--read-length",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      }
+    ],
+
+    "illumina error model" : [
+      {
+        "description" : "Probability of an insertion. Default: 0.001.",
+        "long form argument" : "--prob-insert",
+        "short form argument" : "-pi",
+        "command line argument" : "--prob-insert",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Probability of a deletion. Default: 0.001.",
+        "long form argument" : "--prob-delete",
+        "short form argument" : "-pd",
+        "command line argument" : "--prob-delete",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Mismatch probability path. If set, probability distribution isloaded from argument.",
+        "long form argument" : "--prob-mismatch-file",
+        "short form argument" : "-pmmf",
+        "command line argument" : "--prob-mismatch-file",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Scale to apply for probability mismatch. Default: 1.0.",
+        "long form argument" : "--prob-mismatch-scale",
+        "short form argument" : "-pmms",
+        "command line argument" : "--prob-mismatch-scale",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Average mismatch probability. Default: 0.004.",
+        "long form argument" : "--prob-mismatch",
+        "short form argument" : "-pmm",
+        "command line argument" : "--prob-mismatch",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Probability of a mismatch at the first base. Default: 0.002.",
+        "long form argument" : "--prob-mismatch-begin",
+        "short form argument" : "-pmmb",
+        "command line argument" : "--prob-mismatch-begin",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Probability of a mismatch at the last base. Default: 0.012.",
+        "long form argument" : "--prob-mismatch-end",
+        "short form argument" : "-pmme",
+        "command line argument" : "--prob-mismatch-end",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Relative position of raise point. Default: 0.66.",
+        "long form argument" : "--position-raise",
+        "short form argument" : "-pr",
+        "command line argument" : "--position-raise",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "If set then no Ns will be introduced in the reads.",
+        "long form argument" : "--no-N",
+        "short form argument" : "-nN",
+        "command line argument" : "--no-N",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Quality mean at first base. Default: 40.",
+        "long form argument" : "--quality-mean-begin",
+        "short form argument" : "-qmb",
+        "command line argument" : "--quality-mean-begin",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Quality mean at last base. Default: 39.5.",
+        "long form argument" : "--quality-mean-end",
+        "short form argument" : "-qme",
+        "command line argument" : "--quality-mean-end",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Quality standard deviation at first base. Default: 0.05.",
+        "long form argument" : "--quality-std-dev-begin",
+        "short form argument" : "-qsdb",
+        "command line argument" : "--quality-std-dev-begin",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Quality standard deviation at last base. Default: 10.",
+        "long form argument" : "--quality-std-dev-end",
+        "short form argument" : "-qsde",
+        "command line argument" : "--quality-std-dev-end",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Mismatch quality mean at first base. Default: 39.5.",
+        "long form argument" : "--mismatch-quality-mean-begin",
+        "short form argument" : "-mmqmb",
+        "command line argument" : "--mismatch-quality-mean-begin",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Mismatch quality mean at last base. Default: 30.",
+        "long form argument" : "--mismatch-quality-mean-end",
+        "short form argument" : "-mmqme",
+        "command line argument" : "--mismatch-quality-mean-end",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Mismatch quality standard deviation at first base. Default: 3.",
+        "long form argument" : "--mismatch-quality-std-dev-begin",
+        "short form argument" : "-mmqsdb",
+        "command line argument" : "--mismatch-quality-std-dev-begin",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Mismatch quality standard deviation at last base. Default: 15.",
+        "long form argument" : "--mismatch-quality-std-dev-end",
+        "short form argument" : "-mmqsde",
+        "command line argument" : "--mismatch-quality-std-dev-end",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
 
   "argument order" : [
     "--allow-N-from-genome",
@@ -602,6 +480,40 @@
   "instances" : [
     {
       "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "ID" : "qualities",
+          "argument" : "--simulate-qualities",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "paired",
+          "argument" : "--mate-pairs",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "read length",
+          "argument" : "--read-length",
+          "values" : [100]
+        }
+      ]
+    },
+
+    {
+      "ID" : "fastq",
       "description" : "Default instance requires the users input for all files.",
       "nodes" : [
         {

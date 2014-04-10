@@ -1,34 +1,36 @@
 {
-  "description" : "Generate the MD5 checksum for a file.",
+  "description" : "Compress a file using gzip.",
   "category" : "file processing",
   "tools" : [],
   "path" : "no path",
-  "executable" : "md5sum",
+  "hide tool" : true,
+  "executable" : "gzip",
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
       {
-        "description" : "the file whose md5 checksum is to be calculated.",
+        "description" : "The file to be compressed.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "--in",
         "required" : true,
         "data type" : "string",
         "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide"
+        "modify argument name on command line" : "hide",
+        "if input is stream" : "do not include"
       }
     ],
 
     "outputs" : [
       {
-        "description" : "the output md5 checksum.",
-        "long form argument" :"--out",
+        "description" : "The compressed output file.",
+        "long form argument" : "--out",
         "short form argument" : "-o",
-        "command line argument" :"--out",
+        "command line argument" : "--out",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["md5"],
-        "modify argument name on command line" : "stdout",
+        "extensions" : [".gz"],
+        "modify argument name on command line" : "omit",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -38,17 +40,11 @@
     ]
   },
 
-  "argument order" : [
-    "--in",
-    "--out"
-  ],
-
   "instances" : [
     {
       "ID" : "default",
       "description" : "Default instance requires the users input for all files.",
-      "nodes" : [
-      ]
+      "nodes" : []
     },
 
     {
@@ -56,14 +52,9 @@
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
-          "ID" : "bam",
+          "ID" : "file",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
-        },
-        {
-          "ID" : "output path",
-          "argument" : "--output-path",
-          "values" : ["./"]
         }
       ]
     }

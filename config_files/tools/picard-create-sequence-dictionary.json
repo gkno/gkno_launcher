@@ -7,35 +7,36 @@
   "precommand" : "java -jar",
   "argument delimiter" : "=",
   "help" : "--help|-h",
-  "arguments" : [
-    {    
-      "description" : "the input reference FASTA file.",
-      "long form argument" : "--fasta-reference",
-      "short form argument" : "-r",
-      "command line argument" : "REFERENCE",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".fa", ".fasta"]
-    },
-    {    
-      "description" : "the output sequence dictionary.",
-      "long form argument" : "--output",
-      "short form argument" : "-o",
-      "command line argument" : "OUTPUT",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".dict"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--fasta-reference",
-        "modify extension" : "replace"
+  "arguments" : {
+    "inputs" : [
+      {    
+        "description" : "the input reference FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "REFERENCE",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fa", ".fasta"]
       }
-    }
-  ],
+    ],
+
+    "outputs" : [
+      {    
+        "description" : "the output sequence dictionary.",
+        "long form argument" : "--output",
+        "short form argument" : "-o",
+        "command line argument" : "OUTPUT",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".dict"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "replace"
+        }
+      }
+    ]
+  },
 
   "instances" : [
     {

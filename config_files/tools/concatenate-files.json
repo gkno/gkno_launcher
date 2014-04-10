@@ -6,72 +6,65 @@
   "hide tool" : true,
   "executable" : "cat",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "First file include. All other files will be added to the end of this file.",
-      "long form argument" : "--initial-file",
-      "short form argument" : "-i",
-      "command line argument" : "none",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["no extension"],
-      "allow multiple values" : true,
-      "modify argument name on command line" : "hide"
-    },
-    {
-      "description" : "Additional files to be joined whose order is irrelevant.",
-      "long form argument" : "--file",
-      "short form argument" : "-f",
-      "command line argument" : "none",
-      "input" : true,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "extensions" : ["no extension"],
-      "allow multiple values" : true,
-      "modify argument name on command line" : "hide"
-    },
-    {
-      "description" : "The second file to be included in the joining.",
-      "long form argument" : "--file1",
-      "short form argument" : "-f1",
-      "command line argument" : "none",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["no extension"],
-      "allow multiple values" : false,
-      "modify argument name on command line" : "hide"
-    },
-    {
-      "description" : "The third file to be included in the joining.",
-      "long form argument" : "--file2",
-      "short form argument" : "-f2",
-      "command line argument" : "none",
-      "input" : true,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "extensions" : ["no extension"],
-      "allow multiple values" : false,
-      "modify argument name on command line" : "hide"
-    },
-    {
-      "description" : "the output concatenated file.",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
-      "command line argument" : "none",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["no extension"],
-      "modify argument name on command line" : "stdout"
-    }
-  ],
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "First file include. All other files will be added to the end of this file.",
+        "long form argument" : "--initial-file",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "allow multiple values" : true,
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "Additional files to be joined whose order is irrelevant.",
+        "long form argument" : "--file",
+        "short form argument" : "-f",
+        "command line argument" : "none",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "allow multiple values" : true,
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "The second file to be included in the joining.",
+        "long form argument" : "--file1",
+        "short form argument" : "-f1",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "allow multiple values" : false,
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "The third file to be included in the joining.",
+        "long form argument" : "--file2",
+        "short form argument" : "-f2",
+        "command line argument" : "none",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "allow multiple values" : false,
+        "modify argument name on command line" : "hide"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "the output concatenated file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "stdout"
+      }
+    ]
+  },
 
   "argument order" : [
     "--initial-file",
@@ -88,6 +81,7 @@
       "nodes" : [
       ]
     },
+
     {
       "ID" : "test",
       "description" : "Instance for use with the test-harness.",

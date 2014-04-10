@@ -543,7 +543,7 @@ class gknoConfigurationFiles:
 
       else:
         modifiedList = []
-        for value in modifiedValues[iteration]: modifiedList.append(value + self.delimiter + argumentNodeValues[iteration][0])
+        for value in modifiedValues[iteration]: modifiedList.append(value + self.delimiter + str(argumentNodeValues[iteration][0]))
         modifiedValues[iteration] = modifiedList
 
   def setModifiedValuesB(self, modifiedValues, argumentNodeValues):

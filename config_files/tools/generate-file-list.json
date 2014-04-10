@@ -6,33 +6,34 @@
   "hide tool" : true,
   "executable" : "generate-file-list.sh",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "Input files to be added to the list.",
-      "long form argument" : "--in",
-      "short form argument" : "-i",
-      "command line argument" : "--in",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["no extension"],
-      "allow multiple values" : true,
-      "modify argument name on command line" : "hide"
-    },
-    {
-      "description" : "the output file list.",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
-      "command line argument" : "--out",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["no extension"],
-      "modify argument name on command line" : "stdout"
-    }
-  ],
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "Input files to be added to the list.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--in",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "allow multiple values" : true,
+        "modify argument name on command line" : "hide"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "the output file list.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "stdout"
+      }
+    ]
+  },
 
   "argument order" : [
     "--in",
@@ -44,6 +45,26 @@
       "ID" : "default",
       "description" : "Default instance requires the users input for all files.",
       "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "files",
+          "argument" : "--in",
+          "values" : [
+            "$(RESOURCES)/tutorial/current/mutated_genome_1.fq",
+            "$(RESOURCES)/tutorial/current/mutated_genome_2.fq"
+          ]
+        },
+        {
+          "ID" : "output",
+          "argument" : "--out",
+          "values" : ["output.txt"]
+        }
       ]
     }
   ]

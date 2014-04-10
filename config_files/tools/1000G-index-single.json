@@ -5,76 +5,73 @@
   "path" : "scripts",
   "executable" : "sequence-index-1000G.sh",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "Sequence index file to parse.",
-      "long form argument" : "--index-file",
-      "short form argument" : "-i",
-      "command line argument" : "--index-file",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["sequence.index"],
-      "modify argument name on command line" : "hide"
-    },
-    {
-      "description" : "Single end output file.",
-      "long form argument" : "--single-end-output",
-      "short form argument" : "-s",
-      "command line argument" : "--single-end-output",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".json"],
-      "modify argument name on command line" : "omit",
-      "hide in help" : true,
-      "construct filename" : {
-        "method": "define name",
-        "filename" : "single_end_reads",
-        "for multiple runs connect to" : "--index-file",
-        "add extension" : true
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "Sequence index file to parse.",
+        "long form argument" : "--index-file",
+        "short form argument" : "-i",
+        "command line argument" : "--index-file",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["sequence.index"],
+        "modify argument name on command line" : "hide"
       }
-    },
-    {
-      "description" : "Read types to process: 's' - single end reads, 'p' - paired end reads or 'b' - both.",
-      "long form argument" : "--read-type",
-      "short form argument" : "-r",
-      "command line argument" : "--read-type",
-      "input" : false,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["no extension"],
-      "hide in help" : true,
-      "modify argument name on command line" : "hide"
-    },
-    {
-      "description" : "Merge all alignments for the same sample.",
-      "long form argument" : "--merge-samples",
-      "short form argument" : "-m",
-      "command line argument" : "--merge-samples",
-      "input" : false,
-      "output" : false,
-      "required" : true,
-      "data type" : "bool",
-      "extensions" : ["no extension"],
-      "modify argument name on command line" : "hide"
-    },
-    {
-      "description" : "Path to the fastq files. Default: current working directory.",
-      "long form argument" : "--fastq-path",
-      "short form argument" : "-f",
-      "command line argument" : "--fastq-path",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "extensions" : ["no extension"],
-      "modify argument name on command line" : "hide"
-    }
-  ],
+    ],
+
+    "outputs" : [
+      {
+        "description" : "Single end output file.",
+        "long form argument" : "--single-end-output",
+        "short form argument" : "-s",
+        "command line argument" : "--single-end-output",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".json"],
+        "modify argument name on command line" : "omit",
+        "hide in help" : true,
+        "construct filename" : {
+          "method": "define name",
+          "filename" : "single_end_reads",
+          "for multiple runs connect to" : "--index-file",
+          "add extension" : true
+        }
+      }
+    ],
+
+    "options" : [
+      {
+        "description" : "Read types to process: 's' - single end reads, 'p' - paired end reads or 'b' - both.",
+        "long form argument" : "--read-type",
+        "short form argument" : "-r",
+        "command line argument" : "--read-type",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "hide in help" : true,
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "Merge all alignments for the same sample.",
+        "long form argument" : "--merge-samples",
+        "short form argument" : "-m",
+        "command line argument" : "--merge-samples",
+        "required" : true,
+        "data type" : "bool",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "Path to the fastq files. Default: current working directory.",
+        "long form argument" : "--fastq-path",
+        "short form argument" : "-f",
+        "command line argument" : "--fastq-path",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      }
+    ]
+  },
 
   "argument order" : [
     "--read-type",
@@ -93,6 +90,33 @@
           "ID" : "paired",
           "argument" : "--read-type",
           "values" : ["s"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "index",
+          "argument" : "--index-file",
+          "values" : ["$(RESOURCES)/tutorial/current/single.sequence.index"]
+        },
+        {
+          "ID" : "merge",
+          "argument" : "--merge-samples",
+          "values" : [false]
+        },
+        {
+          "ID" : "path",
+          "argument" : "--fastq-path",
+          "values" : ["$(RESOURCES)/tutorial/current"]
+        },
+        {
+          "ID" : "paired",
+          "argument" : "--read-type",
+          "values" : ["b"]
         }
       ]
     }

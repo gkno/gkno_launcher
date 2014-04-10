@@ -5,35 +5,36 @@
   "path" : "MOSAIK/bin",
   "executable" : "MosaikBuild",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "The FASTA reference sequence file",
-      "long form argument" : "--fasta-reference",
-      "short form argument" : "-r",
-      "command line argument" : "-fr",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".fasta", ".fa"]
-    },
-    {    
-      "description" : "The output Mosaik reference file",
-      "long form argument" : "--mosaik-reference",
-      "short form argument" : "-m",
-      "command line argument" : "-oa",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".dat"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--fasta-reference",
-        "modify extension" : "replace"
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The FASTA reference sequence file",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "-fr",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fasta", ".fa"]
       }
-    }
-  ],
+    ],
+
+    "outputs" : [
+      {    
+        "description" : "The output Mosaik reference file",
+        "long form argument" : "--mosaik-reference",
+        "short form argument" : "-m",
+        "command line argument" : "-oa",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".dat"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "replace"
+        }
+      }
+    ]
+  },
 
   "instances" : [
     {

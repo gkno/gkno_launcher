@@ -5,164 +5,143 @@
   "path" : "premo/bin",
   "executable" : "premo",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "The input fastq file (first mate).",
-      "long form argument" : "--fastq",
-      "short form argument" : "-q",
-      "command line argument" : "-fq1",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".fq", ".fastq", ".fq.gz", ".fastq.gz"]
-    },
-    {
-      "description" : "The input fastq file (second mate).",
-      "long form argument" : "--fastq2",
-      "short form argument" : "-q2",
-      "command line argument" : "-fq2",
-      "input" : true,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "extensions" : [".fq", ".fastq", ".fq.gz", ".fastq.gz"]
-    },
-    {
-      "description" : "Mosaik reference archive.",
-      "long form argument" : "--mosaik-reference",
-      "short form argument" : "-m",
-      "command line argument" : "-ref",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".dat"]
-    },
-    {
-      "description" : "Stub for Mosaik jump table files.",
-      "long form argument" : "--jump-database",
-      "short form argument" : "-j",
-      "command line argument" : "-jmp",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["no extension"],
-      "is filename stub" : true,
-      "filename extensions" : [
-        "_keys.jmp",
-        "_meta.jmp",
-        "_positions.jmp"
-      ]
-    },
-    {
-      "description" : "Path to Mosaik bin.",
-      "long form argument" : "--mosaik-path",
-      "short form argument" : "-mp",
-      "command line argument" : "-mosaik",
-      "input" : false,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Output json file.",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
-      "command line argument" : "-out",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".json"],
-      "construct filename" : {
-        "method": "define name",
-        "filename" : "$(MAKEFILE_ID)_mosaikParameters",
-        "for multiple runs connect to" : "--fastq",
-        "add extension" : true
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The input fastq file (first mate).",
+        "long form argument" : "--fastq",
+        "short form argument" : "-q",
+        "command line argument" : "-fq1",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fq", ".fastq", ".fq.gz", ".fastq.gz"]
+      },
+      {
+        "description" : "The input fastq file (second mate).",
+        "long form argument" : "--fastq2",
+        "short form argument" : "-q2",
+        "command line argument" : "-fq2",
+        "data type" : "string",
+        "extensions" : [".fq", ".fastq", ".fq.gz", ".fastq.gz"]
+      },
+      {
+        "description" : "Mosaik reference archive.",
+        "long form argument" : "--mosaik-reference",
+        "short form argument" : "-m",
+        "command line argument" : "-ref",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".dat"]
+      },
+      {
+        "description" : "Stub for Mosaik jump table files.",
+        "long form argument" : "--jump-database",
+        "short form argument" : "-j",
+        "command line argument" : "-jmp",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "is filename stub" : true,
+        "filename extensions" : [
+          "_keys.jmp",
+          "_meta.jmp",
+          "_positions.jmp"
+        ]
+      },
+      {
+        "description" : "Neural network file (single end).",
+        "long form argument" : "--ann-single-end",
+        "short form argument" : "-as",
+        "command line argument" : "-annse",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".ann"]
+      },
+      {
+        "description" : "Neural network file (paired end).",
+        "long form argument" : "--ann-paired-end",
+        "short form argument" : "-ap",
+        "command line argument" : "-annpe",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".ann"]
       }
-    },
-    {
-      "description" : "Neural network file (single end).",
-      "long form argument" : "--ann-single-end",
-      "short form argument" : "-as",
-      "command line argument" : "-annse",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".ann"]
-    },
-    {
-      "description" : "Neural network file (paired end).",
-      "long form argument" : "--ann-paired-end",
-      "short form argument" : "-ap",
-      "command line argument" : "-annpe",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".ann"]
-    },
-    {
-      "description" : "Scratch directory for generated files.",
-      "long form argument" : "--temp-directory",
-      "short form argument" : "-t",
-      "command line argument" : "-tmp",
-      "input" : false,
-      "output" : true,
-      "directory" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'.",
-      "long form argument" : "--sequencing-technology",
-      "short form argument" : "-st",
-      "command line argument" : "-st",
-      "input" : false,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Number of pairs to align per batch.",
-      "long form argument" : "--reads-per-batch",
-      "short form argument" : "-rb",
-      "command line argument" : "-n",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Mosaik hash size.",
-      "long form argument" : "--hash-size",
-      "short form argument" : "-hs",
-      "command line argument" : "-hs",
-      "input" : false,
-      "output" : false,
-      "required" : true,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Specify that only single end reads are used as input.",
-      "long form argument" : "--single-end-only",
-      "short form argument" : "-se",
-      "command line argument" : "-se",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "extensions" : ["no extension"],
-      "data type" : "flag"
-    }
-  ],
+    ],
+  
+    "outputs" : [
+      {
+        "description" : "Output json file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "-out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".json"],
+        "construct filename" : {
+          "method": "define name",
+          "filename" : "$(MAKEFILE_ID)_mosaikParameters",
+          "for multiple runs connect to" : "--fastq",
+          "add extension" : true
+        }
+      },
+      {
+        "description" : "Scratch directory for generated files.",
+        "long form argument" : "--temp-directory",
+        "short form argument" : "-t",
+        "command line argument" : "-tmp",
+        "directory" : true,
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      }
+    ],
+
+    "options" : [
+      {
+        "description" : "Path to Mosaik bin.",
+        "long form argument" : "--mosaik-path",
+        "short form argument" : "-mp",
+        "command line argument" : "-mosaik",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'.",
+        "long form argument" : "--sequencing-technology",
+        "short form argument" : "-st",
+        "command line argument" : "-st",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Number of pairs to align per batch.",
+        "long form argument" : "--reads-per-batch",
+        "short form argument" : "-rb",
+        "command line argument" : "-n",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Mosaik hash size.",
+        "long form argument" : "--hash-size",
+        "short form argument" : "-hs",
+        "command line argument" : "-hs",
+        "required" : true,
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Specify that only single end reads are used as input.",
+        "long form argument" : "--single-end-only",
+        "short form argument" : "-se",
+        "command line argument" : "-se",
+        "extensions" : ["no extension"],
+        "data type" : "flag"
+      }
+    ]
+  },
 
   "instances" : [
     {

@@ -5,117 +5,105 @@
   "path" : "Tangram/bin",
   "executable" : "tangram_scan",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "The list of input BAM files.",
-      "long form argument" : "--in-list",
-      "short form argument" : "-il",
-      "command line argument" : "-in",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Path of the output directory.  This must be empty or non-existent.",
-      "long form argument" : "--output-directory",
-      "short form argument" : "-d",
-      "command line argument" : "-dir",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "directory" : true,
-      "data type" : "string",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Automatically generated file.",
-      "long form argument" : "--library-file",
-      "short form argument" : "-lf",
-      "command line argument" : "--library-file",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".dat"],
-      "modify argument name on command line" : "omit",
-      "hide in help" : true,
-      "terminate if present" : true,
-      "construct filename" : {
-        "method": "define name",
-        "directory argument" : "--output-directory",
-        "filename" : "lib_table",
-        "for multiple runs connect to" : "--in-list",
-        "add extension" : true
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The list of input BAM files.",
+        "long form argument" : "--in-list",
+        "short form argument" : "-il",
+        "command line argument" : "-in",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"]
       }
-    },
-    {
-      "description" : "Automatically generated file.",
-      "long form argument" : "--histogram-file",
-      "short form argument" : "-hf",
-      "command line argument" : "--histogram-file",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".dat"],
-      "hide in help" : true,
-      "modify argument name on command line" : "omit",
-      "terminate if present" : true,
-      "construct filename" : {
-        "method": "define name",
-        "directory argument" : "--output-directory",
-        "filename" : "hist",
-        "for multiple runs connect to" : "--in-list",
-        "add extension" : true
+    ],
+
+    "outputs" : [
+      {
+        "description" : "Path of the output directory.  This must be empty or non-existent.",
+        "long form argument" : "--output-directory",
+        "short form argument" : "-d",
+        "command line argument" : "-dir",
+        "required" : true,
+        "directory" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Automatically generated file.",
+        "long form argument" : "--library-file",
+        "short form argument" : "-lf",
+        "command line argument" : "--library-file",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".dat"],
+        "modify argument name on command line" : "omit",
+        "hide in help" : true,
+        "terminate if present" : true,
+        "construct filename" : {
+          "method": "define name",
+          "directory argument" : "--output-directory",
+          "filename" : "lib_table",
+          "for multiple runs connect to" : "--in-list",
+          "add extension" : true
+        }
+      },
+      {
+        "description" : "Automatically generated file.",
+        "long form argument" : "--histogram-file",
+        "short form argument" : "-hf",
+        "command line argument" : "--histogram-file",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".dat"],
+        "hide in help" : true,
+        "modify argument name on command line" : "omit",
+        "terminate if present" : true,
+        "construct filename" : {
+          "method": "define name",
+          "directory argument" : "--output-directory",
+          "filename" : "hist",
+          "for multiple runs connect to" : "--in-list",
+          "add extension" : true
+        }
       }
-    },
-    {
-      "description" : "Threshold for determining consistency with the fragment length distribution [0.01]",
-      "long form argument" : "--fragment-length-consistency",
-      "short form argument" : "-f",
-      "command line argument" : "-cf",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Trim rate for the fragment length distribution [0.02]",
-      "long form argument" : "--trim-rate",
-      "short form argument" : "-t",
-      "command line argument" : "-tr",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "float",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Minimum mapping quality for a normal read pair",
-      "long form argument" : "--min-mapping-quality",
-      "short form argument" : "-mq",
-      "command line argument" : "-mq",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "The minimum number of normal fragments in a library [10000].",
-      "long form argument" : "--minimum-fragments",
-      "short form argument" : "-mf",
-      "command line argument" : "-mf",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    }
-  ],
+    ],
+
+    "options" : [
+      {
+        "description" : "Threshold for determining consistency with the fragment length distribution [0.01]",
+        "long form argument" : "--fragment-length-consistency",
+        "short form argument" : "-f",
+        "command line argument" : "-cf",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Trim rate for the fragment length distribution [0.02]",
+        "long form argument" : "--trim-rate",
+        "short form argument" : "-t",
+        "command line argument" : "-tr",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Minimum mapping quality for a normal read pair",
+        "long form argument" : "--min-mapping-quality",
+        "short form argument" : "-mq",
+        "command line argument" : "-mq",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "The minimum number of normal fragments in a library [10000].",
+        "long form argument" : "--minimum-fragments",
+        "short form argument" : "-mf",
+        "command line argument" : "-mf",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
 
   "instances" : [
     {

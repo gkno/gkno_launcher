@@ -5,47 +5,46 @@
   "path" : "Tangram/bin",
   "executable" : "tangram_index",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "The input reference file.",
-      "long form argument" : "--fasta-reference",
-      "short form argument" : "-r",
-      "command line argument" : "-ref",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".fa", ".fasta"]
-    },
-    {
-      "description" : "The input reference file containing the insertion sequences.",
-      "long form argument" : "--special-reference",
-      "short form argument" : "-s",
-      "command line argument" : "-sp",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".fa", ".fasta"]
-    },
-    {
-      "description" : "The output reference file.",
-      "long form argument" : "--tangram-reference",
-      "short form argument" : "-tr",
-      "command line argument" : "-out",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".dat"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--fasta-reference",
-        "add additional text" : "tangram",
-        "modify extension" : "replace"
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The input reference file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "-ref",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fa", ".fasta"]
+      },
+      {
+        "description" : "The input reference file containing the insertion sequences.",
+        "long form argument" : "--special-reference",
+        "short form argument" : "-s",
+        "command line argument" : "-sp",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fa", ".fasta"]
       }
-    }
-  ],
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The output reference file.",
+        "long form argument" : "--tangram-reference",
+        "short form argument" : "-tr",
+        "command line argument" : "-out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".dat"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "add additional text" : "tangram",
+          "modify extension" : "replace"
+        }
+      }
+    ]
+  },
 
   "instances" : [
     {
@@ -66,7 +65,7 @@
       "nodes" : [
         {
           "ID" : "reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"],
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"],
           "argument" : "--fasta-reference"
         },
         {

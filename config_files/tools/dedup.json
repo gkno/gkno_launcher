@@ -6,102 +6,88 @@
   "executable" : "bam",
   "modifier" : "dedup",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "Input BAM file name (must be sorted).",
-      "long form argument" : "--in",
-      "short form argument" : "-i",
-      "command line argument" : "--in",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".bam"]
-    },
-    {
-      "description" : "Output BAM file name (same order with original file).",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
-      "command line argument" : "--out",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".bam"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--in",
-        "modify extension" : "replace",
-        "add additional text" : "dupmarked"
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "Input BAM file name (must be sorted).",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--in",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bam"]
       }
-    },
-    {
-      "description" : "Only add scores over this phred quality when determining a read's quality (default: 15)",
-      "long form argument" : "--min-qual",
-      "short form argument" : "-m",
-      "command line argument" : "--minQual",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Log and summary statistics (default: [outfile].log, or stderr if --out starts with '-').",
-      "long form argument" : "--log",
-      "short form argument" : "-l",
-      "command line argument" : "--log",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "extensions" : [".log"]
-    },
-    {
-      "description" : "Treat reads with mates on different chromosomes as single-ended.",
-      "long form argument" : "--one-chromosome",
-      "short form argument" : "-oc",
-      "command line argument" : "--oneChrom",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Remove duplicates (default is to mark duplicates).",
-      "long form argument" : "--remove-duplicates",
-      "short form argument" : "-rd",
-      "command line argument" : "--rmDups",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Allow an already mark-duplicated BAM file, unmarking any previously marked duplicates and apply this duplicate marking logic.  Default is to throw errors and exit when trying to run on an already mark-duplicated BAM.",
-      "long form argument" : "--force",
-      "short form argument" : "-f",
-      "command line argument" : "--force",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Do not expect an EOF block on a bam file.",
-      "long form argument" : "--no-eof",
-      "short form argument" : "-n",
-      "command line argument" : "--noeof",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    }
-  ],
+    ],
+
+    "outputs" : [
+      {
+        "description" : "Output BAM file name (same order with original file).",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bam"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "add additional text" : "dupmarked"
+        }
+      }
+    ],
+
+    "options" : [
+      {
+        "description" : "Only add scores over this phred quality when determining a read's quality (default: 15)",
+        "long form argument" : "--min-qual",
+        "short form argument" : "-m",
+        "command line argument" : "--minQual",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Log and summary statistics (default: [outfile].log, or stderr if --out starts with '-').",
+        "long form argument" : "--log",
+        "short form argument" : "-l",
+        "command line argument" : "--log",
+        "data type" : "string",
+        "extensions" : [".log"]
+      },
+      {
+        "description" : "Treat reads with mates on different chromosomes as single-ended.",
+        "long form argument" : "--one-chromosome",
+        "short form argument" : "-oc",
+        "command line argument" : "--oneChrom",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Remove duplicates (default is to mark duplicates).",
+        "long form argument" : "--remove-duplicates",
+        "short form argument" : "-rd",
+        "command line argument" : "--rmDups",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Allow an already mark-duplicated BAM file, unmarking any previously marked duplicates and apply this duplicate marking logic.  Default is to throw errors and exit when trying to run on an already mark-duplicated BAM.",
+        "long form argument" : "--force",
+        "short form argument" : "-f",
+        "command line argument" : "--force",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Do not expect an EOF block on a bam file.",
+        "long form argument" : "--no-eof",
+        "short form argument" : "-n",
+        "command line argument" : "--noeof",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
 
   "instances" : [
     {

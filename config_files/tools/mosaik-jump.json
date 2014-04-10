@@ -5,88 +5,80 @@
   "path" : "MOSAIK/bin",
   "executable" : "MosaikJump",
   "help" : "--help|-h",
-  "arguments" : [
-    {    
-      "description" : "Input reference file",
-      "long form argument" : "--mosaik-reference",
-      "short form argument" : "-r",
-      "command line argument" : "-ia",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".dat"]
-    },
-    {    
-      "description" : "Output filename stub",
-      "long form argument" : "--jump-database",
-      "short form argument" : "-j",
-      "command line argument" : "-out",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "is filename stub" : true,
-      "extensions" : ["no extension"],
-      "filename extensions" : [
-        "_keys.jmp",
-        "_meta.jmp",
-        "_positions.jmp"
-      ],
-      "construct filename" : {
-        "method" : "from tool argument",
-        "use argument" : "--mosaik-reference",
-        "modify extension" : "omit",
-        "add argument values" : [
-          "--hash-size"
-        ]
+  "arguments" : {
+    "inputs" : [
+      {    
+        "description" : "Input reference file",
+        "long form argument" : "--mosaik-reference",
+        "short form argument" : "-r",
+        "command line argument" : "-ia",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".dat"]
       }
-    },
-    {    
-      "description" : "Hash size [4 - 32]",
-      "long form argument" : "--hash-size",
-      "short form argument" : "-hs",
-      "command line argument" : "-hs",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {    
-      "description" : "Keeps the key database on disk",
-      "long form argument" : "--keep-keys-on-disk",
-      "short form argument" : "-k",
-      "command line argument" : "-kd",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "extensions" : ["no extension"],
-      "data type" : "flag"
-    },
-    {    
-      "description" : "The amount memory used when sorting <Gb>",
-      "long form argument" : "--memory",
-      "short form argument" : "-m",
-      "command line argument" : "-mem",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "extensions" : ["no extension"],
-      "data type" : "integer"
-    },
-    {    
-      "description" : "Considers IUPAC codes",
-      "long form argument" : "--iupac",
-      "short form argument" : "-u",
-      "command line argument" : "-iupac",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "extensions" : ["no extension"],
-      "data type" : "flag"
-    }
-  ],
+    ],
+
+    "outputs" : [
+      {    
+        "description" : "Output filename stub",
+        "long form argument" : "--jump-database",
+        "short form argument" : "-j",
+        "command line argument" : "-out",
+        "required" : true,
+        "data type" : "string",
+        "is filename stub" : true,
+        "extensions" : ["no extension"],
+        "filename extensions" : [
+          "_keys.jmp",
+          "_meta.jmp",
+          "_positions.jmp"
+        ],
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--mosaik-reference",
+          "modify extension" : "omit",
+          "add argument values" : [
+            "--hash-size"
+          ]
+        }
+      }
+    ],
+
+    "options" : [
+      {    
+        "description" : "Hash size [4 - 32]",
+        "long form argument" : "--hash-size",
+        "short form argument" : "-hs",
+        "command line argument" : "-hs",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {    
+        "description" : "Keeps the key database on disk",
+        "long form argument" : "--keep-keys-on-disk",
+        "short form argument" : "-k",
+        "command line argument" : "-kd",
+        "extensions" : ["no extension"],
+        "data type" : "flag"
+      },
+      {    
+        "description" : "The amount memory used when sorting <Gb>",
+        "long form argument" : "--memory",
+        "short form argument" : "-m",
+        "command line argument" : "-mem",
+        "extensions" : ["no extension"],
+        "data type" : "integer"
+      },
+      {    
+        "description" : "Considers IUPAC codes",
+        "long form argument" : "--iupac",
+        "short form argument" : "-u",
+        "command line argument" : "-iupac",
+        "extensions" : ["no extension"],
+        "data type" : "flag"
+      }
+    ]
+  },
 
   "instances" : [
     {

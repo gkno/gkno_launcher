@@ -6,83 +6,77 @@
   "executable" : "jellyfish",
   "modifier" : "count",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "The input fasta/fastq file.",
-      "long form argument" : "--in",
-      "short form argument" : "-i",
-      "command line argument" : "-in",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".fq", ".fq.gz", ".fastq", ".fastq.gz"],
-      "modify argument name on command line" : "hide"
-    },
-    {
-      "description" : "Output file.",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
-      "command line argument" : "--output",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".jf"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--in",
-        "add argument values" : [
-          "--k-mer"
-        ],
-        "modify extension" : "replace"
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The input fasta/fastq file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "-in",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fq", ".fq.gz", ".fastq", ".fastq.gz"],
+        "modify argument name on command line" : "hide"
       }
-    },
-    {
-      "description" : "Length of k-mer.",
-      "long form argument" : "--k-mer",
-      "short form argument" : "-k",
-      "command line argument" : "--mer-len",
-      "input" : false,
-      "output" : false,
-      "required" : true,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Initial hash size.",
-      "long form argument" : "--size",
-      "short form argument" : "-s",
-      "command line argument" : "--size",
-      "input" : false,
-      "output" : false,
-      "required" : true,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Number of processors.",
-      "long form argument" : "--processors",
-      "short form argument" : "-p",
-      "command line argument" : "--threads",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "integer",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Count both strand, canonical representation (default: false)",
-      "long form argument" : "--canonical",
-      "short form argument" : "-c",
-      "command line argument" : "--canonical",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    }
-  ],
+    ],
+
+    "outputs" : [
+      {
+        "description" : "Output file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--output",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".jf"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "add argument values" : [
+            "--k-mer"
+          ],
+          "modify extension" : "replace"
+        }
+      }
+    ],
+
+    "options" : [
+      {
+        "description" : "Length of k-mer.",
+        "long form argument" : "--k-mer",
+        "short form argument" : "-k",
+        "command line argument" : "--mer-len",
+        "required" : true,
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Initial hash size.",
+        "long form argument" : "--size",
+        "short form argument" : "-s",
+        "command line argument" : "--size",
+        "required" : true,
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Number of processors.",
+        "long form argument" : "--processors",
+        "short form argument" : "-p",
+        "command line argument" : "--threads",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Count both strand, canonical representation (default: false)",
+        "long form argument" : "--canonical",
+        "short form argument" : "-c",
+        "command line argument" : "--canonical",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      }
+    ] 
+  },
 
   "argument order" : [
     "--k-mer",
@@ -104,6 +98,21 @@
       "ID" : "test",
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
+        {
+          "ID" : "input",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
+        },
+        {
+          "ID" : "kmer",
+          "argument" : "--k-mer",
+          "values" : [15]
+        },
+        {
+          "ID" : "size",
+          "argument" : "--size",
+          "values" : [1000]
+        }
       ]
     }
   ]

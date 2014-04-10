@@ -6,131 +6,119 @@
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx2g -jar",
   "help" : "--help|-h",
-  "arguments" : [
-    {
-      "description" : "the reference fasta file",
-      "long form argument" : "--fasta-reference",
-      "short form argument" : "-r",
-      "command line argument" : "--reference_sequence",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".fasta", ".fa"]
-    },
-    {
-      "description" : "the reference fasta index file",
-      "long form argument" : "--fasta-reference-index",
-      "short form argument" : "-ri",
-      "command line argument" : "--fasta-reference-index",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "modify argument name on command line" : "omit",
-      "extensions" : [".fai"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--fasta-reference",
-        "modify extension" : "append"
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "the reference fasta file",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "--reference_sequence",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fasta", ".fa"]
+      },
+      {
+        "description" : "the reference fasta index file",
+        "long form argument" : "--fasta-reference-index",
+        "short form argument" : "-ri",
+        "command line argument" : "--fasta-reference-index",
+        "required" : true,
+        "data type" : "string",
+        "modify argument name on command line" : "omit",
+        "extensions" : [".fai"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "append"
+        }
+      },
+      {
+        "description" : "the reference fasta dictionary file",
+        "long form argument" : "--fasta-reference-dictionary",
+        "short form argument" : "-rd",
+        "command line argument" : "--fastq-reference-dictionary",
+        "required" : true,
+        "data type" : "string",
+        "modify argument name on command line" : "omit",
+        "extensions" : [".dict"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "replace"
+        }
+      },
+      {
+        "description" : "input SAM or BAM file(s)",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--input_file",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".sam", ".bam"]
+      },
+      {
+        "description" : "input SAM or BAM index file(s)",
+        "long form argument" : "--in-index",
+        "short form argument" : "-ii",
+        "command line argument" : "--in-index",
+        "required" : true,
+        "data type" : "string",
+        "modify argument name on command line" : "omit",
+        "extensions" : [".bai"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "append"
+        }
+      },
+      {
+        "description" : "input covariates table recalibration file",
+        "long form argument" : "--covariates-file",
+        "short form argument" : "-c",
+        "command line argument" : "--BQSR",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".csv"]
       }
-    },
-    {
-      "description" : "the reference fasta dictionary file",
-      "long form argument" : "--fasta-reference-dictionary",
-      "short form argument" : "-rd",
-      "command line argument" : "--fastq-reference-dictionary",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "modify argument name on command line" : "omit",
-      "extensions" : [".dict"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--fasta-reference",
-        "modify extension" : "replace"
+    ],
+
+    "outputs" : [
+      {
+        "description" : "the output recalibrated BAM file",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bam"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "add additional text" : "_recalibrated"
+        }
       }
-    },
-    {
-      "description" : "input SAM or BAM file(s)",
-      "long form argument" : "--in",
-      "short form argument" : "-i",
-      "command line argument" : "--input_file",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".sam", ".bam"]
-    },
-    {
-      "description" : "input SAM or BAM index file(s)",
-      "long form argument" : "--in-index",
-      "short form argument" : "-ii",
-      "command line argument" : "--in-index",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "modify argument name on command line" : "omit",
-      "extensions" : [".bai"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--in",
-        "modify extension" : "append"
+    ],
+
+    "options" : [
+      {
+        "description" : "type of analysis to run",
+        "long form argument" : "--analysis-type",
+        "short form argument" : "-a",
+        "command line argument" : "--analysis_type",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Do not write out the original qualities as an extra tag in the BAM file",
+        "long form argument" : "--do-not-write-original-quals",
+        "short form argument" : "-noq",
+        "command line argument" : "--doNotWriteOriginalQuals",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
       }
-    },
-    {
-      "description" : "the output recalibrated BAM file",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
-      "command line argument" : "--out",
-      "input" : false,
-      "output" : true,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".bam"],
-      "construct filename" : {
-        "method": "from tool argument",
-        "use argument" : "--in",
-        "modify extension" : "replace",
-        "add additional text" : "recalibrated"
-      }
-    },
-    {
-      "description" : "input covariates table recalibration file",
-      "long form argument" : "--covariates-file",
-      "short form argument" : "-c",
-      "command line argument" : "--BQSR",
-      "input" : true,
-      "output" : false,
-      "required" : true,
-      "data type" : "string",
-      "extensions" : [".csv"]
-    },
-    {
-      "description" : "type of analysis to run",
-      "long form argument" : "--analysis-type",
-      "short form argument" : "-a",
-      "command line argument" : "--analysis_type",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "string",
-      "extensions" : ["no extension"]
-    },
-    {
-      "description" : "Do not write out the original qualities as an extra tag in the BAM file",
-      "long form argument" : "--do-not-write-original-quals",
-      "short form argument" : "-noq",
-      "command line argument" : "--doNotWriteOriginalQuals",
-      "input" : false,
-      "output" : false,
-      "required" : false,
-      "data type" : "flag",
-      "extensions" : ["no extension"]
-    }
-  ],
+    ]
+  },
 
   "instances" : [
     {
