@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.185"
+__version__ = "0.186"
 __date__ = "April 2014"
 
 def main():
@@ -288,12 +288,14 @@ def main():
     config.attachToolInstanceArgumentsToNodes(pipelineGraph, runName, 'default')
     config.attachToolInstanceArgumentsToNodes(pipelineGraph, runName, instanceName)
   write.writeDone()
+  if isDebug: write.writeDebug('Checked instance information.')
 
   # Attach the values of the pipeline arguments to the relevant nodes.
   write.writeAssignPipelineArgumentsToNodes()
   if isPipeline: commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
   else: commands.attachToolArgumentsToNodes(pipelineGraph, config, gknoConfig)
   write.writeDone()
+  if isDebug: write.writeDebug('Attached argument values to the nodes.')
 
   # Check if multiple runs or internal loops have been requested.
   hasMultipleRuns, hasInternalLoop = gknoConfig.hasLoop(pipelineGraph, config, resourcePath, isPipeline, runName)
@@ -301,6 +303,7 @@ def main():
     write.writeAssignLoopArguments(hasMultipleRuns)
     gknoConfig.addLoopValuesToGraph(pipelineGraph, config, isPipeline, runName)
     write.writeDone()
+    if isDebug: write.writeDebug('Assigned arguments for multiple runs.')
 
   # Now that the command line argument has been parsed, all of the values supplied have been added to the
   # option nodes.  All of the file nodes can take their values from their corresponding option nodes.

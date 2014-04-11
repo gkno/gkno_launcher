@@ -16,7 +16,7 @@
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fq", ".fq.gz", ".fastq", ".fastq.gz"],
+        "extensions" : [".fq", ".fq.gz", ".fastq", ".fastq.gz", ".fa"],
         "modify argument name on command line" : "hide"
       }
     ],
@@ -29,7 +29,7 @@
         "command line argument" : "--output",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".jf"],
+        "extensions" : [".jfc"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",

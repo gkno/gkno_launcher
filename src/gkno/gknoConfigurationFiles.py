@@ -268,7 +268,11 @@ class gknoConfigurationFiles:
   def checkMultipleRunsArgumentsTool(self, graph, config, data, tool):
     self.loopData.numberOfSetArguments = len(data['arguments'])
     for argument in data['arguments']:
-      self.loopData.arguments.append(config.tools.getLongFormArgument(tool, argument))
+
+      # Check if the argument is a gkno specific argument.
+      gknoNodeID = self.getNodeForGknoArgument(graph, config, argument)
+      if gknoNodeID: self.loopData.arguments.append(argument)
+      else: self.loopData.arguments.append(config.tools.getLongFormArgument(tool, argument))
 
   # Process the argument values in the multiple run/internal loop file.
   def processValues(self, data, filename, hasMultipleRuns):
@@ -293,9 +297,13 @@ class gknoConfigurationFiles:
     for iteration in range(1, self.loopData.numberOfDataSets + 1):
       for argument, values in zip(self.loopData.arguments, self.loopData.values[iteration]):
 
-        # Find the node for this argument.
-        if isPipeline: nodeID = config.pipeline.pipelineArguments[argument].ID
-        else: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')[0]
+
+        # Find the node for this argument. First check if it is a gkno argument (rather than a
+        # tool or pipeline argument).
+        nodeID = self.getNodeForGknoArgument(graph, config, argument)
+        if not nodeID:
+          if isPipeline: nodeID = config.pipeline.pipelineArguments[argument].ID
+          else: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')[0]
 
         # If this nodeID is not in the graph, an error has occured. Likely this node has been
         # deleted in the merge process.
@@ -917,17 +925,23 @@ class gknoConfigurationFiles:
   def setFilePaths(self, graph, config):
 
     # Get the path of the input and the output directories.
-    inputPath  = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-INPUT-PATH', 'values')
-    outputPath = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-OUTPUT-PATH', 'values')
+    inputPaths  = deepcopy(config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-INPUT-PATH', 'values'))
+    outputPaths = deepcopy(config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-OUTPUT-PATH', 'values'))
 
-    # Make sure the path is well formed.
-    if not inputPath: inputPath = '$(PWD)'
-    else: inputPath = inputPath[1][0]
-    if not inputPath.endswith('/'): inputPath += '/'
+    # Make sure the path is well formed. There can be multiple iterations of values, but only
+    # one value per iteration, so replace the list for each iteration with the first value in
+    # the list.
+    #TODO Warning if more than one value in the list?
+    if not inputPaths: inputPaths[1] = '$(PWD)'
+    else:
+      for iteration in inputPaths:
+        if not inputPaths[iteration][0].endswith('/'): inputPaths[iteration] = inputPaths[iteration][0] + '/'
 
-    if not outputPath: outputPath = '$(PWD)'
-    else: outputPath = outputPath[1][0]
-    if not outputPath.endswith('/'): outputPath += '/'
+    # Perform the same analysis for the output paths.
+    if not outputPaths: outputPaths[1] = '$(PWD)'
+    else:
+      for iteration in outputPaths:
+        if not outputPaths[iteration][0].endswith('/'): outputPaths[iteration] = outputPaths[iteration][0] + '/'
 
     # Parse all of the option nodes.
     for optionNodeID in config.nodeMethods.getNodes(graph, 'option'):
@@ -940,11 +954,31 @@ class gknoConfigurationFiles:
 
         # Loop over each iteration of lists of files.
         values = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
+
+        # If this is an input node, check that the number of values is equal to the number of values in
+        # inputPaths, or that there is only a single value in inputPaths.
+        if isInput:
+          if (len(values) != len(inputPaths)) and len(inputPaths) != 1:
+            print('ERROR - gknoConfig.setFilePaths')
+            self.errors.terminate()
+
+        # Perform the same check with the outputPaths for output files.
+        else:
+          if (len(values) != len(outputPaths)) and len(outputPaths) != 1:
+            print('ERROR - gknoConfig.setFilePaths - output')
+            self.errors.terminate()
+
+        # Loop over all iterations.
         for iteration in values:
+
+          # Get the input and output paths for this iteration.
+          inputPath  = inputPaths[iteration] if iteration in inputPaths else inputPaths[1]
+          outputPath = outputPaths[iteration] if iteration in outputPaths else outputPaths[1]
+       
           modifiedOptionNodeValues = []
           for filename in values[iteration]:
 
-            # Determine how the filename needs to be mofidied and then add to the given list of values.
+            # Determine how the filename needs to be modified and then add to the given list of values.
             self.addModifiedValues(config, graph, filename, modifiedOptionNodeValues, isInput, inputPath, outputPath)
 
           # Reset the stored values.

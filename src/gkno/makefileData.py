@@ -532,8 +532,8 @@ class makefileData:
     modifier   = config.nodeMethods.getGraphNodeAttribute(graph, task, 'modifier')
 
     # Check if timing information is required.
-    hasTiming         = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-TIMING', 'values')[1][0]
-    hasAdvancedTiming = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-TIMING-ADVANCED', 'values')[1][0]
+    hasTiming         = True if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-TIMING', 'values')[1][0] == 'set' else False
+    hasAdvancedTiming = True if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-TIMING-ADVANCED', 'values')[1][0] == 'set' else False
     if hasAdvancedTiming: print('(/usr/bin/time -v', end = ' ', file = fileHandle)
     elif hasTiming: print('(time ', end = ' ', file = fileHandle)
 
