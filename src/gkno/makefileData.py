@@ -154,19 +154,19 @@ class makefileData:
       numberOfInputDataSets  = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getPredecessorFileNodes(graph, task))
       numberOfOutputDataSets = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getSuccessorFileNodes(graph, task))
 
-      if numberOfOutputDataSets > numberOfInputDataSets:
-        #TODO ERROR
-        print('makefileData.determineMakefileStructure')
-        print('More output data sets than input data sets.')
-        self.errors.terminate()
+      #if numberOfOutputDataSets > numberOfInputDataSets:
+      #  #TODO ERROR
+      #  print('makefileData.determineMakefileStructure')
+      #  print('More output data sets than input data sets.')
+      #  self.errors.terminate()
 
       # If this is the first task in the workflow, determine how many makefiles are required
       # for this task. This is the number of input or output data sets. Set the current makefiles
       # to these.
       if firstTask:
-        self.numberOfFilesinPhase            = numberOfInputDataSets
+        self.numberOfFilesinPhase            = max(numberOfInputDataSets, numberOfOutputDataSets)
         self.makefileStructure[task]         = (self.currentPhase, self.numberOfFilesinPhase)
-        self.makefilesInPhase[1]             = numberOfInputDataSets
+        self.makefilesInPhase[1]             = self.numberOfFilesinPhase
         self.tasksInPhase[self.currentPhase] = []
         firstTask                            = False
       else:

@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.183"
+__version__ = "0.184"
 __date__ = "April 2014"
 
 def main():
@@ -299,7 +299,7 @@ def main():
   hasMultipleRuns, hasInternalLoop = gknoConfig.hasLoop(pipelineGraph, config, resourcePath, isPipeline, runName)
   if hasMultipleRuns or hasInternalLoop:
     write.writeAssignLoopArguments(hasMultipleRuns)
-    gknoConfig.addLoopValuesToGraph(pipelineGraph, config)
+    gknoConfig.addLoopValuesToGraph(pipelineGraph, config, isPipeline, runName)
     write.writeDone()
 
   # Now that the command line argument has been parsed, all of the values supplied have been added to the

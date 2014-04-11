@@ -287,14 +287,15 @@ class gknoConfigurationFiles:
       for value in dataSet: self.loopData.values[iteration + 1].append(str(value))
 
   # Assign loop values to the graph.
-  def addLoopValuesToGraph(self, graph, config):
+  def addLoopValuesToGraph(self, graph, config, isPipeline, runName):
 
     # Loop over each of the data sets and add to the correct iteration in the correct node.
     for iteration in range(1, self.loopData.numberOfDataSets + 1):
       for argument, values in zip(self.loopData.arguments, self.loopData.values[iteration]):
 
         # Find the node for this argument.
-        nodeID = config.pipeline.pipelineArguments[argument].ID
+        if isPipeline: nodeID = config.pipeline.pipelineArguments[argument].ID
+        else: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')[0]
 
         # If this nodeID is not in the graph, an error has occured. Likely this node has been
         # deleted in the merge process.
@@ -844,6 +845,11 @@ class gknoConfigurationFiles:
     # any modifications.
     isGreedy = config.nodeMethods.getGraphNodeAttribute(graph, task, 'isGreedy')
     if isGreedy and len(values) == 1: return
+
+    # It is possible that there is only a single input file and multiple output files, for example,
+    # if the same input is used with a different parameter. If there are already multiple output
+    # files defined and only a single input, return.
+    if numberOfIterations == 1 and len(values) > 1: return
 
     # If there is more than one iteration in the values, terminate. This routine only works if there
     # are supposed to be multiple iterations, but only one was defined (e.g. a value was given on the
