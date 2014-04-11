@@ -993,6 +993,8 @@ class gknoConfigurationFiles:
               self.addModifiedValues(config, graph, filename, modifiedFileNodeValues, isInput, inputPath, outputPath)
             values[iteration] = modifiedFileNodeValues
 
+    return outputPaths
+
   # Determine if the file is an input or output file. Since the node could be feeding
   # into or from multiple tasks, a file is an input, if and only if, the file nodes
   # associated with the option node have no predecessors.

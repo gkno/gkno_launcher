@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.186"
+__version__ = "0.187"
 __date__ = "April 2014"
 
 def main():
@@ -333,7 +333,7 @@ def main():
     config.searchForUnsetFlags(pipelineGraph)
 
   # Check that all files have a path set.
-  gknoConfig.setFilePaths(pipelineGraph, config)
+  outputPaths = gknoConfig.setFilePaths(pipelineGraph, config)
   if isDebug: write.writeDebug('Set file paths')
 
   # Check if there are instructions for evaluating commands and if so, attach them to the required
@@ -390,8 +390,8 @@ def main():
     # Generate the makefiles. The manner in which the files are created depend on whether there are
     # multiple runs (and so multiple makefiles) or a single tool/pipeline or an internal loop for
     # which there is only one makefile.
-    if hasMultipleRuns: make.generateMultipleMakefiles(pipelineGraph, config, runName, sourcePath, gknoCommitID, __version__, __date__)
-    else: make.generateSingleMakefile(pipelineGraph, config, runName, sourcePath, gknoCommitID, __version__, __date__)
+    if hasMultipleRuns: make.generateMultipleMakefiles(pipelineGraph, config, runName, sourcePath, gknoCommitID, outputPaths, __version__, __date__)
+    else: make.generateSingleMakefile(pipelineGraph, config, runName, sourcePath, gknoCommitID, outputPaths, __version__, __date__)
     if isDebug: write.writeDebug('Generated makefiles')
 
     # If there are files required for the makefiles to run and they don't exist, write a warning to the

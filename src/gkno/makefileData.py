@@ -16,7 +16,7 @@ class makefileData:
     self.errors                 = gknoErrors()
 
     # Define the output path.
-    self.outputPath             = ''
+    self.outputPaths = []
 
     # Define information on the makefile structure. This is information on the number of phases 
     # and how many makefile each phase has.
@@ -38,10 +38,10 @@ class makefileData:
 
   # Generate the makefile for a tool/pipeline with a single set of data or an internal loop.
   # Only one makefile is required in this case.
-  def generateSingleMakefile(self, graph, config, runName, sourcePath, gknoCommitID, version, date):
+  def generateSingleMakefile(self, graph, config, runName, sourcePath, gknoCommitID, outputPaths, version, date):
 
     # Set the output path for use in the makefile generation.
-    self.getOutputPath(graph, config)
+    self.getOutputPath(graph, config, outputPaths)
 
     # Open the makefile.                          
     makefileName             = runName + '.make'
@@ -82,7 +82,7 @@ class makefileData:
     self.checkFilesExist(graph, config, graphDependencies, sourcePath)
 
   # If multiple runs were requested, there are multiple makefiles to be generated.
-  def generateMultipleMakefiles(self, graph, config, runName, sourcePath, gknoCommitID, version, date):
+  def generateMultipleMakefiles(self, graph, config, runName, sourcePath, gknoCommitID, outputPaths, version, date):
 
     # Determine the structure of the pipeline and break it up into phases and iterations.
     # Each phase and iteration within it needs its own makefile.
@@ -92,7 +92,7 @@ class makefileData:
     self.setMakefilenames(runName)
 
     # Set the output path for use in the makefile generation.
-    self.getOutputPath(graph, config)
+    self.getOutputPath(graph, config, outputPaths)
 
     # Loop over the phases and iterations and construct the makefiles.
     for phaseID in range(1, len(self.makefileNames) + 1):
@@ -257,18 +257,18 @@ class makefileData:
             self.makefileNames[phaseID].append(text + '_phase_' + str(phaseID) + '_' + str(count) + '.make')
 
   # Get the output path for use with generating the makefiles.
-  def getOutputPath(self, graph, config):
+  def getOutputPath(self, graph, config, outputPaths):
 
     # The output path is stored with the gkno specific nodes. Since the valiues are treated as all other
     # arguments, the value itself is the first (and only) value in the list associated with the first (and
     # only iteration).
-    outputPath = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-OUTPUT-PATH', 'values')
-    if not outputPath: self.outputPath = '$(PWD)'
-    else:
-      self.outputPath = outputPath[1][0]
+    if not outputPaths: self.outputPaths[1] = '$(PWD)'
+    else: self.outputPaths = outputPaths
 
-      # If the chosen output path is not the current directory, check to see if the directory exists.
-      if not os.path.isdir(self.outputPath):
+    # If the chosen output path is not the current directory, check to see if the directory exists.
+    for iteration in self.outputPaths:
+      outputPath = self.outputPaths[iteration]
+      if not os.path.isdir(outputPath):
         self.errors.missingOutputDirectory(graph, config, self.outputPath)
         config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-DO-NOT-EXECUTE', ['set'], write = 'replace')
 
@@ -296,6 +296,13 @@ class makefileData:
     if iteration == 'all': stdoutName = pipelineName
     else: stdoutName = pipelineName + '_' + str(iteration)
 
+    # Get the output path for stdout and stderr.
+    if iteration in self.outputPaths: outputPath = self.outputPaths[iteration]
+    elif len(self.outputPaths) != 1:
+      print('ERROR - makefile.writeHeaderInformation.')
+      self.errors.terminate()
+    else: outputPath = self.outputPaths[1]
+
     print(file = fileHandle)
     print('### Paths to tools and resources.', file = fileHandle)
     print('GKNO_PATH=', sourcePath, "/src/gkno", sep = '', file = fileHandle)
@@ -304,8 +311,8 @@ class makefileData:
     print('MAKEFILE_ID=', makefileName.split('/')[-1].split('.')[0], sep = '', file = fileHandle)
     print(file = fileHandle)
     print('### Standard output and errors files.', file = fileHandle)
-    print('STDOUT=', self.outputPath, '/', stdoutName, '.stdout', sep = '', file = fileHandle)
-    print('STDERR=', self.outputPath, '/', stdoutName, '.stderr', sep = '', file = fileHandle)
+    print('STDOUT=', outputPath, stdoutName, '.stdout', sep = '', file = fileHandle)
+    print('STDERR=', outputPath, stdoutName, '.stderr', sep = '', file = fileHandle)
     print(file = fileHandle)
 
   # Write out all of the intermediate files.
