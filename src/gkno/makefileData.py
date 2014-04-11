@@ -531,6 +531,12 @@ class makefileData:
     precommand = config.nodeMethods.getGraphNodeAttribute(graph, task, 'precommand')
     modifier   = config.nodeMethods.getGraphNodeAttribute(graph, task, 'modifier')
 
+    # Check if timing information is required.
+    hasTiming         = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-TIMING', 'values')[1][0]
+    hasAdvancedTiming = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-TIMING-ADVANCED', 'values')[1][0]
+    if hasAdvancedTiming: print('(/usr/bin/time -v', end = ' ', file = fileHandle)
+    elif hasTiming: print('(time ', end = ' ', file = fileHandle)
+
     # Add the precommand if one exists.
     if precommand: print(precommand, end = ' ', file = fileHandle)
 
@@ -554,7 +560,7 @@ class makefileData:
     argumentOrder = self.defineArgumentOrder(config, tool, arguments)
 
     # Write the arguments to the makefile.
-    for argument in argumentOrder:
+    for counter, argument in enumerate(argumentOrder):
       for nodeID, values in arguments[argument]:
 
         # If this is not really an argument, but a request to read argument information from a
@@ -676,7 +682,12 @@ class makefileData:
                  
                 # TODO DO I NEED TO LOOK AT OUTPUTS?
   
-          for value in valueList:
+          # Write the arguments and or values to the makefile.
+          for valueCounter, value in enumerate(valueList):
+
+            # If timing information is being generated, the last argument needs to finish with
+            # the close parenthesis.
+            endText = ')' if (counter + 1 == len(argumentOrder)) and (valueCounter + 1 == len(valueList)) and (hasTiming or hasAdvancedTiming) else ''
 
             # If the input to this task is a stream and this argument has specific instructions for
             # this case, ensure that the command is properly handled.
@@ -691,23 +702,23 @@ class makefileData:
   
               # Check if the argument is an output that writes to standard out.
               if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout':
-                print('\t>> ', value, ' \\', sep = '', file = fileHandle)
+                print('\t>> ', value, endText, ' \\', sep = '', file = fileHandle)
                 stdoutUsed = True
   
               # If the argument should be hidden, only write the value.
               elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'hide':
-                print('\t', value, ' \\', sep = '', file = fileHandle)
+                print('\t', value, endText, ' \\', sep = '', file = fileHandle)
   
               # If the argument and value should be hidden, don't write anything.
               elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'omit':
                 pass
   
               # Check if the argument is a flag.
-              elif not isFlag: print('\t', commandLineArgument, delimiter, value, ' \\', sep = '', file = fileHandle)
+              elif not isFlag: print('\t', commandLineArgument, delimiter, value, endText, ' \\', sep = '', file = fileHandle)
   
               # If the argument is a flag, check that the value is 'set' and if so, just write the argument.
               else:
-                if value == 'set': print('\t', commandLineArgument, ' \\', sep = '', file = fileHandle)
+                if value == 'set': print('\t', commandLineArgument, endText, ' \\', sep = '', file = fileHandle)
 
     return stdoutUsed
 
