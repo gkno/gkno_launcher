@@ -16,7 +16,7 @@
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".jf"],
+        "extensions" : [".jfc"],
         "modify argument name on command line" : "hide"
       }
     ],
@@ -80,7 +80,7 @@
         {
           "ID" : "input",
           "argument" : "--in",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1_15.jf"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1_15.jfc"]
         }
       ]
     }

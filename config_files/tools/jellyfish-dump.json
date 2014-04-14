@@ -16,7 +16,7 @@
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".jf"],
+        "extensions" : [".jfc"],
         "modify argument name on command line" : "hide"
       }
     ],

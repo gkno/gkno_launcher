@@ -261,7 +261,11 @@ class gknoConfigurationFiles:
   def checkMultipleRunsArgumentsPipeline(self, graph, config, data):
     self.loopData.numberOfSetArguments = len(data['arguments'])
     for argument in data['arguments']:
-      self.loopData.arguments.append(config.pipeline.getLongFormArgument(graph, argument))
+
+      # Check if the argument is a gkno specific argument.
+      gknoNodeID = self.getNodeForGknoArgument(graph, config, argument)
+      if gknoNodeID: self.loopData.arguments.append(argument)
+      else: self.loopData.arguments.append(config.pipeline.getLongFormArgument(graph, argument))
 
   # Check that all arguments in the multiple runs/internal loop file are valid for the current
   # pipeline.

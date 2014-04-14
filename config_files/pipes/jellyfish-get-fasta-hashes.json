@@ -1,0 +1,221 @@
+{
+  "description" : "Generate hashes for a reference fasta.",
+
+  "tasks" : {
+    "count-kmers" : {
+      "tool" : "jellyfish-count"
+    },
+    "build-histogram" : {
+      "tool" : "jellyfish-histo"
+    },
+    "replace-spaces" : {
+      "tool" : "replace-space-tab"
+    },
+    "model" : {
+      "tool" : "rufus-model"
+    },
+    "dump-kmers" : {
+      "tool" : "jellyfish-dump"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "fasta",
+      "description" : "The input fast file.",
+      "long form argument" : "--fasta",
+      "short form argument" : "-fa",
+      "tasks" : {
+        "count-kmers" : "--in"
+      }
+    },
+    {
+      "ID" : "k-mer length",
+      "description" : "The k-mer length.",
+      "long form argument" : "--k-mer",
+      "short form argument" : "-k",
+      "tasks" : {
+        "count-kmers" : "--k-mer",
+        "model" : "--k-mer"
+      }
+    },
+    {
+      "ID" : "initial hash size",
+      "description" : "The initial hash size.",
+      "long form argument" : "--size",
+      "short form argument" : "-s",
+      "tasks" : {
+        "count-kmers" : "--size"
+      }
+    },
+    {
+      "ID" : "canonical",
+      "description" : "Count both strand, canonical representation (default: false).",
+      "long form argument" : "--canonical",
+      "short form argument" : "-ca",
+      "tasks" : {
+        "count-kmers" : "--canonical"
+      }
+    },
+    {
+      "ID" : "threads",
+      "description" : "Specifies the number of threads to use for the aligner.",
+      "long form argument" : "--processors",
+      "short form argument" : "-p",
+      "tasks" : {
+        "count-kmers" : "--processors"
+      }
+    },
+    {
+      "ID" : "full",
+      "description" : "Full histogram. Don't skip count 0. (default: false).",
+      "long form argument" : "--full",
+      "short form argument" : "-f",
+      "tasks" : {
+        "build-histogram" : "--full"
+      }
+    },
+    {
+      "ID" : "Histogram input",
+      "description" : "Link count-kmer output to build-histogram input.",
+      "tasks" : {
+        "count-kmers" : "--out",
+        "build-histogram" : "--in",
+        "dump-kmers" : "--in"
+      }
+    },
+    {
+      "ID" : "Replace spaces with tabs.",
+      "description" : "Replace spaces with tabs in parent histogram.",
+      "tasks" : {
+        "build-histogram" : "--out",
+        "replace-spaces" : "--in"
+      }
+    },
+    {
+      "ID" : "Model.",
+      "description" : "Model kmer distribution",
+      "tasks" : {
+        "replace-spaces" : "--out",
+        "model" : "--histogram"
+      }
+    },
+    {
+      "ID" : "processors rufus model",
+      "description" : "The number of threads for the Rufus model step.",
+      "long form argument" : "--processors-rufus-model",
+      "short form argument" : "-prm",
+      "tasks" : {
+        "model" : "--processors"
+      }
+    },
+    {
+      "ID" : "column",
+      "description" : "Use column format in Jellyfish dump.",
+      "long form argument" : "--column",
+      "short form argument" : "-c",
+      "tasks" : {
+        "dump-kmers" : "--column"
+      }
+    },
+    {
+      "ID" : "tab",
+      "description" : "Use tab separator in Jellyfish dump.",
+      "long form argument" : "--tab",
+      "short form argument" : "-t",
+      "tasks" : {
+        "dump-kmers" : "--tab"
+      }
+    },
+    {
+      "ID" : "lower",
+      "description" : "Don't output k-mers with count < lower-count.",
+      "long form argument" : "--lower-count",
+      "short form argument" : "-lc",
+      "tasks" : {
+        "dump-kmers" : "--lower-count"
+      },
+      "required" : true,
+      "evaluate command" : {
+        "command" : "shell head -1 FILE1",
+        "add values" : [
+          {
+            "ID" : "FILE1",
+            "task" : "model",
+            "argument" : "--output-model"
+          }
+        ]
+      }
+    },
+    {
+      "ID" : "upper",
+      "description" : "Don't output k-mers with count > upper-count.",
+      "long form argument" : "--upper-count",
+      "short form argument" : "-uc",
+      "tasks" : {
+        "dump-kmers" : "--upper-count"
+      }
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires user to input all input filenames.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Test instance for the test harness.",
+      "nodes" : [
+        {
+          "ID" : "k-mer",
+          "argument" : "--k-mer",
+          "values" : [18]
+        },
+        {
+          "ID" : "hash size",
+          "argument" : "--size",
+          "values" : [1000000]
+        },
+        {
+          "ID" : "canonical",
+          "argument" : "--canonical",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "processors",
+          "argument" : "--processors",
+          "values" : [2]
+        },
+        {
+          "ID" : "column",
+          "argument" : "--column",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "full",
+          "argument" : "--full",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "tab",
+          "argument" : "--tab",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "max depth",
+          "argument" : "--max-depth",
+          "values" : [10000]
+        },
+        {
+          "ID" : "rufus model processors",
+          "argument" : "--processors-rufus-model",
+          "values" : [4]
+        }
+      ]
+    }
+  ]
+}

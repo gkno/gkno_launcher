@@ -256,7 +256,7 @@
         {
           "ID" : "reference",
           "argument" : "--fasta-reference",
-          "values" : ["../resources/tutorial/current/chr20_fragment_moblist.fa"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
         },
         {
           "ID" : "output path",

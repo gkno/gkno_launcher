@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.188"
+__version__ = "0.189"
 __date__ = "April 2014"
 
 def main():
@@ -265,9 +265,6 @@ def main():
       else: errors.failedToolBuilds(admin.builtTools)
     else: errors.terminate()
   
-  # Print information about the pipeline to screen.
-  #if isPipeline: write.writePipelineWorkflow(pipelineGraph, config, gknoHelp)
-
   # Check if an instance was requested by the user.  If so, get the data and add the values to the data nodes.
   write.writeCheckingInstanceInformation()
 
