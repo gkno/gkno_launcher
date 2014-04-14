@@ -946,6 +946,7 @@ class gknoConfigurationFiles:
     else:
       for iteration in outputPaths:
         if not outputPaths[iteration][0].endswith('/'): outputPaths[iteration] = outputPaths[iteration][0] + '/'
+        else: outputPaths[iteration] = outputPaths[iteration][0]
 
     # Parse all of the option nodes.
     for optionNodeID in config.nodeMethods.getNodes(graph, 'option'):
