@@ -936,13 +936,13 @@ class gknoConfigurationFiles:
     # one value per iteration, so replace the list for each iteration with the first value in
     # the list.
     #TODO Warning if more than one value in the list?
-    if not inputPaths: inputPaths[1] = '$(PWD)'
+    if not inputPaths: inputPaths[1] = '$(PWD)/'
     else:
       for iteration in inputPaths:
         if not inputPaths[iteration][0].endswith('/'): inputPaths[iteration] = inputPaths[iteration][0] + '/'
 
     # Perform the same analysis for the output paths.
-    if not outputPaths: outputPaths[1] = '$(PWD)'
+    if not outputPaths: outputPaths[1] = '$(PWD)/'
     else:
       for iteration in outputPaths:
         if not outputPaths[iteration][0].endswith('/'): outputPaths[iteration] = outputPaths[iteration][0] + '/'
