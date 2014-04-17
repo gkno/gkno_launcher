@@ -500,8 +500,8 @@ class Scissors(GknoTool):
   # $ make -j N
   def doBuild(self):
     os.chdir("src")
-    if not self.makeClean():
-      return False
+    #if not self.makeClean():
+    #  return False
     return self.make()
   
   # $ cd src
