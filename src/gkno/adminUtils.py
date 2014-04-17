@@ -146,15 +146,15 @@ class adminUtils:
     # Build all tools
     print("Building tools: ", file=sys.stdout)
     for tool in conf.tools:
-      print("  "+tool.name+"...", end="", file=sys.stdout)
+      print('  ' + tool.name + '...', end = '', file=sys.stdout)
       sys.stdout.flush()
       if self.buildTool(tool):
-        print("done.", file=sys.stdout)
-        self.builtTools[tool] = True
+        print('done.', file=sys.stdout)
+        self.builtTools[tool.name] = True
         self.userSettings['compiled tools'].append(tool.name)
       else:
         self.error.toolBuildFailed(tool.name, dest=sys.stdout)
-        self.builtTools[tool] = False
+        self.builtTools[tool.name] = False
         self.allBuilt         = False
         #return False
 
@@ -162,9 +162,9 @@ class adminUtils:
     print("Fetching default resources:", file=sys.stdout)
     for resource in conf.resources:
       if resource.isDefault:
-        print("  "+resource.name+":", file=sys.stdout)
+        print('  ' + resource.name + ':', file=sys.stdout)
         sys.stdout.flush()
-        if not self.addCurrentRelease(resource.name, "    "):
+        if not self.addCurrentRelease(resource.name, '    '):
           self.error.resourceFetchFailed(resource.name, dest=sys.stdout)
           return False
 
