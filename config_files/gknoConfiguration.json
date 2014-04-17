@@ -98,6 +98,13 @@
       "short form" : "-tm",
       "value" : ["unset"]
     },
+    "GKNO-TIMING-ADVANCED" : {
+      "argument" : "--timing-advanced",
+      "data type" : "flag",
+      "description" : "Generate extended timing information for all tasks.",
+      "short form" : "-ta",
+      "value" : ["unset"]
+    },
     "GKNO-VERBOSE" : {
       "argument" : "--verbose",
       "data type" : "flag",
