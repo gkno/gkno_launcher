@@ -64,3 +64,6 @@
 [submodule "tools/Rufus"]
 	path = tools/Rufus
 	url = https://github.com/gkno/RUFUS.git
+[submodule "tools/glia"]
+	path = tools/glia
+	url = https://github.com/gkno/glia.git
