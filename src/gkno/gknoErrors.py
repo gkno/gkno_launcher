@@ -2143,6 +2143,8 @@ argument existed to set this value. Please see the documentation to see how to i
     'cause of the failures and rebuild. In the meantime, all other tools and pipelines not containing the failed tools can be used. The ' + \
     'tools that failed to build are:')
     self.text.append('\t')
-    for tool in tools: self.text.append('\t' + tool.name)
+    for tool in tools:
+      if not tools[tool]: self.text.append('\t' + tool)
     self.text.append('\t')
     self.writeFormattedText(errorType = 'warning')
+    self.terminate()
