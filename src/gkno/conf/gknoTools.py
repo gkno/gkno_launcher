@@ -488,6 +488,30 @@ class SamTools(GknoTool):
   def doUpdate(self):
     return self.make()
 
+# Scissors,
+class Scissors(GknoTool):
+  def __init__(self):
+    super(Scissors, self).__init__()
+    self.name       = "scissors"
+    self.installDir = "scissors"
+
+  # $ cd src
+  # $ make clean
+  # $ make -j N
+  def doBuild(self):
+    os.chdir("src")
+    if not self.makeClean():
+      return False
+    return self.make()
+  
+  # $ cd src
+  # $ make -j N
+  def doUpdate(self):
+    os.chdir("src") 
+    if not self.makeClean():
+      return False
+    return self.make()
+
 # Seqan (only building MASON for now)
 class Seqan(GknoTool):
   def __init__(self):
@@ -586,6 +610,7 @@ List = [
         Premo(),
         Rufus(),
         SamTools(), 
+        Scissors(),
         Seqan(),       
         Tabix(),
         Tangram(),
