@@ -33,7 +33,7 @@
           "method": "from tool argument",
           "use argument" : "--in",
           "modify extension" : "replace",
-          "add additional text" : "sorted"
+          "add additional text" : "_sorted"
         }
       }
     ],

@@ -1,5 +1,6 @@
 {
   "description" : "Compare parent and mutant strains..",
+  "experimental" : true,
 
   "tasks" : {
     "count-parent-kmers" : {

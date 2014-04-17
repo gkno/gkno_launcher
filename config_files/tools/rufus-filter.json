@@ -1,6 +1,7 @@
 {
   "id" : "rufus-filter",
   "description" : "Filter.",
+  "experimental" : true,
   "category" : "kmer processing",
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",

@@ -1,6 +1,7 @@
 {
   "id" : "rufus-build-hash",
   "description" : "Build hashes.",
+  "experimental" : true,
   "category" : "kmer preprocessing",
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",

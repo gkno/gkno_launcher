@@ -29,6 +29,10 @@ class helpClass:
     self.failedTools     = {}
     self.failedPipelines = {}
 
+    # Keep track of experimental tools and pipelines.
+    self.experimentalTools     = {}
+    self.experimentalPipelines = {}
+
     # Define the errors class.
     self.errors = gknoErrors()
 
@@ -198,7 +202,22 @@ class helpClass:
       if not self.availableTools[tool][1]: self.writeFormattedText(toolText + ':', self.availableTools[tool][0], self.toolLength + 5, 2, '')
     print(file = sys.stdout)
 
-    # Now list any tool configuratiobn files that have errors.
+    # Now list any tool configuration files that are listed as experimental..
+    if self.experimentalTools:
+      print('     The following tools have been identified as experimental, so should be used with caution:', file = sys.stdout)
+      print(file = sys.stdout)
+      for tool in sorted(self.experimentalTools.keys()):
+        allToolsCompiled = True
+        for requiredTool in config.tools.getGeneralAttribute(tool, 'requiredCompiledTools'):
+          if requiredTool not in admin.userSettings['compiled tools']: allToolsCompiled = False
+  
+        # If the tool requires tools to be compiled and they are not, prepend the tool name with a '!'. This
+        # indicates that the tool is not available.
+        toolText = tool if allToolsCompiled else str('!') + tool
+        if not self.experimentalTools[tool][1]: self.writeFormattedText(toolText + ':', self.experimentalTools[tool][0], self.toolLength + 5, 2, '')
+      print(file = sys.stdout)
+
+    # Now list any tool configuration files that have errors.
     if self.failedTools:
       print('     The following tools have malformed configuration files, so are currently unusable:', file = sys.stdout)
       print(file = sys.stdout)
@@ -216,10 +235,18 @@ class helpClass:
     print(file = sys.stdout)
     print('     <pipeline name>:', file = sys.stdout)
 
-    # Write the tools to screen.
+    # Write the pipelines to screen.
     for pipeline in sorted(self.availablePipelines.keys()):
        self.writeFormattedText(pipeline + ':', self.availablePipelines[pipeline], self.pipelineLength + 5, 2, '')
     print(file = sys.stdout)
+
+    # Write the experimental pipelines to screen.
+    if self.experimentalPipelines:
+      print('     The following pipelines have been identified as experimental, so should be used with caution:', file = sys.stdout)
+      print(file = sys.stdout)
+      for pipeline in sorted(self.experimentalPipelines.keys()):
+         self.writeFormattedText(pipeline + ':', self.experimentalPipelines[pipeline], self.pipelineLength + 5, 2, '')
+      print(file = sys.stdout)
 
     # Now list any pipeline configuratiobn files that have errors.
     if self.failedPipelines:
@@ -253,9 +280,13 @@ class helpClass:
       if openFileSuccess:
         success = config.tools.processConfigurationData(tool, configurationData, allowTermination = False)
         if success:
-          description       = config.tools.getGeneralAttribute(tool, 'description')
-          isHidden          = config.tools.getGeneralAttribute(tool, 'isHidden')
-          self.availableTools[tool] = (description, isHidden)
+          description               = config.tools.getGeneralAttribute(tool, 'description')
+          isHidden                  = config.tools.getGeneralAttribute(tool, 'isHidden')
+          isExperimental            = config.tools.getGeneralAttribute(tool, 'isExperimental')
+
+          # Store experimental tools separately from stable tools.
+          if isExperimental: self.experimentalTools[tool] = (description, isHidden)
+          else: self.availableTools[tool] = (description, isHidden)
         else:
           try: description = config.tools.getGeneralAttribute(tool, 'description')
           except: description = 'Description could not be found'
@@ -287,9 +318,14 @@ class helpClass:
       if openFileSuccess:
         config.pipeline.clearPipeline()
         success = config.pipeline.processConfigurationData(configurationData, pipeline, gknoConfig.jsonFiles['tools'], allowTermination = False)
-        try: description = config.pipeline.attributes.description
+
+        try: description = config.pipeline.getPipelineAttribute('description')
         except: description = 'Description could not be found.'
-        if success: self.availablePipelines[pipeline] = description
+
+        # If the pipeline is listed as experimental, store the pipeline separately.
+        if success:
+          if config.pipeline.getPipelineAttribute('isExperimental'): self.experimentalPipelines[pipeline] = description
+          else: self.availablePipelines[pipeline] = description
         else: self.failedPipelines[pipeline] = description
 
       # For the purposes of formatting the screen output, find the longest tool

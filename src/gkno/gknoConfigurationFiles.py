@@ -1209,7 +1209,7 @@ class gknoConfigurationFiles:
 
     # If the filename does not have the '.dot' extension, add it.
     if not filename.endswith('.dot'): filename += '.dot'
-    draw.drawDot(graph, config.nodeMethods, config.edgeMethods, config.tools, filename, nodes = 'file')
+    draw.drawDot(graph, config, filename, nodes = 'file')
 
   # Check to see if there are any files/directories present that are not allowed.  
   def checkForDisallowedFiles(self, graph, config, resourcePath):

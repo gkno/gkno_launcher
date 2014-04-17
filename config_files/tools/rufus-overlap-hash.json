@@ -1,6 +1,7 @@
 {
   "id" : "rufus-overlap-hash",
   "description" : "Overlap hashes.",
+  "experimental" : true,
   "category" : "kmer processing",
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",

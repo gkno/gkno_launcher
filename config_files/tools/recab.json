@@ -50,7 +50,7 @@
           "method": "from tool argument",
           "use argument" : "--in",
           "modify extension" : "replace",
-          "add additional text" : "recalibrated"
+          "add additional text" : "_recalibrated"
         }
       }
     ],

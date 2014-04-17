@@ -63,7 +63,8 @@
       "long form argument" : "--processors",
       "short form argument" : "-p",
       "tasks" : {
-        "count-kmers" : "--processors"
+        "count-kmers" : "--processors",
+        "build-histogram" : "--processors"
       }
     },
     {

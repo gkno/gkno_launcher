@@ -1,6 +1,7 @@
 {
   "id" : "rufus-model",
   "description" : "Model.",
+  "experimental" : true,
   "category" : "kmer processing",
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",
@@ -11,7 +12,7 @@
       {
         "description" : "Input histogram.",
         "long form argument" : "--histogram",
-        "short form argument" : "-h",
+        "short form argument" : "-hi",
         "command line argument" : "--histogram",
         "required" : true,
         "data type" : "string",
