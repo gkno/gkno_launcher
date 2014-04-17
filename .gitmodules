@@ -67,3 +67,6 @@
 [submodule "tools/glia"]
 	path = tools/glia
 	url = https://github.com/gkno/glia.git
+[submodule "tools/scissors"]
+	path = tools/scissors
+	url = https://github.com/gkno/scissors.git
