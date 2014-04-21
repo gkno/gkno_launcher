@@ -402,6 +402,9 @@ class adminUtils:
     # to include the tool, then build the tool.
     self.exportUserSettings()
 
+    # Return success.
+    return True
+
   # "gkno add-resource [organism] [options]"
   #
   # Depending on input parameters, either lists available resources/releases or 
