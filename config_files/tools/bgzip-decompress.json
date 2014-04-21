@@ -1,22 +1,21 @@
 {
-  "id" : "tabix-index-vcf",
-  "description" : "Index a VCF file using tabix.",
-  "category" : "variant postprocessing",
+  "id" : "bgzip-decompress",
+  "description" : "Decompress a file using bgzip.",
+  "category" : "file processing",
   "tools" : ["tabix"],
   "path" : "tabix",
-  "executable" : "tabix",
-  "modifier" : "-p vcf",
+  "executable" : "bgzip",
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
       {
-        "description" : "The file to be indexed.",
+        "description" : "The file to be decompressed.",
         "long form argument" : "--in",
         "short form argument" : "-i",
-        "command line argument" : "--in",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["vcf.gz"],
+        "extensions" : [".gz"],
         "modify argument name on command line" : "hide",
         "if input is stream" : "do not include"
       }
@@ -24,14 +23,13 @@
 
     "outputs" : [
       {
-        "description" : "The output index file.",
+        "description" : "The output file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
-        "command line argument" : "--out",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".tbi"],
-        "hide in help" : true,
+        "extensions" : [".gz"],
         "modify argument name on command line" : "omit",
         "construct filename" : {
           "method": "from tool argument",
@@ -43,21 +41,35 @@
 
     "options" : [
       {
-        "description" : "Overwrite existing index.",
-        "long form argument" : "--force-overwrite",
-        "short form argument" : "-f",
-        "command line argument" : "-f",
+        "description" : "Decompress.",
+        "long form argument" : "--decompress",
+        "short form argument" : "-d",
+        "command line argument" : "-d",
+        "required" : true,
         "data type" : "flag",
-        "extensions" : ["no extension"]
+        "extensions" : ["no extension"],
+        "hide in help" : true
       }
     ]
   },
+
+  "argument order" : [
+    "--decompress",
+    "--in",
+    "--out"
+  ],
 
   "instances" : [
     {
       "ID" : "default",
       "description" : "Default instance requires the users input for all files.",
-      "nodes" : []
+      "nodes" : [
+        {
+          "ID" : "vcf",
+          "argument" : "--decompress",
+          "values" : ["set"]
+        }
+      ]
     },
 
     {
@@ -65,14 +77,14 @@
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
-          "ID" : "input",
-          "argument" : "--in",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+          "ID" : "vcf",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"],
+          "argument" : "--in"
         },
         {
-          "ID" : "overwrite",
-          "argument" : "--force-overwrite",
-          "values" : ["set"]
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
         }
       ]
     }
