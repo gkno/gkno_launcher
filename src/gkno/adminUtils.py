@@ -20,7 +20,7 @@ class adminUtils:
 
     # Command line modes
     self.resourceModes = [ "add-resource", "remove-resource", "update-resource" ]
-    self.allModes      = [ "build", "update", "version" ] + self.resourceModes
+    self.allModes      = [ "build", "update", "add-tool", "version" ] + self.resourceModes
 
     # Setup help/usage descriptions
     self.modeDescriptions = {}
@@ -28,6 +28,7 @@ class adminUtils:
     self.modeDescriptions["update"]          = "Update gkno itself, its internal tools, and any tracked organism resources."
     self.modeDescriptions["version"]         = "View gkno version in use, along with access to built-in tool versions."
     self.modeDescriptions["add-resource"]    = "Download resource data for an organism and track it for updated releases."
+    self.modeDescriptions["add-tool"]        = "Add a previously omitted tool."
     self.modeDescriptions["remove-resource"] = "Delete resource data for an organism and stop tracking it."
     self.modeDescriptions["update-resource"] = "Update resource data for an organism."
 
@@ -80,9 +81,10 @@ class adminUtils:
       
     # Run the requested operation
     success = False
-    if   self.mode == "build"   : success = self.build()
-    elif self.mode == "update"  : success = self.update()
-    elif self.mode == "version" : success = self.showVersion()
+    if   self.mode == "build"    : success = self.build()
+    elif self.mode == "update"   : success = self.update()
+    elif self.mode == "add-tool" : success = self.addTool()
+    elif self.mode == "version"  : success = self.showVersion()
     else:
     
       # Check command line for organism and/or release name, then resolve any potential alias.
@@ -353,11 +355,52 @@ class adminUtils:
     # Return success
     return True
     
-
   # Parse the user_settings to get the compiled tools.
   def getCompiledTools(self):
     for counter, tool in reversed(list(enumerate(conf.tools))):
       if tool.name not in self.userSettings['compiled tools']: del(conf.tools[counter])
+
+  # Add a previously omitted tool.
+  def addTool(self):
+
+    # Get the name of the tool to add and check that it is valid.
+    for counter, value in enumerate(sys.argv):
+      if value == 'add-tool':
+        try: tool = sys.argv[counter + 1]
+        except: self.error.noToolNameProvided(conf.tools)
+        break
+
+    # Check that the tool exists.
+    isValid = False
+    for toolObject in conf.tools:
+      if tool == toolObject.name:
+        isValid = True
+        break
+
+    if not isValid: self.error.invalidToolAdded(conf.tools)
+
+    # Check if this tool is already included in the users version of gkno.
+    if tool in self.userSettings['compiled tools']: self.error.toolAlreadyBuilt()
+
+    # Build the tool.
+    # Cache our starting working directory since we're going to move around
+    originalWorkingDir = os.getcwd()
+
+    print('Building tool: ' + tool + '...', end = '', file=sys.stdout)
+    sys.stdout.flush()
+    if self.buildTool(toolObject):
+      print('done.', file=sys.stdout)
+      self.builtTools[tool] = True
+      self.userSettings['compiled tools'].append(tool)
+    else:
+      self.error.toolBuildFailed(tool, dest = sys.stdout)
+      self.builtTools[tool] = False
+      self.allBuilt         = False
+    os.chdir(originalWorkingDir)
+
+    # For valid tools that are not included in the current version of gkno, update the user_settings.json
+    # to include the tool, then build the tool.
+    self.exportUserSettings()
 
   # "gkno add-resource [organism] [options]"
   #

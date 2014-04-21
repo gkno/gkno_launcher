@@ -2148,3 +2148,31 @@ argument existed to set this value. Please see the documentation to see how to i
     self.text.append('\t')
     self.writeFormattedText(errorType = 'warning')
     self.terminate()
+
+  # If a tool is added, but the tool name is not provided.
+  def noToolNameProvided(self, tools):
+    self.text.append('No tool name provided.')
+    self.text.append('An attempt to add a tool to the gkno distribution was made, but no tool name was provided. If adding a tools, the syntax \'' + \
+    './gkno add-tool <tool name> miust be used, where <tool name> is one of the following tools:')
+    for tool in tools: self.text.append('\t' + tool.name)
+    self.text.append('\t')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # If a tool is added, but the tool added is invalid.
+  def invalidToolAdded(self, tools):
+    self.text.append('Attempt to add an invalid tool.')
+    self.text.append('An attempt to add a tool to the gkno distribution was made, but the requested tool is not available in gkno. The tool added' + \
+    'must be one of the following:')
+    for tool in tools: self.text.append('\t' + tool.name)
+    self.text.append('\t')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # If a tool is added, but the tool is already available.
+  def toolAlreadyBuilt(self):
+    self.text.append('Attempt to add a tool that is already present.')
+    self.text.append('An attempt to add a tool to the gkno distribution was made, but the requested tool is already available. Only tools that ' + \
+    'have previously been omitted from the build can be added.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
