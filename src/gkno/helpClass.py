@@ -429,7 +429,7 @@ class helpClass:
 
     # Print out all the input files.
     self.printToolArguments(config, tool, 'input files', arguments.pop('inputs'), argumentLength)
-    self.printToolArguments(config, tool, 'output files', arguments.pop('outputs'), argumentLength)
+    if 'outputs' in arguments: self.printToolArguments(config, tool, 'output files', arguments.pop('outputs'), argumentLength)
     for group in arguments: self.printToolArguments(config, tool, group, arguments[group], argumentLength)
 
     # Write out all of the values included in the selected instance, if there are any.

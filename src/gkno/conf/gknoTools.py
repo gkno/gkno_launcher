@@ -281,6 +281,25 @@ class Gatk(GknoTool):
   def doUpdate(self):
     return self.ant()
 
+# glia
+class Glia(GknoTool):
+  def __init__(self):
+    super(Glia, self).__init__()
+    self.name       = "glia"
+    self.installDir = "glia"
+
+  # $ make -j N   
+  def doBuild(self):
+#    if not self.makeClean(): 
+#      return False 
+    return self.make()
+
+  # $ make -j N   
+  def doUpdate(self):
+    if not self.makeClean(): 
+      return False 
+    return self.make()
+
 # Jellyfish
 class Jellyfish(GknoTool):
   def __init__(self):
@@ -601,6 +620,7 @@ List = [
         Blast(),
         Freebayes(),
         Gatk(),
+        Glia(),
         Jellyfish(),
         LibStatGen(), BamUtil(), FastQValidator(), # <-- Keep this order
         Mosaik(),

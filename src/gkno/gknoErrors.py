@@ -2144,7 +2144,7 @@ argument existed to set this value. Please see the documentation to see how to i
     'tools that failed to build are:')
     self.text.append('\t')
     for tool in tools:
-      if not tools[tool]: self.text.append('\t' + tool)
+      if not tools[tool]: self.text.append('\t' + str(tool))
     self.text.append('\t')
     self.writeFormattedText(errorType = 'warning')
     self.terminate()
