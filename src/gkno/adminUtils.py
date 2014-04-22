@@ -333,10 +333,9 @@ class adminUtils:
     # Update all built-in tools 
     print("Checking tools: ", file=sys.stdout)
     for tool in conf.tools:
-      print("  "+tool.name+"...", end="", file=sys.stdout)
+      print('  ' + tool.name + '...', end = '', file=sys.stdout)
       sys.stdout.flush()
-      if self.updateTool(tool):
-        print("done.", file=sys.stdout)
+      if self.updateTool(tool): print('done.', file=sys.stdout)
       else:
         self.error.toolUpdateFailed(tool.name, dest=sys.stdout)
         return False

@@ -386,9 +386,12 @@ class gknoConfigurationFiles:
 
           # If an output file does not exist and has no instructions on how to be generated, terminate.
           if method == None:
-            tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-            pipelineArgument = config.pipeline.getPipelineArgument(task, longFormArgument)
-            self.errors.noOutputFilename(task, tool, longFormArgument, shortFormArgument, pipelineArgument)
+            if isPipeline:
+              tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+              pipelineArgument = config.pipeline.getPipelineArgument(task, longFormArgument)
+              self.errors.noOutputFilename(task, tool, longFormArgument, shortFormArgument, pipelineArgument)
+
+            else: self.errors.noToolOutputFilename(task, longFormArgument, shortFormArgument)
   
           # If the tool configuration file has instructions on how to construct the filename,
           # built it using these instructions.
