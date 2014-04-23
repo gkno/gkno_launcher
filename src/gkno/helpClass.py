@@ -392,7 +392,9 @@ class helpClass:
     # Print out the tool description.
     print('     Description:', file = sys.stdout)
     try: self.writeFormattedText(self.availableTools[tool][0], ' ', 2, 2, ' ')
-    except: self.errors.problemWithTool(tool)
+    except:
+      try: self.writeFormattedText(self.experimentalTools[tool][0], ' ', 2, 2, ' ')
+      except: self.errors.problemWithTool(tool)
     print(file = sys.stdout)
     sys.stdout.flush()
 
