@@ -12,15 +12,15 @@
     "inputs" : [
       {    
         "description" : "The input BAM file.",
-        "long form argument" : "--in",
-        "short form argument" : "-i",
+        "long form argument" : "--bam",
+        "short form argument" : "-b",
         "command line argument" : "--in",
         "required" : true,
         "extensions" : [".bam"],
         "data type" : "string",
         "if input is stream" : "do not include",
-        "hide in help" : true,
-        "modify argument name on command line" : "omit"
+        "is stream" : true,
+        "hide in help" : true
       },
       {    
         "description" : "FASTA reference file to use for realignment (required)",
@@ -45,12 +45,11 @@
         "if output to stream" : "do not include",
         "modify argument name on command line" : "stdout",
         "hide in help" : true,
-        "modify argument name on command line" : "omit",
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--in",
+          "use argument" : "--bam",
           "modify extension" : "append",
-          "add additional text" : "gap_extended"
+          "add additional text" : "_gap-extended"
         }
       }
     ],
@@ -112,6 +111,48 @@
       "ID" : "default",
       "description" : "Default instance requires the users input for all files.",
       "nodes" : [
+        {
+          "ID" : "qsum",
+          "argument" : "--mismatch-qsum",
+          "values" : ["20"]
+        },
+        {
+          "ID" : "soft clip",
+          "argument" : "--soft-clip-qsum",
+          "values" : ["20"]
+        },
+        {
+          "ID" : "soft clip limit",
+          "argument" : "--soft-clip-limit",
+          "values" : ["0"]
+        },
+        {
+          "ID" : "entropy",
+          "argument" : "--entropy-gap-open",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "repeat",
+          "argument" : "--repeat-gap-extend",
+          "values" : ["25"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "BAM1",
+          "argument" : "--bam",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
         {
           "ID" : "qsum",
           "argument" : "--mismatch-qsum",

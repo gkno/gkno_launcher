@@ -503,6 +503,46 @@ argument existed to set this value. Please see the documentation to see how to i
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  # If a task requires a streaming input, but no stream was piped to it, the argument identified
+  # in the tool configuration file as accepting the stream (is stream) has its file streamed
+  # to the tool. None of the tools arguments have been identified as fulfilling this role.
+  def noArgumentsAcceptingStream(self, task, tool, isPipeline):
+    self.text.append('Error constructing makefile.')
+    if isPipeline: text = 'The task \'' + task + '\' using tool \'' + tool + '\''
+    else: text = 'The tool \'' + tool + '\''
+    self.text.append(text + ' requires a streaming input, but no stream was piped to it. In this case, the argument identified in the tool ' + \
+    'configuration file as accepting the stream (with the \'is stream\' field) has its file streamed to the tool. None of the tools ' + \
+    'arguments have been identified as fulfilling this role, however, so no file can be streamed to the tool. Please ensure that the ' + \
+    'configuration file for tool \'' + tool  + '\' has an argument with the \'is stream\' field set to true. The file associated with this ' + \
+    'argument can then be used to provide the stream.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # If a task requires a streaming input, but multipe streams were piped to it, the argument identified
+  # in the tool configuration file as accepting the stream (is stream) has its file streamed
+  # to the tool.
+  def multipleArgumentsAcceptingStream(self, task, tool, arguments, isPipeline):
+    self.text.append('Error constructing makefile.')
+    if isPipeline: text = 'The task \'' + task + '\' using tool \'' + tool + '\''
+    else: text = 'The tool \'' + tool + '\''
+    self.text.append(text + ' requires a streaming input, but multiple file streams are set. The argument identified in the tool ' + \
+    'configuration file as accepting the stream (with the \'is stream\' field) has its file streamed to the tool. Multiple arguments for ' + \
+    'this tool have been identified as fulfilling this role, however, so gkno cannot determine which file to stream. Please ensure that only ' + \
+    'one argument in the configuration file for tool \'' + tool + '\' has an argument with the \'is stream\' field set to true. Presently ' + \
+    'the following argument have been set:')
+    self.text.append('\t')
+    for argument in arguments: self.text.append('\t' + argument)
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # No files are associated with the streaming argument
+  def noFilesForToolStream(self, tool, longFormArgument, shortFormArgument):
+    self.text.append('Error constructing makefile.')
+    self.text.append('The tool \'' + tool + '\' requires a streaming input, but no file has been defined for the input. Please provide a ' + \
+    'value for \'' + longFormArgument + ' (' + shortFormArgument + ')\'.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   ####################
   # General methods. #
   ####################

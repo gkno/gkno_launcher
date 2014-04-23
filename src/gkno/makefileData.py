@@ -469,6 +469,8 @@ class makefileData:
   
         # Loop over all of the tasks and write the executable commands.
         for taskCounter, task in enumerate(tasks):
+
+          # Determine if the input is a stream.
           inputIsStream = True if taskCounter != 0 else False
 
           # Determine if this task outputs to the stream. If so, just write a pipe and move on to the
@@ -539,6 +541,55 @@ class makefileData:
     precommand = config.nodeMethods.getGraphNodeAttribute(graph, task, 'precommand')
     modifier   = config.nodeMethods.getGraphNodeAttribute(graph, task, 'modifier')
 
+    # If the input is not a piped stream, check to see if the tool demands a stream as input. If
+    # so, the input file can be streamed as part of the command.
+    if not inputIsStream:
+      if config.tools.getGeneralAttribute(tool, 'inputIsStream'):
+
+        # Set the inputIsStream, since the input is required to be a stream.
+        inputIsStream = True
+
+        # Determine which of the tools commands accepts the streaming input.
+        streamArguments = []
+        for fileNodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
+          longFormArgument = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'longFormArgument')
+          if config.tools.getArgumentAttribute(tool, longFormArgument, 'isStream'):
+            streamArguments.append(longFormArgument)
+            streamNodeID = fileNodeID
+
+        # If no or multiple argument are identified as the stream accepting argument, terminate.
+        if len(streamArguments) == 0: self.errors.noArgumentsAcceptingStream(task, tool, config.isPipeline)
+        elif len(streamArguments) > 1: self.errors.multipleArgumentsAcceptingStream(task, tool, streamArguments, config.isPipeline)
+        
+        # Ensure that files have been defined for the stream.
+        values = config.nodeMethods.getGraphNodeAttribute(graph, streamNodeID, 'values')
+        if not values:
+          if config.isPipeline:
+
+            # TODO ERROR
+            print('ERROR - makefile.writeCommand')
+            self.errors.terminate()
+            #self.errors.noFilesForPipelineStream(task, tool)
+          else:
+            shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, streamNodeID, task, shortFormArgument)
+            self.errors.noFilesForToolStream(task, streamArguments[0], shortFormArgument)
+
+        # Ensure that there is only a single value for this argument.
+        filenames = values[iteration] if iteration in values else values[0]
+
+        #TODO ERROR
+        if len(filenames) == 0:
+          print('ERROR - makefile.writeCommand - Number of files.')
+          self.errors.terminate()
+
+        elif len(filenames) > 1:
+          print('ERROR - makefile.writeCommand - Number of files.')
+          self.errors.terminate()
+
+        # Write the file out to the stream.
+        print('< ', filenames[0], ' \\', sep = '', file = fileHandle)
+        print('\t', end = '', file = fileHandle)
+
     # Check if timing information is required.
     hasTiming         = True if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-TIMING', 'values')[1][0] == 'set' else False
     hasAdvancedTiming = True if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-TIMING-ADVANCED', 'values')[1][0] == 'set' else False
@@ -579,7 +630,7 @@ class makefileData:
           else: valueList = {}
           for value in valueList:
             executable = config.nodeMethods.getGraphNodeAttribute(graph, task, 'executable')
-            print(' \t`python $(GKNO_PATH)/getParameters.py ', value, ' ', executable, '` \\', sep = '', file = fileHandle)
+            print('\t`python $(GKNO_PATH)/getParameters.py ', value, ' ', executable, '` \\', sep = '', file = fileHandle)
 
         # Deal with actual arguments.
         else:

@@ -5,21 +5,21 @@
   "tools" : ["freebayes"],
   "path" : "freebayes/bin",
   "executable" : "bamleftalign",
-  "hide tool" : true,
   "input is stream" : true,
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
       {
         "description" : "The input BAM file.",
-        "long form argument" : "--in",
-        "short form argument" : "-i",
+        "long form argument" : "--bam",
+        "short form argument" : "-b",
         "command line argument" : "none",
         "required" : true,
         "extensions" : [".bam"],
         "data type" : "string",
         "hide in help" : true,
-        "modify argument name on command line" : "omit"
+        "if input is stream" : "do not include",
+        "is stream" : true
       },
       {
         "description" : "FASTA reference file to use for realignment (required)",
@@ -46,9 +46,9 @@
         "hide in help" : true,
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--in",
+          "use argument" : "--bam",
           "modify extension" : "append",
-          "add additional text" : "left_aligned"
+          "add additional text" : "_left-aligned"
         }
       }
     ],
@@ -79,8 +79,13 @@
       "nodes" : [
         {
           "ID" : "BAM1",
-          "values" : ["../resources/tutorial/current/simulated_reads.bam"],
-          "argument" : "--in"
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"],
+          "argument" : "--bam"
+        },
+        {
+          "ID" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"],
+          "argument" : "--fasta-reference"
         },
         {
           "ID" : "output path",

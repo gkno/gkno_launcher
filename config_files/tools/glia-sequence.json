@@ -1,26 +1,14 @@
 {
   "id" : "glia",
-  "description" : "Perform local graph alignment.",
+  "description" : "Perform local graph alignment of a specific sequence.",
   "experimental" : true,
   "category" : "alignment processing",
   "tools" : ["glia"],
   "path" : "glia",
   "executable" : "glia",
-  "input is stream" : true,
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
-      {
-        "description" : "The input bam.",
-        "long form argument" : "--bam",
-        "short form argument" : "-b",
-        "command line argument" : "--bam",
-        "required" : true,
-        "if input is stream" : "do not include",
-        "is stream" : true,
-        "data type" : "string",
-        "extensions" : [".bam"]
-      },
       {
         "description" : "The reference sequence for alignment.",
         "long form argument" : "--fasta-reference",
@@ -66,13 +54,19 @@
         "required" : true,
         "data type" : "string",
         "extensions" : [".bam"],
-        "modify argument name on command line" : "stdout",
-        "construct filename" : {
-          "method": "from tool argument",
-          "use argument" : "--bam",
-          "modify extension" : "replace",
-          "add additional text" : "_glia"
-        }
+        "modify argument name on command line" : "stdout"
+      }
+    ],
+
+    "sequence" : [
+      {
+        "description" : "The sequence to align (string).",
+        "long form argument" : "--sequence",
+        "short form argument" : "-s",
+        "command line argument" : "--sequence",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"]
       }
     ],
   
@@ -191,7 +185,7 @@
       {
         "description" : "If sum of qualities of soft clipped bases is >= N, realign (default ~inf).",
         "long form argument" : "--soft-clip-qsum-threshold",
-        "short form argument" : "-s",
+        "short form argument" : "-sqt",
         "command line argument" : "--soft-clip-qsum-threshold",
         "data type" : "integer",
         "extensions" : ["no extension"]
@@ -252,25 +246,11 @@
         "data type" : "integer",
         "extensions" : ["no extension"]
       }
-    ],
-
-    "hidden options" : [
-      {
-        "description" : "Realign the BAM stream on stdin to the VCF file, adjusting position and flattening alignments back into the reference space where realignment to the graph provides better quality.",
-        "long form argument" : "--realign-bam",
-        "short form argument" : "-rb",
-        "command line argument" : "--realign-bam",
-        "required" : true,
-        "data type" : "flag",
-        "hide in help" : true,
-        "extensions" : ["no extension"]
-      }
     ]
   },
 
   "argument order" : [
-    "--bam",
-    "--realign-bam",
+    "--sequence",
     "--fasta-reference",
     "--vcf",
     "--vcf-index",
@@ -304,8 +284,13 @@
       "description" : "Default instance requires the users input for all files.",
       "nodes" : [
         {
-          "ID" : "bam",
-          "argument" : "--realign-bam",
+          "ID" : "reverse complement",
+          "argument" : "--reverse-complement",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "unsorted",
+          "argument" : "--unsorted-output",
           "values" : ["set"]
         }
       ]
@@ -316,9 +301,9 @@
       "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
-          "ID" : "bam",
-          "argument" : "--bam",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+          "ID" : "sequence",
+          "argument" : "--sequence",
+          "values" : ["AGCTAGCTAGCTGTAGTTTCGCGGTCTTGCAGTC"]
         },
         {
           "ID" : "vcf",
@@ -329,6 +314,11 @@
           "ID" : "fasta",
           "argument" : "--fasta-reference",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
+        },
+        {
+          "ID" : "output",
+          "argument" : "--out",
+          "values" : ["$(PWD)/glia-test.bam"]
         },
         {
           "ID" : "region",
