@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.211"
+__version__ = "0.212"
 __date__ = "April 2014"
 
 def main():
@@ -229,6 +229,7 @@ def main():
     # of the tool. Set the tasks structure in the pipeline configuration object as well.
     config.pipeline.definePipelineAttributesForTool(runName)
     config.buildTaskGraph(pipelineGraph, config.pipeline.taskAttributes.keys())
+
   if isDebug: write.writeDebug('Read configuration files.')
 
   # Parse the command line and put all of the arguments into a list.

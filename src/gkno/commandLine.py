@@ -459,11 +459,10 @@ class commandLine:
 
             # If the option node corresponds to a file, build a file node.
             if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile'):
-              shortForm = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'shortFormArgument')
+              shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'shortFormArgument')
               if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isInput'):
-                config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortForm, 'input')
-              else:
-                config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortForm, 'input')
+                config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortFormArgument, 'input')
+              else: config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortFormArgument, 'output')
 
         else: isGknoArgument = True
 
