@@ -70,3 +70,6 @@
 [submodule "tools/scissors"]
 	path = tools/scissors
 	url = https://github.com/gkno/scissors.git
+[submodule "tools/qplot"]
+	path = tools/qplot
+	url = https://github.com/gkno/qplot.git
