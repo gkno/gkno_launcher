@@ -73,3 +73,6 @@
 [submodule "tools/qplot"]
 	path = tools/qplot
 	url = https://github.com/gkno/qplot.git
+[submodule "tools/musket"]
+	path = tools/musket
+	url = https://github.com/gkno/musket.git

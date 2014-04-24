@@ -430,8 +430,8 @@ class helpClass:
         if (len(longFormArgument) + len(shortFormArgument)) > argumentLength: argumentLength = len(longFormArgument) + len(shortFormArgument)
 
     # Print out all the input files.
-    self.printToolArguments(config, tool, 'input files', arguments.pop('inputs'), argumentLength)
-    if 'outputs' in arguments: self.printToolArguments(config, tool, 'output files', arguments.pop('outputs'), argumentLength)
+    self.printToolArguments(config, tool, 'Input files', arguments.pop('inputs'), argumentLength)
+    if 'outputs' in arguments: self.printToolArguments(config, tool, 'Output files', arguments.pop('outputs'), argumentLength)
     for group in arguments: self.printToolArguments(config, tool, group, arguments[group], argumentLength)
 
     # Write out all of the values included in the selected instance, if there are any.
