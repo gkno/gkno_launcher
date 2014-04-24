@@ -471,6 +471,24 @@ class Premo(GknoTool):
   def doUpdate(self):
     return self.doBuild()
 
+# Qplot
+class Qplot(GknoTool):
+  def __init__(self):
+    super(Qplot, self).__init__()
+    self.name       = "qplot"
+    self.installDir = "qplot"
+
+  # $ make clean
+  # $ make -j N
+  def doBuild(self):
+    if not self.makeClean():
+      return False
+    return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen')
+
+  # $ make -j N
+  def doUpdate(self):
+    return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen')
+
 # Rufus
 class Rufus(GknoTool):
   def __init__(self):
@@ -622,7 +640,7 @@ List = [
         Gatk(),
         Glia(),
         Jellyfish(),
-        LibStatGen(), BamUtil(), FastQValidator(), # <-- Keep this order
+        LibStatGen(), BamUtil(), FastQValidator(), Qplot(), # <-- Keep this order
         Mosaik(),
         Mutatrix(),
         Ogap(),
