@@ -342,6 +342,26 @@ argument existed to set this value. Please see the documentation to see how to i
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  # The extension operation is unknown.
+  def unknownExtensionModification(self, tool, argument, value):
+    self.text.append('Error constructing filename')
+    self.text.append('The argument \'' + argument + '\' associated with the tool \'' + tool + '\' can have its filename constructed ' + \
+    'using instructions contained in the tool configuration file. The extension for the file can be modified and the desired approach ' + \
+    'is defined in the field \'modify extension\' in the \'construct filename\' section associated with the argument. The supplied value \'' + \
+    value + '\' is not valid. Please check the tool configuration files entry for this argument and ensure that the supplied values are all' + \
+    'valid.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # An extension is being stripped from a file, but the file has the wrong extension.
+  def stripWrongExtension(self, value, extension):
+    self.text.append('Error constructing filename.')
+    self.text.append('In constructing a filename, certain operations require that the extension be removed. The extension is reinstated, if ' + \
+    'required. The filename being worked on is \'' + value + '\', but the expected extension is \'' + extension + '\'. Please check that the ' + \
+    'instructions for constructing the filename contained in the tool configuration file are correct.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   ################################
   # Error with executable files. #
   ################################

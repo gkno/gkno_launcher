@@ -689,14 +689,12 @@ class gknoConfigurationFiles:
 
     # If the extension is to remain unchanged.
     elif modifyExtension == 'retain':
-      extension     = originalExtensions[0] if originalExtensions[0] != 'no extension' else '.' + values[1][0].rsplit('.')[-1]
+      #extension     = originalExtensions[0] if originalExtensions[0] != 'no extension' else '.' + values[1][0].rsplit('.')[-1]
+      extension     = '.' + values[1][0].rsplit('.')[-1]
       newExtensions = [extension]
 
-    # TODO ERROR
-    else:
-      print('gknoConfig.constructFilenameFromToolArgumentNotStub')
-      print('unknown extension operation')
-      self.errors.terminate()
+    # If an unknown operation was included, terminate.
+    else: self.errors.unknownExtensionModification(tool, argument, modifyExtension)
 
     # If the construction instructions indicate that values from another argument should be included
     # in the filename, include them here.
@@ -724,11 +722,9 @@ class gknoConfigurationFiles:
     for iteration in values:
       modifiedValues[iteration] = []
       for value in values[iteration]:
-        if action == 'strip' and not value.endswith(extension):
-          #TODO ERROR
-          print('Unexpected extension - gknoConfig.updateExtensions', extension)
-          self.errors.terminate()
 
+        # If the extension is to be stripped off, but has the wrong value, terminate.
+        if action == 'strip' and not value.endswith(extension): self.errors.stripWrongExtension(value, extension)
         if action == 'strip': modifiedValues[iteration].append(value.replace(extension, '', -1))
         elif action == 'restore': modifiedValues[iteration].append(value + str(extension))
         else:
