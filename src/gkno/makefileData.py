@@ -699,25 +699,28 @@ class makefileData:
                   # Check that the iteration exists in the values of associated file nodes. Again, if not, use the
                   # values in the first iteration or all values if the argument is greedy.
                   if isAssociated:
-                    fileValues          = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
-                    commandLineArgument = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'commandLineArgument')
-  
-                    # Deal with greedy arguments.
-                    if isGreedy:
-                      valueList = []
-                      for iterationCount in fileValues:
-                        for value in fileValues[iterationCount]: valueList.append(value)
-  
-                    # Deal with non greedy arguments.
-                    else:
-                      if iteration in fileValues: valueList = fileValues[iteration]
-                      elif iteration != 1: valueList = fileValues[1]
+                    fileValues = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
+
+                    # If the command has values.
+                    if fileValues:
+                      commandLineArgument = config.edgeMethods.getEdgeAttribute(graph, fileNodeID, task, 'commandLineArgument')
+    
+                      # Deal with greedy arguments.
+                      if isGreedy:
+                        valueList = []
+                        for iterationCount in fileValues:
+                          for value in fileValues[iterationCount]: valueList.append(value)
+    
+                      # Deal with non greedy arguments.
                       else:
-  
-                        # TODO ERROR
-                        print('Iteration not associated with file node values - make.writeCommand')
-                        print(task, fileNodeID, config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument'), valueList)
-                        self.errors.terminate()
+                        if iteration in fileValues: valueList = fileValues[iteration]
+                        elif iteration != 1: valueList = fileValues[1]
+                        else:
+    
+                          # TODO ERROR
+                          print('Iteration not associated with file node values - make.writeCommand')
+                          print(task, fileNodeID, config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument'), valueList)
+                          self.errors.terminate()
   
             # Filename stubs.
             else:

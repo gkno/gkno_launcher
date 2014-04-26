@@ -33,10 +33,12 @@
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
-          "add argument values" : [
-            "--k-mer"
-          ],
-          "modify extension" : "replace"
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add argument values" : ["--k-mer"]
+            }
+          ]
         }
       }
     ],

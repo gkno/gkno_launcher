@@ -1,0 +1,92 @@
+{
+  "description" : "Merge together all bam files for a sample and mark duplicate reads.",
+
+  "tasks" : {
+    "merge-bam" : {
+      "tool" : "bamtools-merge"
+    },
+    "mark-duplicates" : {
+      "tool" : "dedup"
+    },
+    "index-bam" : {
+      "tool" : "bamtools-index"
+    },
+    "generate-bam-statistics" : {
+      "tool" : "bamtools-stats"
+    },
+    "generate-md5" : {
+      "tool" : "md5"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "input",
+      "description" : "The input bam files.",
+      "long form argument" : "--bam",
+      "short form argument" : "-b",
+      "tasks" : {
+        "merge-bam" : "--in"
+      }
+    },
+    {
+      "ID" : "input list",
+      "description" : "A json file containing a list of input BAM file.",
+      "long form argument" : "--bam-list",
+      "short form argument" : "-bl",
+      "tasks" : {
+        "merge-bam" : "--in-list"
+      }
+    },
+    {
+      "ID" : "output",
+      "description" : "The output bam file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "tasks" : {
+        "merge-bam" : "--out",
+        "mark-duplicates" : "--in"
+      },
+      "delete files" : true
+    },
+
+    {
+      "ID" : "index",
+      "description" : "Linking.",
+      "tasks" : {
+        "mark-duplicates" : "--out",
+        "index-bam" : "--in",
+        "generate-bam-statistics" : "--in",
+        "generate-md5" : "--in"
+      }
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires user to input all input filenames.",
+      "nodes" : []
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Test instance for the test harness.",
+      "nodes" : [
+        {
+          "ID" : "bam1",
+          "argument" : "--bam",
+          "values" : [
+            "$(RESOURCES)/tutorial/current/mutated_genome.bam",
+            "$(RESOURCES)/tutorial/current/mutated_genome_set2.bam"
+          ]
+        },
+        {
+          "ID" : "output",
+          "argument" : "--out",
+          "values" : ["merged-bam.bam"]
+        }
+      ]
+    }
+  ]
+}
