@@ -83,7 +83,7 @@ class gknoErrors:
     self.text.append('Problem with configuration file for tool: ' + tool)
     self.text.append('Help cannot be displayed for the requested tool \'' + tool + '\'. A configuration file for the tool exists, however ' + \
     'the contents have not been successfully parsed. Please type \'gkno <tool>\' without the request for help. This should display an error ' + \
-    'with the configuration file that requires fixing prior to requesting help with the tool')
+    'with the configuration file that requires fixing prior to requesting help with the tool.')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 

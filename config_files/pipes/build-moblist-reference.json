@@ -107,6 +107,70 @@
           "values" : ["./"]
         }
       ]
+    },
+
+    {
+      "ID" : "tutorial",
+      "description" : "Instance to be used in conjuction with gkno tutorials.",
+      "nodes" : [
+        {
+          "ID" : "reference fasta",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "ID" : "moblist",
+          "argument" : "--mobile-element-fasta",
+          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"]
+        },
+        {
+          "ID" : "hash size",
+          "argument" : "--hash-size",
+          "values" : [8]
+        },
+        {
+          "ID" : "output path",
+          "argument" : "--output-path",
+          "values" : ["./reference"]
+        },
+        {
+          "ID" : "output",
+          "argument" : "--out",
+          "values" : ["tutorial-reference.fa"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "human",
+      "description" : "Build Mosaik reference genome including list of mobile element sequences",
+      "nodes" : [
+        {
+          "ID" : "reference fasta",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "ID" : "moblist",
+          "argument" : "--mobile-element-fasta",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/mobile_element_sequences.fa"]
+        },
+        {
+          "ID" : "hash size",
+          "argument" : "--hash-size",
+          "values" : [15]
+        },
+        {
+          "ID" : "output path",
+          "argument" : "--output-path",
+          "values" : ["./reference"]
+        },
+        {
+          "ID" : "output",
+          "argument" : "--out",
+          "values" : ["human_reference_v37.fa"]
+        }
+      ]
     }
   ]
 }

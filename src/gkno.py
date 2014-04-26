@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.218"
+__version__ = "0.219"
 __date__ = "April 2014"
 
 def main():
@@ -362,7 +362,7 @@ def main():
   # both pipeline arguments are required, but only one is set, the node being pointed to will have data, so
   # no error will be thrown. So, check that all pipeline arguments that are listed as required, have indeed
   # been set.
-  config.checkArguments(pipelineGraph, commands, runName, instanceName)
+  config.checkArguments(pipelineGraph, commands, runName, instanceName, hasMultipleRuns or hasInternalLoop, gknoConfig.loopData)
   if isDebug: write.writeDebug('Checked arguments')
 
   # If the --export-config has been set, then the user is attempting to create a

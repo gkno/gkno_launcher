@@ -23,8 +23,8 @@
     "outputs" : [
       {
         "description" : "Paired end output file.",
-        "long form argument" : "--paired-end-output",
-        "short form argument" : "-p",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
         "command line argument" : "--paired-end-output",
         "required" : true,
         "data type" : "string",
@@ -39,7 +39,7 @@
       }
     ],
 
-    "options" : [
+    "Options" : [
       {
         "description" : "Read types to process: 's' - single end reads, 'p' - paired end reads or 'b' - both.",
         "long form argument" : "--read-type",
@@ -48,6 +48,7 @@
         "required" : true,
         "data type" : "string",
         "extensions" : ["no extension"],
+        "hide in help" : true,
         "modify argument name on command line" : "hide"
       },
       {
@@ -77,7 +78,7 @@
     "--index-file",
     "--merge-samples",
     "--fastq-path",
-    "--paired-end-output"
+    "--out"
   ],
 
   "instances" : [
@@ -89,6 +90,11 @@
           "ID" : "paired",
           "argument" : "--read-type",
           "values" : ["p"]
+        },
+        {
+          "ID" : "merge",
+          "argument" : "--merge-samples",
+          "values" : [true]
         }
       ]
     },
@@ -105,17 +111,34 @@
         {
           "ID" : "merge",
           "argument" : "--merge-samples",
-          "values" : [false]
+          "values" : [true]
         },
         {
           "ID" : "path",
           "argument" : "--fastq-path",
           "values" : ["$(RESOURCES)/tutorial/current"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "tutorial",
+      "description" : "Instance to be used in conjuction with gkno tutorials.",
+      "nodes" : [
+        {
+          "ID" : "index",
+          "argument" : "--index-file",
+          "values" : ["$(RESOURCES)/tutorial/current/paired.sequence.index"]
         },
         {
-          "ID" : "paired",
-          "argument" : "--read-type",
-          "values" : ["b"]
+          "ID" : "merge",
+          "argument" : "--merge-samples",
+          "values" : [true]
+        },
+        {
+          "ID" : "path",
+          "argument" : "--fastq-path",
+          "values" : ["$(RESOURCES)/tutorial/current"]
         }
       ]
     }
