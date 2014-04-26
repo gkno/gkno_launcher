@@ -47,9 +47,6 @@ class gknoConfigurationFiles:
     # Define a dictionary to hold information contained in the gkno configuration file.
     self.gknoConfigurationData = {}
 
-    # TODO
-    self.delimiter = '_'
-
     # Define the data structure for loop data.
     self.loopData = loopData()
 
@@ -565,7 +562,7 @@ class gknoConfigurationFiles:
 
       else:
         modifiedList = []
-        for value in modifiedValues[iteration]: modifiedList.append(value + self.delimiter + str(argumentNodeValues[iteration][0]))
+        for value in modifiedValues[iteration]: modifiedList.append(value + str(argumentNodeValues[iteration][0]))
         modifiedValues[iteration] = modifiedList
 
   def setModifiedValuesB(self, modifiedValues, argumentNodeValues):
@@ -575,7 +572,7 @@ class gknoConfigurationFiles:
 
     for iteration in range(1, numberOfNodeValues + 1):
       modifiedList = []
-      for value in values: modifiedList.append(value + self.delimiter + argumentNodeValues[iteration][0])
+      for value in values: modifiedList.append(value + argumentNodeValues[iteration][0])
       modifiedValues[iteration] = modifiedList
 
   def setModifiedValuesC(self, modifiedValues, argumentNodeValues):
@@ -585,7 +582,7 @@ class gknoConfigurationFiles:
 
     for iteration in range(1, numberOfValues + 1):
       modifiedList = []
-      for value in values[iteration]: modifiedList.append(value + self.delimiter + argumentNodeValues[1][0])
+      for value in values[iteration]: modifiedList.append(value + argumentNodeValues[1][0])
       modifiedValues[iteration] = modifiedList
 
   # Add additional text to the constructed filename.
@@ -708,24 +705,31 @@ class gknoConfigurationFiles:
     if isBaseGreedy:
       for i in range(2, len(values) + 1): del values[i]
 
+    # Check if the path from the input file being used for construction should be retained.
+    keepPath = instructions['use path'] if 'use path' in instructions else False
+
     # Check if the argument being created is allowed to have multiple values. If not, check each iteration
     # and ensure that the modifiedValues dictionary only has one entry per iteration.
     modifiedValues = {}
     if not config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowMultipleValues'):
 
       # Add the value to the modifiedValues list, but only include the filename and no path if the
-      # file is an output. For input files being constructed, assume that the path is the same as
-      # the file from which they are being derived.
+      # file is an output, unless specifically instructed to keep the path intact. For input files
+      # being constructed, assume that the path is the same as the file from which they are being derived.
       for iteration in values:
         if isInput: modifiedValues[iteration] = [values[iteration][0]]
-        else: modifiedValues[iteration] = [values[iteration][0].split('/')[-1]]
+        else:
+          if keepPath: modifiedValues[iteration] = [values[iteration][0]]
+          else: modifiedValues[iteration] = [values[iteration][0].split('/')[-1]]
 
     # If multiple values are allowed, cycle through them all and add them to the modifiedValues
     # list.
     else:
       for iteration in values:
         if isInput: modifiedValues[iteration] = [value for value in values[iteration]]
-        else: modifiedValues[iteration] = [value.split('/')[-1] for value in values[iteration]]
+        else:
+          if keepPath: modifiedValues[iteration] = [value for value in values[iteration]]
+          else: modifiedValues[iteration] = [value.split('/')[-1] for value in values[iteration]]
 
     # If the extension is to be replaced, do that here. First check if the file has an extension.
     originalExtensions = config.tools.getArgumentAttribute(tool, baseArgument, 'extensions')

@@ -74,6 +74,7 @@
           "method": "from tool argument",
           "use argument" : "--fasta-reference",
           "modify extension" : "replace",
+          "use path" : true,
           "modify text" : [
             {
               "add text" : [".winsize"]
