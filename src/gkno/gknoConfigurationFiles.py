@@ -453,10 +453,16 @@ class gknoConfigurationFiles:
 
     # If the construction instructions indicate that values from another argument should be included
     # in the filename, include them here.
-    if 'add argument values' in instructions: modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues)
+    if 'modify text' in instructions:
+      for instructionDict in instructions['modify text']:
+        instruction = instructionDict.iterkeys().next()
+        valueList   = instructionDict[instruction]
 
-    # If the instructions indicate that additional text should be added to the filename, add it.
-    if 'add additional text' in instructions: modifiedValues = self.addAdditionalText(instructions, modifiedValues, hasExtension = False)
+        # If values attributed to other tool arguments are to be included in the filename, or text is to
+        # added or removed.
+        if instruction == 'add text': modifiedValues = self.addAdditionalText(valueList, modifiedValues)
+        if instruction == 'add argument values': modifiedValues = self.addArgumentValues(graph, config, valueList, task, modifiedValues)
+        if instruction == 'remove text': modifiedValues = self.removeAdditionalText(config, task, tool, longFormArgument, valueList, modifiedValues)
 
     # Reset the node values for the option and the file node.
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)
@@ -484,7 +490,7 @@ class gknoConfigurationFiles:
       config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, fileValues)
 
   # Add additional argument values to the filename.
-  def addArgumentValues(self, graph, config, instructions, task, modifiedValues):
+  def addArgumentValues(self, graph, config, arguments, task, modifiedValues):
     numberOfValues = len(modifiedValues)
 
     # The modifiedValues structure is a dictionary.  This contains values for each iteration of the
@@ -492,7 +498,7 @@ class gknoConfigurationFiles:
     # number of iterations as the values structure associated with the node for the argument from
     # which the filenames are to be constructed, or one of the structured must have only one iteration.
     additionalArguments = []
-    for taskArgument in instructions['add argument values']:
+    for taskArgument in arguments:
 
       # Find the option node that provides information for this argument.
       argumentNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, taskArgument, 'option')
@@ -583,8 +589,12 @@ class gknoConfigurationFiles:
       modifiedValues[iteration] = modifiedList
 
   # Add additional text to the constructed filename.
-  def addAdditionalText(self, instructions, values, hasExtension = False, extensions = ['']):
-    text = instructions['add additional text']
+  def addAdditionalText(self, textList, values, hasExtension = False, extensions = ['']):
+
+    # If multiple pieces of text are included, concatenate them.
+    text = ''
+    for value in textList: text += value
+
     for iteration in values:
       modifiedValues = []
       for value in values[iteration]:
@@ -607,6 +617,47 @@ class gknoConfigurationFiles:
           modifiedValues.append(newValue)
 
         else: modifiedValues.append(value + str(text))
+      values[iteration] = modifiedValues
+
+    return values
+
+  # Remove text from the filename.
+  def removeAdditionalText(self, config, task, tool, argument, textList, values, hasExtension = False, extensions = ['']):
+
+    # If multiple pieces of text are included, concatenate them.
+    text = ''
+    for value in textList: text += value
+
+    # Loop over all the iterations of data sets.
+    for iteration in values:
+      modifiedValues = []
+      for value in values[iteration]:
+
+        # If the value has an extension, remove it, then replace it.
+        if hasExtension:
+          fileHasExtension = False
+          for specificExtension in extensions:
+            if value.endswith(specificExtension):
+              fileHasExtension = True
+              break
+          extension = specificExtension
+
+          if not fileHasExtension:
+            #TODO ERROR
+            print('Unexpected extension - removeAdditionalText')
+            self.errors.terminate()
+
+          newValue = str(value.split(extension)[0])
+
+        else:
+          newValue  = value
+          extension = None
+
+        # Remove the requested text.
+        if not newValue.endswith(text): self.errors.failedToRemoveText(task, tool, argument, newValue, text, config.isPipeline)
+        newValue = newValue.split(text)[0]
+        if extension: modifiedValues.append(str(newValue) + '.' + str(extension))
+        else: modifiedValues.append(newValue)
       values[iteration] = modifiedValues
 
     return values
@@ -689,25 +740,46 @@ class gknoConfigurationFiles:
 
     # If the extension is to remain unchanged.
     elif modifyExtension == 'retain':
-      #extension     = originalExtensions[0] if originalExtensions[0] != 'no extension' else '.' + values[1][0].rsplit('.')[-1]
       extension     = '.' + values[1][0].rsplit('.')[-1]
       newExtensions = [extension]
+
+    elif modifyExtension == 'omit':
+      newExtensions             = ['']
+      modifiedValues, extension = self.modifyExtensions(modifiedValues, originalExtensions, '', replace = True)
 
     # If an unknown operation was included, terminate.
     else: self.errors.unknownExtensionModification(tool, argument, modifyExtension)
 
-    # If the construction instructions indicate that values from another argument should be included
-    # in the filename, include them here.
-    if 'add argument values' in instructions:
-      modifiedValues = self.updateExtensions(modifiedValues, extension, 'strip')
-      modifiedValues = self.addArgumentValues(graph, config, instructions, task, modifiedValues)
-      modifiedValues = self.updateExtensions(modifiedValues, extension, 'restore')
+    # If the construction instructions indicate that text in the values is to be modified, perform the
+    # modifications.
+    if 'modify text' in instructions:
 
-    # If the instructions indicate that additional text should be added to the filename, add it.
-    if 'add additional text' in instructions:
-      modifiedValues = self.updateExtensions(modifiedValues, extension, 'strip')
-      modifiedValues = self.addAdditionalText(instructions, modifiedValues, hasExtension = False, extensions = newExtensions)
-      modifiedValues = self.updateExtensions(modifiedValues, extension, 'restore')
+      # Loop over the instructions.
+      for instructionDict in instructions['modify text']:
+        instruction = instructionDict.iterkeys().next()
+        valueList   = instructionDict[instruction]
+
+        # If values attributed to other tool arguments are to be included in the filename, or text is to
+        # added or removed.
+        #
+        # If the instructions indicate that additional text should be added to the filename, add it.
+        if instruction == 'add text':
+          modifiedValues = self.updateExtensions(modifiedValues, extension, 'strip')
+          modifiedValues = self.addAdditionalText(valueList, modifiedValues)
+          modifiedValues = self.updateExtensions(modifiedValues, extension, 'restore')
+
+        # If the construction instructions indicate that values from another argument should be included
+        # in the filename, include them here.
+        if instruction == 'add argument values':
+          modifiedValues = self.updateExtensions(modifiedValues, extension, 'strip')
+          modifiedValues = self.addArgumentValues(graph, config, valueList, task, modifiedValues)
+          modifiedValues = self.updateExtensions(modifiedValues, extension, 'restore')
+
+        # If text is to be remove, remove it.
+        if instruction == 'remove text': 
+          modifiedValues = self.updateExtensions(modifiedValues, extension, 'strip')
+          modifiedValues = self.removeAdditionalText(config, task, tool, argument, valueList, modifiedValues)
+          modifiedValues = self.updateExtensions(modifiedValues, extension, 'restore')
 
     # Reset the node values for the option and the file node.
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)

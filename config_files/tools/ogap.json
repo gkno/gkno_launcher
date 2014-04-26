@@ -49,7 +49,11 @@
           "method": "from tool argument",
           "use argument" : "--bam",
           "modify extension" : "append",
-          "add additional text" : "_gap-extended"
+          "modify text" : [
+            {
+              "add text" : ["_gap-extended"]
+            }
+          ]
         }
       }
     ],

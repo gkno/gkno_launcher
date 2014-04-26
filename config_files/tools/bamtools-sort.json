@@ -33,7 +33,11 @@
           "method": "from tool argument",
           "use argument" : "--in",
           "modify extension" : "replace",
-          "add additional text" : "_sorted"
+          "modify text" : [
+            {
+              "add text" : ["_sorted"]
+            }
+          ]
         }
       }
     ],

@@ -40,8 +40,12 @@
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--fasta-reference",
-          "add additional text" : "tangram",
-          "modify extension" : "replace"
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_tangram"]
+            }
+          ]
         }
       }
     ]

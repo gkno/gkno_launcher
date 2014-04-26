@@ -71,7 +71,11 @@
           "method": "from tool argument",
           "use argument" : "--bam",
           "modify extension" : "replace",
-          "add additional text" : "_glia"
+          "modify text" : [
+            {
+              "add text" : ["_glia"]
+            }
+          ]
         }
       }
     ],

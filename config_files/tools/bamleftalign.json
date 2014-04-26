@@ -48,7 +48,11 @@
           "method": "from tool argument",
           "use argument" : "--bam",
           "modify extension" : "append",
-          "add additional text" : "_left-aligned"
+          "modify text" : [
+            {
+              "add text" : ["_left-aligned"]
+            }
+          ]
         }
       }
     ],

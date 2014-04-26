@@ -36,7 +36,11 @@
           "method" : "from tool argument",
           "use argument" : "--in",
           "modify extension" : "replace",
-          "add additional text" : "_primitives"
+          "modify text" : [
+            {
+              "add text" : ["_primitives"]
+            }
+          ]
         }
       }
     ],

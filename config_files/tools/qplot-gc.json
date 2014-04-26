@@ -60,6 +60,29 @@
           "use argument" : "--in",
           "modify extension" : "replace"
         }
+      },
+      {
+        "description" : "GC content file.",
+        "long form argument" : "--gc-content-file",
+        "short form argument" : "-g",
+        "command line argument" : "--gc-content-file",
+        "required" : true,
+        "modify argument name on command line" : "omit",
+        "data type" : "string",
+        "extensions" : [".gc"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add additional text" : [".winsize"],
+            },
+            {
+              "add argument values" : ["--window-size"]
+            }
+          ]
+        }
       }
     ],
   
@@ -150,6 +173,17 @@
         "data type" : "string",
         "extensions" : ["no extension"]
       }
+    ],
+
+    "GC content options" : [
+      {
+        "description" : "Window size for gc content file..",
+        "long form argument" : "--window-size",
+        "short form argument" : "-w",
+        "command line argument" : "--winsize",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      }
     ]
   },
 
@@ -168,6 +202,8 @@
     "--minimum-mapping-quality",
     "--lanes",
     "--read-groups",
+    "--window-size",
+    "--gc-content-file",
     "--in"
   ],
 
@@ -175,7 +211,13 @@
     {
       "ID" : "default",
       "description" : "Default instance requires the users input for all files.",
-      "nodes" : []
+      "nodes" : [
+        {
+          "ID" : "window",
+          "argument" : "--window-size",
+          "values" : [100]
+        }
+      ]
     },
 
     {

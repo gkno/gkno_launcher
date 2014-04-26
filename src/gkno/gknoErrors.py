@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
 from __future__ import print_function
+
+import inspect
+from inspect import currentframe, getframeinfo
+
 import os
 import sys
 
@@ -359,6 +363,18 @@ argument existed to set this value. Please see the documentation to see how to i
     self.text.append('In constructing a filename, certain operations require that the extension be removed. The extension is reinstated, if ' + \
     'required. The filename being worked on is \'' + value + '\', but the expected extension is \'' + extension + '\'. Please check that the ' + \
     'instructions for constructing the filename contained in the tool configuration file are correct.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # Attempt to strip non-existent text from filename.
+  def failedToRemoveText(self, task, tool, argument, value, removeText, isPipeline):
+    self.text.append('Failed to remove text in filename construction.')
+    if isPipeline: text = 'The tool \'' + tool + '\' associated with task \'' + task
+    else: text = 'The tool \'' + tool
+    self.text.append(text + '\' has the filename associated with argument \'' + argument + '\' constructed using instructions in the tool ' + \
+    'configuration file. The instructions state that the text \'' + removeText + '\' should be removed from the filename, but the text is not ' + \
+    'at the end of the supplied value \'' + value + '\'. Please check the filename construction instructions, or ensure that the filename used ' + \
+    'for constructing this filename ends with the specified text.')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 

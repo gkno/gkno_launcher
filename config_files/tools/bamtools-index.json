@@ -64,8 +64,8 @@
       "nodes" : [
         {
           "ID" : "Input BAM file",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"],
-          "argument" : "--in"
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         }
       ]
     }

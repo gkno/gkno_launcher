@@ -38,8 +38,10 @@
           "method" : "from tool argument",
           "use argument" : "--mosaik-reference",
           "modify extension" : "omit",
-          "add argument values" : [
-            "--hash-size"
+          "modify text" : [
+            {
+              "add argument values" : ["--hash-size"]
+            }
           ]
         }
       }

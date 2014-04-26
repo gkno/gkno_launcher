@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.214"
+__version__ = "0.215"
 __date__ = "April 2014"
 
 def main():
@@ -114,7 +114,8 @@ def main():
   gknoConfig.eraseConfigurationData()
 
   # Check to see if gkno is being run in verbose mode or debug mode.
-  isVerbose, isDebug = commands.checkVerbose(pipelineGraph, config, admin)
+  isVerbose, isDebug    = commands.checkVerbose(pipelineGraph, config, admin)
+  config.errors.isDebug = isDebug
 
   # Each of the tools available to gkno should have a config file to describe its operation,
   # purpose etc.  These are contained in config_files/tools.  Find all of the config files

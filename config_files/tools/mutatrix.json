@@ -34,7 +34,11 @@
           "method" : "from tool argument",
           "use argument" : "--fasta-reference",
           "modify extension" : "replace",
-          "add additional text" : "variants"
+          "modify text" : [
+            {
+              "add text" : ["variants"]
+            }
+          ]
         }
       }
     ],

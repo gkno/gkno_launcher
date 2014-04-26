@@ -67,7 +67,11 @@
           "method" : "from tool argument",
           "use argument" : "--in",
           "modify extension" : "replace",
-          "add additional text" : "_intersected"
+          "modify text" : [
+            {
+              "add text" : ["_intersected"]
+            }
+          ]
         }
       }
     ],
