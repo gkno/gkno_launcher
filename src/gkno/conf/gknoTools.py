@@ -392,6 +392,23 @@ class Mosaik(GknoTool):
         pl='macosx64'
     self.environ["BLD_PLATFORM"] = pl
 
+# Musket
+class Musket(GknoTool):
+  def __init__(self):
+    super(Musket, self).__init__()
+    self.name       = "musket"
+    self.installDir = "musket"
+
+  # $ make -j N  
+  def doBuild(self):
+#    if not self.makeClean():
+#      return False
+    return self.doUpdate()
+
+  # $ make -j N
+  def doUpdate(self):
+    return self.make()
+
 # Mutatrix
 class Mutatrix(GknoTool):
   def __init__(self):
@@ -642,6 +659,7 @@ List = [
         Jellyfish(),
         LibStatGen(), BamUtil(), FastQValidator(), Qplot(), # <-- Keep this order
         Mosaik(),
+        Musket(),
         Mutatrix(),
         Ogap(),
         Picard(),

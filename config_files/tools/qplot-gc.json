@@ -76,7 +76,7 @@
           "modify extension" : "replace",
           "modify text" : [
             {
-              "add additional text" : [".winsize"],
+              "add text" : [".winsize"]
             },
             {
               "add argument values" : ["--window-size"]
