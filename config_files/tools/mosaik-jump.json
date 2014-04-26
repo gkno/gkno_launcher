@@ -40,6 +40,9 @@
           "modify extension" : "omit",
           "modify text" : [
             {
+              "add text" : ["_"]
+            },
+            {
               "add argument values" : ["--hash-size"]
             }
           ]
