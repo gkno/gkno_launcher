@@ -236,8 +236,14 @@ class commandLine:
     else: return 'default'
 
   # Check for lists of input files and add any to the argumentDictionary structure.
-  def checkForInputLists(self, config):
+  def checkForInputLists(self, graph, config):
+    #for task in config.pipeline.workflow:
+    #  print(task)
+    #  for optionNodeID in config.nodeMethods.getPredecessorOptionNodes(graph, task):
+    #    print('\t', optionNodeID, config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument'))
+    #exit(0)
     for argument in self.argumentDictionary:
+      #print('TEST', argument, self.argumentDictionary[argument])
       filename = './' + self.argumentDictionary[argument][0]
 
       # Read in all of the files, check that they end with the correct extension and
@@ -249,9 +255,9 @@ class commandLine:
 
       # Get the argument that is to be used for these filenames.
       #extensions = config.tools.getArgumentAttribute(tool, argument, '')
-      for filename in filenames:
-        print(filename)
-    exit(0)
+      #for filename in filenames:
+      #  print(filename)
+    #exit(0)
 
   # Attach the values supplied on the command line to the nodes.
   def attachPipelineArgumentsToNodes(self, graph, config, gknoConfig):

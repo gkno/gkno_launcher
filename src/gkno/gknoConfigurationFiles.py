@@ -296,12 +296,23 @@ class gknoConfigurationFiles:
 
     # Loop over each of the data sets and add to the correct iteration in the correct node.
     for iteration in range(1, self.loopData.numberOfDataSets + 1):
-      for argument, values in zip(self.loopData.arguments, self.loopData.values[iteration]):
-
+      for argument, value in zip(self.loopData.arguments, self.loopData.values[iteration]):
+        values = [value]
 
         # Find the node for this argument. First check if it is a gkno argument (rather than a
         # tool or pipeline argument).
         nodeID = self.getNodeForGknoArgument(graph, config, argument)
+
+        # Next check if the argument is an input list.
+        if isPipeline:
+
+          # Check if the pipeline argument points to an input list in a tool. If so, find the tool
+          # argument that the list points to and finally, the pipeline argument that defines the
+          # tool argument that is used.
+          nodeID, values = self.findToolArgumentForPipelineList(graph, config, argument, value)
+
+        else: nodeID, values = self.handleInputListsForLoopValues(graph, config, runName, argument, value)
+
         if not nodeID:
           if isPipeline: nodeID = config.pipeline.pipelineArguments[argument].ID
           else: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')[0]
@@ -310,8 +321,11 @@ class gknoConfigurationFiles:
         # deleted in the merge process.
         if nodeID not in graph.nodes(): self.errors.nodeNotInGraph(graph, config, nodeID, 'gknoConfigurationFiles.addLoopValuesToGraph')
 
-        if iteration == 1: config.nodeMethods.addValuesToGraphNode(graph, nodeID, [str(values)], write = 'replace')
-        else: config.nodeMethods.addValuesToGraphNode(graph, nodeID, [str(values)], write = 'iteration', iteration = str(iteration))
+        for counter, name in enumerate(values): values[counter] = str(name)
+
+        if values:
+          if iteration == 1: config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'replace')
+          else: config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'iteration', iteration = str(iteration))
 
   # Return the node for a gkno argument contained in the gkno configuration file.
   def getNodeForGknoArgument(self, graph, config, argument):
@@ -325,6 +339,59 @@ class gknoConfigurationFiles:
         if argument == graph[nodeID]['gkno']['attributes'].shortFormArgument: return nodeID
 
     return None
+
+  # Find the pipeline argument to use for an input list.
+  def findToolArgumentForPipelineList(self, graph, config, argument, filename):
+
+    # Get the task, tool and argument that the pipeline argument points to.
+    task, toolArgument = config.pipeline.commonNodes[config.pipeline.pipelineArguments[argument].configNodeID][0]
+    tool               = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+
+    # Check if the tool argument points to an input list.
+    if config.tools.getArgumentAttribute(tool, toolArgument, 'isInputList'):
+ 
+      # Find the tool argument that is used for applying the values in the list.
+      repeatArgument = config.tools.getArgumentAttribute(tool, toolArgument, 'repeatArgument')
+
+      # Find the pipeline argument that the tool argument uses.
+      pipelineLongFormArgument, pipelineShortFormArgument = config.pipeline.getPipelineArgument(task, repeatArgument)
+
+      # If the user is allowed to specify an input list that is valid for the specified tool, but the
+      # pipeline does not contain an argument for the tool argument that is applied for the list values,
+      # terminate.
+      # TODO ERROR
+      if not pipelineLongFormArgument:
+        print('ERROR - gknoConfigurationFiles.findToolArgumentForPipelineList')
+        self.errors.terminate()
+
+      # Find the nodeID for the pipeline argument.
+      nodeID = config.pipeline.pipelineArguments[pipelineLongFormArgument].ID
+
+      # Parse the list and modify the value in argumentDictionary from the list to the files
+      # in the list.
+      values = []
+      for value in [name.strip() for name in open(filename)]: values.append(value)
+
+      return nodeID, values
+
+    # If this isn't a list return nothing.
+    else: return None, []
+
+  # If the multiple runs file contains an input list, find the argument to which it applies, get the
+  # values from the list and attach these values to the appropriate node.
+  def handleInputListsForLoopValues(self, graph, config, runName, argument, filename):
+    if config.tools.getArgumentAttribute(runName, argument, 'isInputList'):
+      repeatArgument = config.tools.getArgumentAttribute(runName, argument, 'repeatArgument')
+      nodeID         = config.nodeMethods.getNodeForTaskArgument(graph, runName, repeatArgument, 'option')[0]
+
+      # Parse the list and modify the value in argumentDictionary from the list to the files
+      # in the list.
+      values = []
+      for value in [name.strip() for name in open(filename)]: values.append(value)
+
+      return nodeID, values
+
+    else: return None, []
 
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
