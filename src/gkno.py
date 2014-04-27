@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.221"
+__version__ = "0.222"
 __date__ = "April 2014"
 
 def main():
@@ -307,7 +307,7 @@ def main():
   # Now that the command line argument has been parsed, all of the values supplied have been added to the
   # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
   commands.mirrorFileNodeValues(pipelineGraph, config)
-  if isDebug: write.writeDebug('Mirrored file node values')
+  if isDebug: write.writeDebug('Mirrored file node values.')
 
   # Not all of the following operation need to be performed if an instance is being exported. Since exporting
   # an instance just requires that the supplied values are valid, but not that all values are supplied (since
@@ -320,16 +320,19 @@ def main():
     # defined by the user.  If there is a required input or output file and it does not have its value set, 
     # determine how to construct the filename and populate the node with the value.
     gknoConfig.constructFilenames(pipelineGraph, config, isPipeline)
+    if isDebug: write.writeDebug('Filenames constructed.')
 
     # Check that all required files and values have been set. All files and parameters that are listed as
     # required by the individual tools should already have been checked, but if the pipeline has some
     # additional requirements, these may not yet have been checked.
     config.checkRequiredFiles(pipelineGraph)
+    if isDebug: write.writeDebug('Files checked.')
 
     # If flags are linked in a pipeline configuration file, but none of them were set on the command line,
     # the nodes will have no values. This will cause problems when generating the makefiles. Search all
     # option nodes looking for flags and set any unset nodes to 'unset'.
     config.searchForUnsetFlags(pipelineGraph)
+    if isDebug: write.writeDebug('Searched for unset flags.')
 
   # Check that all files have a path set.
   outputPaths = gknoConfig.setFilePaths(pipelineGraph, config)

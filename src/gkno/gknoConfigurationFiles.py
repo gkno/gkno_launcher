@@ -297,22 +297,19 @@ class gknoConfigurationFiles:
     # Loop over each of the data sets and add to the correct iteration in the correct node.
     for iteration in range(1, self.loopData.numberOfDataSets + 1):
       for argument, value in zip(self.loopData.arguments, self.loopData.values[iteration]):
-        values = [value]
 
         # Find the node for this argument. First check if it is a gkno argument (rather than a
         # tool or pipeline argument).
         nodeID = self.getNodeForGknoArgument(graph, config, argument)
 
         # Next check if the argument is an input list.
-        if isPipeline:
+        # Check if the pipeline argument points to an input list in a tool. If so, find the tool
+        # argument that the list points to and finally, the pipeline argument that defines the
+        # tool argument that is used.
+        if isPipeline: nodeID, values = self.findToolArgumentForPipelineList(graph, config, argument, value)
+        else: nodeID, values = self.handleInputListsForLoopValues(graph, config, runName, argument, values)
 
-          # Check if the pipeline argument points to an input list in a tool. If so, find the tool
-          # argument that the list points to and finally, the pipeline argument that defines the
-          # tool argument that is used.
-          nodeID, values = self.findToolArgumentForPipelineList(graph, config, argument, value)
-
-        else: nodeID, values = self.handleInputListsForLoopValues(graph, config, runName, argument, value)
-
+        # Check for the argument a non-list argument for the tool/pipeline.
         if not nodeID:
           if isPipeline: nodeID = config.pipeline.pipelineArguments[argument].ID
           else: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')[0]
@@ -375,7 +372,7 @@ class gknoConfigurationFiles:
       return nodeID, values
 
     # If this isn't a list return nothing.
-    else: return None, []
+    else: return None, [filename]
 
   # If the multiple runs file contains an input list, find the argument to which it applies, get the
   # values from the list and attach these values to the appropriate node.
@@ -391,7 +388,7 @@ class gknoConfigurationFiles:
 
       return nodeID, values
 
-    else: return None, []
+    else: return None, [filename]
 
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
