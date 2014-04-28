@@ -76,3 +76,6 @@
 [submodule "tools/musket"]
 	path = tools/musket
 	url = https://github.com/gkno/musket.git
+[submodule "tools/parseSequenceIndex"]
+	path = tools/parseSequenceIndex
+	url = https://github.com/gkno/parseSequenceIndex.git
