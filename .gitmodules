@@ -79,3 +79,6 @@
 [submodule "tools/parseSequenceIndex"]
 	path = tools/parseSequenceIndex
 	url = https://github.com/gkno/parseSequenceIndex.git
+[submodule "tools/verifyBamID"]
+	path = tools/verifyBamID
+	url = https://github.com/gkno/verifyBamID.git

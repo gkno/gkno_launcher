@@ -641,6 +641,24 @@ class VcfLib(GknoTool):
   def doUpdate(self):
     return self.make()
 
+# VerifyBamID
+class VerifyBamID(GknoTool):
+  def __init__(self):
+    super(VerifyBamID, self).__init__()
+    self.name       = "verifyBamID"
+    self.installDir = "verifyBamID"
+
+  # $ make clean
+  # $ make -j N
+  def doBuild(self):
+    if not self.makeClean():
+      return False
+    return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen')
+
+  # $ make -j N
+  def doUpdate(self):
+    return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen')
+
 ##############################################################
 # Add any new built-in gkno tools to the list below.
 
@@ -657,7 +675,7 @@ List = [
         Gatk(),
         Glia(),
         Jellyfish(),
-        LibStatGen(), BamUtil(), FastQValidator(), Qplot(), # <-- Keep this order
+        LibStatGen(), BamUtil(), FastQValidator(), Qplot(), VerifyBamID(), # <-- Keep this order
         Mosaik(),
         Musket(),
         Mutatrix(),
