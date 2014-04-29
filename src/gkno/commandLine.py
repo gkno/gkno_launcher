@@ -259,6 +259,32 @@ class commandLine:
       #  print(filename)
     #exit(0)
 
+  # Parse the argument dictionary and check if any of the arguments are argument lists. If so,
+  # read the associated file and attach the values to the relevant nodes.
+  def unpackArgumentLists(self, graph, config, gknoConfig, runName):
+    isPipeline        = config.isPipeline
+    argumentsToRemove = []
+    for argument in self.argumentDictionary:
+
+      # Do not consider gkno specific arguments.
+      if gknoConfig.getNodeForGknoArgument(graph, config, argument) == None:
+        filename = self.argumentDictionary[argument][0]
+
+        # If this is a pipeline, find the tool argument that this argument points to.
+        if isPipeline: nodeID, values = gknoConfig.findToolArgumentForPipelineList(graph, config, argument, filename)
+        else: nodeID, values = gknoConfig.handleInputListsForLoopValues(graph, config, runName, argument, filename)
+
+        # If the argument was a list, a nodeID will have been returned. In this case, add the values
+        # contained in the list to the correct node and remove the list argument from the argument dictonary.
+        if nodeID:
+          argumentsToRemove.append(argument)
+          for counter, name in enumerate(values): values[counter] = str(name)
+          if not values: self.errors.emptyArgumentList(argument, filename)
+          config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'append', iteration = 1)
+
+    # Remove marked arguments.
+    for argument in argumentsToRemove: del(self.argumentDictionary[argument])
+
   # Attach the values supplied on the command line to the nodes.
   def attachPipelineArgumentsToNodes(self, graph, config, gknoConfig):
     for argument in self.argumentDictionary:

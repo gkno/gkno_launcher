@@ -255,6 +255,15 @@ of the following extensions:')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  # A command line argument pointing to an argument list was specified, but the list is empty.
+  def emptyArgumentList(self, argument, filename):
+    print(file = sys.stderr)
+    self.text.append('Empty argument list.')
+    self.text.append('The command line argument \'' + argument + '\' was set on the command line, defining the file \'' + filename + \
+    '\' as a list of files. The defined file is empty. Please ensure that a valid list of files is provided.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   ######################################################
   # Errors with required files/directories/executables #
   ######################################################

@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "0.224"
+__version__ = "0.225"
 __date__ = "April 2014"
 
 def main():
@@ -174,6 +174,11 @@ def main():
       # Ensure that the tool configuration file is well constructed and put all of the data
       # in data structures.  Each tool in each configuration file gets its own data structure.
       config.tools.processConfigurationData(tool, toolConfigurationData, allowTermination = True)
+
+      # Read the instance information for each tool and store in config.instances. Default parameters for all
+      # tools will be used, and then overwritten by pipeline instance information, command lined arguments etc.
+      config.instances.checkInstances(tool, toolConfigurationData['instances'], False, isExternal = False)
+      config.instances.checkExternalInstances(config.fileOperations, toolFile, tool, gknoConfig.jsonFiles['tools'], False)
       del(toolConfigurationData)
 
     # Check that any argument in a pipeline configuration file node taht defines a filename stub
@@ -281,6 +286,12 @@ def main():
   # Now handle the rest of the instance arguments. Again, attach default instance arguments first. These will
   # be overwritten if specified in the requested instance or the command line.
   if isPipeline:
+
+    # Attach tool instance values to the relevant nodes. These will be overwritten by pipeline instances
+    # if set.
+    for task in config.pipeline.workflow: config.attachToolInstanceArgumentsToNodes(pipelineGraph, task, 'default')
+
+    # Now attach arguments from the pipeline instance.
     config.attachPipelineInstanceArgumentsToNodes(pipelineGraph, runName, 'default')
     config.attachPipelineInstanceArgumentsToNodes(pipelineGraph, runName, instanceName)
   else:
@@ -291,6 +302,7 @@ def main():
 
   # Attach the values of the pipeline arguments to the relevant nodes.
   write.writeAssignPipelineArgumentsToNodes()
+  commands.unpackArgumentLists(pipelineGraph, config, gknoConfig, runName)
   if isPipeline: commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
   else: commands.attachToolArgumentsToNodes(pipelineGraph, config, gknoConfig)
   write.writeDone()
