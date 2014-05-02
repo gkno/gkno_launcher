@@ -28,7 +28,7 @@
         "command line argument" :"--out",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["md5"],
+        "extensions" : [".md5"],
         "modify argument name on command line" : "stdout",
         "construct filename" : {
           "method": "from tool argument",

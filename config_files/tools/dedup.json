@@ -109,7 +109,7 @@
         {
           "ID" : "bam",
           "argument" : "--in",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_nodup.bam"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {
           "ID" : "output path",
