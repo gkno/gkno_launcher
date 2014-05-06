@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __date__ = "May 2014"
 
 def main():
@@ -134,6 +134,7 @@ def main():
   instanceName = commands.getInstanceName(pipelineGraph, config, isPipeline)
   if gknoHelp.printHelp and not gknoHelp.specificPipelineHelp:
     gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath, runName, instanceName)
+  if isDebug: write.writeDebug('Got instance name.')
 
   # Print gkno title and version to the screen.
   write.printHeader(__version__, __date__, gknoCommitID)
@@ -158,6 +159,7 @@ def main():
       config.instances.checkInstances(runName, pipelineConfigurationData['instances'], isPipeline, isExternal = False)
       config.instances.checkExternalInstances(config.fileOperations, filename, runName, gknoConfig.jsonFiles['tools'], isPipeline)
       del(pipelineConfigurationData)
+      if isDebug: write.writeDebug('Processed pipeline configuration file.')
 
     # If gkno is being run in tool mode, set the phoneHomeID.
     else: phoneHomeID = 'tools/' + runName
@@ -165,21 +167,30 @@ def main():
   # Process all of the tool configuration files that are used.
   if commands.mode == 'pipeline':
 
-    # Find all of the tasks to be used in the pipeline.
+    # Find all of the tasks to be used in the pipeline. For each tool, store the instance
+    # information. Each tool will be given the default instance information (unless
+    # overwritten).
+    observedTools = []
     for task in config.pipeline.taskAttributes:
       tool                  = config.pipeline.taskAttributes[task].tool
-      toolFile              = toolConfigurationFilesPath + tool + '.json'
-      toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
 
-      # Ensure that the tool configuration file is well constructed and put all of the data
-      # in data structures.  Each tool in each configuration file gets its own data structure.
-      config.tools.processConfigurationData(tool, toolConfigurationData, allowTermination = True)
-
-      # Read the instance information for each tool and store in config.instances. Default parameters for all
-      # tools will be used, and then overwritten by pipeline instance information, command lined arguments etc.
-      config.instances.checkInstances(tool, toolConfigurationData['instances'], False, isExternal = False)
-      config.instances.checkExternalInstances(config.fileOperations, toolFile, tool, gknoConfig.jsonFiles['tools'], False)
-      del(toolConfigurationData)
+      # If a tool has already been used in the pipeline, there is no need to parse the
+      # configuration file again.
+      if tool not in observedTools:
+        observedTools.append(tool)
+        toolFile              = toolConfigurationFilesPath + tool + '.json'
+        toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
+  
+        # Ensure that the tool configuration file is well constructed and put all of the data
+        # in data structures.  Each tool in each configuration file gets its own data structure.
+        config.tools.processConfigurationData(tool, toolConfigurationData, allowTermination = True)
+  
+        # Read the instance information for each tool and store in config.instances. Default parameters for all
+        # tools will be used, and then overwritten by pipeline instance information, command lined arguments etc.
+        config.instances.checkInstances(tool, toolConfigurationData['instances'], False, isExternal = False)
+        config.instances.checkExternalInstances(config.fileOperations, toolFile, tool, gknoConfig.jsonFiles['tools'], False)
+        del(toolConfigurationData)
+    if isDebug: write.writeDebug('Got instance information for pipeline tools.')
 
     # Check that any argument in a pipeline configuration file node taht defines a filename stub
     # is linked to other stub arguments, or that the desired extension is included in the node.
