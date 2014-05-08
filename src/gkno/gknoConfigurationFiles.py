@@ -460,8 +460,9 @@ class gknoConfigurationFiles:
 
         # Check that there are as many interations in the generated values as there are in the inputs. If the
         # values were defined on the command line, it is possible that this is not the case.
-        if len(config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')) != numberOfIterations:
-          self.modifyNumberOfOutputIterations(graph, config, fileNodeID, numberOfIterations, task, longFormArgument, shortFormArgument)
+        if numberOfIterations != 0:
+          if len(config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')) != numberOfIterations:
+            self.modifyNumberOfOutputIterations(graph, config, fileNodeID, numberOfIterations, task, longFormArgument, shortFormArgument)
 
   # If a filename is not defined, check to see if there are instructions on how to 
   # construct the filename.
@@ -521,7 +522,7 @@ class gknoConfigurationFiles:
 
         # If values attributed to other tool arguments are to be included in the filename, or text is to
         # added or removed.
-        if instruction == 'add text': modifiedValues = self.addAdditionalText(valueList, modifiedValues)
+        if instruction == 'add text': modifiedValues = self.addAdditionalText(valueList, modifiedValues, isBefore = False)
         if instruction == 'add argument values': modifiedValues = self.addArgumentValues(graph, config, valueList, task, modifiedValues)
         if instruction == 'remove text': modifiedValues = self.removeAdditionalText(config, task, tool, longFormArgument, valueList, modifiedValues)
 
@@ -650,7 +651,7 @@ class gknoConfigurationFiles:
       modifiedValues[iteration] = modifiedList
 
   # Add additional text to the constructed filename.
-  def addAdditionalText(self, textList, values, hasExtension = False, extensions = ['']):
+  def addAdditionalText(self, textList, values, hasExtension = False, extensions = [''], isBefore = False):
 
     # If multiple pieces of text are included, concatenate them.
     text = ''
@@ -674,10 +675,13 @@ class gknoConfigurationFiles:
             print('Unexpected extension - addAdditionalText')
             self.errors.terminate()
 
-          newValue = str(value.split(extension)[0] + '.' + str(text) + extension)
+          if isBefore: newValue = str(text) + str(value.split(extension)[0] + '.' + extension)
+          else: newValue = str(value.split(extension)[0] + '.' + str(text) + extension)
           modifiedValues.append(newValue)
 
-        else: modifiedValues.append(value + str(text))
+        else:
+          if isBefore: modifiedValues.append(str(text) + value)
+          else: modifiedValues.append(value + str(text))
       values[iteration] = modifiedValues
 
     return values
@@ -756,11 +760,14 @@ class gknoConfigurationFiles:
         fileNodeExists = True
         break
 
-    # If no file node was found, terminate.
+    # If the file node has not been found, this might be because the tool argument being used is not
+    # a file. If so, get the values from the option node.
     if not fileNodeExists:
-      #TODO ERROR
-      print('gknoConfig.constructFilenameFromToolArgumentNotStub')
-      self.errors.terminate()
+      try: values = config.nodeMethods.getGraphNodeAttribute(graph, baseNodeID, 'values')
+      except:
+        #TODO ERROR
+        print('gknoConfig.constructFilenameFromToolArgumentNotStub')
+        self.errors.terminate()
 
     # Determine if the baseArgument is greedy. If so, the values associated with each iteration
     # will be used as input for a single iteration of this task. In this case, even if the values
@@ -833,7 +840,7 @@ class gknoConfigurationFiles:
         # If the instructions indicate that additional text should be added to the filename, add it.
         if instruction == 'add text':
           modifiedValues = self.updateExtensions(modifiedValues, extension, 'strip')
-          modifiedValues = self.addAdditionalText(valueList, modifiedValues)
+          modifiedValues = self.addAdditionalText(valueList, modifiedValues, isBefore = False)
           modifiedValues = self.updateExtensions(modifiedValues, extension, 'restore')
 
         # If the construction instructions indicate that values from another argument should be included
@@ -848,6 +855,14 @@ class gknoConfigurationFiles:
           modifiedValues = self.updateExtensions(modifiedValues, extension, 'strip')
           modifiedValues = self.removeAdditionalText(config, task, tool, argument, valueList, modifiedValues)
           modifiedValues = self.updateExtensions(modifiedValues, extension, 'restore')
+
+    # If a path is provided, add this to the values.
+    if 'add path' in instructions:
+      path = instructions['add path']
+      if not path.endswith('/'): path += '/'
+      modifiedValues = self.updateExtensions(modifiedValues, extension, 'strip')
+      modifiedValues = self.addAdditionalText([path], modifiedValues, isBefore = True)
+      modifiedValues = self.updateExtensions(modifiedValues, extension, 'restore')
 
     # Reset the node values for the option and the file node.
     config.nodeMethods.replaceGraphNodeValues(graph, optionNodeID, modifiedValues)
@@ -894,7 +909,8 @@ class gknoConfigurationFiles:
 
             # If the extension wasn't provided, just use the extension that is on the
             # file.
-            if extension == 'no extension': extension = value.split('.')[-1]
+            if extension == 'no extension' and '.' in value: extension = value.split('.')[-1]
+            else: extensions = ''
             string  = str(extension)
 
             if replace: newValuesList.append(value.replace(string, replaceExtension))

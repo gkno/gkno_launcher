@@ -451,7 +451,17 @@ class makefileData:
           if self.phonyTargets:
             if task in self.phonyTargets: primaryOutput = task
           else:
-            self.errors.noOutputFileGeneratingMakefile(task, config.pipeline.taskAttributes[task].tool)
+            hasDirectory = False
+            tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+            for toolArgument in config.tools.getArguments(tool):
+              if config.tools.getArgumentAttribute(tool, toolArgument, 'isOutput') and \
+                 config.tools.getArgumentAttribute(tool, toolArgument, 'isDirectory'):
+                hasDirectory = True
+                taskOutputs.append('')
+ 
+            if hasDirectory: primaryOutput = taskOutputs.pop(0)
+            else: self.errors.noOutputFileGeneratingMakefile(task, config.pipeline.taskAttributes[task].tool)
+            #self.errors.noOutputFileGeneratingMakefile(task, config.pipeline.taskAttributes[task].tool)
         print(primaryOutput, end = ': ', file = fileHandle)
   
         # Write out the task dependencies separated by spaces.

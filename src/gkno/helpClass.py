@@ -188,19 +188,29 @@ class helpClass:
     print(file = sys.stdout)
     print("Usage: gkno <tool name> [options]", file = sys.stdout)
     print(file = sys.stdout)
-    print('     <tool name>:', file = sys.stdout)
 
     # Write the tools to screen.
+    toolGroups = {}
     for tool in sorted(self.availableTools.keys()):
       allToolsCompiled = True
       for requiredTool in config.tools.getGeneralAttribute(tool, 'requiredCompiledTools'):
         if requiredTool not in admin.userSettings['compiled tools']: allToolsCompiled = False
 
+      # Get the tool group to which this tool belongs.
+      toolGroup = config.tools.getGeneralAttribute(tool, 'helpGroup')
+      if toolGroup not in toolGroups: toolGroups[toolGroup] = []
+
       # If the tool requires tools to be compiled and they are not, prepend the tool name with a '!'. This
       # indicates that the tool is not available.
       toolText = tool if allToolsCompiled else str('!') + tool
-      if not self.availableTools[tool][1]: self.writeFormattedText(toolText + ':', self.availableTools[tool][0], self.toolLength + 5, 2, '')
-    print(file = sys.stdout)
+      if not self.availableTools[tool][1]: toolGroups[toolGroup].append((tool, toolText))
+
+    sortedGroups = sorted(list(toolGroups.keys()))
+    for toolGroup in sortedGroups:
+      print('     ', toolGroup, ':', sep = '', file = sys.stdout)
+      #print('        <tool name>:', file = sys.stdout)
+      for tool, toolText in toolGroups[toolGroup]: self.writeFormattedText(toolText + ':', self.availableTools[tool][0], self.toolLength + 5, 2, '')
+      print(file = sys.stdout)
 
     # Now list any tool configuration files that are listed as experimental..
     if self.experimentalTools:
