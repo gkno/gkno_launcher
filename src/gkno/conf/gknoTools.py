@@ -92,6 +92,14 @@ class GknoTool(object):
     status = p.returncode
     return status == 0
 
+  # Same as runCommand except that the command is already a list and does not need splitting and
+  # the output file is supplied.
+  def runCommandList(self, command, outputFile):
+    p = subprocess.Popen(command, env=self.environ, stdout=outputFile, stderr=self.err)
+    p.wait()
+    status = p.returncode
+    return status == 0
+
   # Similar to our runCommand() method, except the command is executed through the shell
   # Uses the output destinations (stdout/stderr) set by earlier external caller
   # Converts command exit status to True/False (under assumption of common practice that exit status of 0 is success)
@@ -589,6 +597,32 @@ class Seqan(GknoTool):
   def doUpdate(self):
     return self.doBuild()
 
+# SnpEff.
+class SnpEff(GknoTool):
+  def __init__(self):
+    super(SnpEff, self).__init__()
+    self.name       = "snpEff"
+    self.installDir = "snpEff"
+
+  # $ make clean
+  # $ make -j N
+  def doBuild(self):
+
+    # Modify the config file.
+    snpEffConfigFile = './snpEff.config'
+    snpEffConfig     = open(snpEffConfigFile, 'r+')
+    command          = []
+    command.append('sed')
+    command.append('s#data_dir = ./data#data_dir = ' + os.getcwd() + '/data#')
+    command.append(snpEffConfigFile)
+    return self.runCommandList(command, snpEffConfig)
+    #p = subprocess.Popen(command, env=self.environ, stdout=snpEffConfig, stderr = self.err)
+    #p.wait()
+    #return p.returncode == 0
+
+  def doUpdate(self):
+    return True
+
 # tabix (& bgzip)
 class Tabix(GknoTool):
   def __init__(self):
@@ -686,6 +720,7 @@ List = [
         SamTools(), 
         Scissors(),
         Seqan(),       
+        SnpEff(),
         Tabix(),
         Tangram(),
         VcfLib()
