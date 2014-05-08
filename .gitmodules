@@ -84,4 +84,4 @@
 	url = https://github.com/gkno/verifyBamID.git
 [submodule "tools/snpEff"]
 	path = tools/snpEff
-	url = git@github.com:gkno/snpEff.git
+	url = https://github.com/gkno/snpEff.git
