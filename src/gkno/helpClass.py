@@ -208,7 +208,6 @@ class helpClass:
     sortedGroups = sorted(list(toolGroups.keys()))
     for toolGroup in sortedGroups:
       print('     ', toolGroup, ':', sep = '', file = sys.stdout)
-      #print('        <tool name>:', file = sys.stdout)
       for tool, toolText in toolGroups[toolGroup]: self.writeFormattedText(toolText + ':', self.availableTools[tool][0], self.toolLength + 5, 2, '')
       print(file = sys.stdout)
 
