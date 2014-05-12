@@ -1280,6 +1280,10 @@ class gknoConfigurationFiles:
     for task in config.nodeMethods.getSuccessorTaskNodes(graph, optionNodeID):
       tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
       longFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
+
+      # There are circumstances where there is no argument. If this is the case, do not proceed.
+      if not longFormArgument: return setPaths
+
       pathArgument     = config.tools.getArgumentAttribute(tool, longFormArgument, 'pathArgument')
       if pathArgument:
         if config.isPipeline: pipelineArgument = config.pipeline.getPipelineArgument(task, pathArgument)[0]
