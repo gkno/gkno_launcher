@@ -287,7 +287,8 @@ class helpClass:
 
       # If the configuration file is a valid json file, try and process the file.
       if openFileSuccess:
-        success = config.tools.processConfigurationData(tool, configurationData, allowTermination = False)
+        try: success = config.tools.processConfigurationData(tool, configurationData, allowTermination = False)
+        except: success = False
         if success:
           description               = config.tools.getGeneralAttribute(tool, 'description')
           isHidden                  = config.tools.getGeneralAttribute(tool, 'isHidden')
@@ -439,7 +440,7 @@ class helpClass:
         if (len(longFormArgument) + len(shortFormArgument)) > argumentLength: argumentLength = len(longFormArgument) + len(shortFormArgument)
 
     # Print out all the input files.
-    self.printToolArguments(config, tool, 'Input files', arguments.pop('inputs'), argumentLength)
+    if 'inputs' in arguments: self.printToolArguments(config, tool, 'Input files', arguments.pop('inputs'), argumentLength)
     if 'outputs' in arguments: self.printToolArguments(config, tool, 'Output files', arguments.pop('outputs'), argumentLength)
     for group in arguments: self.printToolArguments(config, tool, group, arguments[group], argumentLength)
 

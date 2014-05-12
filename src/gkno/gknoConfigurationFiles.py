@@ -1115,16 +1115,21 @@ class gknoConfigurationFiles:
         # Loop over each iteration of lists of files.
         values = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
 
+        # Get the tasks that use this option node and check if any of the arguments have a separate
+        # path defined.
+        if isInput: paths = self.checkForPathArguments(config, graph, optionNodeID, inputPaths)
+        else: paths = self.checkForPathArguments(config, graph, optionNodeID, outputPaths)
+
         # If this is an input node, check that the number of values is equal to the number of values in
         # inputPaths, or that there is only a single value in inputPaths.
         if isInput:
-          if (len(values) != len(inputPaths)) and len(inputPaths) != 1:
+          if (len(values) != len(paths)) and len(paths) != 1:
             print('ERROR - gknoConfig.setFilePaths')
             self.errors.terminate()
 
         # Perform the same check with the outputPaths for output files.
         else:
-          if (len(values) != len(outputPaths)) and len(outputPaths) != 1:
+          if (len(values) != len(paths)) and len(paths) != 1:
             print('ERROR - gknoConfig.setFilePaths - output')
             self.errors.terminate()
 
@@ -1134,6 +1139,8 @@ class gknoConfigurationFiles:
           # Get the input and output paths for this iteration.
           inputPath  = inputPaths[iteration] if iteration in inputPaths else inputPaths[1]
           outputPath = outputPaths[iteration] if iteration in outputPaths else outputPaths[1]
+          if isInput: inputPath  = paths[iteration] if iteration in paths else paths[1]
+          else: outputPath = paths[iteration] if iteration in paths else paths[1]
        
           modifiedOptionNodeValues = []
           for filename in values[iteration]:
@@ -1266,6 +1273,30 @@ class gknoConfigurationFiles:
                         else:
                           longForm, shortForm = config.pipeline.getPipelineArgument(task, longFormArgument)
                           self.errors.invalidExtension(fileValue, extensions, longForm, shortForm, task, longFormArgument, shortFormArgument)
+
+  # Get tasks for an option node, check if any of the arguments have a path defined from a different argument.
+  # If so, return the paths.
+  def checkForPathArguments(self, config, graph, optionNodeID, setPaths):
+    for task in config.nodeMethods.getSuccessorTaskNodes(graph, optionNodeID):
+      tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+      longFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
+      pathArgument     = config.tools.getArgumentAttribute(tool, longFormArgument, 'pathArgument')
+      if pathArgument:
+        if config.isPipeline: pipelineArgument = config.pipeline.getPipelineArgument(task, pathArgument)[0]
+        else: pipelineArgument = pathArgument
+
+        # Get the option node associated with the pathArgument.
+        pathArgumentNodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, pipelineArgument, 'option')[0]
+        pathArgumentValues = deepcopy(config.nodeMethods.getGraphNodeAttribute(graph, pathArgumentNodeID, 'values'))
+
+        # Get the path values.
+        for iteration in pathArgumentValues:
+          if not pathArgumentValues[iteration][0].endswith('/'): pathArgumentValues[iteration] = pathArgumentValues[iteration][0] + '/'
+          else: pathArgumentValues[iteration] = pathArgumentValues[iteration][0]
+
+        return pathArgumentValues
+
+    return setPaths
 
   # Loop over all of the gkno specific nodes and check that the values are valid.
   def checkNodeValues(self, graph, config):

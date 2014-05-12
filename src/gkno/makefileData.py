@@ -771,6 +771,11 @@ class makefileData:
   
               # Determine the argument delimiter for this tool.
               delimiter = config.nodeMethods.getGraphNodeAttribute(graph, task, 'delimiter')
+
+              # Determine if this argument is supposed to be written to the command line without a path. If not,
+              # strip, the path from the value.
+              if not config.tools.getArgumentAttribute(tool, argument, 'includePathOnCommandLine'):
+                if '/' in value: value = value.split('/')[-1]
   
               # Check if the argument is an output that writes to standard out.
               if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout':
