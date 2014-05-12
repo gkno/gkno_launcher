@@ -847,6 +847,9 @@ class makefileData:
       # If the filename begins with $(RESOURCES), include the full path of the resources directory.
       elif filename.startswith('$(RESOURCES)'): filename = sourcePath + '/resources/' + filename.split('$(RESOURCES)')[1]
 
+      # If the filename begins with $(TOOL_BIN), include the full path of the tools directory.
+      elif filename.startswith('$(TOOL_BIN)'): filename = sourcePath + '/tools/' + filename.split('$(TOOL_BIN)')[1]
+
       if not os.path.exists(filename): self.missingFiles.append(filename)
 
   # Define the order in which to write out the command line arguments.
