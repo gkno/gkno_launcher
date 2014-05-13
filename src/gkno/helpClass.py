@@ -186,6 +186,9 @@ class helpClass:
     print('  tool mode', file = sys.stdout)
     print('=============', file = sys.stdout)
     print(file = sys.stdout)
+    print('NOTE: Tools preceded by a \'!\' cannot be used due to the absence of a required executable', file = sys.stdout)
+    print('file. To use these tools ensure that the required executables have been succesfully compiled.', file = sys.stdout)
+    print(file = sys.stdout)
     print("Usage: gkno <tool name> [options]", file = sys.stdout)
     print(file = sys.stdout)
 

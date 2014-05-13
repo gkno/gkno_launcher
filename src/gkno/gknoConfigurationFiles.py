@@ -435,6 +435,32 @@ class gknoConfigurationFiles:
         numberOfIterations = iterations if iterations > numberOfIterations else numberOfIterations
         config.nodeMethods.setGraphNodeAttribute(graph, task, 'numberOfDataSets', numberOfIterations)
 
+        # If the input file has been set, check that it has the correct extension. This file may be used
+        # for constructing an output filename, so errors in the extension should be caught here.
+        values = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
+        if values:
+          for iteration in values:
+            for counter, value in enumerate(values[iteration]):
+              if not config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isFilenameStub'):
+      
+                # Loop over the file names contained in the file nodes.
+                for fileValue in config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')[iteration]:
+                  if not self.checkFileExtension(graph, config, optionNodeID, fileValue):
+                    extensions = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowedExtensions')
+      
+                    # Check if the extension is listed as 'no extension'. If so, any extension is allowed, so do not fail.
+                    if extensions[0] != 'no extension':
+            
+                      # If gkno is being run in tool mode, get the arguments.
+                      if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'tool':
+                        self.errors.invalidExtension(fileValue, extensions, longFormArgument, shortFormArgument, task, '', '')
+              
+                      # If gkno is being run in pipeline, mode, determine if the argument with the
+                      # incorrect extension is a pipeline argument.
+                      else:
+                        longForm, shortForm = config.pipeline.getPipelineArgument(task, longFormArgument)
+                        self.errors.invalidExtension(fileValue, extensions, longForm, shortForm, task, longFormArgument, shortFormArgument)
+
       # Now deal with output files,  These are all successor nodes.
       for fileNodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
         longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, task, fileNodeID, 'longFormArgument')
