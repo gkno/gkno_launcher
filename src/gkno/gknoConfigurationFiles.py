@@ -857,12 +857,12 @@ class gknoConfigurationFiles:
     # If the extension is to be replaced, do that here. First check if the file has an extension.
     originalExtensions = config.tools.getArgumentAttribute(tool, baseArgument, 'extensions')
     if modifyExtension == 'replace':
-      newExtensions             = config.tools.getArgumentAttribute(tool, argument, 'extensions')
+      newExtensions             = config.tools.getArgumentAttribute(tool, longFormArgument, 'extensions')
       modifiedValues, extension = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = True)
 
     # If the new extension should be appended to the end of the original file.
     elif modifyExtension == 'append':
-      newExtensions             = config.tools.getArgumentAttribute(tool, argument, 'extensions')
+      newExtensions             = config.tools.getArgumentAttribute(tool, longFormArgument, 'extensions')
       modifiedValues, extension = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = False)
 
     # If the extension is to remain unchanged.
@@ -875,7 +875,7 @@ class gknoConfigurationFiles:
       modifiedValues, extension = self.modifyExtensions(modifiedValues, originalExtensions, '', replace = True)
 
     # If an unknown operation was included, terminate.
-    else: self.errors.unknownExtensionModification(tool, argument, modifyExtension)
+    else: self.errors.unknownExtensionModification(tool, longFormArgument, modifyExtension)
 
     # If the construction instructions indicate that text in the values is to be modified, perform the
     # modifications.
@@ -905,7 +905,7 @@ class gknoConfigurationFiles:
         # If text is to be remove, remove it.
         if instruction == 'remove text': 
           modifiedValues = self.updateExtensions(modifiedValues, extension, 'strip')
-          modifiedValues = self.removeAdditionalText(config, task, tool, argument, valueList, modifiedValues)
+          modifiedValues = self.removeAdditionalText(config, task, tool, longFormArgument, valueList, modifiedValues)
           modifiedValues = self.updateExtensions(modifiedValues, extension, 'restore')
 
     # If a path is provided, add this to the values.
