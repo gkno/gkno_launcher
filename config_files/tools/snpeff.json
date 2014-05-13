@@ -1,0 +1,396 @@
+{
+  "id" : "snpeff-download",
+  "description" : "Annotate a variant file.",
+  "category" : "annotation",
+  "tools" : ["snpEff"],
+  "path" : "snpEff",
+  "executable" : "snpEff.jar",
+  "precommand" : "java -Xmx4g -jar",
+  "modifier" : "eff",
+  "help" : "--help|-h",
+  "help group" : "Annotation",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The input VCF file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "-i",
+        "data type" : "string",
+        "modify argument name on command line" : "hide",
+        "required" : true,
+        "extensions" : [".vcf", ".vcf.gz"]
+      },
+      {
+        "description" : "Genome version.",
+        "long form argument" : "--genome",
+        "short form argument" : "-g",
+        "command line argument" : "-g",
+        "required" : true,
+        "modify argument name on command line" : "hide",
+        "data type" : "string",
+        "directory" : true,
+        "include path on command line" : false,
+        "include path from argument" : "-gp",
+        "extensions" : ["no extension"]
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "Output vcf file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "-o",
+        "data type" : "string",
+        "required" : true,
+        "extensions" : [".vcf"],
+        "modify argument name on command line" : "stdout",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_annotated"]
+            }
+          ]
+        }
+      },
+      {
+        "description" : "Name of stats file (summary). Default is 'snpEff_summary.html'.",
+        "long form argument" : "--stats-file",
+        "short form argument" : "-s",
+        "command line argument" : "-stats",
+        "data type" : "string",
+        "required" : true,
+        "extensions" : [".html"],
+        "construct filename" : {
+          "method": "define name",
+          "filename" : "snpEff_summary",
+          "for multiple runs connect to" : "--in",
+          "add extension" : true
+        }
+      },
+      {
+        "description" : "Name of summary genes file. Default is 'snpEff_summary.genes.txt'.",
+        "long form argument" : "--genes-file",
+        "short form argument" : "-gf",
+        "command line argument" : "-gf",
+        "data type" : "string",
+        "required" : true,
+        "extensions" : [".genes.txt"],
+        "hide in help" : true,
+        "modify argument name on command line" : "omit",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--stats-file",
+          "modify extension" : "replace"
+        }
+      },
+      {
+        "description" : "Only analyze changes that intersect with the intervals specified in this file (you may use this option many times)",
+        "long form argument" : "--filter-interval",
+        "short form argument" : "-f",
+        "command line argument" : "-filterInterval",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      }
+    ],
+
+    "Genome path" : [
+      {
+        "description" : "Path to genome files (not necesary if the genome was downloaded using 'gkno snpeff-download').",
+        "long form argument" : "--genome-path",
+        "short form argument" : "-gp",
+        "command line argument" : "-gp",
+        "required" : true,
+        "modify argument name on command line" : "omit",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Show N codons and amino acids around change (only in coding regions). Default is 0 codons.",
+        "long form argument" : "--around",
+        "short form argument" : "-a",
+        "command line argument" : "-around",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Prepend 'string' to chromosome name (e.g. 'chr1' instead of '1'). Only on TXT output.",
+        "long form argument" : "--prepend-chromosome",
+        "short form argument" : "-p",
+        "command line argument" : "-chr",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Input format [ vcf, txt, pileup, bed ]. Default: VCF.",
+        "long form argument" : "--input-format",
+        "short form argument" : "-if",
+        "command line argument" : "-i",
+        "data type" : "string",
+        "hide in help" : true,
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Output format [ vcf, txt, pileup, bed ]. Default: VCF.",
+        "long form argument" : "--output-format",
+        "short form argument" : "-of",
+        "command line argument" : "-o",
+        "data type" : "string",
+        "hide in help" : true,
+        "extensions" : ["no extension"]
+      }
+    ],
+
+    "Sequence change filter options" : [
+      {
+        "description" : "Only analyse SNPs (single nucleotide polymorphisms).",
+        "long form argument" : "--only-snps",
+        "short form argument" : "-os",
+        "command line argument" : "-snp",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Only analyse MNPs (multiple nucleotide polymorphisms).",
+        "long form argument" : "--only-mnps",
+        "short form argument" : "-om",
+        "command line argument" : "-mnp",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Only analyse deletions.",
+        "long form argument" : "--only-deletions",
+        "short form argument" : "-od",
+        "command line argument" : "-del",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Only analyse insertions.",
+        "long form argument" : "--only-insertions",
+        "short form argument" : "-oi",
+        "command line argument" : "-ins",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Only analyse homozygous variants.",
+        "long form argument" : "--only-homozygous-variants",
+        "short form argument" : "-oh",
+        "command line argument" : "-hom",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Only analyse heterozygous variants.",
+        "long form argument" : "--only-heterozygous-variants",
+        "short form argument" : "-oht",
+        "command line argument" : "-het",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Filter out variants with quality lower than X.",
+        "long form argument" : "--minimum-quality",
+        "short form argument" : "-q",
+        "command line argument" : "-minQuality",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Filter out variants with quality higher than X.",
+        "long form argument" : "--maximum-quality",
+        "short form argument" : "-mq",
+        "command line argument" : "-maxQuality",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Filter out variants with coverage lower than X.",
+        "long form argument" : "--minimum-coverage",
+        "short form argument" : "-c",
+        "command line argument" : "-minCoverage",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Filter out variants with coverage higher than X.",
+        "long form argument" : "--maximum-coverage",
+        "short form argument" : "-mc",
+        "command line argument" : "-maxCoverage",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      }
+    ],
+
+    "Results filter options" : [
+      {
+        "description" : "Do not show DOWNSTREAM changes.",
+        "long form argument" : "--no-downstream",
+        "short form argument" : "-nd",
+        "command line argument" : "-no-downstream",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Do not show UPSTREAM changes.",
+        "long form argument" : "--no-upstream",
+        "short form argument" : "-nu",
+        "command line argument" : "-no-upstream",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Do not show INTERGENIC changes.",
+        "long form argument" : "--no-intergenic",
+        "short form argument" : "-ni",
+        "command line argument" : "-no-intergenic",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Do not show INTRON changes.",
+        "long form argument" : "--no-intron",
+        "short form argument" : "-nn",
+        "command line argument" : "-no-intron",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Do not show 5_PRIME_UTR or 3_PRIME_UTR changes.",
+        "long form argument" : "--no-utr",
+        "short form argument" : "-nt",
+        "command line argument" : "-no-utr",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Do not show 'EffectType'. This option can be set multiple times.",
+        "long form argument" : "--no-effect-type",
+        "short form argument" : "-ne",
+        "command line argument" : "-no",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "allow multiple values" : true
+      }
+    ],
+
+    "Generic options" : [
+      {
+        "description" : "Offset input by a number of bases. E.g. '--input-offset 1' for one-based TXT input files.",
+        "long form argument" : "--input-offset",
+        "short form argument" : "-io",
+        "command line argument" : "-inOffset",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Offset output by a number of bases. E.g. '--output-offset 1' for one-based TXT output files.",
+        "long form argument" : "--output-offset",
+        "short form argument" : "-oo",
+        "command line argument" : "-outOffset",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Do not report usage statistics to server.",
+        "long form argument" : "--no-log",
+        "short form argument" : "-nl",
+        "command line argument" : "-noLog",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Use multiple threads (implies '--no-stats').",
+        "long form argument" : "--multiple-threads",
+        "short form argument" : "-mt",
+        "command line argument" : "-t",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--stats-file",
+    "--genes-file",
+    "--filter-interval",
+    "--around",
+    "--prepend-chromosome",
+    "--input-format",
+    "--output-format",
+    "--only-snps",
+    "--only-mnps",
+    "--only-deletions",
+    "--only-insertions",
+    "--only-homozygous-variants",
+    "--only-heterozygous-variants",
+    "--minimum-quality",
+    "--maximum-quality",
+    "--minimum-coverage",
+    "--maximum-coverage",
+    "--no-downstream",
+    "--no-upstream",
+    "--no-intergenic",
+    "--no-intron",
+    "--no-utr",
+    "--no-effect-type",
+    "--input-offset",
+    "--output-offset",
+    "--no-log",
+    "--multiple-threads",
+    "--genome",
+    "--genome-path",
+    "--in",
+    "--out"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "input format",
+          "argument" : "--input-format",
+          "values" : ["VCF"]
+        },
+        {
+          "ID" : "output format",
+          "argument" : "--output-format",
+          "values" : ["VCF"]
+        },
+        {
+          "ID" : "genome path",
+          "argument" : "--genome-path",
+          "values" : ["$(TOOL_BIN)/snpEff/data"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "genome",
+          "argument" : "--genome",
+          "values" : ["ADWO01"]
+        },
+        {
+          "ID" : "input",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
+        }
+      ]
+    }
+  ]
+}

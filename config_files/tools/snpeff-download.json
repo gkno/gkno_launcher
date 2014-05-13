@@ -1,0 +1,71 @@
+{
+  "id" : "snpeff-download",
+  "description" : "Download database for use with snpEff.",
+  "category" : "annotation",
+  "tools" : ["snpEff"],
+  "path" : "snpEff",
+  "executable" : "snpEff.jar",
+  "precommand" : "java -Xmx4g -jar",
+  "modifier" : "download",
+  "help" : "--help|-h",
+  "help group" : "Annotation",
+  "arguments" : {
+    "inputs" : [
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The downloaded genome directory.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "-out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "hide in help" : true,
+        "directory" : true,
+        "modify argument name on command line" : "omit",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--genome",
+          "modify extension" : "omit",
+          "add path" : "$(SNPEFF-DOWNLOAD_PATH)/data"
+        }
+      }
+    ],
+
+    "general" : [
+      {
+        "description" : "The downloaded genome directory.",
+        "long form argument" : "--genome",
+        "short form argument" : "-g",
+        "command line argument" : "-v",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "directory" : true,
+        "modify argument name on command line" : "hide"
+      }
+    ]
+  },
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : []
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "genome",
+          "argument" : "--genome",
+          "values" : ["ADWO01"]
+        }
+      ]
+    }
+  ]
+}
