@@ -6,6 +6,7 @@
   "path" : "freebayes/bin",
   "executable" : "freebayes",
   "help" : "--help|-h",
+  "help group" : "Short variant discovery",
   "arguments" : {
     "inputs" : [
       {

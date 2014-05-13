@@ -7,6 +7,7 @@
   "executable" : "bam",
   "modifier" : "recab",
   "help" : "--help|-h",
+  "help group" : "BAM processing",
   "arguments" : {
     "inputs" : [
       {    

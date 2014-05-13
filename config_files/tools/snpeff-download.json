@@ -29,12 +29,13 @@
           "method": "from tool argument",
           "use argument" : "--genome",
           "modify extension" : "omit",
-          "add path" : "$(SNPEFF-DOWNLOAD_PATH)/data"
+          "add path" : "$(SNPEFF-DOWNLOAD_PATH)/data",
+          "fail if cannot construct" : true
         }
       }
     ],
 
-    "general" : [
+    "General" : [
       {
         "description" : "The downloaded genome directory.",
         "long form argument" : "--genome",

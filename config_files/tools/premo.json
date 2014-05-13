@@ -91,13 +91,14 @@
         "short form argument" : "-t",
         "command line argument" : "-tmp",
         "directory" : true,
+        "temporary" : true,
         "required" : true,
         "data type" : "string",
         "extensions" : ["no extension"]
       }
     ],
 
-    "options" : [
+    "Options" : [
       {
         "description" : "Path to Mosaik bin.",
         "long form argument" : "--mosaik-path",

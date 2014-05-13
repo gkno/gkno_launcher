@@ -5,8 +5,8 @@
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
   "executable" : "vcfallelicprimitives",
-  "hide tool" : true,
   "help" : "--help|-h",
+  "help group" : "VCF processing",
   "arguments" : {
     "inputs" : [
       {

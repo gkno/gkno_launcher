@@ -6,6 +6,7 @@
   "path" : "MOSAIK/bin",
   "executable" : "MosaikBuild",
   "help" : "--help|-h",
+  "help group" : "Mosaik alignment software",
   "arguments" : {
     "inputs" : [
       {    

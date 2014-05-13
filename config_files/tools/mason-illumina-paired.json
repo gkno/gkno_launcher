@@ -7,6 +7,7 @@
   "executable" : "mason",
   "modifier" : "illumina",
   "help" : "--help|-h",
+  "help group" : "Simulation",
   "arguments" : {
     "inputs" : [
       {

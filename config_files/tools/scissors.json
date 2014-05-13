@@ -6,6 +6,7 @@
   "path" : "scissors/bin",
   "executable" : "scissors",
   "help" : "--help|-h",
+  "help group" : "Split read alignment",
   "arguments" : {
     "inputs" : [
       {

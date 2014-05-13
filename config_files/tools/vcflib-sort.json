@@ -7,6 +7,7 @@
   "executable" : "vcfsort",
   "hide tool" : false,
   "help" : "--help|-h",
+  "help group" : "VCF processing",
   "arguments" : {
     "inputs" : [
       {

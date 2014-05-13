@@ -6,6 +6,7 @@
   "path" : "Tangram/bin",
   "executable" : "tangram_index",
   "help" : "--help|-h",
+  "help group" : "SV discovery",
   "arguments" : {
     "inputs" : [
       {

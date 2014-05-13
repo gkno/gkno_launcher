@@ -6,6 +6,7 @@
   "path" : "vcflib/bin",
   "executable" : "vcfintersect",
   "help" : "--help|-h",
+  "help group" : "VCF processing",
   "arguments" : {
     "inputs" : [
       {

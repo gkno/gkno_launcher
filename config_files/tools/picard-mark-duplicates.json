@@ -8,6 +8,7 @@
   "precommand" : "java -Xmx8g -jar",
   "argument delimiter" : "=",
   "help" : "--help|-h",
+  "help group" : "BAM processing",
   "arguments" : {
     "inputs" : [
       {

@@ -755,12 +755,13 @@ class gknoConfigurationFiles:
 
   # Construct the filenames for non-filename stub arguments.
   def constructFilenameFromToolArgumentNotStub(self, graph, config, task, fileNodeID, isInput):
-    tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-    optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-    argument         = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
-    instructions     = config.tools.getArgumentAttribute(tool, argument, 'constructionInstructions')
-    baseArgument     = instructions['use argument']
-    modifyExtension  = instructions['modify extension']
+    tool              = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+    optionNodeID      = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+    longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
+    shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'shortFormArgument')
+    instructions      = config.tools.getArgumentAttribute(tool, longFormArgument, 'constructionInstructions')
+    baseArgument      = instructions['use argument']
+    modifyExtension   = instructions['modify extension']
 
     # Get the ID of the node corresponding to the baseArgument. If there are multiple nodes
     # available, pick one that has a predecessor node itself. TODO SORT THIS OUT
@@ -772,7 +773,7 @@ class gknoConfigurationFiles:
       # associated option node.
       baseNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument, 'file')
       if baseNodeIDs: baseNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(baseNodeIDs[0])
-      else: self.errors.unsetBaseNode(graph, config, task, argument, baseArgument)
+      else: self.errors.unsetBaseNode(graph, config, task, longFormArgument, baseArgument)
     else: baseNodeID = config.nodeMethods.getNodeIDWithPredecessor(graph, baseNodeIDs, task)
 
     # Find all predecessor file nodes and then identify the file associated with the baseNodeID.
@@ -794,6 +795,31 @@ class gknoConfigurationFiles:
         #TODO ERROR
         print('gknoConfig.constructFilenameFromToolArgumentNotStub')
         self.errors.terminate()
+
+    # If the values are empty (e.g. the argument whose values are used to construct the filename have
+    # not been set), check to see if gkno should terminate. By default, gkno will continue and request
+    # that an output file be defined, however, the configuration can instruct termination if the
+    # filename cannot be built.
+    if not values:
+      fail = instructions['fail if cannot construct'] if 'fail if cannot construct' in instructions else False
+      if fail:
+        baseTool          = config.nodeMethods.getSuccessorTaskNodes(graph, baseNodeID)[0]
+        longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, baseNodeID, baseTool, 'longFormArgument')
+        shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, baseNodeID, baseTool, 'shortFormArgument')
+        description       = config.nodeMethods.getGraphNodeAttribute(graph, baseNodeID, 'description')
+        if config.isPipeline:
+          pipelineLongFormArgument, pipelineShortFormArgument = config.pipeline.getPipelineArgument(task, longFormArgument)
+
+          # If the required argument is not a pipeline argument, recommend that the configuration should be
+          # amended to include one.
+          if pipelineLongFormArgument == None:
+            self.errors.missingArgument(graph, config, task, longFormArgument, shortFormArgument, description, True)
+
+          # If the pipeline argument exists, just terminate.
+          else: self.errors.missingPipelineArgument(graph, config, pipelineLongFormArgument, pipelineShortFormArgument, description)
+
+        # If gkno is being run in tool mode, terminate.
+        self.errors.missingPipelineArgument(graph, config, longFormArgument, shortFormArgument, description)
 
     # Determine if the baseArgument is greedy. If so, the values associated with each iteration
     # will be used as input for a single iteration of this task. In this case, even if the values
