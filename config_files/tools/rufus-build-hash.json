@@ -2,7 +2,7 @@
   "id" : "rufus-build-hash",
   "description" : "Build hashes.",
   "experimental" : true,
-  "category" : "kmer preprocessing",
+  "category" : "kmer processing",
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",
   "executable" : "RUFUSv6.BuildHash",

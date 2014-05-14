@@ -141,6 +141,20 @@ class gknoConfigurationFiles:
       self.validLongFormArguments[attributes.longFormArgument]   = attributes.shortFormArgument
       self.validShortFormArguments[attributes.shortFormArgument] = attributes.longFormArgument
 
+  # Check that there are no conflicts between gkno arguments and any of the tool arguments.
+  def checkToolArguments(self, config, graph):
+    for task in config.pipeline.workflow:
+      tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+      for longFormArgument in config.tools.argumentAttributes[tool].keys():
+        shortFormArgument = config.tools.getArgumentAttribute(tool, longFormArgument, 'shortFormArgument')
+        isPipeline        = config.isPipeline
+        if longFormArgument in self.validLongFormArguments:
+          gknoArgument = longFormArgument + ' (' + self.validLongFormArguments[longFormArgument] + ')'
+          self.errors.gknoToolError(config, graph, task, tool, longFormArgument, shortFormArgument, gknoArgument, isLongFormConflict = True)
+        if shortFormArgument in self.validShortFormArguments:
+          gknoArgument = self.validShortFormArguments[shortFormArgument] + ' (' + shortFormArgument + ')'
+          self.errors.gknoToolError(config, graph, task, tool, longFormArgument, shortFormArgument, gknoArgument, isLongFormConflict = False)
+
   # Attach the gkno specific instance arguments to the relevant nodes.
   def attachInstanceArgumentsToNodes(self, config, graph, runName, instance):
     for counter in range(len(config.instances.instanceAttributes[runName][instance].nodes) - 1, -1, -1):

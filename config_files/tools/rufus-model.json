@@ -2,7 +2,7 @@
   "id" : "rufus-model",
   "description" : "Model.",
   "experimental" : true,
-  "category" : "kmer processing",
+  "category" : "modeling",
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",
   "executable" : "ModelDist2",
@@ -10,7 +10,7 @@
   "arguments" : {
     "inputs" : [
       {
-        "description" : "Input histogram.",
+        "description" : "Input histogram of hash counts.",
         "long form argument" : "--histogram",
         "short form argument" : "-hi",
         "command line argument" : "--histogram",
@@ -22,21 +22,6 @@
     ],
 
     "outputs" : [
-      {
-        "description" : "Output file.",
-        "long form argument" : "--out",
-        "short form argument" : "-o",
-        "command line argument" : "--output",
-        "required" : true,
-        "data type" : "string",
-        "extensions" : [".rml"],
-        "modify argument name on command line" : "omit",
-        "construct filename" : {
-          "method": "from tool argument",
-          "use argument" : "--histogram",
-          "modify extension" : "replace"
-        }
-      },
       {
         "description" : "Output dist file.",
         "long form argument" : "--output-dist",
@@ -115,7 +100,6 @@
     "--histogram",
     "--k-mer",
     "--processors",
-    "--out",
     "--output-dist",
     "--output-model",
     "--output-prob"

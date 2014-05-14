@@ -12,7 +12,7 @@
       {
         "description" : "The list of input BAM files.",
         "long form argument" : "--in-list",
-        "short form argument" : "-il",
+        "short form argument" : "-l",
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",

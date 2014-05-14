@@ -23,7 +23,7 @@
       {
         "description" : "the input BAM file list (in json format).",
         "long form argument" : "--in-list",
-        "short form argument" : "-il",
+        "short form argument" : "-l",
         "command line argument" : "-in",
         "data type" : "string",
         "extensions" : [".bam"],
@@ -86,7 +86,7 @@
       {
         "description" : "Keep reads with insert size that matches pattern.",
         "long form argument" : "--insert-size",
-        "short form argument" : "-is",
+        "short form argument" : "-z",
         "command line argument" : "-insertSize",
         "extensions" : ["no extension"],
         "data type" : "string",
@@ -95,7 +95,7 @@
       {
         "description" : "Keep reads with length that matches pattern.",
         "long form argument" : "--length",
-        "short form argument" : "-l",
+        "short form argument" : "-g",
         "command line argument" : "-length",
         "extensions" : ["no extension"],
         "data type" : "string",
@@ -191,7 +191,7 @@
       {
         "description" : "Keep only alignments that were sequenced as paired?",
         "long form argument" : "--is-paired",
-        "short form argument" : "-ip",
+        "short form argument" : "-ipr",
         "command line argument" : "-isPaired",
         "extensions" : ["no extension"],
         "data type" : "bool"

@@ -87,6 +87,19 @@ class gknoErrors:
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  # A tool argument conflicts witht a gkno argument.
+  def gknoToolError(self, config, graph, task, tool, longFormArgument, shortFormArgument, gknoArgument, isLongFormConflict):
+    if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
+    self.text.append('Argument conflict.')
+    text = 'The tool \'' + tool + '\''
+    if config.isPipeline: text += ', used by task \'' + task + '\''
+    text += ', has the argument \'' + longFormArgument + ' (' + shortFormArgument + ')\' defined, but this conflicts with the gkno specific ' + \
+    'argument \'' + gknoArgument + '\' as defined in the gkno configuration file. Please ensure that all of the tool arguments are unique and do ' + \
+    'not conflict with gkno arguments.'
+    self.text.append(text)
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   #####################################
   # Error with pipeline construction. #
   #####################################

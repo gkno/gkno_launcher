@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 __date__ = "May 2014"
 
 def main():
@@ -248,6 +248,10 @@ def main():
     config.buildTaskGraph(pipelineGraph, config.pipeline.taskAttributes.keys())
 
   if isDebug: write.writeDebug('Read configuration files.')
+
+  # Check that none of the arguments for any of the tools conflict with gkno specific arguments.
+  gknoConfig.checkToolArguments(config, pipelineGraph)
+  if isDebug: write.writeDebug('Checked argument conflicts.')
 
   # Parse the command line and put all of the arguments into a list.
   if commands.mode != 'admin':
