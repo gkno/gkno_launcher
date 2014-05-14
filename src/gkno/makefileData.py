@@ -779,7 +779,11 @@ class makefileData:
               # strip, the path from the value.
               if not config.tools.getArgumentAttribute(tool, argument, 'includePathOnCommandLine'):
                 if '/' in value: value = value.split('/')[-1]
-  
+
+              # Ensure that Boolean values are in lower case.
+              if value == False: value = 'false'
+              if value == True: value = 'true'  
+
               # Modify the value to include qutation marks if necessary.
               if inQuotations: value = str('"') + str(value) + str('"')
 

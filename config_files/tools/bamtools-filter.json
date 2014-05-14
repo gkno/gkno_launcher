@@ -146,7 +146,7 @@
         "short form argument" : "-id",
         "command line argument" : "-isDuplicate",
         "extensions" : ["no extension"],
-        "data type" : "flag"
+        "data type" : "bool"
       },
       {
         "description" : "Keep only alignments that failed QC?",
@@ -154,7 +154,7 @@
         "short form argument" : "-if",
         "command line argument" : "-isFailedQC",
         "extensions" : ["no extension"],
-        "data type" : "flag"
+        "data type" : "bool"
       },
       {
         "description" : "Keep only alignments marked as first mate?",
@@ -162,7 +162,7 @@
         "short form argument" : "-ifm",
         "command line argument" : "-isFirstMate",
         "extensions" : ["no extension"],
-        "data type" : "flag"
+        "data type" : "bool"
       },
       {
         "description" : "Keep only alignments that were mapped?",
@@ -170,7 +170,7 @@
         "short form argument" : "-im",
         "command line argument" : "-isMapped",
         "extensions" : ["no extension"],
-        "data type" : "flag"
+        "data type" : "bool"
       },
       {
         "description" : "Keep only alignments with mates that mapped.",
@@ -178,7 +178,7 @@
         "short form argument" : "-imm",
         "command line argument" : "-isMateMapped",
         "extensions" : ["no extension"],
-        "data type" : "flag"
+        "data type" : "bool"
       },
       {
         "description" : "Keep only alignments with mate on reverese strand?",
@@ -186,7 +186,7 @@
         "short form argument" : "-imr",
         "command line argument" : "-isMateReverseStrand",
         "extensions" : ["no extension"],
-        "data type" : "flag"
+        "data type" : "bool"
       },
       {
         "description" : "Keep only alignments that were sequenced as paired?",
@@ -194,7 +194,7 @@
         "short form argument" : "-ip",
         "command line argument" : "-isPaired",
         "extensions" : ["no extension"],
-        "data type" : "flag"
+        "data type" : "bool"
       },
       {
         "description" : "Keep only alignments marked as primary?",
@@ -202,7 +202,7 @@
         "short form argument" : "-ipa",
         "command line argument" : "-isPrimaryAlignment",
         "extensions" : ["no extension"],
-        "data type" : "flag"
+        "data type" : "bool"
       },
       {
         "description" : "Keep only alignments that passed PE resolution?",
@@ -210,7 +210,7 @@
         "short form argument" : "-ipp",
         "command line argument" : "-isProperPair",
         "extensions" : ["no extension"],
-        "data type" : "flag"
+        "data type" : "bool"
       },
       {
         "description" : "Keep only alignments on reverse strand?",
@@ -218,7 +218,7 @@
         "short form argument" : "-ir",
         "command line argument" : "-isReverseStrand",
         "extensions" : ["no extension"],
-        "data type" : "flag"
+        "data type" : "bool"
       },
       {
         "description" : "Keep only alignments marked as second mate?",
@@ -226,7 +226,7 @@
         "short form argument" : "-ism",
         "command line argument" : "-isSecondMate",
         "extensions" : ["no extension"],
-        "data type" : "flag"
+        "data type" : "bool"
       },
       {
         "description" : "Keep only singletons?",
@@ -234,7 +234,7 @@
         "short form argument" : "-isi",
         "command line argument" : "-isSingleton",
         "extensions" : ["no extension"],
-        "data type" : "flag"
+        "data type" : "bool"
       }
     ]
   },
