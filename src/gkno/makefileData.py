@@ -753,6 +753,9 @@ class makefileData:
                 valueList = deepcopy(modifiedValues)
                  
                 # TODO DO I NEED TO LOOK AT OUTPUTS?
+
+          # Determine if the value is to be contained in qutotaion marks.
+          inQuotations = config.tools.getArgumentAttribute(tool, argument, 'inQuotations')
   
           # Write the arguments and or values to the makefile.
           for valueCounter, value in enumerate(valueList):
@@ -777,6 +780,9 @@ class makefileData:
               if not config.tools.getArgumentAttribute(tool, argument, 'includePathOnCommandLine'):
                 if '/' in value: value = value.split('/')[-1]
   
+              # Modify the value to include qutation marks if necessary.
+              if inQuotations: value = str('"') + str(value) + str('"')
+
               # Check if the argument is an output that writes to standard out.
               if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout':
                 print('\t>> ', value, endText, ' \\', sep = '', file = fileHandle)
