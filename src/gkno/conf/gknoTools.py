@@ -127,8 +127,8 @@ class GknoTool(object):
   def cmake(self, optionString=""):
     return self.runCommand("cmake " + optionString)
 
-  def make(self, optionString=""):
-    return self.runCommand("make -j" + str(multiprocessing.cpu_count()) + " " + optionString)
+  def make(self, optionString="", cpus = multiprocessing.cpu_count()):
+    return self.runCommand("make -j" + str(cpus) + " " + optionString)
 
   def makeClean(self):
     return self.runCommand("make clean")
@@ -656,7 +656,7 @@ class Tangram(GknoTool):
 
   # $ make -j N
   def doUpdate(self):
-    return self.make()
+    return self.make(cpus = 1)
 
 # vcflib
 class VcfLib(GknoTool):
