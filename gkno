@@ -1,5 +1,11 @@
 #!/bin/bash
 
+PYTHON=python
+if [[ $PYTHON_GKNO != '' ]]
+then
+  PYTHON=$PYTHON_GKNO
+fi
+
 # Find the gkno directory.
 gkno_directory="`dirname \"$0\"`"
 gkno_directory="`( cd \"$gkno_directory\" && pwd )`"
@@ -35,7 +41,7 @@ PYTHONPATH=$PYTHONPATH:$configuration_class_directory:$configuration_class_direc
 # --------------------------------------------------------
 
 # Run main gkno script.
-command_line="python $gkno_directory/src/gkno.py"
+command_line="$PYTHON $gkno_directory/src/gkno.py"
 for ARG in "$@"
 do
   command_line="$command_line $ARG"
