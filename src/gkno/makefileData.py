@@ -154,6 +154,17 @@ class makefileData:
       numberOfInputDataSets  = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getPredecessorFileNodes(graph, task))
       numberOfOutputDataSets = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getSuccessorFileNodes(graph, task))
 
+      # Check if any of the arguments have multiple iterations of data.
+      numberOfInputArgumentIterations = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getPredecessorOptionNodes(graph, task))
+
+      # If there are multiple sets of input arguments, check the number of input and output files. If there
+      # are only one set of input and output data, the number of input and output data sets are equal to
+      # the number of input argument iterations.
+      if numberOfInputArgumentIterations != 1:
+        if numberOfInputDataSets == 1 and numberOfOutputDataSets == 1:
+          numberOfInputDataSets  = numberOfInputArgumentIterations
+          numberOfOutputDataSets = numberOfInputArgumentIterations
+
       #if numberOfOutputDataSets > numberOfInputDataSets:
       #  #TODO ERROR
       #  print('makefileData.determineMakefileStructure')

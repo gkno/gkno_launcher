@@ -33,6 +33,10 @@ class loopData:
     # Define a dictionary that will hold the values.
     self.values = {}
 
+    # Define if the loop data comes from an argument list (as opposed to having --multiple-runs
+    # or --internal-loop defined).
+    self.fromArgumentList = False
+
 class gknoConfigurationFiles:
   def __init__(self):
     self.jsonFiles                       = {}
@@ -198,15 +202,22 @@ class gknoConfigurationFiles:
 
   # Check if multiple runs or internal loops have been requested. If so, check that only one file
   # has been provided.
-  def hasLoop(self, graph, config, resourcePath, isPipeline, name):
+  def hasLoop(self, graph, config, resourcePath, isPipeline, name, hasMultipleRuns, hasInternalLoop):
+    loopDefined = hasMultipleRuns or hasInternalLoop
+
+    # Check if an argument list has already defined a multiple-run/internal-loop.
     multipleRuns = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-MULTIPLE-RUNS', 'values')
     internalLoop = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-LOOP', 'values')
 
     # Either multiple runs or internal loops are allowed, but not both.
     if multipleRuns and internalLoop: self.errors.internalLoopAndMultipleRuns()
 
+    # If multiple runs or internal loops are requested, but an argument list has already been defined,
+    # another set of values cannot be supplied.
+    if (multipleRuns or internalLoop) and loopDefined: self.errors.multipleRunsDisabled()
+
     # If no multiple runs or internal loops are requested, return.
-    if not multipleRuns and not internalLoop: return False, False
+    if not multipleRuns and not internalLoop: return hasMultipleRuns, hasInternalLoop
 
     # If a file is provided, check the format.
     hasMultipleRuns = False
@@ -316,14 +327,27 @@ class gknoConfigurationFiles:
         # tool or pipeline argument).
         nodeID = self.getNodeForGknoArgument(graph, config, argument)
 
-        # Next check if the argument is an input list.
-        # Check if the pipeline argument points to an input list in a tool. If so, find the tool
-        # argument that the list points to and finally, the pipeline argument that defines the
-        # tool argument that is used.
-        if isPipeline: nodeID, values = self.findToolArgumentForPipelineList(graph, config, argument, value)
-        else: nodeID, values = self.handleInputListsForLoopValues(graph, config, runName, argument, values)
+        # If the loop data was defined from an argument list (i.e. not from a file associated with the
+        # --multiple-runs or --internal-loop commands, get the nodeID associated with the argument. If
+        # this is the case, there is only a single argument associated with the data (a multiple-runs
+        # command, for example, can specify values for multiple different arguments).
+        if self.loopData.fromArgumentList:
+          if isPipeline: print('NOT YET IMPLEMENTED'); self.errors.terminate()
+          else: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')[0]
 
-        # Check for the argument a non-list argument for the tool/pipeline.
+          # The value in the loopData values is the list of values to use.
+          values = [value]
+
+        else:
+
+          # Next check if the argument is an input list.
+          # Check if the pipeline argument points to an input list in a tool. If so, find the tool
+          # argument that the list points to and finally, the pipeline argument that defines the
+          # tool argument that is used.
+          if isPipeline: nodeID, values = self.findToolArgumentForPipelineList(graph, config, argument, value)
+          else: nodeID, values = self.handleInputListsForLoopValues(graph, config, runName, argument, value)
+
+        # Check if the argument is a non-list argument for the tool/pipeline.
         if not nodeID:
           if isPipeline: nodeID = config.pipeline.pipelineArguments[argument].ID
           else: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')[0]

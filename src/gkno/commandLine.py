@@ -243,7 +243,6 @@ class commandLine:
     #    print('\t', optionNodeID, config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument'))
     #exit(0)
     for argument in self.argumentDictionary:
-      #print('TEST', argument, self.argumentDictionary[argument])
       filename = './' + self.argumentDictionary[argument][0]
 
       # Read in all of the files, check that they end with the correct extension and
@@ -261,29 +260,82 @@ class commandLine:
 
   # Parse the argument dictionary and check if any of the arguments are argument lists. If so,
   # read the associated file and attach the values to the relevant nodes.
-  def unpackArgumentLists(self, graph, config, gknoConfig, runName):
+  def unpackArgumentListsTEST(self, graph, config, gknoConfig, runName):
     isPipeline        = config.isPipeline
     argumentsToRemove = []
+    hasInternalLoop   = False
+    hasMultipleRuns   = False
     for argument in self.argumentDictionary:
 
       # Do not consider gkno specific arguments.
       if gknoConfig.getNodeForGknoArgument(graph, config, argument) == None:
         filename = self.argumentDictionary[argument][0]
 
-        # If this is a pipeline, find the tool argument that this argument points to.
-        if isPipeline: nodeID, values = gknoConfig.findToolArgumentForPipelineList(graph, config, argument, filename)
-        else: nodeID, values = gknoConfig.handleInputListsForLoopValues(graph, config, runName, argument, filename)
+        # Check if this argument has the 'argument list' field.
+        if isPipeline:
 
-        # If the argument was a list, a nodeID will have been returned. In this case, add the values
-        # contained in the list to the correct node and remove the list argument from the argument dictonary.
-        if nodeID:
-          argumentsToRemove.append(argument)
-          for counter, name in enumerate(values): values[counter] = str(name)
+          # Get the task to which this argument points and the argument within that task to which
+          # this pipeline argument points.
+          # TODO Consider all nodes, not just the first in the list.
+          task, toolArgument = config.pipeline.commonNodes[config.pipeline.pipelineArguments[argument].configNodeID][0] 
+          tool               = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+        else:
+          tool         = runName
+          toolArgument = argument
+
+        # Get the argument to be used for the value in the list as well as the mode of usage. These will be
+        # 'None' if this argument isn't a list.
+        listArgument = config.tools.getArgumentAttribute(tool, toolArgument, 'listArgument')
+        listMode     = config.tools.getArgumentAttribute(tool, toolArgument, 'listMode')
+        if listArgument:
+
+          # If another list has already been defined, terminate. gkno is unable to accept multiple different
+          # definitions of internal loops/multiple runs.
+          if hasInternalLoop or hasMultipleRuns: self.errors.multipleArgumentListsDefined(argument, listArgument)
+
+          # Find the node for the defined argument.
+          nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, listArgument, 'option')[0]
+          if not nodeID:
+            #TODO
+            print('ERROR - gknoConfig.unpackArgumentLists')
+            self.errors.terminate()
+
+          # Parse the list and modify the value in argumentDictionary from the list to the files
+          # in the list. First check that the file exists.
+          values = []
+          try: data = open(filename)
+          except: self.errors.missingFileCommandLine(graph, config, argument, filename)
+          for value in [name.strip() for name in data]: values.append(value)
           if not values: self.errors.emptyArgumentList(argument, filename)
-          config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'append', iteration = 1)
+
+          # If the list mode is 'single makefile' or 'multiple makefiles', the values should be added to
+          # the loopData structure as the values will be treated as an internal loop or multiple runs
+          # respectively.
+          if listMode == 'single makefile' or listMode == 'multiple makefiles':
+            gknoConfig.loopData.arguments.append(listArgument)
+            gknoConfig.loopData.numberOfDataSets = 0
+            for iteration, value in enumerate(values):
+              gknoConfig.loopData.values[iteration + 1] = [value]
+              gknoConfig.loopData.numberOfDataSets += 1
+              gknoConfig.loopData.fromArgumentList = True
+
+            # Define whether to use internal loops or multiple makefiles.
+            if listMode == 'single makefile': hasInternalLoop = True
+            else: hasMultipleRuns = True
+
+          # If the list mode is 'repeat argument', the values can be added to the node.
+          # TODO
+          elif listMode == 'repeat argument':
+            print('NOT YET IMPLEMENTED')
+            self.errors.terminate()
+
+          # If the argument was a list, remove the list argument from the argument dictonary.
+          argumentsToRemove.append(argument)
 
     # Remove marked arguments.
     for argument in argumentsToRemove: del(self.argumentDictionary[argument])
+
+    return hasMultipleRuns, hasInternalLoop
 
   # Attach the values supplied on the command line to the nodes.
   def attachPipelineArgumentsToNodes(self, graph, config, gknoConfig):
