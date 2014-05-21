@@ -1,51 +1,51 @@
 [submodule "tools/bamtools"]
 	path = tools/bamtools
-	url = git://github.com/gkno/bamtools.git
+        url = https://github.com/gkno/bamtools.git
 [submodule "tools/freebayes"]
 	path = tools/freebayes
-	url = git://github.com/gkno/freebayes.git
+        url = https://github.com/gkno/freebayes.git
 [submodule "tools/gatk"]
 	path = tools/gatk
-	url = git://github.com/gkno/gatk.git
+        url = https://github.com/gkno/gatk.git
 [submodule "tools/MOSAIK"]
 	path = tools/MOSAIK
-	url = git://github.com/gkno/MOSAIK.git
+        url = https://github.com/gkno/MOSAIK.git
 [submodule "tools/picard"]
 	path = tools/picard
-	url = git://github.com/gkno/picard.git
+        url = https://github.com/gkno/picard.git
 [submodule "tools/premo"]
 	path = tools/premo
-	url = git://github.com/gkno/premo.git
+        url = https://github.com/gkno/premo.git
 [submodule "tools/samtools"]
 	path = tools/samtools
-	url = git://github.com/gkno/samtools.git
+        url = https://github.com/gkno/samtools.git
 [submodule "resources/homo_sapiens"]
 	path = resources/homo_sapiens
-	url = git://github.com/gkno/resources-homo_sapiens.git
+        url = https://github.com/gkno/resources-homo_sapiens.git
 [submodule "resources/tutorial"]
 	path = resources/tutorial
-	url = git://github.com/gkno/resources-tutorial.git
+        url = https://github.com/gkno/resources-tutorial.git
 [submodule "tools/ogap"]
 	path = tools/ogap
-	url = git://github.com/gkno/ogap.git
+        url = https://github.com/gkno/ogap.git
 [submodule "tools/vcflib"]
 	path = tools/vcflib
-	url = git://github.com/gkno/vcflib.git
+        url = https://github.com/gkno/vcflib.git
 [submodule "tools/tabix"]
 	path = tools/tabix
-	url = git://github.com/gkno/tabix.git
+        url = https://github.com/gkno/tabix.git
 [submodule "tools/Tangram"]
 	path = tools/Tangram
-	url = git://github.com/gkno/Tangram.git
+        url = https://github.com/gkno/Tangram.git
 [submodule "tools/bamUtil"]
 	path = tools/bamUtil
-	url = git://github.com/gkno/bamUtil.git
+        url = https://github.com/gkno/bamUtil.git
 [submodule "tools/libStatGen"]
 	path = tools/libStatGen
-	url = git://github.com/gkno/libStatGen.git
+        url = https://github.com/gkno/libStatGen.git
 [submodule "configurationClass"]
     path = src/configurationClass
-    url = git://github.com/gkno/configurationClass.git
+    url = https://github.com/gkno/configurationClass.git
 [submodule "tools/blast"]
 	path = tools/blast
 	url = https://github.com/gkno/blast.git
