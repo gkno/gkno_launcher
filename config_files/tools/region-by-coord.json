@@ -1,0 +1,92 @@
+{
+  "id" : "region-by-coordinate",
+  "description" : "Given a chromosome and a list of integers, a set of regions are generated.",
+  "category" : "file processing",
+  "tools" : ["byCoorinate"],
+  "path" : "generate-regions",
+  "executable" : "byCoordinate.sh",
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "A file containing a list of integers.",
+        "long form argument" : "--coordinate-list",
+        "short form argument" : "-l",
+        "command line argument" : "--coordinate-list",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "A list of region windows.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".txt"],
+        "modify argument name on command line" : "stdout",
+        "construct filename" : {
+          "method": "define name",
+          "filename" : "region-windows",
+          "for multiple runs connect to" : "--coordinate-list",
+          "add extension" : true
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The chromosome on which the windows are to be applied.",
+        "long form argument" : "--chromosome",
+        "short form argument" : "-c",
+        "command line argument" : "--chromosome",
+        "required" : true,
+        "data type" : "integer",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "The value to subtract from each given coordinate to define the lower value of the window.",
+        "long form argument" : "--minimum",
+        "short form argument" : "-m",
+        "command line argument" : "--minimum",
+        "required" : true,
+        "data type" : "integer",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "The value to add to each given coordinate to define the upper value of the window.",
+        "long form argument" : "--maximum",
+        "short form argument" : "-x",
+        "command line argument" : "--maximum",
+        "required" : true,
+        "data type" : "integer",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--coordinate-list",
+    "--chromosome",
+    "--minimum",
+    "--maximum",
+    "--out"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    }
+  ]
+}
