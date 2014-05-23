@@ -260,7 +260,7 @@ class commandLine:
 
   # Parse the argument dictionary and check if any of the arguments are argument lists. If so,
   # read the associated file and attach the values to the relevant nodes.
-  def unpackArgumentListsTEST(self, graph, config, gknoConfig, runName):
+  def unpackArgumentLists(self, graph, config, gknoConfig, runName):
     isPipeline        = config.isPipeline
     argumentsToRemove = []
     hasInternalLoop   = False

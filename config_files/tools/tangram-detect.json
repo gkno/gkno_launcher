@@ -43,6 +43,30 @@
         "command line argument" : "-ref",
         "data type" : "string",
         "extensions" : [".dat"]
+      },
+      {
+        "description" : "A list of genomic regions (generates multiple rules in a single makefile).",
+        "long form argument" : "--region-list-single",
+        "short form argument" : "-rls",
+        "command line argument" : "none",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "argument list" : {
+          "use argument" : "--region",
+          "mode" : "single makefile"
+        }
+      },
+      {
+        "description" : "A list of genomic regions (generates multiple makefiles).",
+        "long form argument" : "--region-list-multiple",
+        "short form argument" : "-rlm",
+        "command line argument" : "none",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "argument list" : {
+          "use argument" : "--region",
+          "mode" : "multiple makefiles"
+        }
       }
     ],
 
@@ -55,6 +79,7 @@
         "required" : true,
         "data type" : "string",
         "extensions" : [".vcf"],
+        "modify argument name on command line" : "stdout",
         "construct filename" : {
           "method": "define name",
           "filename" : "tangram_calls",
@@ -64,7 +89,7 @@
       }
     ],
 
-    "options" : [
+    "Genome regions" : [
       {
         "description" : "Genomic region.",
         "long form argument" : "--region",
@@ -73,7 +98,10 @@
         "required" : true,
         "data type" : "string",
         "extensions" : ["no extension"]
-      },
+      }
+    ],
+
+    "Options" : [
       {
         "description" : "Check for invalid libraries.",
         "long form argument" : "--check-libraries",

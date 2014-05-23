@@ -52,7 +52,8 @@
         "short form argument" : "-id",
         "command line argument" : "-id",
         "extensions" : ["no extension"],
-        "data type" : "string"
+        "data type" : "string",
+        "include value in quotations" : true
       },
       {    
         "description" : "The median length of the read fragments.",
@@ -68,7 +69,8 @@
         "short form argument" : "-s",
         "command line argument" : "-sam",
         "extensions" : ["no extension"],
-        "data type" : "string"
+        "data type" : "string",
+        "include value in quotations" : true
       },
       {    
         "description" : "The sequencing center name.",
@@ -76,7 +78,8 @@
         "short form argument" : "-c",
         "command line argument" : "-cn",
         "extensions" : ["no extension"],
-        "data type" : "string"
+        "data type" : "string",
+        "include value in quotations" : true
       },
       {    
         "description" : "The library name. e.g. g1k-sc-NA18944-JPT-1.",
@@ -84,7 +87,8 @@
         "short form argument" : "-l",
         "command line argument" : "-ln",
         "extensions" : ["no extension"],
-        "data type" : "string"
+        "data type" : "string",
+        "include value in quotations" : true
       },
       {    
         "description" : "The platform unit. e.g. IL12_490_5.",
@@ -92,7 +96,8 @@
         "short form argument" : "-pu",
         "command line argument" : "-pu",
         "extensions" : ["no extension"],
-        "data type" : "string"
+        "data type" : "string",
+        "include value in quotations" : true
       },
       {    
         "description" : "Sets the sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
@@ -101,7 +106,8 @@
         "command line argument" : "-st",
         "required" : true,
         "extensions" : ["no extension"],
-        "data type" : "string"
+        "data type" : "string",
+        "include value in quotations" : true
       }
     ]
   },

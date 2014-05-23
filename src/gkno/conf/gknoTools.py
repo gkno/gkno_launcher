@@ -693,6 +693,24 @@ class VerifyBamID(GknoTool):
   def doUpdate(self):
     return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen')
 
+# Vt
+class Vt(GknoTool):
+  def __init__(self):
+    super(Vt, self).__init__()
+    self.name       = "vt"
+    self.installDir = "vt"
+
+  # $ make clean
+  # $ make -j N
+  def doBuild(self):
+    if not self.makeClean():
+      return False
+    return self.make()
+
+  # $ make -j N
+  def doUpdate(self):
+    return self.make()
+
 ##############################################################
 # Add any new built-in gkno tools to the list below.
 
@@ -723,6 +741,7 @@ List = [
         SnpEff(),
         Tabix(),
         Tangram(),
-        VcfLib()
+        VcfLib(),
+        Vt()
        ]
 

@@ -44,7 +44,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.9.0"
+__version__ = "1.10.0"
 __date__ = "May 2014"
 
 def main():
@@ -317,7 +317,7 @@ def main():
 
   # Attach the values of the pipeline arguments to the relevant nodes.
   write.writeAssignPipelineArgumentsToNodes()
-  hasMultipleRuns, hasInternalLoop = commands.unpackArgumentListsTEST(pipelineGraph, config, gknoConfig, runName)
+  hasMultipleRuns, hasInternalLoop = commands.unpackArgumentLists(pipelineGraph, config, gknoConfig, runName)
 
   if isPipeline: commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
   else: commands.attachToolArgumentsToNodes(pipelineGraph, config, gknoConfig)

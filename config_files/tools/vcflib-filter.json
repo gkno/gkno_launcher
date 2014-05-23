@@ -32,6 +32,7 @@
         "data type" : "string",
         "extensions" : [".vcf"],
         "modify argument name on command line" : "stdout",
+        "if output to stream" : "do not include",
         "construct filename" : {
           "method" : "from tool argument",
           "use argument" : "--in",
@@ -53,7 +54,8 @@
         "command line argument" : "--info-filter",
         "allow multiple values" : true,
         "extensions" : ["no extension"],
-        "data type" : "string"
+        "data type" : "string",
+        "include value in quotations" : true
       },
       {
         "description" : "Specifies a filter to apply to the genotype fields of records.",

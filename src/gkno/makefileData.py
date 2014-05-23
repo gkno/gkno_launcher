@@ -641,6 +641,14 @@ class makefileData:
 
     # Write the arguments to the makefile.
     for counter, argument in enumerate(argumentOrder):
+
+      # If the input to this task is a stream and this argument has specific instructions for
+      # this case, ensure that the command is properly handled.
+      useArgument = None
+      if inputIsStream and config.tools.getArgumentAttribute(tool, argument, 'inputStream'):
+        includeArgument, useArgument, useValue = self.checkInputStream(config, tool, argument, includeArgument)
+
+      # Loop over the nodes for this argument.
       for nodeID, values in arguments[argument]:
 
         # If this is not really an argument, but a request to read argument information from a
@@ -775,11 +783,6 @@ class makefileData:
             # the close parenthesis.
             endText = ')' if (counter + 1 == len(argumentOrder)) and (valueCounter + 1 == len(valueList)) and (hasTiming or hasAdvancedTiming) else ''
 
-            # If the input to this task is a stream and this argument has specific instructions for
-            # this case, ensure that the command is properly handled.
-            if inputIsStream and config.tools.getArgumentAttribute(tool, argument, 'inputStream'):
-              includeArgument = self.checkInputStream(config, tool, argument, includeArgument)
-
             # If anything needs to be written to the makefile, write it.
             if includeArgument:
   
@@ -798,8 +801,20 @@ class makefileData:
               # Modify the value to include qutation marks if necessary.
               if inQuotations: value = str('"') + str(value) + str('"')
 
+              # If the argument has been modified due to receiving an input stream, use the given argument.
+              if useArgument:
+
+                # If the argument to be used is listed as none, just write the value.
+                if useArgument == 'none': print('\t', useValue, endText, ' \\', sep = '', file = fileHandle)
+
+                # If the argument is listed as 'original', use the same argument, but the value may be modified.
+                elif useArgument == 'original': print('\t', commandLineArgument, delimiter, useValue, endText, ' \\', sep = '', file = fileHandle)
+
+                # For any other value, use the value given in the configuration file.
+                else: print('\t', useArgument, delimiter, useValue, endText, ' \\', sep = '', file = fileHandle)
+
               # Check if the argument is an output that writes to standard out.
-              if config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout':
+              elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout':
                 print('\t>> ', value, endText, ' \\', sep = '', file = fileHandle)
                 stdoutUsed = True
   
@@ -808,8 +823,7 @@ class makefileData:
                 print('\t', value, endText, ' \\', sep = '', file = fileHandle)
   
               # If the argument and value should be hidden, don't write anything.
-              elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'omit':
-                pass
+              elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'omit': pass
   
               # Check if the argument is a flag.
               elif not isFlag: print('\t', commandLineArgument, delimiter, value, endText, ' \\', sep = '', file = fileHandle)
@@ -824,22 +838,13 @@ class makefileData:
   def checkInputStream(self, config, tool, argument, includeArgument):
 
     # If the command line argument needs to be replace by a different value.
-    #TODO
     if config.tools.getArgumentAttribute(tool, argument, 'inputStream') == 'replace':
-      print('NOT YET HANDLED')
-      print('INPUT IS STREAM AND ARGUMENT IS REPLACED. gkno/makefileData.py - 647')
-      self.errors.terminate()
+      replaceArgument = config.tools.getArgumentAttribute(tool, argument, 'replaceArgument')['argument']
+      replaceValue    = config.tools.getArgumentAttribute(tool, argument, 'replaceArgument')['value']
+      return True, replaceArgument, replaceValue
 
     # If the argument should be omitted from the command line, set includeArgument to False.
-    elif config.tools.getArgumentAttribute(tool, argument, 'inputStream') == 'do not include':
-      return False
-
-    # Any other values are invalid.
-    else:
-      #TODO ERRROR
-      print('Unknown value for "input is stream":', config.tools.getArgumentAttribute(tool, argument, 'inputStream'))
-      print('make.checkInputStream')
-      self.errors.terminate()
+    elif config.tools.getArgumentAttribute(tool, argument, 'inputStream') == 'do not include': return False, argument, None
 
   # Write outputs and errors to the stdout and stderr files.
   def writeStdouts(self, stdoutUsed, fileHandle):

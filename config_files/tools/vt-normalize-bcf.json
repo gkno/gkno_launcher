@@ -1,0 +1,118 @@
+{
+  "id" : "vt-normalize",
+  "description" : "Normalizes variants in a VCF file.",
+  "category" : "variant processing",
+  "tools" : ["vt"],
+  "path" : "vt/",
+  "executable" : "vt",
+  "modifier" : "normalize",
+  "help" : "--help|-h",
+  "help group" : "VCF processing",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The input BCF file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "modify argument name on command line" : "hide",
+        "data type" : "string",
+        "if input is stream" : "replace",
+        "replace argument with" : {
+          "argument" : "none",
+          "value" : "+"
+        },
+        "extensions" : [".bcf"]
+      },
+      {
+        "description" : "The FASTA reference sequence file",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "-r",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fa", ".fasta"]
+      },
+      {
+        "description" : "A file containing list of intervals.",
+        "long form argument" : "--intervals-file",
+        "short form argument" : "-f",
+        "command line argument" : "-I",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      }
+    ],
+  
+    "outputs" : [
+      {
+        "description" : "The normalized VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "-o",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bcf"],
+        "if output to stream" : "replace",
+        "replace argument with" : {
+          "argument" : "-o",
+          "value" : "+"
+        },
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_normalized"]
+            }
+          ]
+        }
+      }
+    ],
+  
+    "Options" : [
+      {
+        "description" : "Window size for local sorting of variants [10000].",
+        "long form argument" : "--window",
+        "short form argument" : "-w",
+        "command line argument" : "-w",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--fasta-reference",
+    "--intervals-file",
+    "--window",
+    "--out",
+    "--in"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : []
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "vcf",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
+        },
+        {
+          "ID" : "fasta",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        }
+      ]
+    }
+  ]
+}

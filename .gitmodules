@@ -88,3 +88,6 @@
 [submodule "tools/genomicRegions"]
 	path = tools/genomicRegions
 	url = https://github.com/gkno/genomicRegions.git
+[submodule "tools/vt"]
+	path = tools/vt
+	url = https://github.com/gkno/vt.git

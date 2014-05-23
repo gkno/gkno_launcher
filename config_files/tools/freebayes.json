@@ -144,6 +144,7 @@
         "long form argument" : "--region",
         "short form argument" : "-r",
         "command line argument" : "--region",
+        "required" : true,
         "extensions" : ["no extension"],
         "data type" : "string"
       }
@@ -252,6 +253,54 @@
           "values" : [
             "$(RESOURCES)/tutorial/current/mutated_genome.bam",
             "$(RESOURCES)/tutorial/current/mutated_genome.bam"
+          ]
+        },
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
+        },
+        {
+          "ID" : "output path",
+          "argument" : "--output-path",
+          "values" : ["./"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test-mr",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "mr",
+          "argument" : "--multiple-runs",
+          "values" : [
+            "$(RESOURCES)/tutorial/current/freebayes-mr.json"
+          ]
+        },
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
+        },
+        {
+          "ID" : "output path",
+          "argument" : "--output-path",
+          "values" : ["./"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test-il",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "il",
+          "argument" : "--internal-loop",
+          "values" : [
+            "$(RESOURCES)/tutorial/current/freebayes-mr.json"
           ]
         },
         {
