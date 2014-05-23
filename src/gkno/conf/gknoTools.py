@@ -169,11 +169,11 @@ class BamUtil(GknoTool):
   def doBuild(self):
 #    if not self.makeClean(): 
 #      return False 
-    return self.make()
+    return self.make(cpus = 1)
 
   # $ make -j N   
   def doUpdate(self):
-    return self.make()
+    return self.make(cpus = 1)
 
 # NCBI BLAST
 class Blast(GknoTool):
@@ -241,11 +241,11 @@ class FastQValidator(GknoTool):
   def doBuild(self):
 #    if not self.makeClean(): 
 #      return False 
-    return self.make()
+    return self.make(cpus = 1)
 
   # $ make -j N   
   def doUpdate(self):
-    return self.make()
+    return self.make(cpus = 1)
 
 # freebayes
 class Freebayes(GknoTool):
@@ -363,7 +363,7 @@ class LibStatGen(GknoTool):
 
   # $ make -j N
   def doUpdate(self):
-    return self.make()
+    return self.make(cpus = 1)
 
 # mosaik
 class Mosaik(GknoTool):
@@ -508,11 +508,11 @@ class Qplot(GknoTool):
   def doBuild(self):
     if not self.makeClean():
       return False
-    return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen')
+    return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen', cpus = 1)
 
   # $ make -j N
   def doUpdate(self):
-    return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen')
+    return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen', cpus = 1)
 
 # Rufus
 class Rufus(GknoTool):
@@ -687,11 +687,11 @@ class VerifyBamID(GknoTool):
   def doBuild(self):
     if not self.makeClean():
       return False
-    return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen')
+    return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen', cpus = 1)
 
   # $ make -j N
   def doUpdate(self):
-    return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen')
+    return self.make(optionString = 'LIB_PATH_GENERAL=../libStatGen', cpus = 1)
 
 # Vt
 class Vt(GknoTool):
