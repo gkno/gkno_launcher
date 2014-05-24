@@ -221,19 +221,21 @@
       }
     },
     {
-      "ID" : "filter",
-      "description" : "Linking tasks. No argument.",
-      "tasks" : {
-        "mark-duplicates" : "--out"
-      }
-    },
-    {
       "ID" : "call",
       "description" : "Linking tasks. No argument.",
       "tasks" : {
         "mark-duplicates" : "--out",
         "index-final-bam" : "--in",
         "variant-call" : "--bam"
+      }
+    },
+    {
+      "ID" : "genome region.",
+      "description" : "<chrom>:<start_position>..<end_position>. Limit analysis to the specified region, 0-base coordinates, end_position not included (same as BED format).",
+      "long form argument" : "--region",
+      "short form argument" : "-rg",
+      "tasks" : {
+        "variant-call" : "--region"
       }
     },
     {
@@ -336,6 +338,11 @@
           "ID" : "dbsnp",
           "argument" : "--dbsnp",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"]
+        },
+        {
+          "ID" : "region",
+          "argument" : "--region",
+          "values" : ["20:1-100000"]
         },
         {
           "ID" : "filter",
