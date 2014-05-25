@@ -7,6 +7,7 @@ import gknoErrors
 from gknoErrors import *
 
 import os
+import platform
 import sys
 
 class makefileData:
@@ -35,6 +36,10 @@ class makefileData:
 
     # Keep track of phony targets.
     self.phonyTargets = []
+
+    # Check the platform. If 'Darwin', do not use the '-e' modifier in echo commands.
+    if platform.system() == 'Darwin': self.echoModifier = ''
+    else: self.echoModifier = '-e '
 
   # Generate the makefile for a tool/pipeline with a single set of data or an internal loop.
   # Only one makefile is required in this case.
@@ -480,9 +485,9 @@ class makefileData:
         print(file = fileHandle)
   
         # Include a line that will echo which task is being run.
-        if len(tasks) == 1: print('\t@echo -e "Executing task: ', task, '...\c"', sep = '', file = fileHandle)
+        if len(tasks) == 1: print('\t@echo ', self.echoModifier, ' "Executing task: ', task, '...\c"', sep = '', file = fileHandle)
         else:
-          text = '\t@echo -e "Executing piped tasks: '
+          text = '\t@echo ' + self.echoModifier + ' "Executing piped tasks: '
           for task in tasks[:-1]: text += task + ', '
           text += tasks[-1]
           print(text, file = fileHandle, end = '')
@@ -855,7 +860,7 @@ class makefileData:
   def writeComplete(self, fileHandle):
 
     # Write out that the task completed successfully.
-    print('\t@echo -e "completed successfully."', sep = '', file = fileHandle)
+    print('\t@echo ', self.echoModifier, ' "completed successfully."', sep = '', file = fileHandle)
     print(file = fileHandle)
 
   # Close the Makefile.
