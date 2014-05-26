@@ -1,6 +1,6 @@
 {
   "id" : "rufus-overlap-hash",
-  "description" : "Overlap hashes.",
+  "description" : "A greedy overlap assembler that attempts to assemble all reads that share at least one k-mer.",
   "experimental" : true,
   "category" : "kmer processing",
   "tools" : ["Rufus"],
@@ -13,7 +13,7 @@
         "description" : "Input fastq file.",
         "long form argument" : "--fastq",
         "short form argument" : "-q",
-        "command line argument" : "--fastq",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "string",
         "extensions" : [".fq", ".fastq"],
@@ -23,14 +23,19 @@
 
     "outputs" : [
       {
-        "description" : "Output.",
+        "description" : "The output fastq and fastqd files.",
         "long form argument" : "--out",
         "short form argument" : "-o",
-        "command line argument" : "--output",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "string",
         "extensions" : ["rov"],
         "modify argument name on command line" : "hide",
+        "is filename stub" : true,
+        "filename extensions" : [
+          ".fastq",
+          ".fastqd"
+        ],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--fastq",
@@ -41,50 +46,50 @@
 
     "Options" : [
       {
-        "description" : "Report stub.",
+        "description" : "This string is prepended to all contigs in the output fastq file.",
         "long form argument" : "--stub",
         "short form argument" : "-s",
-        "command line argument" : "--stub",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "string",
         "extensions" : ["no extension"],
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "Minimum percent.",
-        "long form argument" : "--minimum-percent",
+        "description" : "This percentage of the overlapped bases must match.",
+        "long form argument" : "--minimum-percent-match",
         "short form argument" : "-m",
-        "command line argument" : "--minimum-percent",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "float",
         "extensions" : ["no extension"],
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "Minimum overlap",
+        "description" : "This number of bases must overlap between two reads.",
         "long form argument" : "--minimum-overlap",
         "short form argument" : "-mo",
-        "command line argument" : "--minimum-overlap",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "integer",
         "extensions" : ["no extension"],
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "Minimum coverage.",
+        "description" : "Only report contigs that have at least this coverage at one base in the contig.",
         "long form argument" : "--minimum-coverage",
         "short form argument" : "-mc",
-        "command line argument" : "--minimum-coverage",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "integer",
         "extensions" : ["no extension"],
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "Search hash size.",
+        "description" : "The hash size to seed the overlap.",
         "long form argument" : "--search-hash-size",
         "short form argument" : "-shs",
-        "command line argument" : "--search-hash-size",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "integer",
         "extensions" : ["no extension"],
@@ -101,10 +106,10 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "ACT.",
-        "long form argument" : "--act",
-        "short form argument" : "-a",
-        "command line argument" : "--act",
+        "description" : "Only attempt to overlap reads if they share at least this many k-mers.",
+        "long form argument" : "--number-shared-k-mers",
+        "short form argument" : "-ns",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "integer",
         "extensions" : ["no extension"],
@@ -130,7 +135,7 @@
     "--minimum-coverage",
     "--stub",
     "--search-hash-size",
-    "--act",
+    "--number-shared-k-mers",
     "--out",
     "--lc",
     "--processors"

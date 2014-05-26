@@ -1,6 +1,6 @@
 {
   "id" : "rufus-model",
-  "description" : "Model.",
+  "description" : "Performs an analysis of the k-mer frequency histogram, outputting cutoffs for the maximum error rate and minimum coverage for a given sample.",
   "experimental" : true,
   "category" : "modeling",
   "tools" : ["Rufus"],
@@ -39,7 +39,7 @@
         }
       },
       {
-        "description" : "Output model file.",
+        "description" : "The model file contains information on how to fit normal distributions to the k-mer frequency histogram as well as suggested cut-off values for other Rufus tools.",
         "long form argument" : "--output-model",
         "short form argument" : "-om",
         "command line argument" : "--output-model",

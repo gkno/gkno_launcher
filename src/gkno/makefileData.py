@@ -638,6 +638,11 @@ class makefileData:
     # Find all of the arguments for this task.
     arguments = self.getCommandLineInformation(graph, config, task)
 
+    # Check if there are any additional arguments for the tool used for this task that have a command
+    # for execution at run time. It is possible that, while this argument was nort supplied on the
+    # command line, it can be included if the command to execute has all the necessary values.
+    arguments = self.getToolArgumentsWithCommands(graph, config, task, tool, arguments)
+
     # Check if the argument need to be written in any particular order. If not, generate the
     # order randomly. It is possible that there are arguments with no value. This is because
     # the argument order will contain all of the argument for the tool, but they might not all
@@ -838,6 +843,117 @@ class makefileData:
                 if value == 'set': print('\t', commandLineArgument, endText, ' \\', sep = '', file = fileHandle)
 
     return stdoutUsed
+
+  # Get tool arguments with commands to evaluate.
+  def getToolArgumentsWithCommands(self, graph, config, task, tool, arguments):
+    for longFormArgument in config.tools.getGeneralAttribute(tool, 'argumentsWithCommands'):
+
+      # Get the nodeID for the argument if the node exists.
+      nodeID, values = arguments[longFormArgument] if longFormArgument in arguments else None, None
+
+      # Determine if the command to be evaluated uses the value associated with this argument. It
+      # is allowed that the argument can be given a value and then instead of using this value on 
+      # the command line, the command to evaluate is given which includes the given value.
+      instructions = config.tools.getArgumentAttribute(tool, longFormArgument, 'commandEvaluation')
+      usesItself   = False
+      useArguments = []
+      for value in instructions.values:
+        argument = instructions.values[value]
+        if argument == longFormArgument: usesItself = True
+        useArguments.append((argument, value))
+
+      # Determine the nodeID for this argument.
+      #nodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, longFormArgument, 'option')
+
+      # If the node has not been assigned and the command uses the value associated with itself, it is not
+      # possible to assign a command to the argument. If the argument were required, gkno would already have
+      # terminated, so this argument can be left blank.
+      if not nodeID and usesItself: return arguments
+
+      # Record which IDs in the command should be replaced with the tool name.
+      IDIsTool = []
+
+      # Get all of the arguments required in the command and check that they all have values. Build up the
+      # command values as the arguments are processed.
+      commands   = {}
+      firstValue = True
+      for argument, ID in useArguments:
+
+        # The argument could take the value 'tool' in which case, the tool name is used. In this
+        # check, this can be ignored.
+        if argument != 'tool':
+
+          #TODO Can the following have multiple node IDs?
+          argumentNodeID     = config.nodeMethods.getNodeForTaskArgument(graph, task, argument, 'option')[0]
+          argumentNodeValues = config.nodeMethods.getGraphNodeAttribute(graph, argumentNodeID, 'values')
+
+          # If the argument does not have values, the command cannot be constructed, so return leaving this
+          # argument as is.
+          if not argumentNodeValues: return arguments
+
+          # If this is the first value to be added, determine the number of iterations and create the iterations
+          # in 'commands'.
+          if firstValue:
+            firstValue = False
+            for iteration in argumentNodeValues:
+              commands[iteration] = [str('`') + instructions.command + str('`')]
+              commands = self.replaceCommandID(iteration, argumentNodeValues[iteration], commands, ID)
+
+          # If the commands has already been created, check that the number of iterations in commands is equal
+          # to that in the values, or that one of them has one iteration. In the latter case, either expand the 
+          # commands to the number of iterations in the values and for the values with only one iteration,
+          # propogate that value through all iterations in commands.
+          else:
+            noIterationsInCommands = len(commands)
+            noIterationsInValues   = len(argumentNodeValues)
+
+            # First, if both the values and commands has one iteration.
+            if noIterationsInCommands == noIterationsInValues:
+              for iteration in commands: commands = self.replaceCommandID(iteration, argumentNodeValues[iteration], commands, ID)
+
+            # If the commands has one iteration and the values has more than one.
+            elif noIterationsInCommands == 1:
+              for iteration in argumentNodeValues:
+                if iteration not in commands: commands[iteration] = commands[1]
+                commands = self.replaceCommandID(iteration, argumentNodeValues[iteration], commands, ID)
+
+            # If the commands has multipls iterations and the values has one.
+            elif noIterationsInValues == 1:
+              for iteration in commands: commands = self.replaceCommandID(iteration, argumentNodeValues[1], commands, ID)
+
+            # If both the commands and values have multiple iterations, but neither has one, terminate.
+            else:
+              #TODO ERROR
+              print('ERROR - makefileData. getToolArgumentsWithCommands 2')
+              self.errors.terminate()
+
+        # If this argument is given the value 'tool', store this and deal with it at the end.
+        else: IDIsTool.append(ID)
+
+      # If any of the IDs in the command were to be replaced with the tool name, replace them now.
+      for ID in IDIsTool:
+        for iteration in commands: commands = self.replaceCommandID(iteration, [tool], commands, ID)
+
+      # Replace the values with the commands.
+      newArguments = []
+      for tempNodeID, tempValues in arguments[longFormArgument]:
+        newArguments.append((tempNodeID, commands))
+      arguments[longFormArgument] = newArguments
+
+    return arguments
+
+  # Replace the ID in the command with values.
+  def replaceCommandID(self, iteration, argumentValues, commands, ID):
+
+    # If there are multiple values, it is unclear which value to include in the command, so terminate.
+    if len(argumentValues) != 1:
+      #TODO ERROR
+      print('ERROR - replaceCommandID')
+      self.errors.terminate()
+
+    commands[iteration][0] = commands[iteration][0].replace(ID, argumentValues[0])
+
+    return commands
 
   # If the input is a stream and the argument has specific instructions, ensure that the argument is correctly handled.
   def checkInputStream(self, config, tool, argument, includeArgument):

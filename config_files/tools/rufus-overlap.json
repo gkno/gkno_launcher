@@ -1,95 +1,95 @@
 {
-  "id" : "rufus-filter",
-  "description" : "All reads in a provided fastq file that contain a k-mer listed in the input l-mer list are output.",
+  "id" : "rufus-overlap",
+  "description" : "A greedy overlap assembler that attempts to assemble all reads.",
   "experimental" : true,
-  "category" : "sequence processing",
+  "category" : "kmer processing",
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",
-  "executable" : "RUFUSv5.Filter",
+  "executable" : "OverlapRegion2",
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
       {
-        "description" : "Input hash list.",
-        "long form argument" : "--hash-list",
-        "short form argument" : "-h",
-        "command line argument" : "--hash-list",
-        "required" : true,
-        "data type" : "string",
-        "extensions" : [".hl"],
-        "modify argument name on command line" : "hide"
-      },
-      {
-        "description" : "Fastq file.",
+        "description" : "Input fastq file.",
         "long form argument" : "--fastq",
         "short form argument" : "-q",
-        "command line argument" : "--fastq",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fq", ".fq.gz", ".fastq", ".fastq.gz"],
+        "extensions" : [".fq", ".fastq"],
         "modify argument name on command line" : "hide"
       }
     ],
 
     "outputs" : [
       {
-        "description" : "Output file.",
+        "description" : "The output fastq and fastqd files.",
         "long form argument" : "--out",
         "short form argument" : "-o",
-        "command line argument" : "--output",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fq", ".fastq"],
+        "extensions" : ["rov"],
         "modify argument name on command line" : "hide",
+        "is filename stub" : true,
+        "filename extensions" : [
+          ".fastq",
+          ".fastqd"
+        ],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--fastq",
-          "modify extension" : "replace",
-          "modify text" : [
-            {
-              "add text" : ["_filtered"]
-            }
-          ]
+          "modify extension" : "replace"
         }
       }
     ],
 
     "Options" : [
       {
-        "description" : "Length of k-mer.",
-        "long form argument" : "--k-mer",
-        "short form argument" : "-k",
-        "command line argument" : "--k-mer",
+        "description" : "This string is prepended to all contigs in the output fastq file.",
+        "long form argument" : "--stub",
+        "short form argument" : "-s",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "This percentage of the overlapped bases must match.",
+        "long form argument" : "--minimum-percent-match",
+        "short form argument" : "-m",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "float",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "This number of bases must overlap between two reads.",
+        "long form argument" : "--minimum-overlap",
+        "short form argument" : "-mo",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "integer",
         "extensions" : ["no extension"],
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "Minimum base quality.",
-        "long form argument" : "--min-base-quality",
-        "short form argument" : "-mq",
-        "command line argument" : "--min-base-quality",
+        "description" : "Only report contigs that have at least this coverage at one base in the contig.",
+        "long form argument" : "--minimum-coverage",
+        "short form argument" : "-mc",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "integer",
         "extensions" : ["no extension"],
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "Hash count threshold.",
-        "long form argument" : "--hash-threshold",
-        "short form argument" : "-t",
-        "command line argument" : "--hash-threshold",
-        "required" : true,
-        "data type" : "integer",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide"
-      },
-      {
-        "description" : "Window.",
-        "long form argument" : "--window",
-        "short form argument" : "-w",
-        "command line argument" : "--window",
+        "description" : "LCendTrimEpth.",
+        "long form argument" : "--lc",
+        "short form argument" : "-l",
+        "command line argument" : "--lc",
         "required" : true,
         "data type" : "integer",
         "extensions" : ["no extension"],
@@ -109,13 +109,13 @@
   },
 
   "argument order" : [
-    "--hash-list",
     "--fastq",
+    "--minimum-percent",
+    "--minimum-overlap",
+    "--minimum-coverage",
+    "--stub",
     "--out",
-    "--k-mer",
-    "--min-base-quality",
-    "--hash-threshold",
-    "--window",
+    "--lc",
     "--processors"
   ],
 

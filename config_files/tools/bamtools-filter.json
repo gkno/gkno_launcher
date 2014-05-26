@@ -70,7 +70,20 @@
         "short form argument" : "-r",
         "command line argument" : "-region",
         "extensions" : ["no extension"],
-        "data type" : "string"
+        "data type" : "string",
+        "evaluate command" : {
+          "command" : "$(TOOL_BIN)/genomicRegions/checkRegionFormat.sh ARG1 ARG2",
+          "add values" : [
+            {
+              "ID" : "ARG1",
+              "argument" : "--region"
+            },
+            {
+              "ID" : "ARG2",
+              "argument" : "tool"
+            }
+          ]
+        }
       }
     ],
 

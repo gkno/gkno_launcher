@@ -1,6 +1,6 @@
 {
   "id" : "rufus-build-hash",
-  "description" : "Build hashes.",
+  "description" : "Performs an intersection of two k-mer frequencies and identifies k-mers that are unique to one of the samples. The reads containing these k-mers potentially harbour mutations. These k-mers are provided in the output.",
   "experimental" : true,
   "category" : "kmer processing",
   "tools" : ["Rufus"],
@@ -20,7 +20,7 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "First set of k-mer counts (query strain).",
+        "description" : "Second set of k-mer counts (query strain).",
         "long form argument" : "--k-mer-count2",
         "short form argument" : "-k2",
         "command line argument" : "--k-mer-count2",
@@ -33,7 +33,7 @@
 
     "outputs" : [
       {
-        "description" : "Output file.",
+        "description" : "List of unique k-mers.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "--output",
@@ -51,7 +51,7 @@
 
     "options" : [
       {
-        "description" : "Length of k-mer..",
+        "description" : "Length of k-mer.",
         "long form argument" : "--k-mer",
         "short form argument" : "-k",
         "command line argument" : "--k-mer",
@@ -61,7 +61,7 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "Maximum depth in reference strain.",
+        "description" : "",
         "long form argument" : "--max-depth-reference",
         "short form argument" : "-mr",
         "command line argument" : "--max-depth-reference",
