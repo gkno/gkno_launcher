@@ -350,7 +350,15 @@ class gknoConfigurationFiles:
         # Check if the argument is a non-list argument for the tool/pipeline.
         if not nodeID:
           if isPipeline: nodeID = config.pipeline.pipelineArguments[argument].ID
-          else: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')[0]
+          else:
+            nodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')
+
+            # If the node doesn't exist, the argument which the multiple argument points has not been
+            # created.
+            if not nodeIDs:
+              attributes = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, runName, argument)
+              nodeID     = config.nodeMethods.buildOptionNode(graph, config.tools, runName, runName, argument, attributes)
+            else: nodeID = nodeIDs[0]
 
         # If this nodeID is not in the graph, an error has occured. Likely this node has been
         # deleted in the merge process.
