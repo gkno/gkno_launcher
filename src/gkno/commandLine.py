@@ -295,7 +295,7 @@ class commandLine:
           if hasInternalLoop or hasMultipleRuns: self.errors.multipleArgumentListsDefined(argument, listArgument)
 
           # Find the node for the defined argument.
-          nodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, runName, listArgument, 'option')
+          nodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, listArgument, 'option')
 
           # If there are no nodes associated with this argument, one needs to be created.
           if not nodeIDs:

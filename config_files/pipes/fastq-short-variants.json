@@ -315,6 +315,33 @@
       "greedy tasks" : {
         "call-short-variants" : "--bam"
       }
+    },
+    {
+      "ID" : "region",
+      "description" : "The genomic region to analyse.",
+      "long form argument" : "--region",
+      "short form argument" : "-r",
+      "tasks" : {
+        "call-short-variants" : "--region"
+      }
+    },
+    {
+      "ID" : "region list single",
+      "description" : "A list of genomic regions to analyse (in a single makefile).",
+      "long form argument" : "--region-list-single-test",
+      "short form argument" : "-rls",
+      "tasks" : {
+        "call-short-variants" : "--region-list-single"
+      }
+    },
+    {
+      "ID" : "region list multiple",
+      "description" : "A list of genomic regions to analyse (in multiple makefiles).",
+      "long form argument" : "--region-list-multiple",
+      "short form argument" : "-rlm",
+      "tasks" : {
+        "call-short-variants" : "--region-list-multiple"
+      }
     }
   ],
 

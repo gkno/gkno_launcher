@@ -323,11 +323,6 @@
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_2.fq"]
         },
         {
-          "ID" : "batch",
-          "argument" : "--reads-per-batch",
-          "values" : [1000]
-        },
-        {
           "ID" : "se neural net",
           "argument" : "--ann-se",
           "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"]
@@ -353,14 +348,103 @@
           "values" : [10]
         },
         {
-          "ID" : "temp directory",
-          "argument" : "--temp-directory",
-          "values" : ["$(PWD)/$(MAKEFILE_ID)_tmp"]
+          "ID" : "sequencing technology",
+          "argument" : "--sequencing-technology",
+          "values" : ["illumina"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "tutorial",
+      "description" : "Instance to be used in conjuction with gkno tutorials.",
+      "nodes" : [
+        {
+          "ID" : "jump database",
+          "argument" : "--jump-database",
+          "values" : ["./reference/tutorial-reference_8"]
         },
         {
-          "ID" : "mosaik path",
-          "argument" : "--mosaik-path",
-          "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
+          "ID" : "reference",
+          "argument" : "--mosaik-reference",
+          "values" : ["./reference/tutorial-reference.dat"]
+        },
+        {
+          "ID" : "se neural net",
+          "argument" : "--ann-se",
+          "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"]
+        },
+        {
+          "ID" : "pe neural net",
+          "argument" : "--ann-pe",
+          "values" : ["$(RESOURCES)/tutorial/current/pe.100.01.ann"]
+        },
+        {
+          "ID" : "prefix",
+          "argument" : "--special-reference-prefix",
+          "values" : ["moblist"]
+        },
+        {
+          "ID" : "special hashes",
+          "argument" : "--special-reference-hashes",
+          "values" : [50]
+        },
+        {
+          "ID" : "hash size",
+          "argument" : "--hash-size",
+          "values" : [8]
+        },
+        {
+          "ID" : "sequencing technology",
+          "argument" : "--sequencing-technology",
+          "values" : ["illumina"]
+        },
+        {
+          "ID" : "processors",
+          "argument" : "--processors",
+          "values" : [2]
+        }
+      ]
+    },
+
+    {
+      "ID" : "human",
+      "description" : "Pipeline for aligning paired end reads against the human genome reference (requires the human reference to be built for Mosaik in ./references) including the mobile element sequences.",
+      "nodes" : [
+        {
+          "ID" : "jump database",
+          "argument" : "--jump-database",
+          "values" : ["reference/human-reference-moblist_15.fa"]
+        },
+        {
+          "ID" : "reference",
+          "argument" : "--mosaik-reference",
+          "values" : ["reference/human-reference-moblist.dat"]
+        },
+        {
+          "ID" : "se neural net",
+          "argument" : "--ann-se",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/se.100.005.ann"]
+        },
+        {
+          "ID" : "pe neural net",
+          "argument" : "--ann-pe",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/pe.100.01.ann"]
+        },
+        {
+          "ID" : "prefix",
+          "argument" : "--special-reference-prefix",
+          "values" : ["moblist"]
+        },
+        {
+          "ID" : "special hashes",
+          "argument" : "--special-reference-hashes",
+          "values" : [50]
+        },
+        {
+          "ID" : "hash size",
+          "argument" : "--hash-size",
+          "values" : [15]
         },
         {
           "ID" : "sequencing technology",

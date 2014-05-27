@@ -682,7 +682,7 @@ class makefileData:
           # If this argument is greedy, put all values into the first iteration. If the iteration parameter
           # is not equal to 1, fail, since the number of data sets should have been set to one given that the
           # argument is greedy.
-          if isGreedy:
+          if isGreedy and len(values) != 1:
             if iteration != 1:
               #TODO ERROR
               print('makefileData.writeCommand')

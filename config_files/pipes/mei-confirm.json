@@ -1,0 +1,353 @@
+{
+  "description" : "Check MEI calls using local graph alignment.",
+
+  "tasks" : {
+    "merge-reference" : {
+      "tool" : "concatenate-files"
+    },
+    "build-reference" : {
+      "tool" : "mosaik-build-reference"
+    },
+    "build-jump-database" : {
+      "tool" : "mosaik-jump"
+    },
+    "build-read-archive" : {
+      "tool" : "mosaik-build-fastq"
+    },
+    "align" : {
+      "tool" : "mosaik-aligner-special"
+    },
+    "sort-primary-bam" : {
+      "tool" : "bamtools-sort"
+    },
+    "recalibrate-bq" : {
+      "tool" : "recab"
+    },
+    "mark-duplicates" : {
+      "tool" : "dedup"
+    },
+    "index-final-bam" : {
+      "tool" : "bamtools-index"
+    },
+    "variant-call" : {
+      "tool" : "freebayes",
+      "output to stream" : true
+    },
+    "filter-variants" : {
+      "tool" : "vcflib-filter"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "fasta reference",
+      "description" : "The input fasta reference.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "tasks" : {
+        "merge-reference" : "--initial-file"
+      }
+    },
+    {
+      "ID" : "moblist reference",
+      "description" : "The input mobile element sequence fasta.",
+      "long form argument" : "--mobile-element-reference",
+      "short form argument" : "-mob",
+      "tasks" : {
+        "merge-reference" : "--file1"
+      }
+    },
+    {
+      "ID" : "merged reference",
+      "description" : "The merged reference fasta.",
+      "long form argument" : "--merged-reference",
+      "short form argument" : "-mf",
+      "tasks" : {
+        "merge-reference" : "--out",
+        "build-reference" : "--fasta-reference",
+        "recalibrate-bq" : "--fasta-reference",
+        "variant-call" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "mosaik reference",
+      "description" : "The binary reference for use with Mosaik.",
+      "long form argument" : "--mosaik-reference",
+      "short form argument" : "-m",
+      "tasks" : {
+        "build-reference" : "--mosaik-reference",
+        "build-jump-database" : "--mosaik-reference",
+        "align" : "--mosaik-reference"
+      }
+    },
+    {
+      "ID" : "hash size",
+      "description" : "The hash size for the reference.",
+      "long form argument" : "--hash-size",
+      "short form argument" : "-hs",
+      "tasks" : {
+        "build-jump-database" : "--hash-size",
+        "align" : "--hash-size"
+      }
+    },
+    {
+      "ID" : "jump",
+      "description" : "Stub for Mosaik jump table files.",
+      "long form argument" : "--jump-database",
+      "short form argument" : "-j",
+      "tasks" : {
+        "build-jump-database" : "--jump-database",
+        "align" : "--jump-database"
+      }
+    },
+    {
+      "ID" : "fastq",
+      "description" : "The first mate fastq sequencing read file.",
+      "long form argument" : "--fastq",
+      "short form argument" : "-q",
+      "tasks" : {
+        "build-read-archive" : "--fastq"
+      }
+    },
+    {
+      "ID" : "fastq2",
+      "description" : "The second mate fastq sequencing read file.",
+      "long form argument" : "--fastq2",
+      "short form argument" : "-q2",
+      "tasks" : {
+        "build-read-archive" : "--fastq2"
+      }
+    },
+    {
+      "ID" : "tech",
+      "description" : "The read sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'",
+      "long form argument" : "--sequencing-technology",
+      "short form argument" : "-s",
+      "tasks" : {
+        "build-read-archive" : "--sequencing-technology"
+      }
+    },
+    {
+      "ID" : "fragment length",
+      "description" : "The median length for the read fragments.",
+      "long form argument" : "--median-fragment-length",
+      "short form argument" : "-mfl",
+      "tasks" : {
+        "build-read-archive" : "--median-fragment-length"
+      }
+    },
+    {
+      "ID" : "read archive",
+      "description" : "The output read archive.",
+      "long form argument" : "--read-archive",
+      "short form argument" : "-a",
+      "tasks" : {
+        "build-read-archive" : "--read-archive",
+        "align" : "--read-archive"
+      }
+    },
+    {
+      "ID" : "special references",
+      "description" : "Specifies the prefixes of 'special' reference sequences.",
+      "long form argument" : "--special-reference-prefix",
+      "short form argument" : "-srp",
+      "tasks" : {
+        "align" : "--special-reference-prefix"
+      }
+    },
+    {
+      "ID" : "special reference hashes",
+      "description" : "Specifies the maximum number of hashes for the special reference sequences.",
+      "long form argument" : "--special-reference-hashes",
+      "short form argument" : "-sh",
+      "tasks" : {
+        "align" : "--special-reference-hashes"
+      }
+    },
+    {
+      "ID" : "annse",
+      "description" : "The neural network parameters file for Mosaik mapping quality scores (single end).",
+      "long form argument" : "--ann-single-end",
+      "short form argument" : "-as",
+      "tasks" : {
+        "align" : "--ann-single-end"
+      }
+    },
+    {
+      "ID" : "annpe",
+      "description" : "The neural network parameters file for Mosaik mapping quality scores (paired end).",
+      "long form argument" : "--ann-paired-end",
+      "short form argument" : "-ap",
+      "tasks" : {
+        "align" : "--ann-paired-end"
+      }
+    },
+    {
+      "ID" : "sort",
+      "description" : "Linking tasks. No argument.",
+      "tasks" : {
+        "align" : "--bam",
+        "sort-primary-bam" : "--in"
+      },
+      "extensions" : {
+        "sort-primary-bam" : {
+          "--in" : "bam"
+        }
+      }
+    },
+    {
+      "ID" : "recalibration",
+      "description" : "Linking tasks. No argument.",
+      "tasks" : {
+        "sort-primary-bam" : "--out",
+        "recalibrate-bq" : "--in"
+      }
+    },
+    {
+      "ID" : "dbsnp",
+      "description" : "A database of known polymorphic sites to skip over in the recalibration algorithm.",
+      "long form argument" : "--dbsnp",
+      "short form argument" : "-db",
+      "tasks" : {
+        "recalibrate-bq" : "--dbsnp"
+      }
+    },
+    {
+      "ID" : "mark duplicates",
+      "description" : "Linking tasks. No argument.",
+      "tasks" : {
+        "recalibrate-bq" : "--out",
+        "mark-duplicates" : "--in"
+      }
+    },
+    {
+      "ID" : "filter",
+      "description" : "Linking tasks. No argument.",
+      "tasks" : {
+        "mark-duplicates" : "--out"
+      }
+    },
+    {
+      "ID" : "call",
+      "description" : "Linking tasks. No argument.",
+      "tasks" : {
+        "mark-duplicates" : "--out",
+        "index-final-bam" : "--in",
+        "variant-call" : "--bam"
+      }
+    },
+    {
+      "ID" : "filter",
+      "description" : "Linking tasks. No argument.",
+      "tasks" : {
+        "variant-call" : "--vcf",
+        "filter-variants" : "--in"
+      }
+    },
+    {
+      "ID" : "filter field",
+      "description" : "Define the filter to apply to the vcf info field.",
+      "long form argument" : "--info-filter",
+      "short form argument" : "-f",
+      "tasks" : {
+        "filter-variants" : "--info-filter"
+      }
+    },
+    {
+      "ID" : "tag filtered",
+      "description" : "Tag the passed variants and do not excise failed records.",
+      "long form argument" : "--tag-pass",
+      "short form argument" : "-t",
+      "tasks" : {
+        "filter-variants" : "--tag-pass"
+      }
+    },
+    {
+      "ID" : "bam index",
+      "description" : "Linking tasks. No argument.",
+      "tasks" : {
+        "index-final-bam" : "--out",
+        "variant-call" : "--bam-index"
+      }
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "The default instance sets all the parameters for the pipeline to run.",
+      "nodes" : [
+        {
+          "ID" : "fasta reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "ID" : "moblist reference",
+          "argument" : "--mobile-element-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"]
+        },
+        {
+          "ID" : "merged reference",
+          "argument" : "--merged-reference",
+          "values" : ["$(PWD)/chr20_moblist.fa"]
+        },
+        {
+          "ID" : "hash size",
+          "argument" : "-hs",
+          "values" : [10]
+        },
+        {
+          "ID" : "fastq",
+          "argument" : "--fastq",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
+        },
+        {
+          "ID" : "fastq2",
+          "argument" : "--fastq2",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_2.fq"]
+        },
+        {
+          "ID" : "prefix",
+          "argument" : "--special-reference-prefix",
+          "values" : ["moblist"]
+        },
+        {
+          "ID" : "special hashes",
+          "argument" : "--special-reference-hashes",
+          "values" : [50]
+        },
+        {
+          "ID" : "annse",
+          "argument" : "--ann-single-end",
+          "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"]
+        },
+        {
+          "ID" : "annpe",
+          "argument" : "--ann-paired-end",
+          "values" : ["$(RESOURCES)/tutorial/current/pe.100.01.ann"]
+        },
+        {
+          "ID" : "tech",
+          "argument" : "--sequencing-technology",
+          "values" : ["illumina"]
+        },
+        {
+          "ID" : "dbsnp",
+          "argument" : "--dbsnp",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"]
+        },
+        {
+          "ID" : "filter",
+          "argument" : "--info-filter",
+          "values" : ["\"QUAL > 10\""]
+        },
+        {
+          "ID" : "tag",
+          "argument" : "--tag-pass",
+          "values" : ["PASS"]
+        }
+      ]
+    }
+  ]
+}

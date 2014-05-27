@@ -332,8 +332,7 @@ class gknoConfigurationFiles:
         # this is the case, there is only a single argument associated with the data (a multiple-runs
         # command, for example, can specify values for multiple different arguments).
         if self.loopData.fromArgumentList:
-          if isPipeline: print('NOT YET IMPLEMENTED'); self.errors.terminate()
-          else: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')[0]
+          if not isPipeline: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')[0]
 
           # The value in the loopData values is the list of values to use.
           values = [value]

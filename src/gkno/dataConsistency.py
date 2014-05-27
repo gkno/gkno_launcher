@@ -45,14 +45,16 @@ class dataConsistency:
         print('ERROR - dataConsistency.checkNumberOfOutputFiles')
         self.error.terminate()
 
-      # Loop over the output files.
-      for fileNodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
-        values = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
-        if len(values) == 1:
-          optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-          extensions   = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowedExtensions')
-          self.updateOutputFiles(graph, config, optionNodeID, values, extensions, noInputDataSets)
-          self.updateOutputFiles(graph, config, fileNodeID, values, extensions, noInputDataSets)
+      # Loop over the output files if amendments are required.
+      if noInputDataSets != noOutputDataSets:
+        for fileNodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
+          values = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
+          if len(values) == 1:
+            optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+            extensions   = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowedExtensions')
+            self.updateOutputFiles(graph, config, optionNodeID, values, extensions, noInputDataSets)
+            self.updateOutputFiles(graph, config, fileNodeID, values, extensions, noInputDataSets)
+            config.nodeMethods.setGraphNodeAttribute(graph, task, 'numberOfDataSets', noInputDataSets)
 
   # Update the output nodes to have the correct number of iterations.
   def updateOutputFiles(self, graph, config, nodeID, values, extensions, noInputDataSets):

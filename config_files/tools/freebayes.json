@@ -144,9 +144,32 @@
         "long form argument" : "--region",
         "short form argument" : "-r",
         "command line argument" : "--region",
-        "required" : true,
         "extensions" : ["no extension"],
         "data type" : "string"
+      },
+      {
+        "description" : "A list of genomic regions to be applied with the --region argument. This option will lead to multiple freebayes calls in a single makefile.",
+        "long form argument" : "--region-list-single",
+        "short form argument" : "-rls",
+        "command line argument" : "none",
+        "extensions" : ["no extension"],
+        "data type" : "string",
+        "argument list" : {
+          "use argument" : "--region",
+          "mode" : "single makefile"
+        }
+      },
+      {
+        "description" : "A list of genomic regions to be applied with the --region argument. This option will lead to a single freebayes call in multiple makefiles.",
+        "long form argument" : "--region-list-multiple",
+        "short form argument" : "-rlm",
+        "command line argument" : "none",
+        "extensions" : ["no extension"],
+        "data type" : "string",
+        "argument list" : {
+          "use argument" : "--region",
+          "mode" : "multiple makefiles"
+        }
       }
     ],
 
@@ -252,7 +275,7 @@
           "argument" : "--bam",
           "values" : [
             "$(RESOURCES)/tutorial/current/mutated_genome.bam",
-            "$(RESOURCES)/tutorial/current/mutated_genome.bam"
+            "$(RESOURCES)/tutorial/current/mutated_genome_set2.bam"
           ]
         },
         {
