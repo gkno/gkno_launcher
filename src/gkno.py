@@ -19,6 +19,9 @@ from gkno.commandLine import *
 import configurationClass.configurationClass
 from configurationClass.configurationClass import *
 
+import gkno.dataConsistency
+from gkno.dataConsistency import *
+
 import gkno.gknoErrors
 from gkno.gknoErrors import *
 
@@ -44,7 +47,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.16.3"
+__version__ = "1.16.4"
 __date__ = "May 2014"
 
 def main():
@@ -76,8 +79,9 @@ def main():
   # Define a configurationClass object.  This is part of the configurationClass library.  Also
   # define an object that handles finding configuration files for gkno (e.g. gkno specific
   # configuration file operations.
-  config     = configurationMethods()
-  gknoConfig = gknoConfigurationFiles()
+  config      = configurationMethods()
+  gknoConfig  = gknoConfigurationFiles()
+  consistency = dataConsistency()
 
   # Create a graph object.  This is a directed graph consisting of nodes representing the tasks
   # in the pipeline as well as data being fed into the nodes.  All relevant tool information
@@ -394,6 +398,14 @@ def main():
   # been set.
   config.checkArguments(pipelineGraph, commands, runName, instanceName, hasMultipleRuns or hasInternalLoop, gknoConfig.loopData)
   if isDebug: write.writeDebug('Checked arguments')
+
+  # If the tool/pipeline is being run in multiple-runs or internal loop mode, it is possible that there are
+  # multiple sets of input data and only a single output. This will only occur if the argument being repeated
+  # does not correspond to a file, but an option. Check to see if this is the case, and if so, ensure that there
+  # are as many output files as there are input data sets. If not, modify the outputs to ensure there are and
+  # append integers to the outputs to avoid multiple executions overwriting files (or no execution as the output
+  # file already exists).
+  if hasMultipleRuns or hasInternalLoop: consistency.checkNumberOfOutputFiles(pipelineGraph, config)
 
   # If the --export-config has been set, then the user is attempting to create a
   # new configuration file based on the selected tool/pipeline.  This can only be
