@@ -280,6 +280,7 @@ class commandLine:
           task, toolArgument = config.pipeline.commonNodes[config.pipeline.pipelineArguments[argument].configNodeID][0] 
           tool               = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
         else:
+          task         = runName
           tool         = runName
           toolArgument = argument
 
@@ -294,11 +295,14 @@ class commandLine:
           if hasInternalLoop or hasMultipleRuns: self.errors.multipleArgumentListsDefined(argument, listArgument)
 
           # Find the node for the defined argument.
-          nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, listArgument, 'option')[0]
-          if not nodeID:
-            #TODO
-            print('ERROR - gknoConfig.unpackArgumentLists')
-            self.errors.terminate()
+          nodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, runName, listArgument, 'option')
+
+          # If there are no nodes associated with this argument, one needs to be created.
+          if not nodeIDs:
+            attributes = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, tool, listArgument)
+            nodeID     = config.nodeMethods.buildOptionNode(graph, config.tools, task, tool, listArgument, attributes)
+
+          else: nodeID = nodeIDs[0]
 
           # Parse the list and modify the value in argumentDictionary from the list to the files
           # in the list. First check that the file exists.
