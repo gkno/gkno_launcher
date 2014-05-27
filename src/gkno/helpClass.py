@@ -309,6 +309,7 @@ class helpClass:
       # name and use this to define the format length.
       if len(tool) > self.toolLength: self.toolLength = len(tool)
 
+  # Get information on pipelines.
   def getPipelines(self, config, gknoConfig, pipelineConfigurationFilesPath):
 
     # Some tools may have malformed configuration files. Instead of failing when those files are
