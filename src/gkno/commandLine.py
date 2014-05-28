@@ -532,7 +532,10 @@ class commandLine:
             # Parse the list and modify the value in argumentDictionary from the list to the files
             # in the list.
             filename = './' + self.argumentDictionary[argument][0]
-            names    = [name.strip() for name in open(filename)]
+
+            # Check that the file exists.
+            try: names = [name.strip() for name in open(filename)]
+            except: self.errors.missingFileCommandLine(graph, config, argument, filename)
             values   = []
             for name in names: values.append(name)
             self.argumentDictionary[argument] = values
