@@ -30,8 +30,8 @@ class helpClass:
     self.failedPipelines = {}
 
     # Keep track of experimental tools and pipelines.
-    self.experimentalTools     = {}
-    self.experimentalPipelines = {}
+    self.experimentalTools      = {}
+    self.developmentalPipelines = {}
 
     # Define the errors class.
     self.errors = gknoErrors()
@@ -252,12 +252,12 @@ class helpClass:
        self.writeFormattedText(pipeline + ':', self.availablePipelines[pipeline], self.pipelineLength + 5, 2, '')
     print(file = sys.stdout)
 
-    # Write the experimental pipelines to screen.
-    if self.experimentalPipelines:
-      print('     The following pipelines have been identified as experimental, so should be used with caution:', file = sys.stdout)
+    # Write the developmental pipelines to screen.
+    if self.developmentalPipelines:
+      print('     The following pipelines have been identified as developmental, so should be used with caution:', file = sys.stdout)
       print(file = sys.stdout)
-      for pipeline in sorted(self.experimentalPipelines.keys()):
-         self.writeFormattedText(pipeline + ':', self.experimentalPipelines[pipeline], self.pipelineLength + 5, 2, '')
+      for pipeline in sorted(self.developmentalPipelines.keys()):
+         self.writeFormattedText(pipeline + ':', self.developmentalPipelines[pipeline], self.pipelineLength + 5, 2, '')
       print(file = sys.stdout)
 
     # Now list any pipeline configuratiobn files that have errors.
@@ -336,10 +336,11 @@ class helpClass:
         try: description = config.pipeline.getPipelineAttribute('description')
         except: description = 'Description could not be found.'
 
-        # If the pipeline is listed as experimental, store the pipeline separately.
+        # If the pipeline is listed as developmental, store the pipeline separately.
         if success:
-          if config.pipeline.getPipelineAttribute('isExperimental'): self.experimentalPipelines[pipeline] = description
-          else: self.availablePipelines[pipeline] = description
+          if not config.pipeline.getPipelineAttribute('isHiddenInHelp'):
+            if config.pipeline.getPipelineAttribute('isDevelopmental'): self.developmentalPipelines[pipeline] = description
+            else: self.availablePipelines[pipeline] = description
         else: self.failedPipelines[pipeline] = description
 
       # For the purposes of formatting the screen output, find the longest tool
