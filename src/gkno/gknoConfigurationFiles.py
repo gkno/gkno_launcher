@@ -458,22 +458,23 @@ class gknoConfigurationFiles:
         # filled without command line (or instance) information.
         if isRequired and not isSet:
           method = self.constructionInstructions(graph, config, task, longFormArgument, fileNodeID)
-          if method == None:
-            description = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
+          if method != None: self.constructFilename(graph, config, method, task, fileNodeID, numberOfIterations, isInput = True)
+          #if method == None:
+            #description = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
   
             # Check if this argument is a pipeline argument.
-            if task in config.pipeline.taskArgument:
-              if longFormArgument in config.pipeline.taskArgument[task]:
-                pipelineLongFormArgument  = config.pipeline.taskArgument[task][longFormArgument]
-                pipelineShortFormArgument = config.pipeline.pipelineArguments[pipelineLongFormArgument].shortFormArgument
-                self.errors.missingPipelineArgument(graph, config, pipelineLongFormArgument, pipelineShortFormArgument, description)
+            #if task in config.pipeline.taskArgument:
+            #  if longFormArgument in config.pipeline.taskArgument[task]:
+            #    pipelineLongFormArgument  = config.pipeline.taskArgument[task][longFormArgument]
+            #    pipelineShortFormArgument = config.pipeline.pipelineArguments[pipelineLongFormArgument].shortFormArgument
+            #    self.errors.missingPipelineArgument(graph, config, pipelineLongFormArgument, pipelineShortFormArgument, description)
 
             # If not a pipeline argument, the error message needs to make the distinction. The error message
             # will also recommend adding the argument to the pipeline arguments since it is required.
-            self.errors.missingArgument(graph, config, task, longFormArgument, shortFormArgument, description, isPipeline)
+            #self.errors.missingArgument(graph, config, task, longFormArgument, shortFormArgument, description, isPipeline)
 
           # Build the input filename using the described method.
-          else: self.constructFilename(graph, config, method, task, fileNodeID, numberOfIterations, isInput = True)
+          #else: self.constructFilename(graph, config, method, task, fileNodeID, numberOfIterations, isInput = True)
 
         # Keep track of the maximum number of iterations for any of the input files.
         iterations         = len(config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values'))
