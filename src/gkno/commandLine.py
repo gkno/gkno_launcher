@@ -158,7 +158,7 @@ class commandLine:
   
               # If a pipeline is being run, check the arguments against those allowed by the
               # pipeline confuguration file.
-              if isPipeline: longFormArgument = config.pipeline.getLongFormArgument(graph, argument)
+              if isPipeline: longFormArgument, shortFormArgument = config.pipeline.getLongFormArgument(graph, argument)
   
               # If gkno is being run in tool mode, check the arguments against those allowed by
               # the tool.
@@ -169,8 +169,8 @@ class commandLine:
               self.argumentDictionary[longFormArgument].append('set')
     
           else:
-            if isPipeline: longFormArgument = config.pipeline.getLongFormArgument(graph, argument)
-            else: longFormArgument = config.tools.getLongFormArgument(tool, argument)
+            if isPipeline: longFormArgument, shortFormArgument = config.pipeline.getLongFormArgument(graph, argument, allowTermination = True)
+            else: longFormArgument, shortFormArgument = config.tools.getLongFormArgument(tool, argument, allowTermination = True)
   
             # Update the argumentDictionary.
             if longFormArgument not in self.argumentDictionary: self.argumentDictionary[longFormArgument] = []
@@ -235,33 +235,11 @@ class commandLine:
     # If no instance was specified, return 'default'.
     else: return 'default'
 
-  # Check for lists of input files and add any to the argumentDictionary structure.
-  def checkForInputLists(self, graph, config):
-    #for task in config.pipeline.workflow:
-    #  print(task)
-    #  for optionNodeID in config.nodeMethods.getPredecessorOptionNodes(graph, task):
-    #    print('\t', optionNodeID, config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument'))
-    #exit(0)
-    for argument in self.argumentDictionary:
-      filename = './' + self.argumentDictionary[argument][0]
-
-      # Read in all of the files, check that they end with the correct extension and
-      # add to the argumentDictionary.
-      try: filenames = [filename.strip() for filename in open(filename)]
-      except:
-        print('failed to open ', filename)
-        self.errors.terminate()
-
-      # Get the argument that is to be used for these filenames.
-      #extensions = config.tools.getArgumentAttribute(tool, argument, '')
-      #for filename in filenames:
-      #  print(filename)
-    #exit(0)
-
   # Parse the argument dictionary and check if any of the arguments are argument lists. If so,
   # read the associated file and attach the values to the relevant nodes.
   def unpackArgumentLists(self, graph, config, gknoConfig, runName):
     isPipeline        = config.isPipeline
+    argumentsToAdd    = []
     argumentsToRemove = []
     hasInternalLoop   = False
     hasMultipleRuns   = False
@@ -328,16 +306,35 @@ class commandLine:
             else: hasMultipleRuns = True
 
           # If the list mode is 'repeat argument', the values can be added to the node.
-          # TODO
           elif listMode == 'repeat argument':
-            print('NOT YET IMPLEMENTED')
-            self.errors.terminate()
+
+            # If this is a list of arguments, get the argument to use for the values.
+            try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, listArgument, 'option')[0]
+            except:
+              #TODO
+              print("NODE DOESN'T EXIST. CREATE - attachToolArgumentsToNodes")
+              self.errors.terminate()
+
+            # Add the argument and values to the argumentsToAdd list. These will be transferred to the
+            # self.argumentDictionary after the loop over it is complete.
+            # If this is a pipeline, find the pipeline argument that is used for this argument.
+            if isPipeline:
+              pipelineLongFormArgument, pipelineShortFormArgument = config.pipeline.getPipelineArgument(task, listArgument)
+              argumentsToAdd.append((pipelineLongFormArgument, values))
+
+            # If this is a tool, the listArgument and values can be used directly.
+            else: argumentsToAdd.append((listArgument, values))
 
           # If the argument was a list, remove the list argument from the argument dictonary.
           argumentsToRemove.append(argument)
 
     # Remove marked arguments.
     for argument in argumentsToRemove: del(self.argumentDictionary[argument])
+
+    # Add any required arguments to the argument list.
+    for argument, values in argumentsToAdd:
+      if argument not in self.argumentDictionary: self.argumentDictionary[argument] = []
+      for value in values: self.argumentDictionary[argument].append(value)
 
     return hasMultipleRuns, hasInternalLoop
 
@@ -519,42 +516,20 @@ class commandLine:
         # check to see if this is an input list. If so, determine which argument the values in the list
         # refer to and add the values to the relevant node.
         if not nodeID:
+          nodeID     = 'OPTION_' + str(config.nodeMethods.optionNodeID)
+          attributes = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, task, argument)
+          graph.add_node(nodeID, attributes = attributes)
+          config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, nodeID, task, argument)
+          config.nodeMethods.optionNodeID += 1
 
-          # If this is a list of arguments, get the argument to use for the values.
-          if config.tools.getArgumentAttribute(task, argument, 'isInputList'):
-            assignedArgument = config.tools.getArgumentAttribute(task, argument, 'repeatArgument')
-            try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, assignedArgument, 'option')[0]
-            except:
-              #TODO
-              print("NODE DOESN'T EXIST. CREATE - attachToolArgumentsToNodes")
-              self.errors.terminate()
+          # If the option node corresponds to a file, build a file node.
+          if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile'):
+            shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'shortFormArgument')
+            if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isInput'):
+              config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortFormArgument, 'input')
+            else: config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortFormArgument, 'output')
 
-            # Parse the list and modify the value in argumentDictionary from the list to the files
-            # in the list.
-            filename = './' + self.argumentDictionary[argument][0]
-
-            # Check that the file exists.
-            try: names = [name.strip() for name in open(filename)]
-            except: self.errors.missingFileCommandLine(graph, config, argument, filename)
-            values   = []
-            for name in names: values.append(name)
-            self.argumentDictionary[argument] = values
-          
-          # The node doesn't exist.
-          else:
-            nodeID     = 'OPTION_' + str(config.nodeMethods.optionNodeID)
-            attributes = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, task, argument)
-            graph.add_node(nodeID, attributes = attributes)
-            config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, nodeID, task, argument)
-            config.nodeMethods.optionNodeID += 1
-
-            # If the option node corresponds to a file, build a file node.
-            if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile'):
-              shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'shortFormArgument')
-              if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isInput'):
-                config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortFormArgument, 'input')
-              else: config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortFormArgument, 'output')
-
+        # If the nodeID was set, then this is a gkno specific argument, so record it as such.
         else: isGknoArgument = True
 
       # Check if the argument is a flag. If so, the value needs to be set to 'set'.

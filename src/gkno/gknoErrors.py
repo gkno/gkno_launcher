@@ -564,6 +564,22 @@ argument existed to set this value. Please see the documentation to see how to i
     self.writeFormattedText('error')
     self.terminate()
 
+  # An unknown command line argument was requested in a multiple runs file.
+  def unknownArgumentMultipleRun(self, argument, filename):
+    self.text.append('Unknown argument: ' + argument)
+    self.text.append('The argument \'' + argument + '\' was included in the multiple runs/internal loop json file \'' + filename + '\', but is ' + \
+    'not a valid argument for this pipeline. Please check and amend the contents of this file.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # An unknown command line argument was requested in a multiple runs file.
+  def unknownPipelineArgumentMultipleRun(self, argument, filename):
+    self.text.append('Unknown pipeline argument: ' + argument)
+    self.text.append('The argument \'' + argument + '\' was included in the multiple runs/internal loop json file \'' + filename + '\', but is ' + \
+    'not a valid argument for this pipeline. Please check and amend the contents of this file.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   ########################
   # Errors checking data #
   ########################

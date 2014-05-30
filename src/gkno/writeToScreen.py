@@ -20,13 +20,13 @@ class writeToScreen:
     print(file = sys.stdout)
     commitLength = len(gknoCommitID) + 14
     length       = max(commitLength, 29)
-    print('=' * length, file=sys.stderr)
+    print('=' * length, file = sys.stdout)
     print('  Boston College gkno package', file = sys.stdout)
     print(file = sys.stdout)
     print('  version:    ', version, sep = '', file = sys.stdout)
     print('  date:       ', date, sep = '', file = sys.stdout)
     print('  git commit: ', gknoCommitID, sep = '', file = sys.stdout)
-    print('=' * length, file=sys.stderr)
+    print('=' * length, file = sys.stdout)
     print(file = sys.stdout)
   
   def beginToolConfigurationFileCheck(self):

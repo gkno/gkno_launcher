@@ -16,6 +16,9 @@ from gkno.adminUtils import *
 import gkno.commandLine
 from gkno.commandLine import *
 
+import gkno.debug
+from gkno.debug import *
+
 import configurationClass.configurationClass
 from configurationClass.configurationClass import *
 
@@ -47,7 +50,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.17.6"
+__version__ = "1.18.0"
 __date__ = "May 2014"
 
 def main():
@@ -75,6 +78,9 @@ def main():
   # Define an admin utilities object. This handles all of the build/update steps
   # along with 'resource' management.
   admin = adminUtils(sourcePath)
+
+  # Define a class with debugging routines.
+  db = debug()
 
   # Define a configurationClass object.  This is part of the configurationClass library.  Also
   # define an object that handles finding configuration files for gkno (e.g. gkno specific
@@ -176,7 +182,7 @@ def main():
     # overwritten).
     observedTools = []
     for task in config.pipeline.taskAttributes:
-      tool                  = config.pipeline.taskAttributes[task].tool
+      tool = config.pipeline.taskAttributes[task].tool
 
       # If a tool has already been used in the pipeline, there is no need to parse the
       # configuration file again.

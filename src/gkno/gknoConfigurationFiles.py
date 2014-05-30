@@ -37,6 +37,9 @@ class loopData:
     # or --internal-loop defined).
     self.fromArgumentList = False
 
+    # If the argument in the multiple run file pointed to a list argument, store the argument.
+    self.listArguments = []
+
 class gknoConfigurationFiles:
   def __init__(self):
     self.jsonFiles                       = {}
@@ -272,36 +275,63 @@ class gknoConfigurationFiles:
         self.errors.missingAttributeInMultipleRunsFile(filename, hasMultipleRuns, attribute, allowedAttributes)
 
     # Check that all supplied arguments are valid.
-    if isPipeline: self.checkMultipleRunsArgumentsPipeline(graph, config, data)
-    else: self.checkMultipleRunsArgumentsTool(graph, config, data, name)
+    if isPipeline: self.checkMultipleRunsArgumentsPipeline(graph, config, data, filename)
+    else: self.checkMultipleRunsArgumentsTool(graph, config, data, name, filename)
 
     # Now loop over all the data sets and store the argument values.
-    self.processValues(data, filename, hasMultipleRuns)
+    self.processValues(graph, config, data, filename, hasMultipleRuns)
 
   # Check that all arguments in the multiple runs/internal loop file are valid for the current
   # pipeline.
-  def checkMultipleRunsArgumentsPipeline(self, graph, config, data):
+  def checkMultipleRunsArgumentsPipeline(self, graph, config, data, filename):
     self.loopData.numberOfSetArguments = len(data['arguments'])
     for argument in data['arguments']:
 
       # Check if the argument is a gkno specific argument.
       gknoNodeID = self.getNodeForGknoArgument(graph, config, argument)
       if gknoNodeID: self.loopData.arguments.append(argument)
-      else: self.loopData.arguments.append(config.pipeline.getLongFormArgument(graph, argument))
+      else:
+
+        # Check that this is a valid argument.
+        pipelineLongFormArgument, pipelineShortFormArgument = config.pipeline.getLongFormArgument(graph, argument)
+        if pipelineLongFormArgument not in config.pipeline.pipelineArguments: self.errors.unknownPipelineArgumentMultipleRun(argument, filename)
+
+        # Check if the argument is a list that points to another argument. Begin by getting the tool
+        # argument, to which this points, then determine if the tool argument is a list pointing to
+        # a different tool argument. If so, determine if there is a pipeline argument pointing to this
+        # tool argument.
+        task, toolArgument = config.pipeline.pipelineToTaskArgument[pipelineLongFormArgument][0]
+        tool               = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+        if config.tools.getArgumentAttribute(tool, toolArgument, 'listArgument'):
+          try: linkedPipelineArgument = config.pipeline.taskArgument[task][config.tools.getArgumentAttribute(tool, toolArgument, 'listArgument')]
+          except: print('ERROR - gknoConfigurationFiles.checkMultipleRunsArgumentsTool'); self.errors.terminate(); #TODO ERROR
+          self.loopData.arguments.append(linkedPipelineArgument)
+          self.loopData.listArguments.append(linkedPipelineArgument)
+
+        # If the argument doesn't point to a list, store the argument in the loopData structure.
+        else: self.loopData.arguments.append(pipelineLongFormArgument)
 
   # Check that all arguments in the multiple runs/internal loop file are valid for the current
   # pipeline.
-  def checkMultipleRunsArgumentsTool(self, graph, config, data, tool):
+  def checkMultipleRunsArgumentsTool(self, graph, config, data, tool, filename):
     self.loopData.numberOfSetArguments = len(data['arguments'])
     for argument in data['arguments']:
 
       # Check if the argument is a gkno specific argument.
       gknoNodeID = self.getNodeForGknoArgument(graph, config, argument)
       if gknoNodeID: self.loopData.arguments.append(argument)
-      else: self.loopData.arguments.append(config.tools.getLongFormArgument(tool, argument))
+      else:
+        longFormArgument = config.tools.getLongFormArgument(tool, argument, allowTermination = False)
+        if not longFormArgument: self.errors.unknownArgumentMultipleRun(argument, filename)
+
+        # Check if the argument points to a list.
+        if config.tools.getArgumentAttribute(tool, longFormArgument, 'listArgument'):
+          self.loopData.arguments.append(config.tools.getArgumentAttribute(tool, longFormArgument, 'listArgument'))
+          self.loopData.listArguments.append(config.tools.getArgumentAttribute(tool, longFormArgument, 'listArgument'))
+        else: self.loopData.arguments.append(config.tools.getLongFormArgument(tool, argument))
 
   # Process the argument values in the multiple run/internal loop file.
-  def processValues(self, data, filename, hasMultipleRuns):
+  def processValues(self, graph, config, data, filename, hasMultipleRuns):
 
     # Record the number of data sets.
     self.loopData.numberOfDataSets = len(data['values'])
@@ -314,14 +344,31 @@ class gknoConfigurationFiles:
 
       # Store the values.
       self.loopData.values[iteration + 1] = []
-      for value in dataSet: self.loopData.values[iteration + 1].append(str(value))
+      for argument, value in zip(self.loopData.arguments, dataSet):
+
+        # If this argument points to a list, open the file and add all the contained values to
+        # the loopData structure.
+        if argument in self.loopData.listArguments:
+          values = []
+
+          # Attempt to open the list defined in the multiple run file.
+          try: listData = open(value)
+          except: self.errors.missingFileCommandLine(graph, config, argument, value)
+
+          # Loop over all the values and add them to the loopData structure.
+          values = []
+          for dataValue in [name.strip() for name in listData]: values.append(dataValue)
+          if not values: self.errors.emptyArgumentList(argument, value)
+          self.loopData.values[iteration + 1].append(values)
+
+        else: self.loopData.values[iteration + 1].append([str(value)])
 
   # Assign loop values to the graph.
   def addLoopValuesToGraph(self, graph, config, isPipeline, runName):
 
     # Loop over each of the data sets and add to the correct iteration in the correct node.
     for iteration in range(1, self.loopData.numberOfDataSets + 1):
-      for argument, value in zip(self.loopData.arguments, self.loopData.values[iteration]):
+      for argument, values in zip(self.loopData.arguments, self.loopData.values[iteration]):
 
         # Find the node for this argument. First check if it is a gkno argument (rather than a
         # tool or pipeline argument).
@@ -333,18 +380,6 @@ class gknoConfigurationFiles:
         # command, for example, can specify values for multiple different arguments).
         if self.loopData.fromArgumentList:
           if not isPipeline: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')[0]
-
-          # The value in the loopData values is the list of values to use.
-          values = [value]
-
-        else:
-
-          # Next check if the argument is an input list.
-          # Check if the pipeline argument points to an input list in a tool. If so, find the tool
-          # argument that the list points to and finally, the pipeline argument that defines the
-          # tool argument that is used.
-          if isPipeline: nodeID, values = self.findToolArgumentForPipelineList(graph, config, argument, value)
-          else: nodeID, values = self.handleInputListsForLoopValues(graph, config, runName, argument, value)
 
         # Check if the argument is a non-list argument for the tool/pipeline.
         if not nodeID:
@@ -363,8 +398,6 @@ class gknoConfigurationFiles:
         # deleted in the merge process.
         if nodeID not in graph.nodes(): self.errors.nodeNotInGraph(graph, config, nodeID, 'gknoConfigurationFiles.addLoopValuesToGraph')
 
-        for counter, name in enumerate(values): values[counter] = str(name)
-
         if values:
           if iteration == 1: config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'replace')
           else: config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'iteration', iteration = str(iteration))
@@ -381,59 +414,6 @@ class gknoConfigurationFiles:
         if argument == graph[nodeID]['gkno']['attributes'].shortFormArgument: return nodeID
 
     return None
-
-  # Find the pipeline argument to use for an input list.
-  def findToolArgumentForPipelineList(self, graph, config, argument, filename):
-
-    # Get the task, tool and argument that the pipeline argument points to.
-    task, toolArgument = config.pipeline.commonNodes[config.pipeline.pipelineArguments[argument].configNodeID][0]
-    tool               = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-
-    # Check if the tool argument points to an input list.
-    if config.tools.getArgumentAttribute(tool, toolArgument, 'isInputList'):
- 
-      # Find the tool argument that is used for applying the values in the list.
-      repeatArgument = config.tools.getArgumentAttribute(tool, toolArgument, 'repeatArgument')
-
-      # Find the pipeline argument that the tool argument uses.
-      pipelineLongFormArgument, pipelineShortFormArgument = config.pipeline.getPipelineArgument(task, repeatArgument)
-
-      # If the user is allowed to specify an input list that is valid for the specified tool, but the
-      # pipeline does not contain an argument for the tool argument that is applied for the list values,
-      # terminate.
-      # TODO ERROR
-      if not pipelineLongFormArgument:
-        print('ERROR - gknoConfigurationFiles.findToolArgumentForPipelineList')
-        self.errors.terminate()
-
-      # Find the nodeID for the pipeline argument.
-      nodeID = config.pipeline.pipelineArguments[pipelineLongFormArgument].ID
-
-      # Parse the list and modify the value in argumentDictionary from the list to the files
-      # in the list.
-      values = []
-      for value in [name.strip() for name in open(filename)]: values.append(value)
-
-      return nodeID, values
-
-    # If this isn't a list return nothing.
-    else: return None, [filename]
-
-  # If the multiple runs file contains an input list, find the argument to which it applies, get the
-  # values from the list and attach these values to the appropriate node.
-  def handleInputListsForLoopValues(self, graph, config, runName, argument, filename):
-    if config.tools.getArgumentAttribute(runName, argument, 'isInputList'):
-      repeatArgument = config.tools.getArgumentAttribute(runName, argument, 'repeatArgument')
-      nodeID         = config.nodeMethods.getNodeForTaskArgument(graph, runName, repeatArgument, 'option')[0]
-
-      # Parse the list and modify the value in argumentDictionary from the list to the files
-      # in the list.
-      values = []
-      for value in [name.strip() for name in open(filename)]: values.append(value)
-
-      return nodeID, values
-
-    else: return None, [filename]
 
   # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
@@ -458,23 +438,9 @@ class gknoConfigurationFiles:
         # filled without command line (or instance) information.
         if isRequired and not isSet:
           method = self.constructionInstructions(graph, config, task, longFormArgument, fileNodeID)
-          if method != None: self.constructFilename(graph, config, method, task, fileNodeID, numberOfIterations, isInput = True)
-          #if method == None:
-            #description = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'description')
-  
-            # Check if this argument is a pipeline argument.
-            #if task in config.pipeline.taskArgument:
-            #  if longFormArgument in config.pipeline.taskArgument[task]:
-            #    pipelineLongFormArgument  = config.pipeline.taskArgument[task][longFormArgument]
-            #    pipelineShortFormArgument = config.pipeline.pipelineArguments[pipelineLongFormArgument].shortFormArgument
-            #    self.errors.missingPipelineArgument(graph, config, pipelineLongFormArgument, pipelineShortFormArgument, description)
-
-            # If not a pipeline argument, the error message needs to make the distinction. The error message
-            # will also recommend adding the argument to the pipeline arguments since it is required.
-            #self.errors.missingArgument(graph, config, task, longFormArgument, shortFormArgument, description, isPipeline)
 
           # Build the input filename using the described method.
-          #else: self.constructFilename(graph, config, method, task, fileNodeID, numberOfIterations, isInput = True)
+          if method != None: self.constructFilename(graph, config, method, task, fileNodeID, numberOfIterations, isInput = True)
 
         # Keep track of the maximum number of iterations for any of the input files.
         iterations         = len(config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values'))

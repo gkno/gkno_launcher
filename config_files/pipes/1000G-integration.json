@@ -1,0 +1,48 @@
+{
+  "description" : ".",
+  "hide in help" : true,
+  "developmental" : true,
+
+  "tasks" : {
+    "merge-bam" : {
+      "tool" : "bamtools-merge"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "bam",
+      "description" : "The input BAM file.",
+      "long form argument" : "--bam",
+      "short form argument" : "-b",
+      "tasks" : {
+        "merge-bam" : "--in"
+      }
+    },
+    {
+      "ID" : "bams",
+      "description" : "The list of input BAM files.",
+      "long form argument" : "--bam-list",
+      "short form argument" : "-l",
+      "tasks" : {
+        "merge-bam" : "--in-list"
+      }
+    },
+    {
+      "ID" : "expanded regions",
+      "description" : "The list of expanded regions.",
+      "tasks" : {
+        "merge-bam" : "--region-list-single"
+      }
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "The default instance sets all the parameters for the pipeline to run.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

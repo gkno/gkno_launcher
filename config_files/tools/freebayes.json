@@ -47,8 +47,10 @@
         "command line argument" : "none",
         "data type" : "string",
         "extensions" : [".bam"],
-        "list of input files" : true,
-        "apply by repeating this argument" : "--bam"
+        "argument list" : {
+          "use argument" : "--bam",
+          "mode" : "repeat argument"
+        }
       },
       {
         "description" : "Use FILE as the reference sequence for analysis.",

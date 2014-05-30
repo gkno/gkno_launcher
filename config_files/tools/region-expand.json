@@ -1,0 +1,75 @@
+{
+  "id" : "region-expand",
+  "description" : "Given a list of genomic regions, output a list of expanded regions.",
+  "category" : "file processing",
+  "tools" : ["genomicRegions"],
+  "path" : "genomicRegions",
+  "executable" : "expand.sh",
+  "help" : "--help|-h",
+  "help group" : "Genomic region processing",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "A file containing a list of regions.",
+        "long form argument" : "--region-list",
+        "short form argument" : "-l",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "A list of expanded regions.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "stdout",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--region-list",
+          "modify extension" : "retain",
+          "modify text" : [
+            {
+              "add text" : ["_expanded"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The value to subtract from each given coordinate to define the lower value of the window.",
+        "long form argument" : "--window",
+        "short form argument" : "-w",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "integer",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--region-list",
+    "--window",
+    "--out"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

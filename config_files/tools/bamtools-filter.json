@@ -27,8 +27,10 @@
         "command line argument" : "-in",
         "data type" : "string",
         "extensions" : [".bam"],
-        "list of input files" : true,
-        "apply by repeating this argument" : "--in"
+        "argument list" : {
+          "use argument" : "--in",
+          "mode" : "repeat argument"
+        }
       },
       {
         "description" : "the filter script file (see bamtools documentation for more information).",
