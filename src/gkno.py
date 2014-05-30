@@ -50,7 +50,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.18.1"
+__version__ = "1.18.2"
 __date__ = "May 2014"
 
 def main():
@@ -334,10 +334,10 @@ def main():
   write.writeDone()
   if isDebug: write.writeDebug('Attached argument values to the nodes.')
 
-  hasMultipleRuns, hasInternalLoop = gknoConfig.hasLoop(pipelineGraph, config, resourcePath, isPipeline, runName, hasMultipleRuns, hasInternalLoop)
+  hasMultipleRuns, hasInternalLoop = gknoConfig.loopData.hasLoop(pipelineGraph, config, resourcePath, isPipeline, runName, hasMultipleRuns, hasInternalLoop)
   if hasMultipleRuns or hasInternalLoop:
     write.writeAssignLoopArguments(hasMultipleRuns)
-    gknoConfig.addLoopValuesToGraph(pipelineGraph, config, isPipeline, runName)
+    gknoConfig.loopData.addLoopValuesToGraph(pipelineGraph, config, isPipeline, runName)
     write.writeDone()
     if isDebug: write.writeDebug('Assigned arguments for multiple runs.')
 
