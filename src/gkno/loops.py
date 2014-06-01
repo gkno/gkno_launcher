@@ -236,6 +236,7 @@ class loops:
           if iteration == 1: config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'replace')
           else: config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'iteration', iteration = str(iteration))
 
+  # TODO REPEATED IN GKNOCONFIG. SORT OUT CLASSES AND CONSOLIDATE.
   # Return the node for a gkno argument contained in the gkno configuration file.
   def getNodeForGknoArgument(self, graph, config, argument):
     for nodeID in graph.nodes(data = False):

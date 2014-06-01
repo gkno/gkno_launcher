@@ -91,7 +91,7 @@ class helpClass:
     # General pipeline help.
     elif self.pipelineHelp:
       self.getPipelines(config, gknoConfig, pipelineConfigurationFilesPath)
-      self.printPipelineModeUsage()
+      self.printPipelineModeUsage(config)
       if self.invalidPipeline: self.invalidPipelineMessage(name)
 
     # Admin mode help.
@@ -117,7 +117,7 @@ class helpClass:
     self.printToolModeUsage(config, admin)
 
     # Print out pipeline help.
-    self.printPipelineModeUsage()
+    self.printPipelineModeUsage(config)
 
   # Write out key value pairs in a formatted manned.  These may be tool and
   # description or command line argument and description or whatever else is
@@ -238,19 +238,30 @@ class helpClass:
       print(file = sys.stdout)
 
   # Print usage information on the pipeline mode of operation.
-  def printPipelineModeUsage(self):
+  def printPipelineModeUsage(self, config):
     print('=================', file = sys.stdout)
     print('  pipeline mode', file = sys.stdout)
     print('=================', file = sys.stdout)
     print(file = sys.stdout)
     print('Usage: gkno pipe <pipeline name> [options]', file = sys.stdout)
     print(file = sys.stdout)
-    print('     <pipeline name>:', file = sys.stdout)
+
+    # Sort all of the pipelines into their groups.
+    pipelineGroups = {}
+    for pipeline in self.availablePipelines.keys():
+
+      # Get the pipeline group to which this tool belongs.
+      pipelineGroup = self.availablePipelines[pipeline][1]
+      if pipelineGroup not in pipelineGroups: pipelineGroups[pipelineGroup] = []
+      pipelineGroups[pipelineGroup].append(pipeline)
+    sortedGroups = sorted(list(pipelineGroups.keys()))
 
     # Write the pipelines to screen.
-    for pipeline in sorted(self.availablePipelines.keys()):
-       self.writeFormattedText(pipeline + ':', self.availablePipelines[pipeline], self.pipelineLength + 5, 2, '')
-    print(file = sys.stdout)
+    for pipelineGroup in sortedGroups:
+      print('     ', pipelineGroup, ':', sep = '', file = sys.stdout)
+      for pipeline in pipelineGroups[pipelineGroup]:
+        self.writeFormattedText(pipeline + ':', self.availablePipelines[pipeline][0], self.pipelineLength + 5, 2, '')
+      print(file = sys.stdout)
 
     # Write the developmental pipelines to screen.
     if self.developmentalPipelines:
@@ -340,7 +351,7 @@ class helpClass:
         if success:
           if not config.pipeline.getPipelineAttribute('isHiddenInHelp'):
             if config.pipeline.getPipelineAttribute('isDevelopmental'): self.developmentalPipelines[pipeline] = description
-            else: self.availablePipelines[pipeline] = description
+            else: self.availablePipelines[pipeline] = (description, config.pipeline.getPipelineAttribute('helpGroup'))
         else: self.failedPipelines[pipeline] = description
 
       # For the purposes of formatting the screen output, find the longest tool
