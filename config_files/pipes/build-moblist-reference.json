@@ -1,5 +1,6 @@
 {
   "description" : "Concatenate reference fasta files and generate Mosaik reference and jump database.",
+  "help group" : "Reference processing",
 
   "tasks" : {
     "merge-fasta" : {

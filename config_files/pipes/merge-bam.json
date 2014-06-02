@@ -1,5 +1,6 @@
 {
   "description" : "Merge together all bam files for a sample and mark duplicate reads.",
+  "help group" : "Alignment processing",
 
   "tasks" : {
     "merge-bam" : {

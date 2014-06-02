@@ -1,5 +1,6 @@
 {
   "description" : "Simulate reads from one reference, then align reads to a different reference.",
+  "help group" : "Simulation",
 
   "tasks" : {
     "simulate-reads" : {

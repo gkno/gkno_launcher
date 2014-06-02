@@ -652,12 +652,6 @@ class makefileData:
     # Write the arguments to the makefile.
     for counter, argument in enumerate(argumentOrder):
 
-      # If the input to this task is a stream and this argument has specific instructions for
-      # this case, ensure that the command is properly handled.
-      useArgument = None
-      if inputIsStream and config.tools.getArgumentAttribute(tool, argument, 'inputStream'):
-        includeArgument, useArgument, useValue = self.checkInputStream(config, tool, argument, includeArgument)
-
       # Loop over the nodes for this argument.
       for nodeID, values in arguments[argument]:
 
@@ -716,6 +710,12 @@ class makefileData:
           # bam file, but the output index file is created based on the name of the input file and
           # is not specified by the user. Check to see if this is the case.
           includeArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'includeOnCommandLine')
+
+          # If the input to this task is a stream and this argument has specific instructions for
+          # this case, ensure that the command is properly handled.
+          useArgument = None
+          if inputIsStream and config.tools.getArgumentAttribute(tool, argument, 'inputStream'):
+            includeArgument, useArgument, useValue = self.checkInputStream(config, tool, argument, includeArgument)
 
           # If the option refers to a file, then check, whether the option is a filename stub. Since the same
           # option can point to multiple tasks and the option can be a filename stub for one task, but a file

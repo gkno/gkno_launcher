@@ -1,5 +1,6 @@
 {
   "description" : "Test pipeline to ensure proper operation.",
+  "help group" : "Test pipelines",
 
   "tasks" : {
     "merge-reference" : {
@@ -347,7 +348,7 @@
         {
           "ID" : "filter",
           "argument" : "--info-filter",
-          "values" : ["\"QUAL > 10\""]
+          "values" : ["QUAL > 10"]
         },
         {
           "ID" : "tag",

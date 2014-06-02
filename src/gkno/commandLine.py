@@ -170,7 +170,7 @@ class commandLine:
     
           else:
             if isPipeline: longFormArgument, shortFormArgument = config.pipeline.getLongFormArgument(graph, argument, allowTermination = True)
-            else: longFormArgument, shortFormArgument = config.tools.getLongFormArgument(tool, argument, allowTermination = True)
+            else: longFormArgument = config.tools.getLongFormArgument(tool, argument, allowTermination = True)
   
             # Update the argumentDictionary.
             if longFormArgument not in self.argumentDictionary: self.argumentDictionary[longFormArgument] = []
@@ -255,8 +255,12 @@ class commandLine:
           # Get the task to which this argument points and the argument within that task to which
           # this pipeline argument points.
           # TODO Consider all nodes, not just the first in the list.
-          task, toolArgument = config.pipeline.commonNodes[config.pipeline.pipelineArguments[argument].configNodeID][0] 
-          tool               = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+          try: task, toolArgument = config.pipeline.commonNodes[config.pipeline.pipelineArguments[argument].configNodeID][0] 
+
+          # If the above failed, the argument is not an argument for the pipeline, but it may be the name of a task in 
+          # the pipeline, so leave it for future consideration.
+          except: continue
+          tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
         else:
           task         = runName
           tool         = runName

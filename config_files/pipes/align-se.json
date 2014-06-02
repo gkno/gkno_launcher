@@ -1,5 +1,6 @@
 {
   "description" : "Align single-end fastq files using Mosaik (additional processing steps included).",
+  "help group" : "Alignment pipelines",
 
   "tasks" : {
     "build-read-archive" : {

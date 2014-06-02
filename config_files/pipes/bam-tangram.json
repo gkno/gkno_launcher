@@ -1,5 +1,6 @@
 {
   "description" : "Build Mosaik reference files and align fastq files using Mosaik (additional processing steps included).",
+  "help group" : "MEI pipelines",
 
   "tasks" : {
     "build-tangram-reference" : {

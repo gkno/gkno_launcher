@@ -217,6 +217,7 @@ class loops:
 
         # Check if the argument is a non-list argument for the tool/pipeline.
         if not nodeID:
+          print('TEST', runName, argument, values, nodeID)
           if isPipeline: nodeID = config.pipeline.pipelineArguments[argument].ID
           else:
             nodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')

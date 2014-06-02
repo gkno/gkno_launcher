@@ -211,7 +211,7 @@ class gknoConfigurationFiles:
                                  
         # Use the argument to get information about the argument.
         isRequired = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isRequired')
-        isSet      = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'hasValue')
+        isSet      = True if config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values') else False
 
         # If input files aren't set, gkno should terminate.  If the input is linked to the output of
         # another task, the nodes are merged and so the input is set.  Thus, an empty value cannot be
@@ -220,7 +220,7 @@ class gknoConfigurationFiles:
           method = self.constructionInstructions(graph, config, task, longFormArgument, fileNodeID)
 
           # Build the input filename using the described method.
-          if method != None: self.constructFilename(graph, config, method, task, fileNodeID, numberOfIterations, isInput = True)
+          if method != None: self.constructFilename(graph, config, method, task, fileNodeID, isInput = True)
 
         # Keep track of the maximum number of iterations for any of the input files.
         iterations         = len(config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values'))
@@ -274,11 +274,11 @@ class gknoConfigurationFiles:
   
           # If the tool configuration file has instructions on how to construct the filename,
           # built it using these instructions.
-          else: self.constructFilename(graph, config, method, task, fileNodeID, numberOfIterations, isInput = False)
+          else: self.constructFilename(graph, config, method, task, fileNodeID, isInput = False)
 
         # Check that there are as many interations in the generated values as there are in the inputs. If the
         # values were defined on the command line, it is possible that this is not the case.
-        if numberOfIterations != 0:
+        if numberOfIterations != 0 and len(config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')) != 0:
           if len(config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')) != numberOfIterations:
             self.modifyNumberOfOutputIterations(graph, config, fileNodeID, numberOfIterations, task, longFormArgument, shortFormArgument)
 
@@ -288,11 +288,11 @@ class gknoConfigurationFiles:
     return config.tools.getConstructionMethod(config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool'), argument)
 
   # Construct a filename from instructions.
-  def constructFilename(self, graph, config, method, task, fileNodeID, numberOfIterations, isInput):
+  def constructFilename(self, graph, config, method, task, fileNodeID, isInput):
     if method == 'from tool argument': self.constructFilenameFromToolArgument(graph, config, task, fileNodeID, isInput)
 
     # If a known file is being constructed, set the name here.
-    elif method == 'define name': self.constructKnownFilename(graph, config, task, fileNodeID, numberOfIterations)
+    elif method == 'define name': self.constructKnownFilename(graph, config, task, fileNodeID)
 
     # TODO ERRORS
     else:
@@ -767,7 +767,7 @@ class gknoConfigurationFiles:
     return modifiedValues, replaceExtension
 
   # Construct a file of known name.
-  def constructKnownFilename(self, graph, config, task, fileNodeID, numberOfIterations):
+  def constructKnownFilename(self, graph, config, task, fileNodeID):
     modifiedValues   = {}
     tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
     optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)

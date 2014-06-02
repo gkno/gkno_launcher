@@ -1,5 +1,6 @@
 {
   "description" : "Align single-end fastq files using Mosaik. In this version additional 'special' reference sequences are included (usually mobile element insertions) in the reference.",
+  "help group" : "Alignment pipelines",
 
   "tasks" : {
     "build-read-archive" : {

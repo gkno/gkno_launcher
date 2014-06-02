@@ -1,5 +1,6 @@
 {
   "description" : "Starting from fasta and fastq files, prepare MOSAIK reference files, align reads and call short variants.",
+  "help group" : "Short variant discovery",
 
   "tasks" : {
     "build-reference" : {

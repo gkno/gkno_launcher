@@ -581,7 +581,8 @@ class helpClass:
     self.getTools(config, gknoConfig, toolConfigurationFilesPath)
     for task in sorted(config.pipeline.workflow):
       associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-      isHidden       = self.availableTools[associatedTool][1]
+      if associatedTool in self.availableTools: isHidden = self.availableTools[associatedTool][1]
+      elif associatedTool in self.experimentalTools: isHidden = self.experimentalTools[associatedTool][1]
       if not isHidden: self.writeFormattedText('--' + task + ':', associatedTool, length + 5, 2, '')
     print(file = sys.stdout)
     sys.stdout.flush()
