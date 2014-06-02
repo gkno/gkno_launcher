@@ -202,7 +202,8 @@ class loops:
 
     # Loop over each of the data sets and add to the correct iteration in the correct node.
     for iteration in range(1, self.numberOfDataSets + 1):
-      for argument, values in zip(self.arguments, self.values[iteration]):
+      for argument in self.arguments:
+        values = self.values[iteration]
 
         # Find the node for this argument. First check if it is a gkno argument (rather than a
         # tool or pipeline argument).
@@ -217,7 +218,6 @@ class loops:
 
         # Check if the argument is a non-list argument for the tool/pipeline.
         if not nodeID:
-          print('TEST', runName, argument, values, nodeID)
           if isPipeline: nodeID = config.pipeline.pipelineArguments[argument].ID
           else:
             nodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, runName, argument, 'option')

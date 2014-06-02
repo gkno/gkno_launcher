@@ -277,6 +277,17 @@ of the following extensions:')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  # If an argument list is provided that uses a tool argument that has no pipeline argument.
+  def noPipelineArgumentForlistArgument(self, tool, argument, toolArgument, listArgument):
+    print(file = sys.stderr)
+    self.text.append('Missing argument in pipeline configuration file.')
+    self.text.append('The pipeline argument \'' + argument + '\' was set on the command line. This sets the argument \'' + toolArgument + '\' ' + \
+    'in tool \'' + tool  + '\'. This argument defines a file containing a list of values. These values are then set on the command line using ' + \
+    'the tool argument \'' + listArgument + '\'. There is no pipeline argument that points to this tool argument. Please ensure that the ' + \
+    'pipeline configuration file contains an argument definition that points to this tool argument.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   ######################################################
   # Errors with required files/directories/executables #
   ######################################################

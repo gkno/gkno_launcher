@@ -294,6 +294,12 @@ class commandLine:
           for value in [name.strip() for name in data]: values.append(value)
           if not values: self.errors.emptyArgumentList(argument, filename)
 
+          # If a pipeline is being run, determine if the list argument, is a pipeline argument.
+          if isPipeline:
+            pipelineLongFormArgument, pipelineShortFormArgument = config.pipeline.getPipelineArgument(task, listArgument)
+            if not pipelineLongFormArgument: self.errors.noPipelineArgumentForlistArgument(tool, argument, toolArgument, listArgument)
+            else: listArgument = pipelineLongFormArgument
+
           # If the list mode is 'single makefile' or 'multiple makefiles', the values should be added to
           # the loopData structure as the values will be treated as an internal loop or multiple runs
           # respectively.
@@ -312,22 +318,24 @@ class commandLine:
           # If the list mode is 'repeat argument', the values can be added to the node.
           elif listMode == 'repeat argument':
 
+            #TODO CLEAN UP
             # If this is a list of arguments, get the argument to use for the values.
-            try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, listArgument, 'option')[0]
-            except:
-              #TODO
-              print("NODE DOESN'T EXIST. CREATE - attachToolArgumentsToNodes")
-              self.errors.terminate()
+            #try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, listArgument, 'option')[0]
+            #except:
+            #  #TODO
+            #  print("NODE DOESN'T EXIST. CREATE - attachToolArgumentsToNodes")
+            #  self.errors.terminate()
 
             # Add the argument and values to the argumentsToAdd list. These will be transferred to the
             # self.argumentDictionary after the loop over it is complete.
             # If this is a pipeline, find the pipeline argument that is used for this argument.
-            if isPipeline:
-              pipelineLongFormArgument, pipelineShortFormArgument = config.pipeline.getPipelineArgument(task, listArgument)
-              argumentsToAdd.append((pipelineLongFormArgument, values))
+            #if isPipeline:
+            #  pipelineLongFormArgument, pipelineShortFormArgument = config.pipeline.getPipelineArgument(task, listArgument)
+            #  argumentsToAdd.append((pipelineLongFormArgument, values))
 
             # If this is a tool, the listArgument and values can be used directly.
-            else: argumentsToAdd.append((listArgument, values))
+            #else: argumentsToAdd.append((listArgument, values))
+            argumentsToAdd.append((listArgument, values))
 
           # If the argument was a list, remove the list argument from the argument dictonary.
           argumentsToRemove.append(argument)

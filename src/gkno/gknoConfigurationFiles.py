@@ -6,6 +6,9 @@ from copy import deepcopy
 import configurationClass.configurationClass
 from configurationClass.configurationClass import *
 
+import constructFilenames
+from constructFilenames import *
+
 import gknoErrors
 from gknoErrors import *
 
@@ -35,6 +38,9 @@ class gknoConfigurationFiles:
 
     # Define the data structure for loop data.
     self.loopData = loops()
+
+    # Define methods for constructing filenames.
+    self.construct = constructFilenames()
 
     # Define dictionaries to hold argument information.
     self.validLongFormArguments  = {}

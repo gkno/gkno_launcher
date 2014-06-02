@@ -50,7 +50,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.19.0"
+__version__ = "1.19.1"
 __date__ = "June 2014"
 
 def main():
@@ -362,7 +362,7 @@ def main():
     # Check that all required files and values have been set. All files and parameters that are listed as
     # required by the individual tools should already have been checked, but if the pipeline has some
     # additional requirements, these may not yet have been checked.
-    config.checkRequiredFiles(pipelineGraph)
+    config.checkRequiredFiles(pipelineGraph, gknoConfig)
     if isDebug: write.writeDebug('Files checked.')
 
     # If flags are linked in a pipeline configuration file, but none of them were set on the command line,
