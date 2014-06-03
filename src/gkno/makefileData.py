@@ -232,7 +232,7 @@ class makefileData:
 
     for nodeID in nodeIDs:
       optionNodeID     = config.nodeMethods.getOptionNodeIDFromFileNodeID(nodeID)
-      numberOfDataSets = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'numberOfDataSets')
+      numberOfDataSets = len(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
       try: argument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
       except: argument = config.edgeMethods.getEdgeAttribute(graph, task, optionNodeID, 'longFormArgument')
 
