@@ -2,7 +2,7 @@
   "id" : "compressed-vcf-sites",
   "description" : "Strips a compressed VCF file of genotype information.",
   "category" : "VCF processing",
-  "tools" : ["scripts"],
+  "tools" : [],
   "path" : "scripts",
   "executable" : "compressed-vcf-sites.sh",
   "help" : "--help|-h",
