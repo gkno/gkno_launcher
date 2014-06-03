@@ -1,0 +1,64 @@
+{
+  "id" : "compressed-vcf-sites",
+  "description" : "Strips a compressed VCF file of genotype information.",
+  "category" : "VCF processing",
+  "tools" : ["scripts"],
+  "path" : "scripts",
+  "executable" : "compressed-vcf-sites.sh",
+  "help" : "--help|-h",
+  "help group" : "VCF processing",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The input compressed VCF file.",
+        "long form argument" : "--vcf",
+        "short form argument" : "-v",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".vcf.gz"],
+        "modify argument name on command line" : "hide"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The compressed sites VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".sites.vcf.gz"],
+        "hide in help" : true,
+        "modify argument name on command line" : "hide",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--vcf",
+          "modify extension" : "replace"
+        }
+      }
+    ]
+  },
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "dictionary",
+          "argument" : "--vcf",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+        }
+      ]
+    }
+  ]
+}

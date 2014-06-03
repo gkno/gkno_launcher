@@ -805,8 +805,9 @@ class makefileData:
                 if '/' in value: value = value.split('/')[-1]
 
               # Ensure that Boolean values are in lower case.
-              if value == False: value = 'false'
-              if value == True: value = 'true'  
+              if isinstance(value, bool):
+                if value: value = 'true'  
+                else: value = 'false'
 
               # Modify the value to include qutation marks if necessary.
               if inQuotations: value = str('"') + str(value) + str('"')

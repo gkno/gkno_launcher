@@ -63,11 +63,19 @@ class dataConsistency:
     usedExtensions = []
     for value in values[1]:
       foundExtension = False
-      for extension in extensions:
-        if value.endswith(extension):
-          usedExtensions.append(str(extension))
-          foundExtension = True
-          break
+
+      # If the extensions are not set (e.g. is 'no extension'), do not search for the extension.
+      if extensions == [u'no extension'] or extensions == ['no extension']:
+        foundExtension = True
+        usedExtensions.append(value.rsplit('.')[1])
+
+      # If there is defined extensions, search for the correct one.
+      else:
+        for extension in extensions:
+          if value.endswith(extension):
+            usedExtensions.append(str(extension))
+            foundExtension = True
+            break
 
       # If the file has an unknown extension, terminate.
       if not foundExtension:

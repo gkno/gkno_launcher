@@ -294,12 +294,16 @@ class helpClass:
 
       # Open the tool configuration file and process the data.
       openFileSuccess = True
-      try: configurationData = config.fileOperations.readConfigurationFile(filePath)
+      try: configurationData = config.fileOperations.readConfigurationFile(filePath, allowTermination = False)
       except:
         openFileSuccess = False
         self.failedTools[tool] = 'Description could not be found'
 
       # If the configuration file is a valid json file, try and process the file.
+      if not configurationData:
+        openFileSuccess = False
+        self.failedTools[tool] = 'Description could not be found'
+
       if openFileSuccess:
         try: success = config.tools.processConfigurationData(tool, configurationData, allowTermination = False)
         except: success = False

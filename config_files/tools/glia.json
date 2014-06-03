@@ -67,6 +67,7 @@
         "data type" : "string",
         "extensions" : [".bam"],
         "modify argument name on command line" : "stdout",
+        "if output to stream" : "do not include",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--bam",
@@ -121,7 +122,6 @@
         "long form argument" : "--region",
         "short form argument" : "-rg",
         "command line argument" : "--target",
-        "required" : true,
         "data type" : "string",
         "extensions" : ["no extension"]
       },

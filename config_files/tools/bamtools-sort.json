@@ -17,7 +17,12 @@
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam"]
+        "extensions" : [".bam"],
+        "if input is stream" : "replace",
+        "replace argument with" : {
+          "argument" : "-in",
+          "value" : "stdin"
+        }
       }
     ],
 

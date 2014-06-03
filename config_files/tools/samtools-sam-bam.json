@@ -1,0 +1,98 @@
+{
+  "id" : "samtools-sam-bam",
+  "description" : "Convert a SAM to BAM file with a number of operations.",
+  "category" : "BAM processing",
+  "tools" : ["samtools"],
+  "path" : "samtools",
+  "executable" : "samtools",
+  "modifier" : "view",
+  "hide tool" : true,
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "Input SAM file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".sam"],
+        "modify argument name on command line" : "hide",
+        "if input is stream" : "replace",
+        "replace argument with" : {
+          "argument" : "-",
+          "value" : "no value"
+        }
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "Output BAM file.",
+        "long form argument" : "--output",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bam"],
+        "modify argument name on command line" : "stdout",
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace"
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Output BAM file.",
+        "long form argument" : "--output-bam",
+        "short form argument" : "-ob",
+        "command line argument" : "-b",
+        "required" : true,
+        "data type" : "flag",
+        "extensions" : ["no extension"],
+        "hide in help" : true
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--output-bam",
+    "--in",
+    "--out"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "output bame",
+          "argument" : "--output-bam",
+          "values" : ["set"]
+        },
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "fasta",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
+        },
+        {
+          "ID" : "output path",
+          "argument" : "--output-path",
+          "values" : ["./"]
+        }
+      ]
+    }
+  ]
+}
