@@ -2,7 +2,7 @@
   "id" : "region-by-dict",
   "description" : "Given a reference dictionary and (optionally) a list of reference sequences, a set of regions are generated.",
   "category" : "file processing",
-  "tools" : ["genomicRegions"],
+  "tools" : [],
   "path" : "genomicRegions",
   "executable" : "byDictionary.sh",
   "help" : "--help|-h",
