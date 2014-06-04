@@ -1,0 +1,361 @@
+{
+  "description" : ".",
+  "hide in help" : true,
+  "developmental" : true,
+
+  "tasks" : {
+    "merge-bam" : {
+      "tool" : "bamtools-merge",
+      "output to stream" : true
+    },
+    "graph-align" : {
+      "tool" : "glia",
+      "output to stream" : true
+    },
+    "sort" : {
+      "tool" : "bamtools-sort"
+    },
+    "index" : {
+      "tool" : "bamtools-index"
+    },
+    "call-short-variants" : {
+      "tool" : "freebayes",
+      "output to stream" : true
+    },
+    "compress" : {
+      "tool" : "gzip-delete"
+    },
+    "generate-sites" : {
+      "tool" : "compressed-vcf-sites"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "bam",
+      "description" : "The input BAM file.",
+      "long form argument" : "--bam",
+      "short form argument" : "-b",
+      "tasks" : {
+        "merge-bam" : "--in"
+      }
+    },
+    {
+      "ID" : "bams",
+      "description" : "The list of input BAM files.",
+      "long form argument" : "--bam-list",
+      "short form argument" : "-l",
+      "tasks" : {
+        "merge-bam" : "--in-list"
+      }
+    },
+    {
+      "ID" : "region",
+      "description" : "The genomic region for consideration.",
+      "long form argument" : "--region",
+      "short form argument" : "-rg",
+      "required" : true,
+      "tasks" : {
+        "merge-bam" : "--region",
+        "call-short-variants" : "--region"
+      }
+    },
+    {
+      "ID" : "expanded regions",
+      "description" : "The list of expanded regions.",
+      "long form argument" : "--region-list",
+      "short form argument" : "-rl",
+      "tasks" : {
+        "merge-bam" : "--region-list-single"
+      }
+    },
+    {
+      "ID" : "merge output",
+      "description" : "Pipe merged BAM to glia.",
+      "tasks" : {
+        "merge-bam" : "--out",
+        "graph-align" : "--bam"
+      }
+    },
+    {
+      "ID" : "fasta",
+      "description" : "The FASTA reference genome.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "tasks" : {
+        "graph-align" : "--fasta-reference",
+        "call-short-variants" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "realign",
+      "description" : "Realign the BAM stream on stdin to the VCF file, adjusting position and flattening alignments back into the reference space where realignment to the graph provides better quality.",
+      "long form argument" : "--realign-bam",
+      "short form argument" : "-rb",
+      "tasks" : {
+        "graph-align" : "--realign-bam"
+      }
+    },
+    {
+      "ID" : "reverse",
+      "description" : "Report the reverse complement if it provides a better alignment.",
+      "long form argument" : "--reverse-complement",
+      "short form argument" : "-rc",
+      "tasks" : {
+        "graph-align" : "--reverse-complement"
+      }
+    },
+    {
+      "ID" : "unsorted",
+      "description" : "Do not attempt streaming sort of alignments.  This can save memory in high coverage areas, but will require sort of BAM file before it can be used for variant calling.",
+      "long form argument" : "--unsorted-output",
+      "short form argument" : "-u",
+      "tasks" : {
+        "graph-align" : "--unsorted-output"
+      }
+    },
+    {
+      "ID" : "window",
+      "description" : "Number of bp of window to assemble from VCF for realignment.",
+      "long form argument" : "--realignment-window",
+      "short form argument" : "-rw",
+      "tasks" : {
+        "graph-align" : "--realignment-window"
+      }
+    },
+    {
+      "ID" : "softclip threshold",
+      "description" : "If sum of qualities of soft clipped bases is >= N, realign (default ~inf).",
+      "long form argument" : "--soft-clip-qsum-threshold",
+      "short form argument" : "-s",
+      "tasks" : {
+        "graph-align" : "--soft-clip-qsum-threshold"
+      }
+    },
+    {
+      "ID" : "mismatch threshold",
+      "description" : "If sum of qualities of mismatched bases is >= N, realign (default ~inf).",
+      "long form argument" : "--mismatch-qsum-threshold",
+      "short form argument" : "-mqt",
+      "tasks" : {
+        "graph-align" : "--mismatch-qsum-threshold"
+      }
+    },
+    {
+      "ID" : "gap count",
+      "description" : "Accept realignment if number of gaps is < N.",
+      "long form argument" : "--gap-count-max",
+      "short form argument" : "-gcm",
+      "tasks" : {
+        "graph-align" : "--gap-count-max"
+      }
+    },
+    {
+      "ID" : "vcf",
+      "description" : "The genome DAG, BGZIP'ed (.vcf.gz) and tabix-indexed (.tbi).",
+      "long form argument" : "--vcf",
+      "short form argument" : "-v",
+      "tasks" : {
+        "graph-align" : "--vcf"
+      }
+    },
+    {
+      "ID" : "sort",
+      "description" : "Sort the BAM file.",
+      "tasks" : {
+        "graph-align" : "--out",
+        "sort" : "--in"
+      }
+    },
+    {
+      "ID" : "index",
+      "description" : "Index the BAM file.",
+      "tasks" : {
+        "sort" : "--out",
+        "index" : "--in",
+        "call-short-variants" : "--bam"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "index file",
+      "description" : "Ensure that Index has been done.",
+      "tasks" : {
+        "index" : "--out",
+        "call-short-variants" : "--bam-index"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "alternate fraction",
+      "description" : "Require at least this fraction of observations supporting an alternate allele within a single individual in the in order to evaluate the position.",
+      "long form argument" : "--min-alternate-fraction",
+      "short form argument" : "-maf",
+      "tasks" : {
+        "call-short-variants" : "--min-alternate-fraction"
+      }
+    },
+    {
+      "ID" : "alternate count",
+      "description" : "Require at least this count of observations supporting an alternate allele within a single individual in order to evaluate the position.",
+      "long form argument" : "--min-alternate-count",
+      "short form argument" : "-mac",
+      "tasks" : {
+        "call-short-variants" : "--min-alternate-count"
+      }
+    },
+    {
+      "ID" : "mq",
+      "description" : "Exclude alignments from analysis if they have a mapping quality less than Q.",
+      "long form argument" : "--min-mapping-quality",
+      "short form argument" : "-mmq",
+      "tasks" : {
+        "call-short-variants" : "--min-mapping-quality"
+      }
+    },
+    {
+      "ID" : "bq",
+      "description" : "Exclude alleles from analysis if their supporting base quality is less than Q.",
+      "long form argument" : "--min-base-quality",
+      "short form argument" : "-mbq",
+      "tasks" : {
+        "call-short-variants" : "--min-base-quality"
+      }
+    },
+    {
+      "ID" : "repeat entropy",
+      "description" : "To detect interrupted repeats, build across sequence until it has entropy > N bits per bp.",
+      "long form argument" : "--min-repeat-entropy",
+      "short form argument" : "-mre",
+      "tasks" : {
+        "call-short-variants" : "--min-repeat-entropy"
+      }
+    },
+    {
+      "ID" : "geno iterations",
+      "description" : "Iterate no more than N times during genotyping step.",
+      "long form argument" : "--genotyping-max-iterations",
+      "short form argument" : "-gmi",
+      "tasks" : {
+        "call-short-variants" : "--genotyping-max-iterations"
+      }
+    },
+    {
+      "ID" : "contamination",
+      "description" : "A file containing per-sample estimates of contamination, such as those generated by VerifyBamID.  The format should be: sample p(read=R|genotype=AR) p(read=A|genotype=AA). Sample '*' can be used to set default contamination estimates.",
+      "long form argument" : "--contamination-estimates",
+      "short form argument" : "-ce",
+      "tasks" : {
+        "call-short-variants" : "--contamination-estimates"
+      }
+    },
+    {
+      "ID" : "cnv",
+      "description" : "Read a copy number map from the BED file FILE, which has the format: reference sequence, start, end, sample name, copy number ... for each region in each sample which does not have the default copy number as set by --ploidy.",
+      "long form argument" : "--cnv-map",
+      "short form argument" : "-cnv",
+      "tasks" : {
+        "call-short-variants" : "--cnv-map"
+      }
+    },
+    {
+      "ID" : "basis alleles",
+      "description" : "When specified, only variant alleles provided in this input VCF will be used for the construction of complex or haplotype alleles.",
+      "long form argument" : "--haplotype-basis-alleles",
+      "short form argument" : "-hba",
+      "tasks" : {
+        "call-short-variants" : "--haplotype-basis-alleles"
+      }
+    },
+    {
+      "ID" : "variants",
+      "description" : "Compress freebayes output.",
+      "tasks" : {
+        "call-short-variants" : "--vcf",
+        "compress" : "--in"
+      }
+    },
+    {
+      "ID" : "sites",
+      "description" : "Generate sites vcf.",
+      "tasks" : {
+        "compress" : "--out",
+        "generate-sites" : "--vcf"
+      }
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "The default instance sets all the parameters for the pipeline to run.",
+      "nodes" : [
+        {
+          "ID" : "realign",
+          "argument" : "--realign-bam",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "reverse complement",
+          "argument" : "--reverse-complement",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "unsorted output",
+          "argument" : "--unsorted-output",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "window",
+          "argument" : "--realignment-window",
+          "values" : [1000]
+        },
+        {
+          "ID" : "soft-clip threshold",
+          "argument" : "--soft-clip-qsum-threshold",
+          "values" : [200]
+        },
+        {
+          "ID" : "mismatch threshold",
+          "argument" : "--mismatch-qsum-threshold",
+          "values" : [200]
+        },
+        {
+          "ID" : "gap count",
+          "argument" : "--gap-count-max",
+          "values" : [4]
+        },
+        {
+          "ID" : "min alt fraction",
+          "argument" : "--min-alternate-fraction",
+          "values" : [0.2]
+        },
+        {
+          "ID" : "min alt count",
+          "argument" : "--min-alternate-count",
+          "values" : [2]
+        },
+        {
+          "ID" : "mq",
+          "argument" : "--min-mapping-quality",
+          "values" : [1]
+        },
+        {
+          "ID" : "bq",
+          "argument" : "--min-base-quality",
+          "values" : [3]
+        },
+        {
+          "ID" : "entropy",
+          "argument" : "--min-repeat-entropy",
+          "values" : [1]
+        },
+        {
+          "ID" : "geno iterations",
+          "argument" : "--genotyping-max-iterations",
+          "values" : [10]
+        }
+      ]
+    }
+  ]
+}

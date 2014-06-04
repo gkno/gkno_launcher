@@ -20,7 +20,7 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "A file containing a list of reference seqeunces. Genomic regions are either generated for sequences in or not in this list (see --keep).",
+        "description" : "Only regions from the reference sequence in this file will be output. If --invert-sequences is also set, the sequences not contained in the file will be output.",
         "long form argument" : "--reference-sequences",
         "short form argument" : "-s",
         "command line argument" : "none",
@@ -38,7 +38,7 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".txt"],
+        "extensions" : [""],
         "modify argument name on command line" : "stdout",
         "construct filename" : {
           "method": "define name",
@@ -52,8 +52,8 @@
     "Options" : [
       {
         "description" : "Generate regions only for the reference sequences contained in the file specified with --reference-sequences.",
-        "long form argument" : "--use-defined-sequences",
-        "short form argument" : "-u",
+        "long form argument" : "--invert-sequences",
+        "short form argument" : "-v",
         "command line argument" : "none",
         "data type" : "bool",
         "extensions" : ["no extension"],
@@ -76,7 +76,7 @@
     "--reference-dictionary",
     "--window-size",
     "--reference-sequences",
-    "--use-defined-sequences",
+    "--invert-sequences",
     "--out"
   ],
 
@@ -86,9 +86,9 @@
       "description" : "Default instance requires the users input for all files.",
       "nodes" : [
         {
-          "ID" : "use",
-          "argument" : "--use-defined-sequences",
-          "values" : [true]
+          "ID" : "invert",
+          "argument" : "--invert-sequences",
+          "values" : [false]
         }
       ]
     },
