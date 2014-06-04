@@ -1,0 +1,88 @@
+{
+  "id" : "bwa-index",
+  "description" : "Generate the FM-index for use with bwa alignment.",
+  "category" : "reference processing",
+  "tools" : ["bwa"],
+  "path" : "bwa",
+  "executable" : "bwa",
+  "modifier" : "index",
+  "help" : "--help|-h",
+  "help group" : "FASTA processing",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The reference FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fa", ".fasta"],
+        "modify argument name on command line" : "hide"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The FM index",
+        "long form argument" : "--index",
+        "short form argument" : "-i",
+        "command line argument" : "-p",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "is filename stub" : true,
+        "filename extensions" : [
+          ".amb",
+          ".ann",
+          ".bwt",
+          ".pac",
+          ".sa"
+        ],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "omit"
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "BWT construction algorithm: bwtsw or is [auto].",
+        "long form argument" : "--bwt-algorithm",
+        "short form argument" : "-a",
+        "command line argument" : "-a",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--bwt-algorithm",
+    "--fasta-reference",
+    "--index"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "fasta",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        }
+      ]
+    }
+  ]
+}

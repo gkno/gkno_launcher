@@ -230,6 +230,23 @@ class Blast(GknoTool):
     # TODO: determine if update needed for existing install
     return True
 
+# bwa
+class Bwa(GknoTool):
+  def __init__(self):
+    super(Bwa, self).__init__()
+    self.name       = "bwa"
+    self.installDir = "bwa"
+
+  # $ make -j N   
+  def doBuild(self):
+#    if not self.makeClean(): 
+#      return False 
+    return self.make()
+
+  # $ make -j N   
+  def doUpdate(self):
+    return self.make()
+
 # FastQValidator
 class FastQValidator(GknoTool):
   def __init__(self):
@@ -723,6 +740,7 @@ class Vt(GknoTool):
 List = [ 
         BamTools(),
         Blast(),
+        Bwa(),
         Freebayes(),
         Gatk(),
         Glia(),

@@ -91,3 +91,6 @@
 [submodule "tools/vt"]
 	path = tools/vt
 	url = https://github.com/gkno/vt.git
+[submodule "tools/bwa"]
+	path = tools/bwa
+	url = https://github.com/gkno/bwa.git
