@@ -48,10 +48,14 @@ class dataConsistency:
       # Loop over the output files if amendments are required.
       if noInputDataSets != noOutputDataSets:
         for fileNodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
-          values = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
-          if len(values) == 1:
-            optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
-            extensions   = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowedExtensions')
+          optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
+          values       = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
+
+          # Determine if this is a greedy node. If so, do not modify the output files.
+          isGreedy = config.nodeMethods.getGraphNodeAttribute(graph, task, 'isGreedy')
+
+          if len(values) == 1 and not isGreedy:
+            extensions = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowedExtensions')
             self.updateOutputFiles(graph, config, optionNodeID, values, extensions, noInputDataSets)
             self.updateOutputFiles(graph, config, fileNodeID, values, extensions, noInputDataSets)
             config.nodeMethods.setGraphNodeAttribute(graph, task, 'numberOfDataSets', noInputDataSets)

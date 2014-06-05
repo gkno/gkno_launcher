@@ -784,8 +784,12 @@ class gknoConfigurationFiles:
     filename     = config.tools.getAttributeFromDefinedConstruction(tool, argument, 'filename')
     addExtension = config.tools.getAttributeFromDefinedConstruction(tool, argument, 'add extension')
 
-    # Determine the number of iterations of data vailes.
+    # Determine the number of iterations of data values.
     numberOfDataSets = config.nodeMethods.getGraphNodeAttribute(graph, task, 'numberOfDataSets')
+
+    # If there are no datasets associated with this task, there are required arguments that have not been
+    # defined. Return and gkno will fail when checking data.
+    if numberOfDataSets == 0: return
 
     # Check to see if the filenames to be created should be in a different directory.
     directoryArgument = instructions['directory argument'] if 'directory argument' in instructions else None
