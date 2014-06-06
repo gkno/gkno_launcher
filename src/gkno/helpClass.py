@@ -453,6 +453,10 @@ class helpClass:
         shortFormArgument = config.tools.getArgumentAttribute(tool, longFormArgument, 'shortFormArgument')
         argumentGroup     = config.tools.getArgumentAttribute(tool, longFormArgument, 'argumentGroup')
         isRequired        = config.tools.getArgumentAttribute(tool, longFormArgument, 'isRequired')
+
+        # Check if this argument has construction instructions. If so, this does not need to be listed as
+        # required.
+        if config.tools.getArgumentAttribute(tool, longFormArgument, 'constructionInstructions'): isRequired = False
         if argumentGroup not in arguments: arguments[argumentGroup] = {}
         arguments[argumentGroup][longFormArgument] = (shortFormArgument, isRequired)
 
@@ -543,8 +547,10 @@ class helpClass:
       length            = len(text) if (len(text) > length) else length
 
       # First check if the pipeline requires the argument. If not, check if the tool
-      # requires the argument.
-      isRequired = config.pipeline.pipelineArguments[longFormArgument].isRequired
+      # requires the argument. If the tool has construction instructions, the argument
+      # does not need to be listed as required.
+      isRequired                  = config.pipeline.pipelineArguments[longFormArgument].isRequired
+      hasConstructionInstructions = False
       if not isRequired:
 
         # Check the tasks.
@@ -553,6 +559,9 @@ class helpClass:
             associatedTool     = config.pipeline.taskAttributes[associatedTask].tool
             associatedArgument = config.pipeline.nodeAttributes[configNodeID].tasks[associatedTask]
             if config.tools.getArgumentAttribute(associatedTool, associatedArgument, 'isRequired'): isRequired = True
+            if config.tools.getArgumentAttribute(associatedTool, associatedArgument, 'constructionInstructions'):
+              hasConstructionInstructions = True
+              break
 
         # If iSRequired is still False, check for greedy tasks.
         if not isRequired and config.pipeline.nodeAttributes[configNodeID].greedyTasks:
@@ -560,8 +569,11 @@ class helpClass:
             associatedTool     = config.pipeline.taskAttributes[associatedTask].tool
             associatedArgument = config.pipeline.nodeAttributes[configNodeID].greedyTasks[associatedTask]
             if config.tools.getArgumentAttribute(associatedTool, associatedArgument, 'isRequired'): isRequired = True
+            if config.tools.getArgumentAttribute(associatedTool, associatedArgument, 'constructionInstructions'):
+              hasConstructionInstructions = True
+              break
 
-      if isRequired: requiredArguments[text] = description
+      if isRequired and not hasConstructionInstructions: requiredArguments[text] = description
       else: optionalArguments[text] = description
 
     if requiredArguments:
