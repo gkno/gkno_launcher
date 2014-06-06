@@ -302,7 +302,7 @@
     },
     {
       "ID" : "sort bam",
-      "description" : "Sort the primary bam file output by the Mosaik aligner.",
+      "description" : "The bam file prefix output by Mosaik.",
       "long form argument" : "--bam",
       "short form argument" : "-b",
       "tasks" : {
