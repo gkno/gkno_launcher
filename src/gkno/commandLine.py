@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from __future__ import print_function
+from copy import deepcopy
 import sys
 
 import gknoErrors
@@ -611,5 +612,6 @@ class commandLine:
           # If the file is not a filename stub, just add the values to the node.
           else:
             for fileNodeID in attachedFileNodeIDs:
-              values = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
-              config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
+              values   = deepcopy(config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values'))
+              hasValue = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'hasValue')
+              if not hasValue: config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)

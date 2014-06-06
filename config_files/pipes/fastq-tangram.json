@@ -244,15 +244,6 @@
       }
     },
     {
-      "ID" : "bam",
-      "description" : "The bam files output by the Mosaik aligner.",
-      "long form argument" : "--bam",
-      "short form argument" : "-b",
-      "tasks" : {
-        "align" : "--bam"
-      }
-    },
-    {
       "ID" : "alignment candidate threshold",
       "description" : "The alignment candidate threshold for the Mosaik aligner.",
       "long form argument" : "--alignment-candidate-threshold",
@@ -312,6 +303,8 @@
     {
       "ID" : "sort bam",
       "description" : "Sort the primary bam file output by the Mosaik aligner.",
+      "long form argument" : "--bam",
+      "short form argument" : "-b",
       "tasks" : {
         "align" : "--bam",
         "sort-bam" : "--in"

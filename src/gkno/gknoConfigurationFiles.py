@@ -645,10 +645,13 @@ class gknoConfigurationFiles:
       # file is an output, unless specifically instructed to keep the path intact. For input files
       # being constructed, assume that the path is the same as the file from which they are being derived.
       for iteration in values:
-        if isInput: modifiedValues[iteration] = [values[iteration][0]]
-        else:
-          if keepPath: modifiedValues[iteration] = [values[iteration][0]]
-          else: modifiedValues[iteration] = [values[iteration][0].split('/')[-1]]
+        if iteration in values:
+          if values[iteration]:
+            if isInput: modifiedValues[iteration] = [values[iteration][0]]
+            else:
+              if keepPath: modifiedValues[iteration] = [values[iteration][0]]
+              else: modifiedValues[iteration] = [values[iteration][0].split('/')[-1]]
+          else: modifiedValues[iteration] = []
 
     # If multiple values are allowed, cycle through them all and add them to the modifiedValues
     # list.
@@ -975,6 +978,7 @@ class gknoConfigurationFiles:
 
         # Loop over each iteration of lists of files.
         values = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
+        task = config.nodeMethods.getSuccessorTaskNodes(graph, optionNodeID)[0]
 
         # Get the tasks that use this option node and check if any of the arguments have a separate
         # path defined.
