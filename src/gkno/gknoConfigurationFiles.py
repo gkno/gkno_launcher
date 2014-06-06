@@ -939,10 +939,19 @@ class gknoConfigurationFiles:
       for counter in range(2, len(modifiedValues) + 1):
         config.nodeMethods.addValuesToGraphNode(graph, optionNodeID, modifiedValues[counter], write = 'iteration', iteration = None)
     else:
-      #TODO
-      print('NOT YET IMPLEMENTED.')
-      print('gknoConfig.modifyNumberOfOutputIterations')
-      self.errors.terminate()
+      modifiedValues = deepcopy(config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values'))
+
+      # Strip the extension.
+      for iteration in modifiedValues:
+        for counter, value in enumerate(modifiedValues[iteration]):
+          for extension in config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'allowedExtensions'):
+            if value.endswith(extension):
+              modifiedValues[iteration][counter] = value.split(extension)[0]
+              break
+
+      config.nodeMethods.addValuesToGraphNode(graph, optionNodeID, modifiedValues[1], write = 'replace', iteration = None)
+      for counter in range(2, len(modifiedValues) + 1):
+        config.nodeMethods.addValuesToGraphNode(graph, optionNodeID, modifiedValues[counter], write = 'iteration', iteration = None)
 
   # Set file paths for all of the files.
   def setFilePaths(self, graph, config):
