@@ -19,7 +19,7 @@
         "if input is stream" : "replace",
         "replace argument with" : {
           "argument" : "--stdin",
-          "value" : "no value"
+          "value" : ""
         },
         "data type" : "string",
         "allow multiple values" : true
@@ -30,6 +30,7 @@
         "short form argument" : "-bi",
         "command line argument" : "--bam-index",
         "required" : true,
+        "required if stream" : false,
         "extensions" : [".bai"],
         "data type" : "string",
         "allow multiple values" : true,

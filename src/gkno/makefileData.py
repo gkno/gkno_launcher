@@ -435,7 +435,7 @@ class makefileData:
         # Determine the task in which each intermediate file is last used. This will allow the files to
         # be deleted as early as possible in the pipeline.
         deleteList = {}
-        if counter in graphIntermediates: deleteList = config.setWhenToDeleteFiles(graph, graphIntermediates[counter])
+        if graphIntermediates: deleteList = config.setWhenToDeleteFiles(graph, graphIntermediates)
 
         # Loop over all the tasks in this piped grouping to find the dependencies and outputs. An output that
         # is piped into the next tool is not an output and shouldn't be considered. Similarly, an input stream
@@ -446,6 +446,9 @@ class makefileData:
           isGreedy = config.nodeMethods.getGraphNodeAttribute(graph, task, 'isGreedy')
           for dependency in config.getTaskDependencies(graph, task, isGreedy, iteration = counter): taskDependencies.append(dependency)
           for output in config.getTaskOutputs(graph, task, iteration = counter): taskOutputs.append(output)
+
+          # If this is a greedy task and files are to be deleted, include all iterations.
+          if task in deleteList and isGreedy: deleteList = self.combineDeleteListIterations(task, deleteList)
 
         # Write out some text to the makefile.
         if len(tasks) == 1:
@@ -517,19 +520,32 @@ class makefileData:
 
         # Check if there are files that can be deleted at this point in the pipeline. If so, include
         # a command in the makefile to delete them.
-        self.deleteFiles(tasks, deleteList, fileHandle)
+        self.deleteFiles(tasks, deleteList, counter, fileHandle)
   
         # If there are additional output files from this task, include an additional rule in the
         # makefile to check on their existence.
         if len(taskOutputs) != 0: self.writeRuleForAdditionalOutputs(makefileName, fileHandle, taskOutputs, primaryOutput, taskDependencies)
 
+  # If a task is greedy, ensure that the list of files to delete contains all of the iterations.
+  def combineDeleteListIterations(self, task, deleteList):
+    newList = []
+    for counter in deleteList[task]:
+      for filename in deleteList[task][counter]:
+        newList.append(filename)
+
+    deleteList[task]    = {}
+    deleteList[task][1] = newList
+
+    return deleteList
+
   # Write commands to delete files that are no longer required by the pipeline.
-  def deleteFiles(self, tasks, deleteList, fileHandle):
+  def deleteFiles(self, tasks, deleteList, counter, fileHandle):
     for task in tasks:
       if task in deleteList:
-        print('### Remove files no longer required by the pipeline.', file = fileHandle)
-        for filename in deleteList[task]: print('\t@rm -f ', filename, sep = '', file = fileHandle)
-        print(file = fileHandle)
+        if counter in deleteList[task]:
+          print('### Remove files no longer required by the pipeline.', file = fileHandle)
+          for filename in deleteList[task][counter]: print('\t@rm -f ', filename, sep = '', file = fileHandle)
+          print(file = fileHandle)
 
   # Write an additional rule in the makefile to check for outputs from a task. Only a single
   # output is included in the rule for the additional task.

@@ -1,12 +1,24 @@
 {
-  "description" : "Call variants and combine into a single vcf file.",
+  "description" : "Call short variants using freebayes.",
 
   "tasks" : {
+    "merge" : {
+      "tool" : "bamtools-merge",
+      "output to stream" : true
+    },
+    "extend-gaps" : {
+      "tool" : "ogap",
+      "output to stream" : true
+    },
     "call" : {
       "tool" : "freebayes"
     },
     "combine" : {
-      "tool" : "vcflib-combine"
+      "tool" : "vcflib-combine",
+      "output to stream" : true
+    },
+    "compress" : {
+      "tool" : "gzip-delete"
     }
   },
 
@@ -17,7 +29,7 @@
       "long form argument" : "--bam",
       "short form argument" : "-b",
       "tasks" : {
-        "call" : "--bam"
+        "merge" : "--in"
       }
     },
     {
@@ -26,16 +38,7 @@
       "long form argument" : "--bam-list",
       "short form argument" : "-l",
       "tasks" : {
-        "call" : "--bam-list"
-      }
-    },
-    {
-      "ID" : "ref",
-      "description" : "The fasta reference.",
-      "long form argument" : "--fasta-reference",
-      "short form argument" : "-r",
-      "tasks" : {
-        "call" : "--fasta-reference"
+        "merge" : "--in-list"
       }
     },
     {
@@ -45,7 +48,7 @@
       "short form argument" : "-rg",
       "required" : true,
       "tasks" : {
-        "call" : "--region"
+        "merge" : "--region"
       }
     },
     {
@@ -54,7 +57,33 @@
       "long form argument" : "--region-list",
       "short form argument" : "-rl",
       "tasks" : {
-        "call" : "--region-list-single"
+        "merge" : "--region-list-single"
+      }
+    },
+    {
+      "ID" : "extend",
+      "description" : "Run the bam file through ogap.",
+      "tasks" : {
+        "merge" : "--out",
+        "extend-gaps" : "--bam"
+      }
+    },
+    {
+      "ID" : "ref",
+      "description" : "The fasta reference.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "tasks" : {
+        "extend-gaps" : "--fasta-reference",
+        "call" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "call",
+      "description" : "Call variants on the bam file.",
+      "tasks" : {
+        "extend-gaps" : "--out",
+        "call" : "--bam"
       }
     },
     {
@@ -67,6 +96,14 @@
         "combine" : "--in"
       },
       "delete files" : true
+    },
+    {
+      "ID" : "compress",
+      "description" : "Compress the final vcf file.",
+      "tasks" : {
+        "combine" : "--out",
+        "compress" : "--in"
+      }
     }
   ],
 
@@ -85,7 +122,7 @@
         {
           "ID" : "bam",
           "argument" : "--bam",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam", "$(RESOURCES)/tutorial/current/mutated_genome_set2.bam"]
         },
         {
           "ID" : "ref",

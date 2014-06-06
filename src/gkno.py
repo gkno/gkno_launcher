@@ -50,7 +50,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.23.3"
+__version__ = "1.24.0"
 __date__ = "June 2014"
 
 def main():
@@ -233,7 +233,7 @@ def main():
     # are missing edges.  For example, if a tool has an argument that is required, but is not included
     # in the pipeline configuration file (as a pipeline argument or via connections), the graph cannot
     # be completely defined.
-    config.nodeMethods.setRequiredNodes(pipelineGraph, config.tools)
+    config.nodeMethods.setRequiredNodes(pipelineGraph, config.tools, config.pipeline.workflow)
 
     # If help was requested on this specific pipeline, the information now exists to generate
     # the help information.

@@ -205,9 +205,16 @@ class gknoConfigurationFiles:
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
   def constructFilenames(self, graph, config, isPipeline):
+    #previousTaskOutputIsStream = False
     for task in config.pipeline.workflow:
       numberOfIterations = 0
       tool               = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+
+      #TODO REMOVE
+      # Determine if the input and output are streams.
+      #outputIsStream             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'outputStream')
+      #inputIsStream              = True if previousTaskOutputIsStream else False
+      #previousTaskOutputIsStream = True if outputIsStream else False
 
       # Input files are predecessor nodes to the task.  Deal with the input files first.
       for fileNodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
