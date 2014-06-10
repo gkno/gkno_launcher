@@ -50,7 +50,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.25.4"
+__version__ = "1.25.5"
 __date__ = "June 2014"
 
 def main():
@@ -481,8 +481,8 @@ def main():
   success = 0
   isExecute = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DO-NOT-EXECUTE', 'values')[1][0]
   if not hasMultipleRuns and isExecute == 'unset':
-    for phaseID in make.makefileNames:
-      for iteration, makefileName in enumerate(make.makefileNames[phaseID]):
+    for phaseID in make.structure.makefileNames:
+      for iteration, makefileName in enumerate(make.structure.makefileNames[phaseID]):
 
         # Check if the '--number-jobs' option is set.  If so, request this number of jobs.
         numberOfJobs = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-JOBS', 'values')[1][0]

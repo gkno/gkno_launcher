@@ -32,9 +32,6 @@
     "sort-bam" : {
       "tool" : "bamtools-sort"
     },
-    "index-bam" : {
-      "tool" : "bamtools-index"
-    },
     "mark-duplicates" : {
       "tool" : "dedup"
     },
@@ -321,7 +318,6 @@
       "description" : "Index sorted bam.",
       "tasks" : {
         "sort-bam" : "--out",
-        "index-bam" : "--in",
         "mark-duplicates" : "--in"
       }
     },
