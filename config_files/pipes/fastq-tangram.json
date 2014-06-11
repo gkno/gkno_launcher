@@ -394,6 +394,24 @@
       }
     },
     {
+      "ID" : "region single",
+      "description" : "A list of regions to be analysed (single makefile).",
+      "long form argument" : "--region-list-single",
+      "short form argument" : "-rls",
+      "tasks" : {
+        "detect-mei" : "--region-list-single"
+      }
+    },
+    {
+      "ID" : "region list multiple",
+      "description" : "A list of regions to be analysed (multiple makefiles).",
+      "long form argument" : "--region-list-multiple",
+      "short form argument" : "-rlm",
+      "tasks" : {
+        "detect-mei" : "--region-list-multiple"
+      }
+    },
+    {
       "ID" : "vcf",
       "description" : "Output MEIs.",
       "long form argument" : "--vcf",

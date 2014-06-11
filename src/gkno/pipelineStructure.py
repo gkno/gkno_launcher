@@ -104,6 +104,7 @@ class pipelineStructure:
           # If the number of input data sets differs from the number of output data sets from the
           # last task, this is the start of a new phase.
           if numberOfInputDataSets != self.numberOfFilesinPhase: self.createNewPhase(numberOfInputDataSets, numberOfOutputDataSets)
+          elif numberOfInputArgumentIterations != self.numberOfFilesinPhase: self.createNewPhase(numberOfInputArgumentIterations, numberOfOutputDataSets)
           else: self.numberOfPhaseOutputs[self.currentPhase] = numberOfOutputDataSets
 
         # Add this task to the makefile structure.
@@ -166,7 +167,7 @@ class pipelineStructure:
 
         # If this is the second phase, it cannot be moved to the first, so there is no possibility of
         # any more phases being moved, so teminate the search.
-        if phaseID == 2:
+        if phaseID <= 2:
           continueSearch = False
           break
   

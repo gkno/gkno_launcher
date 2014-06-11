@@ -17,6 +17,9 @@ import sys
 class loops:
   def __init__(self):
 
+    # Define the errors class.
+    self.errors = gknoErrors()
+
     # Define a list of arguments. The order is important since the values in the loop file are
     # in the same order as the arguments.
     self.arguments = []
@@ -233,8 +236,11 @@ class loops:
         if nodeID not in graph.nodes(): self.errors.nodeNotInGraph(graph, config, nodeID, 'gknoConfigurationFiles.addLoopValuesToGraph')
 
         if values:
-          if iteration == 1: config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'replace')
-          else: config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'iteration', iteration = str(iteration))
+
+          # Ensure that the values are a list.
+          applyValues = values if isinstance(values, list) else [values]
+          if iteration == 1: config.nodeMethods.addValuesToGraphNode(graph, nodeID, applyValues, write = 'replace')
+          else: config.nodeMethods.addValuesToGraphNode(graph, nodeID, applyValues, write = 'iteration', iteration = str(iteration))
 
   # TODO REPEATED IN GKNOCONFIG. SORT OUT CLASSES AND CONSOLIDATE.
   # Return the node for a gkno argument contained in the gkno configuration file.
