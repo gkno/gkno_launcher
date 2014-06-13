@@ -566,12 +566,12 @@ argument existed to set this value. Please see the documentation to see how to i
     self.terminate()
 
   # Multiple runs are disabled.
-  def multipleRunsDisabled(self):
+  def multipleRunsDisabled(self, task):
     self.text.append('Multiple argument lists defined.')
-    self.text.append('Multiple runs or internal loops have been requested (using the \'--multiple-runs\' or \'--internal-loop\') commands. Another ' + \
-    'argument on the command line defines a file containing a list of values which is implemented as a multiple run or internal loop. gkno only ' + \
-    'permits the definition of a single multiple-run, internal-loop or argument list file. Please modify the command line to reflect this ' + \
-    'requirement.')
+    self.text.append('Multiple runs or internal loops have been requested (using the \'--multiple-runs\' or \'--internal-loop\') commands. ' + \
+    'Another argument on the command line defines a file containing a list of values which is implemented as a multiple run or internal loop. ' + \
+    'Both of these definitions point to arguments in the same task (\'' + task + '\'). gkno only permits a single argument per task to have ' + \
+    'multiple data sets. Please modify the command line to reflect this requirement.')
     self.writeFormattedText('error')
     self.terminate()
 

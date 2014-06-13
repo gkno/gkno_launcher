@@ -484,18 +484,6 @@
       "ID" : "default",
       "description" : "Default instance requires the users input for all files.",
       "nodes" : [
-      ]
-    },
-
-    {
-      "ID" : "test",
-      "description" : "Instance for use with the test-harness.",
-      "nodes" : [
-        {
-          "ID" : "reference",
-          "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
-        },
         {
           "ID" : "qualities",
           "argument" : "--simulate-qualities",
@@ -515,23 +503,13 @@
     },
 
     {
-      "ID" : "fastq",
-      "description" : "Default instance requires the users input for all files.",
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
       "nodes" : [
         {
-          "ID" : "qualities",
-          "argument" : "--simulate-qualities",
-          "values" : ["set"]
-        },
-        {
-          "ID" : "paired",
-          "argument" : "--mate-pairs",
-          "values" : ["set"]
-        },
-        {
-          "ID" : "read length",
-          "argument" : "--read-length",
-          "values" : [100]
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         }
       ]
     }

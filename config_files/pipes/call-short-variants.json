@@ -128,6 +128,11 @@
           "ID" : "ref",
           "argument" : "--fasta-reference",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
+        },
+        {
+          "ID" : "region",
+          "argument" : "--region",
+          "values" : [20]
         }
       ]
     }

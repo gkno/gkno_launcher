@@ -100,7 +100,7 @@
         {
           "ID" : "dictionary",
           "argument" : "--reference-dictionary",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.dict"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dict"]
         },
         {
           "ID" : "window",

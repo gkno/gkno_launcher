@@ -305,12 +305,19 @@ class commandLine:
           # the loopData structure as the values will be treated as an internal loop or multiple runs
           # respectively.
           if listMode == 'single makefile' or listMode == 'multiple makefiles':
-            gknoConfig.loopData.arguments.append(listArgument)
-            gknoConfig.loopData.numberOfDataSets = 0
+            if listArgument in gknoConfig.loopData.argumentValues: print('ERROR - commandLine - unpackLists'); self.errors.terminate()
+            gknoConfig.loopData.argumentValues[listArgument] = {}
+
+            # Store the tasks that have arguments set with multiple data sets.
+            if isPipeline:
+              for linkedTask, dummy in config.pipeline.commonNodes[config.pipeline.pipelineArguments[argument].configNodeID]:
+                if linkedTask not in gknoConfig.loopData.tasksWithMultipleValuesSet: gknoConfig.loopData.tasksWithMultipleValuesSet.append(linkedTask)
+            else:
+              if task not in gknoConfig.loopData.tasksWithMultipleValuesSet: gknoConfig.loopData.tasksWithMultipleValuesSet.append(task)
+
             for iteration, value in enumerate(values):
-              gknoConfig.loopData.values[iteration + 1] = [value]
-              gknoConfig.loopData.numberOfDataSets += 1
-              gknoConfig.loopData.fromArgumentList = True
+              gknoConfig.loopData.argumentValues[listArgument][iteration + 1] = [value]
+              gknoConfig.loopData.fromArgumentList                            = True
 
             # Define whether to use internal loops or multiple makefiles.
             if listMode == 'single makefile': hasInternalLoop = True

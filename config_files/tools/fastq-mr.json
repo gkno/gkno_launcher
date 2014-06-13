@@ -1,0 +1,93 @@
+{
+  "id" : "fastq-mr",
+  "description" : "Generate a multiple runs input file with all fastq files from a directory.",
+  "category" : "file processing",
+  "tools" : [],
+  "path" : "scripts",
+  "executable" : "fastq-list.sh",
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "Path to directory where the fastq files reside.",
+        "long form argument" : "--directory",
+        "short form argument" : "-d",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The output json file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".json"],
+        "modify argument name on command line" : "hide",
+        "construct filename" : {
+          "method": "define name",
+          "filename" : "fastq-list",
+          "for multiple runs connect to" : "--directory",
+          "add extension" : true
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The suffix to the first mate [default: \"_1\"].",
+        "long form argument" : "--suffix",
+        "short form argument" : "-s",
+        "command line argument" : "none",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "The suffix to the second mate [default: replace \"1\" with \"2\" in --suffix].",
+        "long form argument" : "--suffix-mate2",
+        "short form argument" : "-s2",
+        "command line argument" : "none",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--directory",
+    "--out",
+    "--suffix",
+    "--suffix-mate2"
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "files",
+          "argument" : "--directory",
+          "values" : [
+            "$(RESOURCES)/tutorial/current"
+          ]
+        }
+      ]
+    }
+  ]
+}
