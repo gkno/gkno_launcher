@@ -49,6 +49,16 @@
     },
     "combine" : {
       "tool" : "vcflib-combine"
+    },
+    "convert-to-json" : {
+      "tool" : "tangram-convert-hist",
+      "output to stream" : true
+    },
+    "convert-to-tab" : {
+      "tool" : "tangram-hist"
+    },
+    "plot" : {
+      "tool" : "r-plot"
     }
   },
 
@@ -394,7 +404,8 @@
       "short form argument" : "-ht",
       "tasks" : {
         "scan-bam-files" : "--histogram-file",
-        "detect-mei" : "--histogram-file"
+        "detect-mei" : "--histogram-file",
+        "convert-to-json" : "--in"
       }
     },
     {
@@ -443,6 +454,32 @@
         "combine" : "--in"
       },
       "delete files" : true
+    },
+    {
+      "ID" : "tab",
+      "description" : "Convert the json file to tab delimited file.",
+      "tasks" : {
+        "convert-to-json" : "--out",
+        "convert-to-tab" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "output",
+      "description" : "The output tab-delimited file.",
+      "tasks" : {
+        "convert-to-tab" : "--out",
+        "plot" : "--in"
+      }
+    },
+    {
+      "ID" : "plot",
+      "description" : "Plot the tab delimited file with R.",
+      "long form argument" : "--r-script",
+      "short form argument" : "-r",
+      "tasks" : {
+        "plot" : "--script"
+      }
     }
   ],
 
@@ -455,6 +492,11 @@
           "ID" : "mosaik path",
           "argument" : "--mosaik-path",
           "values" : ["$(TOOL_BIN)/MOSAIK/bin"]
+        },
+        {
+          "ID" : "r script",
+          "argument" : "--r-script",
+          "values" : ["$(TOOL_BIN)/R/tangram-fragment-length.r"]
         }
       ]
     },

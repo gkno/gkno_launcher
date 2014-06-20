@@ -1,0 +1,69 @@
+{
+  "id" : "r-plot",
+  "description" : "Run an R script to plot.",
+  "category" : "data visualisation",
+  "tools" : [],
+  "path" : "no path",
+  "executable" : "R",
+  "modifier" : "CMD BATCH",
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "Input data file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "omit"
+      },
+      {
+        "description" : "R script to process.",
+        "long form argument" : "--script",
+        "short form argument" : "-s",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".r"],
+        "modify argument name on command line" : "hide"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The output tab delimited file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".pdf"],
+        "modify argument name on command line" : "omit",
+        "construct filename" : {
+          "method": "define name",
+          "filename" : "Rplots",
+          "for multiple runs connect to" : "--script",
+          "add extension" : true
+        }
+      }
+    ]
+  },
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

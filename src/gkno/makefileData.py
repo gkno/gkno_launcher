@@ -856,6 +856,9 @@ class makefileData:
     # If the argument should be omitted from the command line, set includeArgument to False.
     elif config.tools.getArgumentAttribute(tool, argument, 'inputStream') == 'do not include': return False, argument, None
 
+    #FIXME
+    elif config.tools.getArgumentAttribute(tool, argument, 'inputStream') == 'omit': return False, None, None
+
   # Write outputs and errors to the stdout and stderr files.
   def writeStdouts(self, stdoutUsed, fileHandle):
     if not stdoutUsed: print('\t>> $(STDOUT) \\', file = fileHandle)
