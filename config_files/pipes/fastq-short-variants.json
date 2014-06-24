@@ -3,12 +3,6 @@
   "help group" : "Short variant discovery",
 
   "tasks" : {
-    "build-reference" : {
-      "tool" : "mosaik-build-reference"
-    },
-    "build-jump-database" : {
-      "tool" : "mosaik-jump"
-    },
     "generate-mosaik-parameters" : {
       "tool" : "premo"
     },
@@ -34,23 +28,11 @@
 
   "nodes" : [
     {
-      "ID" : "reference fasta",
-      "description" : "The reference fasta file.",
-      "long form argument" : "--fasta-reference",
-      "short form argument" : "-f",
-      "tasks" : {
-        "build-reference" : "--fasta-reference",
-        "call-short-variants" : "--fasta-reference"
-      }
-    },
-    {
       "ID" : "mosaik reference",
       "description" : "The reference file created by Mosaik.",
       "long form argument" : "--mosaik-reference",
       "short form argument" : "-m",
       "tasks" : {
-        "build-reference" : "--mosaik-reference",
-        "build-jump-database" : "--mosaik-reference",
         "generate-mosaik-parameters" : "--mosaik-reference",
         "align" : "--mosaik-reference"
       }
@@ -62,7 +44,6 @@
       "short form argument" : "-hs",
       "required" : true,
       "tasks" : {
-        "build-jump-database" : "--hash-size",
         "generate-mosaik-parameters" : "--hash-size",
         "align" : "--hash-size"
       }
@@ -70,8 +51,9 @@
     {
       "ID" : "jump database",
       "description" : "The hash size for hashing the reference.",
+      "long form argument" : "--jump-database",
+      "short form argument" : "-j",
       "tasks" : {
-        "build-jump-database" : "--jump-database",
         "generate-mosaik-parameters" : "--jump-database",
         "align" : "--jump-database"
       }
@@ -306,6 +288,15 @@
       }
     },
     {
+      "ID" : "reference fasta",
+      "description" : "The reference fasta file.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-f",
+      "tasks" : {
+        "call-short-variants" : "--fasta-reference"
+      }
+    },
+    {
       "ID" : "use indexes",
       "description" : "Index the bam file.",
       "tasks" : {
@@ -474,7 +465,17 @@
         {
           "ID" : "reference",
           "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37.fa"]
+        },
+        {
+          "ID" : "mosaik reference",
+          "argument" : "--mosaik-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37.dat"]
+        },
+        {
+          "ID" : "jump",
+          "argument" : "--jump-database",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_15"]
         },
         {
           "ID" : "prefix",
