@@ -70,6 +70,8 @@
     {
       "ID" : "jump database",
       "description" : "The hash size for hashing the reference.",
+      "long form argument" : "--jump-database",
+      "short form argument" : "-j",
       "tasks" : {
         "build-jump-database" : "--jump-database",
         "generate-mosaik-parameters" : "--jump-database",
@@ -474,7 +476,12 @@
         {
           "ID" : "reference",
           "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37.fa"]
+        },
+        {
+          "ID" : "jump database",
+          "argument" : "--jump-database",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_15"]
         },
         {
           "ID" : "prefix",
