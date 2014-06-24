@@ -201,7 +201,7 @@
       }
     },
     {
-      "ID" : "read group",
+      "ID" : "lane",
       "description" : "The library name. e.g. g1k-sc-NA18944-JPT-1.",
       "long form argument" : "--lane",
       "short form argument" : "-l",
@@ -512,7 +512,6 @@
           "values" : ["illumina"]
         }
       ]
-    },
-
+    }
   ]
 }
