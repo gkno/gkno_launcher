@@ -239,11 +239,12 @@ class commandLine:
   # Parse the argument dictionary and check if any of the arguments are argument lists. If so,
   # read the associated file and attach the values to the relevant nodes.
   def unpackArgumentLists(self, graph, config, gknoConfig, runName):
-    isPipeline        = config.isPipeline
-    argumentsToAdd    = []
-    argumentsToRemove = []
-    hasInternalLoop   = False
-    hasMultipleRuns   = False
+    isPipeline            = config.isPipeline
+    argumentsToAdd        = []
+    argumentsToRemove     = []
+    hasInternalLoop       = False
+    hasMultipleRuns       = False
+    tasksWithDefinedLoops = []
     for argument in self.argumentDictionary:
 
       # Do not consider gkno specific arguments.
@@ -275,7 +276,8 @@ class commandLine:
 
           # If another list has already been defined, terminate. gkno is unable to accept multiple different
           # definitions of internal loops/multiple runs.
-          if hasInternalLoop or hasMultipleRuns: self.errors.multipleArgumentListsDefined(argument, listArgument)
+          if task in tasksWithDefinedLoops: self.errors.multipleArgumentListsDefined(argument, listArgument)
+          tasksWithDefinedLoops.append(task)
 
           # Find the node for the defined argument.
           nodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, listArgument, 'option')

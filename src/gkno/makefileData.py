@@ -41,10 +41,10 @@ class makefileData:
 
   # Generate the makefile for a tool/pipeline with a single set of data or an internal loop.
   # Only one makefile is required in this case.
-  def generateSingleMakefile(self, graph, config, runName, sourcePath, gknoCommitID, outputPaths, version, date):
+  def generateSingleMakefile(self, graph, config, runName, sourcePath, toolsPath, resourcesPath, gknoCommitID, outputPaths, version, date):
 
     # Set the output path for use in the makefile generation.
-    self.getOutputPath(graph, config, outputPaths)
+    self.getOutputPath(graph, config, outputPaths, toolsPath, resourcesPath)
 
     # Open the makefile.                          
     makefileName   = runName + '.make'
@@ -84,7 +84,7 @@ class makefileData:
     self.checkFilesExist(graph, config, graphDependencies, sourcePath)
 
   # If multiple runs were requested, there are multiple makefiles to be generated.
-  def generateMultipleMakefiles(self, graph, config, runName, sourcePath, gknoCommitID, outputPaths, version, date):
+  def generateMultipleMakefiles(self, graph, config, runName, sourcePath, toolsPath, resourcesPath, gknoCommitID, outputPaths, version, date):
 
     # Determine the structure of the pipeline and break it up into phases and iterations.
     # Each phase and iteration within it needs its own makefile.
@@ -94,7 +94,7 @@ class makefileData:
     self.structure.setMakefilenames(runName)
 
     # Set the output path for use in the makefile generation.
-    self.getOutputPath(graph, config, outputPaths)
+    self.getOutputPath(graph, config, outputPaths, toolsPath, resourcesPath)
 
     # Loop over the phases and iterations and construct the makefiles.
     for phaseID in range(1, len(self.structure.makefileNames) + 1):
@@ -144,7 +144,7 @@ class makefileData:
         self.checkFilesExist(graph, config, graphDependencies, sourcePath)
 
   # Get the output path for use with generating the makefiles.
-  def getOutputPath(self, graph, config, outputPaths):
+  def getOutputPath(self, graph, config, outputPaths, toolsPath, resourcesPath):
 
     # The output path is stored with the gkno specific nodes. Since the valiues are treated as all other
     # arguments, the value itself is the first (and only) value in the list associated with the first (and
@@ -152,10 +152,15 @@ class makefileData:
     if not outputPaths: self.outputPaths[1] = '$(PWD)'
     else: self.outputPaths = outputPaths
 
-    # If the chosen output path is not the current directory, check to see if the directory exists.
+    # If the chosen output path is not the current directory, check to see if the directory exists. If
+    # any variables (e.g. $(PWD) are used, expand these before checking).
     for iteration in self.outputPaths:
       outputPath = self.outputPaths[iteration]
-      if outputPath == '$(PWD)/': outputPath = './'
+
+      # Remove variables.
+      if outputPath.startswith('$(PWD)'): outputPath = outputPath.replace('$(PWD)', './')
+      elif outputPath.startswith('$(TOOL_BIN)'): outputPath = outputPath.replace('$(TOOL_BIN)', toolsPath)
+      elif outputPath.startswith('$(RESOURCES)'): outputPath = outputPath.replace('$(RESOURCES)', resourcesPath)
       if not os.path.isdir(outputPath):
         self.errors.missingOutputDirectory(graph, config, outputPath)
         config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-DO-NOT-EXECUTE', ['set'], write = 'replace')

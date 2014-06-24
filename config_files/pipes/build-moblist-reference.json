@@ -164,7 +164,7 @@
         {
           "ID" : "output path",
           "argument" : "--output-path",
-          "values" : ["./reference"]
+          "values" : ["$(RESOURCES)/homo_sapiens/current"]
         },
         {
           "ID" : "output",

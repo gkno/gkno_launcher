@@ -987,7 +987,7 @@ class gknoConfigurationFiles:
 
         # Loop over each iteration of lists of files.
         values = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
-        task = config.nodeMethods.getSuccessorTaskNodes(graph, optionNodeID)[0]
+        task   = config.nodeMethods.getSuccessorTaskNodes(graph, optionNodeID)[0]
 
         # Get the tasks that use this option node and check if any of the arguments have a separate
         # path defined.

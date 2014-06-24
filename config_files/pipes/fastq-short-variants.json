@@ -201,6 +201,15 @@
       }
     },
     {
+      "ID" : "read group",
+      "description" : "The library name. e.g. g1k-sc-NA18944-JPT-1.",
+      "long form argument" : "--lane",
+      "short form argument" : "-l",
+      "tasks" : {
+        "build-read-archive" : "--lane"
+      }
+    },
+    {
       "ID" : "bam",
       "description" : "The bam files output by the Mosaik aligner.",
       "long form argument" : "--bam",
@@ -456,6 +465,54 @@
           "values" : [2]
         }
       ]
-    }
+    },
+
+    {
+      "ID" : "human-illumina",
+      "description" : "Parameters assuming illumina sequencing of a human genome",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo-sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "ID" : "prefix",
+          "argument" : "--special-reference-prefix",
+          "values" : ["moblist"]
+        },
+        {
+          "ID" : "sr hashes",
+          "argument" : "--special-reference-hashes",
+          "values" : [50]
+        },
+        {
+          "ID" : "temp dir",
+          "argument" : "--temp-directory",
+          "values" : ["pipeline_temp"]
+        },
+        {
+          "ID" : "hash size",
+          "argument" : "--hash-size",
+          "values" : [15]
+        },
+        {
+          "ID" : "se neural net",
+          "argument" : "--ann-single-end",
+          "values" : ["$(RESOURCES)/homo-sapiens/current/se.100.005.ann"]
+        },
+        {
+          "ID" : "pe neural net",
+          "argument" : "--ann-paired-end",
+          "values" : ["$(RESOURCES)/homo-sapiens/current/pe.100.01.ann"]
+        },
+        {
+          "ID" : "tech",
+          "argument" : "--sequencing-technology",
+          "values" : ["illumina"]
+        }
+      ]
+    },
+
   ]
 }

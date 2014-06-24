@@ -1,5 +1,6 @@
 {
   "description" : "Starting from fasta and fastq files, prepare MOSAIK reference files, align reads and search for mobile element insertions (MEIs).",
+  "help group" : "MEI processing",
 
   "tasks" : {
     "merge-fasta" : {
@@ -358,7 +359,7 @@
     },
     {
       "ID" : "scan",
-      "description" : "The number of hashes for the mobile element reference sequences.",
+      "description" : "The list of bam files in which to call MEIs",
       "long form argument" : "--bam-list",
       "short form argument" : "-bl",
       "required" : true,
