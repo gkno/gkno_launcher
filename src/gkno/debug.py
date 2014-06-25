@@ -34,13 +34,15 @@ class debug:
       # Print out all input files.
       print('\tINPUT FILES')
       for nodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
-        argument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument')
-        values   = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
-        print('\t\t', nodeID, ' ', argument, ' ', values, sep = '')
+        argument   = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'longFormArgument')
+        values     = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
+        extensions = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'allowedExtensions')
+        print('\t\t', nodeID, ' ', argument, ' ', values, ' ', extensions, sep = '')
 
       # Print out all output files.
-      print('\tOUTPUTS')
+      print('\tOUTPUT FILES')
       for nodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
-        argument = config.edgeMethods.getEdgeAttribute(graph, task, nodeID, 'longFormArgument')
-        values   = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
-        print('\t\t', nodeID, ' ', argument, ' ', values, sep = '')
+        argument   = config.edgeMethods.getEdgeAttribute(graph, task, nodeID, 'longFormArgument')
+        values     = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
+        extensions = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'allowedExtensions')
+        print('\t\t', nodeID, ' ', argument, ' ', values, ' ', extensions, sep = '')
