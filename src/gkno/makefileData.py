@@ -45,11 +45,14 @@ class makefileData:
 
     # Set the output path for use in the makefile generation.
     self.getOutputPath(graph, config, outputPaths, toolsPath, resourcesPath)
+    self.structure.setSingleMakefile(runName + '.make')
+
+    # Check if the makefile names should include user-specified text. If so, add the text.
+    self.checkMakefileNames(graph, config, runName)
 
     # Open the makefile.                          
-    makefileName   = runName + '.make'
+    makefileName   = self.structure.makefileNames[1][0]
     makefileHandle = self.openMakefile(makefileName)
-    self.structure.setSingleMakefile(makefileName)
 
     # Write header information to the makefile if this hasn't already been done..
     self.writeHeaderInformation(sourcePath, runName, makefileName, makefileHandle, 1, 'all', version, date, gknoCommitID)
@@ -92,6 +95,9 @@ class makefileData:
 
     # Set the names of the makefiles.
     self.structure.setMakefilenames(runName)
+
+    # Check if the makefile names should include user-specified text. If so, add the text.
+    self.checkMakefileNames(graph, config, runName)
 
     # Set the output path for use in the makefile generation.
     self.getOutputPath(graph, config, outputPaths, toolsPath, resourcesPath)
@@ -143,6 +149,23 @@ class makefileData:
         # Check that all of the input files exist.
         self.checkFilesExist(graph, config, graphDependencies, sourcePath)
 
+  # Check if the makefile names should include user-specified text. If so, add the text.
+  def checkMakefileNames(self, graph, config, runName):
+
+    # Check if the user has requested additional text to be included.
+    additionalText = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-MAKEFILE-ID', 'values')
+
+    if additionalText:
+      updatedNames = {}
+      for iteration in self.structure.makefileNames:
+        updatedNames[iteration] = []
+        for filename in self.structure.makefileNames[iteration]:
+          updatedFilename = filename.replace(runName, runName + '-' + str(additionalText[1][0]))
+          updatedNames[iteration].append(updatedFilename)
+
+      # Update the filenames.
+      self.structure.makefileNames = updatedNames
+      
   # Get the output path for use with generating the makefiles.
   def getOutputPath(self, graph, config, outputPaths, toolsPath, resourcesPath):
 

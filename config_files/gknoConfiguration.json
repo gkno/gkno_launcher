@@ -59,6 +59,12 @@
       "description" : "Loop over a subsection of the pipeline.",
       "short form" : "-il"
     },
+    "GKNO-MAKEFILE-ID" : {
+      "argument" : "--makefile-id",
+      "data type" : "string",
+      "description" : "Append this text to all makefiles generated in this execution of gkno.",
+      "short form" : "-mi"
+    },
     "GKNO-MULTIPLE-RUNS" : {
       "argument" : "--multiple-runs",
       "data type" : "string",
