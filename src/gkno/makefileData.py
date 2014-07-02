@@ -407,13 +407,13 @@ class makefileData:
           if task == tasks[0]: print('\t@', end = '', file = fileHandle)
           else: print('\t| ', end = '', file = fileHandle)
 
-          stdoutUsed = self.writeCommand(graph, config, fileHandle, task, counter, inputIsStream)
+          stdout = self.writeCommand(graph, config, fileHandle, task, counter, inputIsStream)
   
           # If the task does not output to a stream, finish the command.
           if task == tasks[-1]:
   
             # Write output and errors to the stdout and stderr files.
-            self.writeStdouts(stdoutUsed, fileHandle)
+            self.writeStdouts(stdout, fileHandle)
     
             # Write that the task complete successfully.
             self.writeComplete(fileHandle)
@@ -476,7 +476,8 @@ class makefileData:
 
   # Write the command line for the current task.
   def writeCommand(self, graph, config, fileHandle, task, iteration, inputIsStream):
-    stdoutUsed = False
+    #stdoutUsed = False
+    stdout = (False, None)
 
     # Define some tool attributes. These are extracted from the task node.
     tool       = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
@@ -742,8 +743,9 @@ class makefileData:
 
               # Check if the argument is an output that writes to standard out.
               elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout':
-                print('\t>> ', value, endText, ' \\', sep = '', file = fileHandle)
-                stdoutUsed = True
+                #print('\t>> ', value, endText, ' \\', sep = '', file = fileHandle)
+                #stdoutUsed = True
+                stdout = (True, value + endText)
   
               # If the argument should be hidden, only write the value.
               elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'hide':
@@ -759,7 +761,8 @@ class makefileData:
               else:
                 if value == 'set': print('\t', commandLineArgument, endText, ' \\', sep = '', file = fileHandle)
 
-    return stdoutUsed
+    #return stdoutUsed
+    return stdout
 
   # Get tool arguments with commands to evaluate.
   def getToolArgumentsWithCommands(self, graph, config, task, tool, arguments):
@@ -888,8 +891,9 @@ class makefileData:
     elif config.tools.getArgumentAttribute(tool, argument, 'inputStream') == 'omit': return False, None, None
 
   # Write outputs and errors to the stdout and stderr files.
-  def writeStdouts(self, stdoutUsed, fileHandle):
-    if not stdoutUsed: print('\t>> $(STDOUT) \\', file = fileHandle)
+  def writeStdouts(self, stdout, fileHandle):
+    if not stdout[0]: print('\t>> $(STDOUT) \\', file = fileHandle)
+    else: print('\t>> ', stdout[1], ' \\', sep = '', file = fileHandle)
     print('\t2>> $(STDERR)', file = fileHandle)
 
   # Indicate that the task ran successfully.

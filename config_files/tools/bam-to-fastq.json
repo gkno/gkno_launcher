@@ -1,0 +1,165 @@
+{
+  "id" : "bam-to-fastq",
+  "description" : "Convert a fastq file back to a pair of fastq files.",
+  "category" : "alignment processing",
+  "tools" : ["bamUtil", "libStatGen"],
+  "path" : "bamUtil/bin",
+  "executable" : "bam",
+  "modifier" : "bam2FastQ",
+  "help" : "--help|-h",
+  "help group" : "BAM processing",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "Input BAM file name (must be sorted).",
+        "long form argument" : "--bam",
+        "short form argument" : "-b",
+        "command line argument" : "--in",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bam"]
+      },
+      {
+        "description" : "Input list of BAM files to process in a single makefile.",
+        "long form argument" : "--bam-list-single",
+        "short form argument" : "-bls",
+        "command line argument" : "none",
+        "data type" : "string",
+        "extensions" : [".bam"],
+        "argument list" : {
+          "use argument" : "--bam",
+          "mode" : "single makefile"
+        }
+      },
+      {
+        "description" : "Input list of BAM files to process in multiple makefiles.",
+        "long form argument" : "--bam-list-multiple",
+        "short form argument" : "-blm",
+        "command line argument" : "none",
+        "data type" : "string",
+        "extensions" : [".bam"],
+        "argument list" : {
+          "use argument" : "--bam",
+          "mode" : "multiple makefiles"
+        }
+      },
+      {
+        "description" : "Reference file for converting '=' in the sequence to the actual base if '=' are found and the refFile is not specified, 'N' is written to the FASTQ.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-f",
+        "command line argument" : "--refFile",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fa"]
+      }
+
+    ],
+
+    "outputs" : [
+      {
+        "description" : "Base output name for generated output files.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "is filename stub" : true,
+        "filename extensions" : [
+          "_1.fastq",
+          "_2.fastq"
+        ],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--bam",
+          "modify extension" : "replace"
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Generate a single interleaved (merged) FASTQ for paired-ends (unpaired in a separate file). Use firstOut to override the filename of the interleaved file.",
+        "long form argument" : "--merge",
+        "short form argument" : "-m",
+        "command line argument" : "--merge",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Do not reverse complement reads marked as reverse.",
+        "long form argument" : "--no-reverse-complement",
+        "short form argument" : "-n",
+        "command line argument" : "--noReverseComp",
+        "data type" : "flag",
+        "extensions" : [".log"]
+      },
+      {
+        "description" : "Do not expect an EOF block on a bam file.",
+        "long form argument" : "--no-end-of-file",
+        "short form argument" : "-no",
+        "command line argument" : "--noeof",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Read name extension to use for first read in a pair [default: \"/1\"].",
+        "long form argument" : "--first-mate-extension",
+        "short form argument" : "-fe",
+        "command line argument" : "--firstRNExt",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Read name extension to use for second read in a pair [default: \"/2\"].",
+        "long form argument" : "--second-mate-extension",
+        "short form argument" : "-se",
+        "command line argument" : "--secondRNExt",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Add the Read Name/extension to the '+' line of the fastq records.",
+        "long form argument" : "--add-read-name",
+        "short form argument" : "-a",
+        "command line argument" : "--rnPlus",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Print the parameter settings to stderr.",
+        "long form argument" : "--write-paramters",
+        "short form argument" : "-p",
+        "command line argument" : "--params",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "Default instance requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "bam",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
+    }
+  ]
+}

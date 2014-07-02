@@ -1,0 +1,98 @@
+{
+  "description" : "Extract paired end fastqs from a bam files and compress and check.",
+
+  "tasks" : {
+    "extract" : {
+      "tool" : "bam-to-fastq"
+    },
+    "compress-1" : {
+      "tool" : "gzip-delete"
+    },
+    "compress-2" : {
+      "tool" : "gzip-delete"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "bam",
+      "description" : "The input BAM file.",
+      "long form argument" : "--bam",
+      "short form argument" : "-b",
+      "tasks" : {
+        "extract" : "--bam"
+      }
+    },
+    {
+      "ID" : "bam list single",
+      "description" : "A list of input BAM files to be processed in a single makefile.",
+      "long form argument" : "--bam-list-single",
+      "short form argument" : "-bls",
+      "tasks" : {
+        "extract" : "--bam-list-single"
+      }
+    },
+    {
+      "ID" : "bam list multiple",
+      "description" : "A list of input BAM files to be processed in multiple makefiles.",
+      "long form argument" : "--bam-list-multiple",
+      "short form argument" : "-blm",
+      "tasks" : {
+        "extract" : "--bam-list-multiple"
+      }
+    },
+    {
+      "ID" : "reference",
+      "description" : "Reference file for converting '=' in the sequence to the actual base if '=' are found and the refFile is not specified, 'N' is written to the FASTQ.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-f",
+      "tasks" : {
+        "extract" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "compress",
+      "description" : "Compress the first mate.",
+      "tasks" : {
+        "extract" : "--out",
+        "compress-1" : "--in",
+        "compress-2" : "--in"
+      },
+      "extensions" : {
+        "compress-1" : {
+          "--in" : "_1.fastq"
+        },
+        "compress-2" : {
+          "--in" : "_2.fastq"
+        }
+      },
+      "delete files" : true
+    }
+  ],
+
+  "instances" : [
+    {
+      "ID" : "default",
+      "description" : "The default instance sets all the parameters for the pipeline to run.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Instance for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "bam",
+          "argument" : "--bam",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "ID" : "ref",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        }
+      ]
+    }
+  ]
+}

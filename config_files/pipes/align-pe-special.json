@@ -260,7 +260,7 @@
       },
       "extensions" : {
         "sort-bam" : {
-          "--in" : "bam"
+          "--in" : ".bam"
         }
       },
       "delete files" : true
