@@ -66,10 +66,7 @@ class makefileData:
 
     deleteList = {}
     if graphIntermediates: deleteList = config.setWhenToDeleteFiles(graph, graphIntermediates)
-    graphOutputs       = config.getGraphOutputs(graph, config.pipeline.workflow, deleteList, key = 'all')
-
-    # Write the intermediate files to the makefile.
-    self.writeIntermediateFiles(makefileHandle, graphIntermediates, 'all')
+    graphOutputs = config.getGraphOutputs(graph, config.pipeline.workflow, deleteList, key = 'all')
 
     # Write the pipeline outputs to the makefile.
     self.writeOutputFiles(graph, config, makefileHandle, graphOutputs)
@@ -141,9 +138,6 @@ class makefileData:
         # Detemine which files are dependencies and outputs files.
         graphDependencies  = config.getGraphDependencies(graph, self.structure.tasksInPhase[phaseID], key = key)
         graphOutputs       = config.getGraphOutputs(graph, self.structure.tasksInPhase[phaseID], deleteList, key = key)
-
-        # Write the intermediate files to the makefile.
-        self.writeIntermediateFiles(makefileHandle, graphIntermediates, key)
 
         # Write the pipeline outputs to the makefile.
         self.writeOutputFiles(graph, config, makefileHandle, graphOutputs)
@@ -255,25 +249,10 @@ class makefileData:
     print('COMPLETE_OK=', outputPath, okFile, sep = '', file = fileHandle)
     print(file = fileHandle)
 
-  # Write out all of the intermediate files.
-  def writeIntermediateFiles(self, fileHandle, intermediates, key):
+    # Include .DELETE_ON_ERROR in the makefile. This ensures that if the makefile execution is
+    # terminated, the targets of the recipe are removed, ensuring that incomplete files are
+    # left behing, potentially causing problems.
     print('.DELETE_ON_ERROR:', file = fileHandle)
-    print('.INTERMEDIATE:', end = ' ', file = fileHandle)
-    if intermediates:
-
-      # Write out all intermediates. This is the case when only one makefile is
-      # being written.
-      if key == 'all':
-        for iteration in intermediates:
-          for nodeID, intermediateFile in intermediates[iteration]: print(intermediateFile, end = ' ', file = fileHandle)
-
-
-      # If only intermediates for a particular iteration are required.
-      else:
-        if key in intermediates:
-          for nodeID, intermediateFile in intermediates[key]: print(intermediateFile, end = ' ', file = fileHandle)
-
-    print(file = fileHandle)
 
   # Write out all of the output files.
   def writeOutputFiles(self, graph, config, fileHandle, outputs):

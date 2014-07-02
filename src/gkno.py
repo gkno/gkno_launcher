@@ -53,7 +53,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.30.12"
+__version__ = "1.30.13"
 __date__ = "July 2014"
 
 def main():
@@ -499,7 +499,7 @@ def main():
 
   # Check the status of the pipeline. Look for all makefiles and the corresponding files
   # indicating succesful completion and give the status of execution.
-  status.getStatus(make.structure.makefileNames)
+  if hasMultipleRuns: status.getStatus(pipelineGraph, config, make.structure.makefileNames)
 
   # If the makefile was succesfully run, finish gkno with the exit condition of 0.
   # If the makefile failed to run, finish with the exit condition 3.  A failure
