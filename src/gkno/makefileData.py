@@ -417,10 +417,6 @@ class makefileData:
         # Write out the task dependencies separated by spaces.
         for i in range(0, len(taskDependencies)): print(taskDependencies[i], end = ' ', file = fileHandle)
         print(file = fileHandle)
-
-        # If the file written on completion exists, delete it. If any tasks are executed, then this file will
-        # need to be regenerated based on successful completion.
-        print('\t@if [ -f $(COMPLETE_OK) ]; then rm -f $(COMPLETE_OK); fi', sep = '', file = fileHandle)
   
         # Include a line that will echo which task is being run.
         if len(tasks) == 1: print('\t@echo ', self.echoModifier, ' "Executing task: ', task, '...\c"', sep = '', file = fileHandle)

@@ -191,7 +191,7 @@
       },
       "extensions" : {
         "sort-primary-bam" : {
-          "--in" : "bam"
+          "--in" : ".bam"
         }
       }
     },
