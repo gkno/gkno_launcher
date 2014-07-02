@@ -74,6 +74,9 @@ class makefileData:
     # Write the pipeline outputs to the makefile.
     self.writeOutputFiles(graph, config, makefileHandle, graphOutputs)
 
+    # Write a rule to remove the COMPLETE_OK file.
+    self.removeCompleteOk(makefileHandle)
+
     # Search through the tasks in the workflow and check for tasks outputting to a stream. Generate a
     # list of tasks for generating the makefiles. Each entry in the list should be a list of all tasks
     # that are piped together (in a pipeline with no streaming, this list will just be the workflow).
@@ -81,6 +84,9 @@ class makefileData:
 
     # Write out the information for running each task.
     self.writeTasks(graph, config, makefileName, makefileHandle, taskList, 'all', graphIntermediates, deleteList)
+
+    # If all tasks were successfully completed, touch a file confirming this.
+    self.writeOkFile(graphOutputs, makefileHandle)
 
     # Close the makefile in preparation for execution. Again, if an internal loop is being run, the
     # file should only be closed at the end of the pipeline.
@@ -142,6 +148,9 @@ class makefileData:
         # Write the pipeline outputs to the makefile.
         self.writeOutputFiles(graph, config, makefileHandle, graphOutputs)
 
+        # Write a rule to remove the COMPLETE_OK file.
+        self.removeCompleteOk(makefileHandle)
+
         # Search through the tasks in the workflow and check for tasks outputting to a stream. Generate a
         # list of tasks for generating the makefiles. Each entry in the list should be a list of all tasks
         # that are piped together (in a pipeline with no streaming, this list will just be the workflow).
@@ -149,6 +158,9 @@ class makefileData:
 
         # Write out the information for running each task.
         self.writeTasks(graph, config, makefileName, makefileHandle, taskList, key, graphIntermediates, deleteList)
+
+        # If all tasks were successfully completed, touch a file confirming this.
+        self.writeOkFile(graphOutputs, makefileHandle)
 
         # Close the makefile in preparation for execution. Again, if an internal loop is being run, the
         # file should only be closed at the end of the pipeline.
@@ -217,16 +229,18 @@ class makefileData:
     if self.structure.makefilesInPhase[phaseID] > 1:
       print('### Data set ', str(iteration), ' of ', self.structure.makefilesInPhase[phaseID], sep = '', file = fileHandle)
 
-    # If there are multiple iterations, include the iteration in the stdout and stderr names.
-    if iteration == 'all': stdoutName = pipelineName
-    else: stdoutName = pipelineName + '_' + str(iteration)
-
     # Get the output path for stdout and stderr.
     if iteration in self.outputPaths: outputPath = self.outputPaths[iteration]
     elif len(self.outputPaths) != 1:
       print('ERROR - makefile.writeHeaderInformation.')
       self.errors.terminate()
     else: outputPath = self.outputPaths[1]
+
+    # Define the name of a file that will be created on successful completion as well
+    # as the stdout and stderr.
+    stdoutName = makefileName.replace('.make', '.stdout')
+    stderrName = makefileName.replace('.make', '.stderr')
+    okFile = makefileName.replace('.make', '.ok')
 
     print(file = fileHandle)
     print('### Paths to tools and resources.', file = fileHandle)
@@ -236,8 +250,9 @@ class makefileData:
     print('MAKEFILE_ID=', makefileName.split('/')[-1].split('.')[0], sep = '', file = fileHandle)
     print(file = fileHandle)
     print('### Standard output and errors files.', file = fileHandle)
-    print('STDOUT=', outputPath, stdoutName, '.stdout', sep = '', file = fileHandle)
-    print('STDERR=', outputPath, stdoutName, '.stderr', sep = '', file = fileHandle)
+    print('STDOUT=', outputPath, stdoutName, sep = '', file = fileHandle)
+    print('STDERR=', outputPath, stderrName, sep = '', file = fileHandle)
+    print('COMPLETE_OK=', outputPath, okFile, sep = '', file = fileHandle)
     print(file = fileHandle)
 
   # Write out all of the intermediate files.
@@ -259,7 +274,6 @@ class makefileData:
           for nodeID, intermediateFile in intermediates[key]: print(intermediateFile, end = ' ', file = fileHandle)
 
     print(file = fileHandle)
-    print(file = fileHandle)
 
   # Write out all of the output files.
   def writeOutputFiles(self, graph, config, fileHandle, outputs):
@@ -273,24 +287,31 @@ class makefileData:
       tool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
       if config.tools.getGeneralAttribute(tool, 'noOutput'): self.phonyTargets.append(task)
 
-    print('all:', end = ' ', file = fileHandle)
+    # If there were phony targets, list these.
+    print('.PHONY: DELETE_COMPLETE_OK', end = ' ', file = fileHandle)
+    for phonyTarget in self.phonyTargets: print(phonyTarget, end = ' ', file = fileHandle)
+    print(file = fileHandle)
+    print(file = fileHandle)
+
+    # Print out all outputs.
+    print('all: DELETE_COMPLETE_OK', end = ' ', file = fileHandle)
 
     # Add all phony targets.
-    if self.phonyTargets:
-      for phonyTarget in self.phonyTargets: print(phonyTarget, end = ' ', file = fileHandle)
+    for phonyTarget in self.phonyTargets: print(phonyTarget, end = ' ', file = fileHandle)
 
     # Add all outputs.
     if outputs:
       for nodeID, outputFile in outputs: print(outputFile, end = ' ', file = fileHandle)
-    print(file = fileHandle)
+
+    # Include the file generated on successful execution of the makefile.
+    print('$(COMPLETE_OK)', file = fileHandle)
     print(file = fileHandle)
 
-    # If there were phony targets, list these.
-    if self.phonyTargets:
-      print('.PHONY:', end = ' ', file = fileHandle)
-      for phonyTarget in self.phonyTargets: print(phonyTarget, end = ' ', file = fileHandle)
-      print(file = fileHandle)
-      print(file = fileHandle)
+  # Write a rule to remove the file created on successful completeion.
+  def removeCompleteOk(self, fileHandle):
+    print('DELETE_COMPLETE_OK:', file = fileHandle)
+    print('\t@rm -f $(COMPLETE_OK)', file = fileHandle)
+    print(file = fileHandle)
 
   # Write out all of the executable paths that are used in the makefile.
   def writeExecutablePaths(self, graph, config, fileHandle, taskList):
@@ -396,6 +417,10 @@ class makefileData:
         # Write out the task dependencies separated by spaces.
         for i in range(0, len(taskDependencies)): print(taskDependencies[i], end = ' ', file = fileHandle)
         print(file = fileHandle)
+
+        # If the file written on completion exists, delete it. If any tasks are executed, then this file will
+        # need to be regenerated based on successful completion.
+        print('\t@if [ -f $(COMPLETE_OK) ]; then rm -f $(COMPLETE_OK); fi', sep = '', file = fileHandle)
   
         # Include a line that will echo which task is being run.
         if len(tasks) == 1: print('\t@echo ', self.echoModifier, ' "Executing task: ', task, '...\c"', sep = '', file = fileHandle)
@@ -486,7 +511,6 @@ class makefileData:
 
   # Write the command line for the current task.
   def writeCommand(self, graph, config, fileHandle, task, iteration, inputIsStream):
-    #stdoutUsed = False
     stdout = (False, None)
 
     # Define some tool attributes. These are extracted from the task node.
@@ -751,11 +775,12 @@ class makefileData:
                 # For any other value, use the value given in the configuration file.
                 else: print('\t', useArgument, delimiter, useValue, endText, ' \\', sep = '', file = fileHandle)
 
-              # Check if the argument is an output that writes to standard out.
-              elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout':
-                #print('\t>> ', value, endText, ' \\', sep = '', file = fileHandle)
-                #stdoutUsed = True
+              # Check if the argument is an output that writes to standard out, but only of the input is a stream.
+              elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'input stream stdout' and inputIsStream:
                 stdout = (True, value + endText)
+  
+              # Check if the argument is an output that writes to standard out.
+              elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'stdout': stdout = (True, value + endText)
   
               # If the argument should be hidden, only write the value.
               elif config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'modifyArgument') == 'hide':
@@ -771,7 +796,6 @@ class makefileData:
               else:
                 if value == 'set': print('\t', commandLineArgument, endText, ' \\', sep = '', file = fileHandle)
 
-    #return stdoutUsed
     return stdout
 
   # Get tool arguments with commands to evaluate.
@@ -912,6 +936,14 @@ class makefileData:
     # Write out that the task completed successfully.
     print('\t@echo ', self.echoModifier, ' "completed successfully."', sep = '', file = fileHandle)
     print(file = fileHandle)
+
+  # Write out the file confirming successful operation.
+  def writeOkFile(self, outputs, fileHandle):
+    print('### Generate a file indicating successful execution of makefile.', file = fileHandle)
+    print('$(COMPLETE_OK): ', end = '', file = fileHandle)
+    for nodeID, outputFile in outputs: print(outputFile, end = ' ', file = fileHandle)
+    print(file = fileHandle)
+    print('\t@touch $(COMPLETE_OK)', file = fileHandle)
 
   # Close the Makefile.
   def closeMakefile(self, fileHandle):
