@@ -62,8 +62,11 @@ class makefileData:
 
     # Detemine which files are dependencies, outputs and intermediate files.
     graphDependencies  = config.getGraphDependencies(graph, config.pipeline.workflow, key = 'all')
-    graphOutputs       = config.getGraphOutputs(graph, config.pipeline.workflow, key = 'all')
     graphIntermediates = config.getGraphIntermediateFiles(graph, config.pipeline.workflow)
+
+    deleteList = {}
+    if graphIntermediates: deleteList = config.setWhenToDeleteFiles(graph, graphIntermediates)
+    graphOutputs       = config.getGraphOutputs(graph, config.pipeline.workflow, deleteList, key = 'all')
 
     # Write the intermediate files to the makefile.
     self.writeIntermediateFiles(makefileHandle, graphIntermediates, 'all')
@@ -77,7 +80,7 @@ class makefileData:
     taskList = self.determineStreamingTaskList(graph, config, config.pipeline.workflow)
 
     # Write out the information for running each task.
-    self.writeTasks(graph, config, makefileName, makefileHandle, taskList, 'all', graphIntermediates)
+    self.writeTasks(graph, config, makefileName, makefileHandle, taskList, 'all', graphIntermediates, deleteList)
 
     # Close the makefile in preparation for execution. Again, if an internal loop is being run, the
     # file should only be closed at the end of the pipeline.
@@ -109,6 +112,11 @@ class makefileData:
       # with the data set iteration as the key.
       graphIntermediates = config.getGraphIntermediateFiles(graph, self.structure.tasksInPhase[phaseID])
 
+      # Determine the task in which each intermediate file is last used. This will allow the files to
+      # be deleted as early as possible in the pipeline.
+      deleteList = {}
+      if graphIntermediates: deleteList = config.setWhenToDeleteFiles(graph, graphIntermediates)
+
       for iteration, makefileName in enumerate(self.structure.makefileNames[phaseID]):
                                                       
         # The iteration needs to be sent to the various following routines in order to pick the files
@@ -126,7 +134,7 @@ class makefileData:
 
         # Detemine which files are dependencies and outputs files.
         graphDependencies  = config.getGraphDependencies(graph, self.structure.tasksInPhase[phaseID], key = key)
-        graphOutputs       = config.getGraphOutputs(graph, self.structure.tasksInPhase[phaseID], key = key)
+        graphOutputs       = config.getGraphOutputs(graph, self.structure.tasksInPhase[phaseID], deleteList, key = key)
 
         # Write the intermediate files to the makefile.
         self.writeIntermediateFiles(makefileHandle, graphIntermediates, key)
@@ -140,7 +148,7 @@ class makefileData:
         taskList = self.determineStreamingTaskList(graph, config, self.structure.tasksInPhase[phaseID])
 
         # Write out the information for running each task.
-        self.writeTasks(graph, config, makefileName, makefileHandle, taskList, key, graphIntermediates)
+        self.writeTasks(graph, config, makefileName, makefileHandle, taskList, key, graphIntermediates, deleteList)
 
         # Close the makefile in preparation for execution. Again, if an internal loop is being run, the
         # file should only be closed at the end of the pipeline.
@@ -313,7 +321,7 @@ class makefileData:
 
   # Loop over all of the tasks in the workflow and write out all of the information for
   # executing each task.
-  def writeTasks(self, graph, config, makefileName, fileHandle, taskList, iteration, graphIntermediates):
+  def writeTasks(self, graph, config, makefileName, fileHandle, taskList, iteration, graphIntermediates, deleteList):
 
     # Loop over the tasks. Note that each entry in taskList is a list of tasks that are piped
     # together. If there are no pipes, then the list will only contain a single task.
@@ -334,8 +342,10 @@ class makefileData:
 
         # Determine the task in which each intermediate file is last used. This will allow the files to
         # be deleted as early as possible in the pipeline.
-        deleteList = {}
-        if graphIntermediates: deleteList = config.setWhenToDeleteFiles(graph, graphIntermediates)
+        #FIXME REMOVE
+        #deleteList = {}
+        #if graphIntermediates: deleteList = config.setWhenToDeleteFiles(graph, graphIntermediates)
+        #print('BOB', deleteList)
 
         # Loop over all the tasks in this piped grouping to find the dependencies and outputs. An output that
         # is piped into the next tool is not an output and shouldn't be considered. Similarly, an input stream

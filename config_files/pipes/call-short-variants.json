@@ -52,12 +52,21 @@
       }
     },
     {
-      "ID" : "regions",
-      "description" : "A list of regions to be analysed.",
-      "long form argument" : "--region-list",
-      "short form argument" : "-rl",
+      "ID" : "region single",
+      "description" : "A list of regions to be analysed in a single makefile.",
+      "long form argument" : "--region-list-single",
+      "short form argument" : "-rls",
       "tasks" : {
         "merge" : "--region-list-single"
+      }
+    },
+    {
+      "ID" : "region multiple",
+      "description" : "A list of regions to be analysed in a multiple makefiles.",
+      "long form argument" : "--region-list-multiple",
+      "short form argument" : "-rlm",
+      "tasks" : {
+        "merge" : "--region-list-multiple"
       }
     },
     {
