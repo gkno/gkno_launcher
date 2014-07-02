@@ -49,7 +49,7 @@ class pipelineStructure:
       numberOfInputArgumentIterations = self.getNumberOfDataSets(graph, config, task, config.nodeMethods.getPredecessorOptionNodes(graph, task))
 
       # If there are multiple sets of input arguments, check the number of input and output files. If there
-      # are only one set of input and output data, the number of input and output data sets are equal to
+      # are only single sets of input and output data, the number of input and output data sets are equal to
       # the number of input argument iterations.
       if numberOfInputArgumentIterations != 1:
         if numberOfInputDataSets == 1 and numberOfOutputDataSets == 1:
@@ -94,6 +94,7 @@ class pipelineStructure:
             print('A greedy task is accepting multiple inputs, but has more than one output data set.')
             self.errors.terminate()
 
+          # Create a new phase.
           self.createNewPhase(1, 1)
 
         # If the number of input data sets is equal to the number of output data sets, whether this
@@ -103,8 +104,10 @@ class pipelineStructure:
 
           # If the number of input data sets differs from the number of output data sets from the
           # last task, this is the start of a new phase.
-          if numberOfInputDataSets != self.numberOfFilesinPhase: self.createNewPhase(numberOfInputDataSets, numberOfOutputDataSets)
-          elif numberOfInputArgumentIterations != self.numberOfFilesinPhase: self.createNewPhase(numberOfInputArgumentIterations, numberOfOutputDataSets)
+          if numberOfInputArgumentIterations != self.numberOfFilesinPhase: self.createNewPhase(numberOfInputArgumentIterations, numberOfOutputDataSets)
+          elif (numberOfInputDataSets != self.numberOfFilesinPhase) and (numberOfInputDataSets != numberOfInputArgumentIterations):
+            self.createNewPhase(numberOfInputArgumentIterations, numberOfOutputDataSets)
+          elif numberOfInputDataSets != self.numberOfFilesinPhase: self.createNewPhase(numberOfInputDataSets, numberOfOutputDataSets)
           else: self.numberOfPhaseOutputs[self.currentPhase] = numberOfOutputDataSets
 
         # Add this task to the makefile structure.
@@ -149,7 +152,7 @@ class pipelineStructure:
     self.numberOfPhaseInputs[self.currentPhase]  = numberOfInputDataSets
     self.numberOfPhaseOutputs[self.currentPhase] = numberOfOutputDataSets
 
-  # TODO
+  # Check to see if the structure can be reduced to fewer phases.
   def consolidatePhases(self, graph, config):
 
     # Loop over the phases and index the phases by the number of makefiles.

@@ -620,16 +620,8 @@ class makefileData:
           isFile    = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile')
           isGreedy  = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isGreedy')
   
-          # If this argument is greedy, put all values into the first iteration. If the iteration parameter
-          # is not equal to 1, fail, since the number of data sets should have been set to one given that the
-          # argument is greedy.
+          # If this argument is greedy, put all values into the first iteration.
           if isGreedy and len(values) != 1:
-            if iteration != 1:
-              #TODO ERROR
-              print('makefileData.writeCommand')
-              print('Greedy argument, but dealing with other than the 1st iteration')
-              self.errors.terminate()
-  
             valueList = []
             for iterationCount in values:
               for value in values[iterationCount]: valueList.append(value)

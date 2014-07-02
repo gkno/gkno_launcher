@@ -45,16 +45,33 @@ class dataConsistency:
         print('ERROR - dataConsistency.checkNumberOfOutputFiles')
         self.error.terminate()
 
-      # Loop over the output files if amendments are required.
+      # Loop over the output files to see if amendments are required.
       if noInputDataSets != noOutputDataSets:
+
+        # If the task is not greedy, the output files need to be modified. If it is, find all option nodes with
+        # multiple iterations of values. If any of these nodes are not greedy, then the output files still
+        # need to be modified (see comment below).
+        if config.nodeMethods.getGraphNodeAttribute(graph, task, 'isGreedy'):
+          requiresMultipleOutputs = False
+          for optionNodeID in config.nodeMethods.getPredecessorOptionNodes(graph, task):
+            isGreedy     = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'isGreedy')
+            noIterations = len(config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values'))
+            if not isGreedy and noIterations > 1:
+              requiresMultipleOutputs = True
+              break
+        else: requiresMultipleOutputs = True
+
         for fileNodeID in config.nodeMethods.getSuccessorFileNodes(graph, task):
           optionNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
           values       = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
 
-          # Determine if this is a greedy node. If so, do not modify the output files.
-          isGreedy = config.nodeMethods.getGraphNodeAttribute(graph, task, 'isGreedy')
+          # Determine if this is a greedy task. If so, and there is only a single input with multiple iterations,
+          # do not modify the output files. If the task is greedy, but there are several option nodes with 
+          # multiple inputs, still modify the outputs. A task can take in, for example, multiple bam files and
+          # is considered greedy, so they are pulled into a single execution. However, multiple regions may also
+          # be required, which would require multiple executions (hence multiple output files).
 
-          if len(values) == 1 and not isGreedy:
+          if len(values) == 1 and requiresMultipleOutputs:
             extensions = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowedExtensions')
             self.updateOutputFiles(graph, config, optionNodeID, values, extensions, noInputDataSets)
             self.updateOutputFiles(graph, config, fileNodeID, values, extensions, noInputDataSets)
