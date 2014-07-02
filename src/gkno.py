@@ -43,6 +43,9 @@ from gkno.helpClass import *
 import gkno.makefileData
 from gkno.makefileData import *
 
+import gkno.status
+from gkno.status import *
+
 import gkno.tracking
 from gkno.tracking import *
 
@@ -50,7 +53,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.30.10"
+__version__ = "1.30.11"
 __date__ = "July 2014"
 
 def main():
@@ -104,6 +107,9 @@ def main():
 
   # Generate a class for storing details for use in the makefile.
   make = makefileData()
+
+  # Class for determine status of execution.
+  status = gknoStatus()
 
   # Define a help class.  This provides usage information for the user. Also define an object used
   # for writing to screen.
@@ -490,6 +496,10 @@ def main():
         write.writeExecuting(execute)
         success = subprocess.call(execute.split())
         write.writeComplete(success)
+
+  # Check the status of the pipeline. Look for all makefiles and the corresponding files
+  # indicating succesful completion and give the status of execution.
+  status.getStatus(make.structure.makefileNames)
 
   # If the makefile was succesfully run, finish gkno with the exit condition of 0.
   # If the makefile failed to run, finish with the exit condition 3.  A failure
