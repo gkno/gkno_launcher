@@ -99,12 +99,11 @@ class writeToScreen:
     sys.stdout.flush()
   
   def writeComplete(self, success):
-    if success == 0: pass
-    else:
+    if success != 0:
       print('.failed', file = sys.stdout)
       print('\ngkno failed to complete successfully.  Please check the output files to identify the cause of the problem.', file = sys.stderr)
       self.errors.terminate()
-    sys.stdout.flush()
+      sys.stdout.flush()
 
   # Write debugging text.
   def writeDebug(self, text):

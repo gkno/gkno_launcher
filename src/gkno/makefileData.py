@@ -247,12 +247,12 @@ class makefileData:
     print('STDOUT=', outputPath, stdoutName, sep = '', file = fileHandle)
     print('STDERR=', outputPath, stderrName, sep = '', file = fileHandle)
     print('COMPLETE_OK=', outputPath, okFile, sep = '', file = fileHandle)
-    print(file = fileHandle)
 
     # Include .DELETE_ON_ERROR in the makefile. This ensures that if the makefile execution is
     # terminated, the targets of the recipe are removed, ensuring that incomplete files are
     # left behing, potentially causing problems.
     print('.DELETE_ON_ERROR:', file = fileHandle)
+    print(file = fileHandle)
 
   # Write out all of the output files.
   def writeOutputFiles(self, graph, config, fileHandle, outputs):
@@ -783,13 +783,10 @@ class makefileData:
         if argument == longFormArgument: usesItself = True
         useArguments.append((argument, value))
 
-      # Determine the nodeID for this argument.
-      #nodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, longFormArgument, 'option')
-
       # If the node has not been assigned and the command uses the value associated with itself, it is not
       # possible to assign a command to the argument. If the argument were required, gkno would already have
       # terminated, so this argument can be left blank.
-      if not nodeID and usesItself: return arguments
+      if not nodeID and usesItself: continue
 
       # Record which IDs in the command should be replaced with the tool name.
       IDIsTool = []
@@ -805,7 +802,10 @@ class makefileData:
         if argument != 'tool':
 
           #TODO Can the following have multiple node IDs?
-          argumentNodeID     = config.nodeMethods.getNodeForTaskArgument(graph, task, argument, 'option')[0]
+          try: argumentNodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, argument, 'option')[0]
+          except: argumentNodeID = None
+
+          if argumentNodeID == None: break
           argumentNodeValues = config.nodeMethods.getGraphNodeAttribute(graph, argumentNodeID, 'values')
 
           # If the argument does not have values, the command cannot be constructed, so return leaving this
@@ -817,10 +817,15 @@ class makefileData:
           if firstValue:
             firstValue = False
             for iteration in argumentNodeValues:
-              commands[iteration] = [str('`') + instructions.command + str('`')]
+
+              # If the command being built is a replacement command line argument, then it should just appear
+              # on the command line like other arguments. If not, the command should be encased in '`' in order
+              # to evaluate the command at run time.
+              if instructions.isCommandLineArgument: commands[iteration] = [str(instructions.command)]
+              else: commands[iteration] = [str('`') + str(instructions.command) + str('`')]
               commands = self.replaceCommandID(iteration, argumentNodeValues[iteration], commands, ID)
 
-          # If the commands has already been created, check that the number of iterations in commands is equal
+          # If the commands have already been created, check that the number of iterations in commands is equal
           # to that in the values, or that one of them has one iteration. In the latter case, either expand the 
           # commands to the number of iterations in the values and for the values with only one iteration,
           # propogate that value through all iterations in commands.
@@ -872,7 +877,7 @@ class makefileData:
       print('ERROR - replaceCommandID')
       self.errors.terminate()
 
-    commands[iteration][0] = commands[iteration][0].replace(ID, argumentValues[0])
+    commands[iteration][0] = str(commands[iteration][0].replace(ID, str(argumentValues[0])))
 
     return commands
 

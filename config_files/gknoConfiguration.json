@@ -117,6 +117,13 @@
       "description" : "Flag to determine if verbose information should be output.  Default is not verbose.",
       "short form" : "-vb",
       "value" : ["unset"]
+    },
+    "GKNO-WRITE-INCOMPLETE" : {
+      "argument" : "--list-incomplete",
+      "data type" : "flag",
+      "description" : "List all of the makefiles that have not yet been completed successfully.",
+      "short form" : "-li",
+      "value" : ["unset"]
     }
   }
 }
