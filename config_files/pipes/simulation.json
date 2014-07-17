@@ -413,10 +413,10 @@
     }
   ],
 
-  "instances" : [
+  "parameter sets" : [
     {
       "ID" : "default",
-      "description" : "Default instance requires user to input all input filenames.",
+      "description" : "Default parameter set requires user to input all input filenames.",
       "nodes" : [
         {
           "ID" : "mosaik path",
@@ -485,7 +485,7 @@
 
     {
       "ID" : "test",
-      "description" : "Test instance for the test harness.",
+      "description" : "Test parameter set for the test harness.",
       "nodes" : [
         {
           "ID" : "fasta reference",

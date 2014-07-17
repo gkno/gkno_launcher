@@ -34,11 +34,11 @@
       "description" : "Name of the file to output a visual depiction of the pipeline graph.",
       "short form" : "-dpg"
     },
-    "GKNO-EXPORT-INSTANCE" : {
-      "argument" : "--export-instance",
+    "GKNO-EXPORT-PARAMETER-SET" : {
+      "argument" : "--export-parameter-set",
       "data type" : "string",
-      "description" : "Export instance information to a new configuration file of this name.",
-      "short form" : "-ei"
+      "description" : "Export a parameter set to a configuration file of this name.",
+      "short form" : "-ep"
     },
     "GKNO-INPUT-PATH" : {
       "argument" : "--input-path",
@@ -46,11 +46,11 @@
       "description" : "Path for input files if not defined.  Default: current directory.",
       "short form" : "-ip"
     },
-    "GKNO-INSTANCE" : {
-      "argument" : "--instance",
+    "GKNO-PARAMETER-SET" : {
+      "argument" : "--parameter-set",
       "data type" : "string",
       "description" : "Generate a stdout and stderr for each task.",
-      "short form" : "-is",
+      "short form" : "-ps",
       "value" : ["default"]
     },
     "GKNO-LOOP" : {

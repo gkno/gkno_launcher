@@ -16,9 +16,9 @@ class files:
   def __init__(self):
     self.dependenciesList      = []
     self.jsonToolFiles         = {}
-    self.jsonToolInstances     = {}
+    self.jsonToolParameterSets     = {}
     self.jsonPipelineFiles     = {}
-    self.jsonPipelineInstances = {}
+    self.jsonPipelineParameterSets = {}
     self.makeFilehandle        = ''
     self.outputsList           = []
 
@@ -29,15 +29,15 @@ class files:
     # Find configuration files for individual tools.
     for files in os.listdir(path + "tools"):
 
-      # Store files ending with '_instances.json' seperately.  These files contain additional instance information, are modifiable
+      # Store files ending with '_parameterSets.json' seperately.  These files contain additional parameter set information, are modifiable
       # by the user (modifying the configuration files is discouraged) and do not contain information on a tool, so would
       # fail the checks performed on the tool configuration files.
-      if files.endswith('_instances.json'): self.jsonToolInstances[files] = True
+      if files.endswith('_parameterSets.json'): self.jsonToolParameterSets[files] = True
       elif files.endswith('.json'): self.jsonToolFiles[files] = True
 
     # Find configuration files for pipelines.
     for files in os.listdir(path + "pipes"):
-      if files.endswith('_instances.json'): self.jsonPipelineInstances[files] = True
+      if files.endswith('_parameterSets.json'): self.jsonPipelineParameterSets[files] = True
       if files.endswith('.json'): self.jsonPipelineFiles[files] = True
 
   # Get json data from a file.

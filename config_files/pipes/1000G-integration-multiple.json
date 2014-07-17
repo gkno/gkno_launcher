@@ -285,10 +285,10 @@
     }
   ],
 
-  "instances" : [
+  "parameter sets" : [
     {
       "ID" : "default",
-      "description" : "The default instance sets all the parameters for the pipeline to run.",
+      "description" : "The default parameter set sets all the parameters for the pipeline to run.",
       "nodes" : [
         {
           "ID" : "realign",

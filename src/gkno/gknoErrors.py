@@ -232,28 +232,28 @@ of the following extensions:')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
-  # Multiple instances were specified.
-  def multipleInstancesSpecified(self, graph, config):
+  # Multiple parameter sets were specified.
+  def multipleParameterSetsSpecified(self, graph, config):
     if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
-    self.text.append('Multiple instances were specified on the command line.')
-    self.text.append('Each tool or pipeline can be run using a set of predefined values contained in an instance using the --instance ' + \
-    '(-is) argument on the command line. Only one instance can be defined on the pipeline, however multiple were set. Please check the ' + \
-    'command line and ensure that only one instance is defined.')
+    self.text.append('Multiple parameter set were specified on the command line.')
+    self.text.append('Each tool or pipeline can be run using a set of predefined values contained in an parameter set using the --parameter-set ' + \
+    '(-ps) argument on the command line. Only one parameter set can be defined on the pipeline, however multiple were set. Please check the ' + \
+    'command line and ensure that only one parameter set is defined.')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
-  # The instance name was not specified.
-  def noInstanceNameProvided(self, graph, config, isPipeline):
+  # The parameter set name was not specified.
+  def noParamaterSetNameProvided(self, graph, config, isPipeline):
     if config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-VERBOSE', 'values')[1][0]: print(file = sys.stderr)
-    self.text.append('Missing instance name.')
-    self.text.append('Each tool or pipeline can be run using a set of predefined values contained in an instance using the --instance ' + \
-    '(-is) argument on the command line. The command line syntax is:')
+    self.text.append('Missing parameter set name.')
+    self.text.append('Each tool or pipeline can be run using a set of predefined values contained in a parameter set using the --parameter-set ' + \
+    '(-ps) argument on the command line. The command line syntax is:')
     self.text.append('\t')
-    if isPipeline: self.text.append('gkno pipe <pipeline name> --instance <instance name> [options]')
-    else: self.text.append('gkno <tool name> --instance <instance name> [options]')
+    if isPipeline: self.text.append('gkno pipe <pipeline name> --parameter-set <parameter set name> [options]')
+    else: self.text.append('gkno <tool name> --parameter-set <parameter set name> [options]')
     self.text.append('\t')
-    self.text.append('Please ensure that the instance name is included on the command line. Use the --help argument to see all of the ' + \
-    'available instances. If the instance is set and help requested, the parameters included in the instance will be displayed.')
+    self.text.append('Please ensure that the parameter set name is included on the command line. Use the --help argument to see all of the ' + \
+    'available parameter sets. If the parameter set is set and help requested, the parameters included in the parameter set will be displayed.')
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
@@ -1596,7 +1596,7 @@ argument existed to set this value. Please see the documentation to see how to i
     self.writeFormattedText()
     self.hasError = True
 
-  # If a flag was given an invalid value in an instance, terminate.
+  # If a flag was given an invalid value in an parameter set, terminate.
   def flagGivenInvalidValueMultiple(self, newLine, filename, argument, shortForm, value):
     if newLine: print(file=sys.stderr)
     text = 'Unrecognised flag in multiple runs file: ' + filename
@@ -1667,103 +1667,100 @@ argument existed to set this value. Please see the documentation to see how to i
     self.hasError = True
 
   #################
-  # Instance errors
+  # ParamaterSet errors
   #################
 
   # The requested information doesn't exist.
-  def noInstanceInformation(self, newLine, path, name, instance):
+  def noParamaterSetInformation(self, newLine, path, name, parameterSet):
     if newLine: print(file=sys.stderr)
-    text = 'No information for requested instance: ' + instance
+    self.text.append('No information for requested parameter set: ' + parameterSet)
     self.text.append(text)
-    text = 'Instance information cannot be found.  An instance of the given name must be present in the configuration file (' + path + name + \
-    '.json) or in the separate instance file (' + name + '_instances.json) in the same directory.  The requested instance (' + instance + \
-    ') is not present in either of these files.  If the instance is being created, modify the external instances file to contain this instance.'
-    self.text.append(text)
+    self.text.append('ParamaterSet information cannot be found.  A parameter set of the given name must be present in the configuration file (' + \
+    path + name + '.json) or in the separate parameter set file (' + name + '_parameterSet.json) in the same directory.  The requested parameter ' + \
+    'set (' + parameterSet + ') is not present in either of these files.  If the parameter set is being created, modify the external parameter ' + \
+    'set file to contain this parameter set.')
     self.writeFormattedText()
     self.hasError = True
 
-  # Each instance must include a description.
-  def noInstanceDescription(self, newLine, instance, filename):
+  # Each parameter set must include a description.
+  def noParamaterSetDescription(self, newLine, parameterSet, filename):
     if newLine: print(file=sys.stderr)
-    text = 'Malformed pipeline configuration file: ' + filename
-    self.text.append(text)
-    text = "The instance '" + instance + "' does not contain a description as required.  Please check and repair the configuration file."
-    self.text.append(text)
+    self.text.append('Malformed pipeline configuration file: ' + filename)
+    self.text.append('The parameter set \'' + parameterSet + '\' does not contain a description as required.  Please check and repair the ' + \
+    'configuration file.')
     self.writeFormattedText()
     self.hasError = True
 
-  # Only one instance can be selected to avoid conflict between set parameters.
-  def multipleInstances(self, newLine):
+  # Only one parameter set can be selected to avoid conflict between set parameters.
+  def multipleParameterSets(self, newLine):
     if newLine: print(file=sys.stderr)
-    text = 'Multiple instances requested.'
-    self.text.append(text)
-    text = 'Instances can be used to set certain parameters for the tool/pipeline.  Only one instance can be requested, however.  Multiple ' + \
-    'instances have been requested on the command line.  Please check the command line for repetition of the --instance (-is) command and ' + \
-    'ensure that it appears only once (or not at all).'
-    self.text.append(text)
+    self.text.append('Multiple parameter sets requested.')
+    self.text.append('Parameter sets can be used to set certain parameters for the tool/pipeline.  Only one parameter set can be requested, ' + \
+    'however.  Multiple parameter sets have been requested on the command line.  Please check the command line for repetition of the ' + \
+    '--parameter-set (-ps) command and ensure that it appears only once (or not at all).')
     self.writeFormattedText()
     self.hasError = True
 
-  # If the instance information for a Boolean value is not as expected, terminate.
-  def incorrectBooleanValueInInstance(self, newLine, name, argument, shortForm, value):
+  # If the parameter set information for a Boolean value is not as expected, terminate.
+  def incorrectBooleanValueInParamaterSet(self, newLine, name, argument, shortForm, value):
     if newLine: print(file=sys.stderr)
-    text = 'Error with argument (from instance): ' + argument
+    text = 'Error with argument (from parameter set): ' + argument
     if shortForm != '': text += ' (' + shortForm + ')'
     self.text.append(text)
-    text = "The argument '" + argument + "', set as part of the instance '" + name + "', expects a Boolean as input.  gkno will accept " + \
-    "the values: 'true', 'True', 'false' or 'False'.  The value '" + value + "' is not accepted.  Please check the instance " + \
-    'information in the configuration file (or instance file) and rectify any errors.'
+    text = "The argument '" + argument + "', set as part of the parameter set '" + name + "', expects a Boolean as input.  gkno will accept " + \
+    "the values: 'true', 'True', 'false' or 'False'.  The value '" + value + "' is not accepted.  Please check the parameter set " + \
+    'information in the configuration file (or parameter set file) and rectify any errors.'
     self.text.append(text)
     self.writeFormattedText()
     self.hasError = True
 
-  # If the data type in the instance is not as expected, terminate.
-  def incorrectDataTypeInInstance(self, newLine, name, task, argument, shortForm, value, dataType):
+  # If the data type in the parameter set is not as expected, terminate.
+  def incorrectDataTypeInParamaterSet(self, newLine, name, task, argument, shortForm, value, dataType):
     if newLine: print(file=sys.stderr)
-    text = 'Incorrect data type for command line argument (in instance): ' + argument
+    text = 'Incorrect data type for command line argument (in parameter set): ' + argument
     if shortForm != '': text += ' (' + shortForm + ')'
     self.text.append(text)
-    text = "The command line argument '" + argument + "', set as part of the instance '" + name + "', was specified for task '" + task + \
+    text = "The command line argument '" + argument + "', set as part of the parameter set '" + name + "', was specified for task '" + task + \
     "' and it expects a value of type '" + dataType + "'.  The given value (" + value + ') is not of this type.  Please check and rectify ' + \
     'the given command line.'
     self.text.append(text)
     self.writeFormattedText()
     self.hasError = True
 
-  # If a flag was given an invalid value in an instance, terminate.
-  def flagGivenInvalidValueInstance(self, newLine, argument, shortForm, value):
+  # If a flag was given an invalid value in an parameter set, terminate.
+  def flagGivenInvalidValueParamaterSet(self, newLine, argument, shortForm, value):
     if newLine: print(file=sys.stderr)
-    text = 'Unrecognised flag for (instance) argument: ' + argument
+    text = 'Unrecognised flag for (parameter set) argument: ' + argument
     if shortForm != '': text += ' (' + shortForm + ')'
     self.text.append(text)
-    text = 'If a flag argument is included in an instance, the value supplied with it must be either "set" or "unset" to instruct gkno ' + \
+    text = 'If a flag argument is included in an parameter set, the value supplied with it must be either "set" or "unset" to instruct gkno ' + \
     "whether to include the argument on the command line or not.  The argument '" + argument + "' is a flag, but was supplied with the " + \
-    "value '" + str(value) + "'.  Please check the entry for this argument in the instance section of the configuration file (or the separate " + \
-    'instance configuration file).'
+    "value '" + str(value) + "'.  Please check the entry for this argument in the parameter set section of the configuration file (or the " + \
+    'separate parameter set configuration file).'
     self.text.append(text)
     self.writeFormattedText()
     self.hasError = True
 
-  # If there is an additional instances file and it contains no instance information, terminate.
-  def instancesFileHasNoInstances(self, newLine, filename):
+  # If there is an additional parameter sets file and it contains no parameter set information, terminate.
+  def parameterSetsFileHasNoParameterSets(self, newLine, filename):
     if newLine: print(file=sys.stderr)
     text = 'Error with file: ' + filename
     self.text.append(text)
-    text = 'The instances file \'' + filename + '\' should only contain information about instances for the tool/pipeline with which ' + \
-    'it is associated.  This file does not contain the \'instances\' block required.  Please check this instances file for errors.'
+    text = 'The parameter sets file \'' + filename + '\' should only contain information about parameter sets for the tool/pipeline with which ' + \
+    'it is associated.  This file does not contain the \'parameter sets\' block required.  Please check this parameter sets file for errors.'
     self.text.append(text)
     self.writeFormattedText()
     self.hasError = True
 
-  # If an instance description in an additional instance file has the same name as an instance in the
+  # If an parameter set description in an additional parameter set file has the same name as an parameter set in the
   # configuration file, terminate.
-  def instanceNameAlreadyExists(self, newLine, instance, filename):
+  def parameterSetNameAlreadyExists(self, newLine, parameterSet, filename):
     if newLine: print(file=sys.stderr)
-    text = 'Multiple instance definitions with name: ' + instance
+    text = 'Multiple parameter set definitions with name: ' + parameterSet
     self.text.append(text)
-    text = 'The instances file \'' + filename + '\' contains an instance with the name \'' + instance + '\', however, an instance of this ' + \
-    'name is already present in the configuration file.  Please ensure that all of the instances defined for a specific tool/pipeline have ' + \
-    'unique names (only modify entries in the instances file if possible).'
+    text = 'The parameter sets file \'' + filename + '\' contains an parameter set with the name \'' + parameterSet + '\', however, a ' + \
+    'parameter set of this name is already present in the configuration file.  Please ensure that all of the parameter sets defined for a ' + \
+    'specific tool/pipeline have unique names (only modify entries in the parameter sets file if possible).'
     self.text.append(text)
     self.writeFormattedText()
     self.hasError = True

@@ -1,40 +1,56 @@
 {
-  "id" : "samtools-index-fasta",
-  "description" : "Generate an index for a reference fasta file.",
+  "id" : "samtools-reheader",
+  "description" : "Replace the header in a BAM file.",
   "category" : "reference processing",
   "tools" : ["samtools"],
   "path" : "samtools",
   "executable" : "samtools",
-  "modifier" : "faidx",
+  "modifier" : "reheader",
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
       {
-        "description" : "Input FASTA file.",
-        "long form argument" : "--fasta-reference",
-        "short form argument" : "-r",
-        "command line argument" : "--fasta-reference",
+        "description" : "Input BAM file.",
+        "long form argument" : "--bam",
+        "short form argument" : "-b",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fasta", ".fa"],
+        "extensions" : [".bam"],
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "The header file to replace the existing header.",
+        "long form argument" : "--header",
+        "short form argument" : "-d",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".sam"],
         "modify argument name on command line" : "hide"
       }
     ],
 
     "outputs" : [
       {
-        "description" : "Output index file.",
+        "description" : "The output BAM file.",
         "long form argument" : "--output",
         "short form argument" : "-o",
-        "command line argument" : "--output",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fai"],
-        "modify argument name on command line" : "omit",
+        "extensions" : [".bam"],
+        "modify argument name on command line" : "stdout",
+        "if output to stream" : "do not include",
         "construct filename" : {
           "method" : "from tool argument",
-          "use argument" : "--fasta-reference",
-          "modify extension" : "append"
+          "use argument" : "--bam",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_reheaded"]
+            }
+          ]
         }
       }
     ]

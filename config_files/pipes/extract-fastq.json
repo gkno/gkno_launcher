@@ -70,17 +70,17 @@
     }
   ],
 
-  "instances" : [
+  "parameter sets" : [
     {
       "ID" : "default",
-      "description" : "The default instance sets all the parameters for the pipeline to run.",
+      "description" : "The default parameter set sets all the parameters for the pipeline to run.",
       "nodes" : [
       ]
     },
 
     {
       "ID" : "test",
-      "description" : "Instance for use with the test-harness.",
+      "description" : "Parameter set for use with the test-harness.",
       "nodes" : [
         {
           "ID" : "bam",

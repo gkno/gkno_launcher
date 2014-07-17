@@ -81,10 +81,10 @@
     "--out"
   ],
 
-  "instances" : [
+  "parameter sets" : [
     {
       "ID" : "default",
-      "description" : "Default instance requires the users input for all files.",
+      "description" : "Default parameter set requires the users input for all files.",
       "nodes" : [
         {
           "ID" : "paired",
@@ -101,7 +101,7 @@
 
     {
       "ID" : "test",
-      "description" : "Instance for use with the test-harness.",
+      "description" : "Parameter set for use with the test-harness.",
       "nodes" : [
         {
           "ID" : "index",
@@ -123,7 +123,7 @@
 
     {
       "ID" : "tutorial",
-      "description" : "Instance to be used in conjuction with gkno tutorials.",
+      "description" : "Parameter set to be used in conjuction with gkno tutorials.",
       "nodes" : [
         {
           "ID" : "index",

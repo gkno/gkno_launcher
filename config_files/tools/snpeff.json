@@ -353,10 +353,10 @@
     "--out"
   ],
 
-  "instances" : [
+  "parameter sets" : [
     {
       "ID" : "default",
-      "description" : "Default instance requires the users input for all files.",
+      "description" : "Default parameter set requires the users input for all files.",
       "nodes" : [
         {
           "ID" : "input format",
@@ -378,7 +378,7 @@
 
     {
       "ID" : "test",
-      "description" : "Instance for use with the test-harness.",
+      "description" : "Parameter set for use with the test-harness.",
       "nodes" : [
         {
           "ID" : "genome",

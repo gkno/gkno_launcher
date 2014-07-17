@@ -34,7 +34,7 @@
       "output to stream" : true
     },
     "filter-variants" : {
-      "tool" : "vcflib-filter"
+      "tool" : "vcf-filter"
     }
   },
 
@@ -272,10 +272,10 @@
     }
   ],
 
-  "instances" : [
+  "parameter sets" : [
     {
       "ID" : "default",
-      "description" : "The default instance sets all the parameters for the pipeline to run.",
+      "description" : "The default parameter set sets all the parameters for the pipeline to run.",
       "nodes" : [
         {
           "ID" : "fasta reference",

@@ -23,10 +23,10 @@
     "outputs" : []
   },
 
-  "instances" : [
+  "parameter sets" : [
     {
       "ID" : "default",
-      "description" : "Default instance requires the users input for all files.",
+      "description" : "Default parameter set requires the users input for all files.",
       "nodes" : [
       ]
     }

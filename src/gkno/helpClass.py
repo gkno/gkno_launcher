@@ -72,7 +72,7 @@ class helpClass:
 
   # If usage information needs to be printed out, determine the exact level
   # of usage information to provide, write to screen and then terminate.
-  def printUsage(self, graph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath, name, instanceName):
+  def printUsage(self, graph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath, name, parameterSetName):
 
     # General gkno usage.
     if self.generalHelp:
@@ -86,7 +86,7 @@ class helpClass:
       if self.invalidTool:
         self.printToolModeUsage(config, admin)
         self.invalidToolMessage(name)
-      else: self.toolUsage(graph, config, gknoConfig, name, toolConfigurationFilesPath, instanceName)
+      else: self.toolUsage(graph, config, gknoConfig, name, toolConfigurationFilesPath, parameterSetName)
 
     # General pipeline help.
     elif self.pipelineHelp:
@@ -362,31 +362,31 @@ class helpClass:
       # name and use this to define the format length.
       if len(pipeline) > self.pipelineLength: self.pipelineLength = len(pipeline)
 
-  # Get instances information.
-  def getInstances(self, config, gknoConfig, toolConfigurationFilesPath, pipelineConfigurationFilesPath, mode, name):
+  # Get parameter set information.
+  def getParameterSets(self, config, gknoConfig, toolConfigurationFilesPath, pipelineConfigurationFilesPath, mode, name):
 
     # Define information based on whether a tool or pipeline is being run.
     if mode == 'tool':
       isPipeline       = False
-      text             = 'tool instances'
+      text             = 'tool parameter sets'
       filePath         = toolConfigurationFilesPath
-      externalFilename = name + '_instances'
+      externalFilename = name + '_parameterSets'
       externalFilePath = filePath + externalFilename + '.json'
     elif mode == 'pipe':
       isPipeline       = True
-      text             = 'pipeline instances'
+      text             = 'pipeline parameter sets'
       filePath         = pipelineConfigurationFilesPath
-      externalFilename = name + '_instances'
+      externalFilename = name + '_parameterSets'
       externalFilePath = filePath + externalFilename + '.json'
 
-    # Open the pipeline configuration file and process the instance data.
+    # Open the pipeline configuration file and process the parameter set data.
     configurationData = config.fileOperations.readConfigurationFile(filePath + name + '.json')
-    config.instances.checkInstances(name, configurationData['instances'], isPipeline, isExternal = False)
+    config.parameterSets.checkParameterSets(name, configurationData['parameter sets'], isPipeline, isExternal = False)
 
-    # Now get any external instances.
+    # Now get any external parameter sets.
     if externalFilename + '.json' in gknoConfig.jsonFiles[text]:
       configurationData = config.fileOperations.readConfigurationFile(externalFilePath)
-      config.instances.checkInstances(name, configurationData['instances'], isPipeline, isExternal = True)
+      config.parameterSets.checkParameterSets(name, configurationData['parameter sets'], isPipeline, isExternal = True)
 
   # If help for a specific tool was requested, but that tool does not exist,
   # print an error after the usage information.
@@ -411,7 +411,7 @@ class helpClass:
     sys.stdout.flush()
 
   # Print out tool usage.
-  def toolUsage(self, graph, config, gknoConfig, tool, toolConfigurationFilesPath, instanceName):
+  def toolUsage(self, graph, config, gknoConfig, tool, toolConfigurationFilesPath, parameterSetName):
     print('===================', file = sys.stdout)
     print('  gkno tool usage', file = sys.stdout)
     print('===================', file = sys.stdout)
@@ -428,18 +428,18 @@ class helpClass:
     print(file = sys.stdout)
     sys.stdout.flush()
 
-    # If this pipeline has different instances, print them to screen.
-    self.getInstances(config, gknoConfig, toolConfigurationFilesPath, '', 'tool', tool)
-    if config.instances.instanceAttributes[tool]:
+    # If this pipeline has different parameter sets, print them to screen.
+    self.getParameterSets(config, gknoConfig, toolConfigurationFilesPath, '', 'tool', tool)
+    if config.parameterSets.parameterSetAttributes[tool]:
 
-      # Determine the longest instance name.
-      instanceLength = 0
-      for instance in config.instances.instanceAttributes[tool].keys():
-        if len(instance) > instanceLength: instanceLength = len(instance)
+      # Determine the longest parameter set name.
+      parameterSetLength = 0
+      for parameterSet in config.parameterSets.parameterSetAttributes[tool].keys():
+        if len(parameterSet) > parameterSetLength: parameterSetLength = len(parameterSet)
 
-      print('     Instances:', file = sys.stdout)
-      for instance in sorted(config.instances.instanceAttributes[tool].keys()):
-        self.writeFormattedText(instance + ":", config.instances.instanceAttributes[tool][instance].description, instanceLength + 4, 2, '')
+      print('     Parameter sets:', file = sys.stdout)
+      for parameterSet in sorted(config.parameterSets.parameterSetAttributes[tool].keys()):
+        self.writeFormattedText(parameterSet + ":", config.parameterSets.parameterSetAttributes[tool][parameterSet].description, parameterSetLength + 4, 2, '')
       print(file = sys.stdout)
 
     # Write out all of the gkno options.
@@ -468,8 +468,8 @@ class helpClass:
     if 'outputs' in arguments: self.printToolArguments(config, tool, 'Output files', arguments.pop('outputs'), argumentLength)
     for group in arguments: self.printToolArguments(config, tool, group, arguments[group], argumentLength)
 
-    # Write out all of the values included in the selected instance, if there are any.
-    if config.instances.getArguments(tool, instanceName, isPipeline = False): self.writeInstanceParameters(config, tool, instanceName)
+    # Write out all of the values included in the selected parameter set, if there are any.
+    if config.parameterSets.getArguments(tool, parameterSetName, isPipeline = False): self.writeParameterSets(config, tool, parameterSetName)
 
   # Print out arguments.
   def printToolArguments(self, config, tool, argumentGroup, arguments, length):
@@ -490,7 +490,7 @@ class helpClass:
 
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
-  def specificPipelineUsage(self, graph, config, gknoConfig, name, toolConfigurationFilesPath, instanceName):
+  def specificPipelineUsage(self, graph, config, gknoConfig, name, toolConfigurationFilesPath, parameterSetName):
     length = len(name) + 26
     print('=' * length)
     print('  gkno pipeline usage - ', name, sep = '', file = sys.stdout)
@@ -514,17 +514,17 @@ class helpClass:
       self.writeFormattedText(task + ":", description, length + 4, 2, '')
     print(file = sys.stdout)
 
-    # If this pipeline has different instances, print them to screen.
-    if config.instances.instanceAttributes[name]:
-      print('     Instances:', file = sys.stdout)
+    # If this pipeline has different parameter sets, print them to screen.
+    if config.parameterSets.parameterSetAttributes[name]:
+      print('     Parameter sets:', file = sys.stdout)
 
-      # Find the length of the longest instance name.
-      instanceLength = 0
-      for instance in config.instances.instanceAttributes[name].keys():
-        if len(instance) > instanceLength: instanceLength = len(instance)
+      # Find the length of the longest parameter set name.
+      parameterSetLength = 0
+      for parameterSet in config.parameterSets.parameterSetAttributes[name].keys():
+        if len(parameterSet) > parameterSetLength: parameterSetLength = len(parameterSet)
 
-      for instance in sorted(config.instances.instanceAttributes[name].keys()):
-         self.writeFormattedText(instance + ":", config.instances.instanceAttributes[name][instance].description, instanceLength + 4, 2, '')
+      for parameterSet in sorted(config.parameterSets.parameterSetAttributes[name].keys()):
+         self.writeFormattedText(parameterSet + ":", config.parameterSets.parameterSetAttributes[name][parameterSet].description, parameterSetLength + 4, 2, '')
       print(file = sys.stdout)
 
     # Write out all of the gkno options.
@@ -603,28 +603,28 @@ class helpClass:
     print(file = sys.stdout)
     sys.stdout.flush()
 
-    # Write out all of the values included in the selected instance, if there are any.
-    if config.instances.getArguments(name, instanceName, isPipeline = True): self.writeInstanceParameters(config, name, instanceName)
+    # Write out all of the values included in the selected parameter set, if there are any.
+    if config.parameterSets.getArguments(name, parameterSetName, isPipeline = True): self.writeParameterSets(config, name, parameterSetName)
 
     # Terminate.
     exit(3)
 
-  # Write out instance parameters.
-  def writeInstanceParameters(self, config, tool, instanceName):
-    if instanceName == 'default': print('     Instance parameters for instance: ', instanceName, sep = '', file = sys.stdout)
-    else: print('     Instance parameters for instance (includes default parameters): ', instanceName, sep = '', file = sys.stdout)
+  # Write out parameter sets.
+  def writeParameterSets(self, config, tool, parameterSetName):
+    if parameterSetName == 'default': print('     Parameter set for: ', parameterSetName, sep = '', file = sys.stdout)
+    else: print('     Parameter set (including default parameters) for: ', parameterSetName, sep = '', file = sys.stdout)
 
-    # Get the length of the longest argument in the instance.
+    # Get the length of the longest argument in the parameter set.
     argumentLength = 0
-    for argument, values in config.instances.getArguments(tool, 'default', isPipeline = False):
+    for argument, values in config.parameterSets.getArguments(tool, 'default', isPipeline = False):
       if len(argument) > argumentLength: argumentLength = len(argument)
-    for argument, values in config.instances.getArguments(tool, instanceName, isPipeline = False):
+    for argument, values in config.parameterSets.getArguments(tool, parameterSetName, isPipeline = False):
       if len(argument) > argumentLength: argumentLength = len(argument)
 
     # Write out the values.
     arguments = {}
-    for argument, values in config.instances.getArguments(tool, 'default', isPipeline = False): arguments[argument] = values
-    for argument, values in config.instances.getArguments(tool, instanceName, isPipeline = False): arguments[argument] = values
+    for argument, values in config.parameterSets.getArguments(tool, 'default', isPipeline = False): arguments[argument] = values
+    for argument, values in config.parameterSets.getArguments(tool, parameterSetName, isPipeline = False): arguments[argument] = values
     for argument in sorted(arguments):
       firstValue = True
       for value in arguments[argument]:

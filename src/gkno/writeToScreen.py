@@ -82,8 +82,8 @@ class writeToScreen:
     else: print('Assigning internal loop information to graph nodes...', end = '', file = sys.stdout)
     sys.stdout.flush()
   
-  def writeCheckingInstanceInformation(self):
-    print('Checking instance information...', end = '', file = sys.stdout)
+  def writeCheckingParameterSetInformation(self):
+    print('Checking parameter set information...', end = '', file = sys.stdout)
     sys.stdout.flush()
   
   def writeCheckingEvaluateCommands(self):

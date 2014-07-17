@@ -3,6 +3,7 @@
 from __future__ import print_function
 from copy import deepcopy
 import sys
+import time
 
 import gknoErrors
 from gknoErrors import *
@@ -14,6 +15,11 @@ class commandLine:
 
   # Constructor.
   def __init__(self):
+
+    # Store the command line inputted by the user.
+    self.commandLine = ''
+    for argument in sys.argv: self.commandLine += argument + ' '
+
     self.arguments          = {}
     self.argumentDictionary = {}
     self.argumentList       = []
@@ -209,31 +215,31 @@ class commandLine:
 
     return count, nextArgument
 
-  # Check if an instance was defined and return the instance name.  If no instance was requested,
+  # Check if a parameter set was defined and return the parameter set name.  If no parameter set was requested,
   # return 'default'.
-  def getInstanceName(self, graph, config, isPipeline):
-    instanceName = ''
-    success      = True
+  def getParameterSetName(self, graph, config, isPipeline):
+    parameterSetName = ''
+    success          = True
 
-    # If the command line contains the instance argument, find the name of the instance.
-    if '--instance' in sys.argv or '-is' in sys.argv:
+    # If the command line contains the parameter set argument, find the name of the parameter set.
+    if '--parameter-set' in sys.argv or '-ps' in sys.argv:
 
-      # Check that the instance was only defined once.
-      if sys.argv.count('--instance') + sys.argv.count('-is') > 1: self.errors.multipleInstancesSpecified(graph, config)
+      # Check that the parameter set was only defined once.
+      if sys.argv.count('--parameter-set') + sys.argv.count('-ps') > 1: self.errors.multipleParameterSetsSpecified(graph, config)
 
-      # Find the instance name.
+      # Find the parameter set name.
       for counter, value in enumerate(sys.argv):
-        if value == '--instance' or value == '-is':
-          try: instanceName = sys.argv[counter + 1]
+        if value == '--parameter-set' or value == '-ps':
+          try: parameterSetName = sys.argv[counter + 1]
           except: success = False
 
-      # Check trhat the instance name was provided (e.g. the next value on the command line cannot start
+      # Check trhat the parameter set name was provided (e.g. the next value on the command line cannot start
       # with a '-'.
-      if instanceName.startswith('-'): success = False
-      if success: return instanceName
-      else: self.errors.noInstanceNameProvided(graph, config, isPipeline)
+      if parameterSetName.startswith('-'): success = False
+      if success: return parameterSetName
+      else: self.errors.noParameterSetNameProvided(graph, config, isPipeline)
 
-    # If no instance was specified, return 'default'.
+    # If no parameter set was specified, return 'default'.
     else: return 'default'
 
   # Parse the argument dictionary and check if any of the arguments are argument lists. If so,
@@ -624,3 +630,19 @@ class commandLine:
               values   = deepcopy(config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values'))
               hasValue = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'hasValue')
               if not hasValue: config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
+
+  # Store the command line in the file gkno-command-lines.txt.
+  def storeCommandLine(self, date):
+
+    # Open the new file.
+    filename   = 'gkno-command-lines.txt'
+    filehandle = open(filename, 'a')
+
+    # Write the data and time that the command line was written to file.
+    print(date, ' - ', time.localtime()[3], ':', time.localtime()[4], sep = '', file = filehandle)
+
+    # Write the command line to the file.
+    print('\t', self.commandLine, sep = '', file = filehandle)
+
+    # Close the file.
+    filehandle.close()

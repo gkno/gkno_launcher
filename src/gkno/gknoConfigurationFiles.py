@@ -24,11 +24,11 @@ import sys
 
 class gknoConfigurationFiles:
   def __init__(self):
-    self.jsonFiles                       = {}
-    self.jsonFiles['tools']              = {}
-    self.jsonFiles['tool instances']     = {}
-    self.jsonFiles['pipelines']          = {}
-    self.jsonFiles['pipeline instances'] = {}
+    self.jsonFiles                            = {}
+    self.jsonFiles['tools']                   = {}
+    self.jsonFiles['tool parameter sets']     = {}
+    self.jsonFiles['pipelines']               = {}
+    self.jsonFiles['pipeline parameter sets'] = {}
 
     # Errors class.
     self.errors = gknoErrors()
@@ -60,15 +60,15 @@ class gknoConfigurationFiles:
     # Find configuration files for individual tools.
     for files in os.listdir(path + "tools"):
 
-      # Store files ending with '_instances.json' seperately.  These files contain additional instance information, are modifiable
+      # Store files ending with '_parameterSets.json' seperately.  These files contain additional parameter set information, are modifiable
       # by the user (modifying the configuration files is discouraged) and do not contain information on a tool, so would
       # fail the checks performed on the tool configuration files.
-      if files.endswith('_instances.json'): self.jsonFiles['tool instances'][files] = False
+      if files.endswith('_parameterSets.json'): self.jsonFiles['tool parmeter sets'][files] = False
       elif files.endswith('.json'): self.jsonFiles['tools'][files] = True
 
     # Find configuration files for pipelines.
     for files in os.listdir(path + "pipes"):
-      if files.endswith('_instances.json'): self.jsonFiles['pipeline instances'][files] = False
+      if files.endswith('_parameterSets.json'): self.jsonFiles['pipeline parameter sets'][files] = False
       elif files.endswith('.json'): self.jsonFiles['pipelines'][files] = True
 
   # Check if the pipeline/tool name is valid.
@@ -147,11 +147,11 @@ class gknoConfigurationFiles:
           gknoArgument = self.validShortFormArguments[shortFormArgument] + ' (' + shortFormArgument + ')'
           self.errors.gknoToolError(config, graph, task, tool, longFormArgument, shortFormArgument, gknoArgument, isLongFormConflict = False)
 
-  # Attach the gkno specific instance arguments to the relevant nodes.
-  def attachInstanceArgumentsToNodes(self, config, graph, runName, instance):
-    for counter in range(len(config.instances.instanceAttributes[runName][instance].nodes) - 1, -1, -1):
-      argument = config.instances.instanceAttributes[runName][instance].nodes[counter].argument
-      values   = config.instances.instanceAttributes[runName][instance].nodes[counter].values
+  # Attach the gkno specific parameter set arguments to the relevant nodes.
+  def attachParameterSetArgumentsToNodes(self, config, graph, runName, parameterSet):
+    for counter in range(len(config.parameterSets.parameterSetAttributes[runName][parameterSet].nodes) - 1, -1, -1):
+      argument = config.parameterSets.parameterSetAttributes[runName][parameterSet].nodes[counter].argument
+      values   = config.parameterSets.parameterSetAttributes[runName][parameterSet].nodes[counter].values
 
       # If the argument is a gkno specific argument, check if it is in the short form. If so, convert it to the
       # long form.
@@ -168,8 +168,8 @@ class gknoConfigurationFiles:
         # Update the values in the node.
         config.nodeMethods.addValuesToGraphNode(graph, nodeID, values, write = 'replace')
 
-        # Remove the information from the instance data.
-        config.instances.instanceAttributes[runName][instance].nodes.pop(counter)
+        # Remove the information from the parameter set data.
+        config.parameterSets.parameterSetAttributes[runName][parameterSet].nodes.pop(counter)
 
   # Check if a command line argument is a gkno specific argument.
   def checkPipelineArgument(self, graph, config, argument):
@@ -228,7 +228,7 @@ class gknoConfigurationFiles:
 
         # If input files aren't set, gkno should terminate.  If the input is linked to the output of
         # another task, the nodes are merged and so the input is set.  Thus, an empty value cannot be
-        # filled without command line (or instance) information.
+        # filled without command line (or parameter set) information.
         if isRequired and not isSet:
           method = self.constructionInstructions(graph, config, task, longFormArgument, fileNodeID)
 
@@ -1082,7 +1082,7 @@ class gknoConfigurationFiles:
       isCommandToEvaluate = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isCommandToEvaluate')
 
       # If the option is required but unset, terminate. The checkRequired flag allows the data checking
-      # to proceed without failing if required files are not present. In particular, if an instance is being
+      # to proceed without failing if required files are not present. In particular, if an parameter set is being
       # exported, the presence of required values is not a cause for termination.
       if isRequired and not values and checkRequired:
 
