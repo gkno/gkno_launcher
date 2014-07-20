@@ -73,6 +73,10 @@ class writeToScreen:
       gknoHelp.writeFormattedText(text, description, length, 1, '')
     print(file = sys.stdout)
   
+  def writeCheckingLists(self):
+    print('Checking for lists of argument values...', end = '', file = sys.stdout)
+    sys.stdout.flush()
+
   def writeAssignPipelineArgumentsToNodes(self):
     print('Assigning command line arguments to graph nodes...', end = '', file = sys.stdout)
     sys.stdout.flush()

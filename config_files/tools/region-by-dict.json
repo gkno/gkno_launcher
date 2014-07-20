@@ -38,13 +38,13 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [""],
+        "extensions" : [".list"],
         "modify argument name on command line" : "stdout",
         "construct filename" : {
           "method": "define name",
-          "filename" : "region.windows",
+          "filename" : "region-windows",
           "for multiple runs connect to" : "--reference-dictionary",
-          "add extension" : false
+          "add extension" : true
         }
       }
     ],

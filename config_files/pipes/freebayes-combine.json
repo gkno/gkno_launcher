@@ -21,15 +21,6 @@
       }
     },
     {
-      "ID" : "bams",
-      "description" : "The list of input BAM files.",
-      "long form argument" : "--bam-list",
-      "short form argument" : "-l",
-      "tasks" : {
-        "call" : "--bam-list"
-      }
-    },
-    {
       "ID" : "ref",
       "description" : "The fasta reference.",
       "long form argument" : "--fasta-reference",
@@ -46,24 +37,6 @@
       "required" : true,
       "tasks" : {
         "call" : "--region"
-      }
-    },
-    {
-      "ID" : "region single",
-      "description" : "A list of regions to be analysed in a single makefile.",
-      "long form argument" : "--region-list-single",
-      "short form argument" : "-rls",
-      "tasks" : {
-        "call" : "--region-list-single"
-      }
-    },
-    {
-      "ID" : "regions",
-      "description" : "A list of regions to be analysed in multiple makefiles.",
-      "long form argument" : "--region-list-multiple",
-      "short form argument" : "-rlm",
-      "tasks" : {
-        "call" : "--region-list-multiple"
       }
     },
     {

@@ -19,20 +19,8 @@
         "if input is stream" : "do not include",
         "modify argument name on command line" : "hide",
         "data type" : "string",
-        "allow multiple values" : true
-      },
-      {
-        "description" : "A list of input vcf files.",
-        "long form argument" : "--in-list",
-        "short form argument" : "-l",
-        "command line argument" : "none",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide",
-        "data type" : "string",
-        "argument list" : {
-          "use argument" : "--in",
-          "mode" : "repeat argument"
-        }
+        "allow multiple values" : true,
+        "allow list of repeated arguments" : true
       }
     ],
 
@@ -74,7 +62,6 @@
 
   "argument order" : [
     "--in",
-    "--in-list",
     "--region",
     "--out"
   ],

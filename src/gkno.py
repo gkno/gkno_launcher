@@ -22,6 +22,9 @@ from gkno.debug import *
 import configurationClass.configurationClass
 from configurationClass.configurationClass import *
 
+import gkno.argumentLists
+from gkno.argumentLists import *
+
 import gkno.dataConsistency
 from gkno.dataConsistency import *
 
@@ -53,7 +56,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.30.16"
+__version__ = "1.30.17"
 __date__ = "July 2014"
 
 def main():
@@ -101,6 +104,9 @@ def main():
   # Define a command line options, get the first command line argument
   # and proceed as required.
   commands = commandLine()
+
+  # Define a class for handling lists of arguments.
+  lists = argumentLists()
 
   # Define a class for outputting graphics.
   draw = drawGraph()
@@ -332,9 +338,11 @@ def main():
   if isDebug: write.writeDebug('Checked parameter set information.')
 
   # Attach the values of the pipeline arguments to the relevant nodes.
-  write.writeAssignPipelineArgumentsToNodes()
-  hasMultipleRuns, hasInternalLoop = commands.unpackArgumentLists(pipelineGraph, config, gknoConfig, runName)
+  write.writeCheckingLists()
+  hasMultipleRuns, hasInternalLoop = lists.checkForLists(pipelineGraph, config, gknoConfig, runName, commands.argumentDictionary)
+  write.writeDone()
 
+  write.writeAssignPipelineArgumentsToNodes()
   if isPipeline: commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
   else: commands.attachToolArgumentsToNodes(pipelineGraph, config, gknoConfig)
   write.writeDone()
@@ -419,7 +427,7 @@ def main():
   # file already exists).
   if hasMultipleRuns or hasInternalLoop: consistency.checkNumberOfOutputFiles(pipelineGraph, config)
 
-  # If the --export-config has been set, then the user is attempting to create a
+  # If the --export-parameter-set argument has been set, then the user is attempting to create a
   # new configuration file based on the selected tool/pipeline.  This can only be
   # if multiple runs are NOT being performed.
   if isExportParameterSet:

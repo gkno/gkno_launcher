@@ -41,7 +41,6 @@
         "extensions" : [".dat"],
         "modify argument name on command line" : "omit",
         "hide in help" : true,
-        "terminate if present" : true,
         "construct filename" : {
           "method": "define name",
           "directory argument" : "--output-directory",
@@ -60,7 +59,6 @@
         "extensions" : [".dat"],
         "hide in help" : true,
         "modify argument name on command line" : "omit",
-        "terminate if present" : true,
         "construct filename" : {
           "method": "define name",
           "directory argument" : "--output-directory",

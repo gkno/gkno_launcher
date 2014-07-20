@@ -65,6 +65,12 @@
       "description" : "Append this text to all makefiles generated in this execution of gkno.",
       "short form" : "-mi"
     },
+    "GKNO-MULTIPLE-MAKEFILES" : {
+      "argument" : "--multiple-makefiles",
+      "data type" : "flag",
+      "description" : "If any of the arguments are supplied with a list of values causing one or more tools to require multiple iterations, if this is set to true, multiple makefiles are generated. If set to false [default], a single makefile will be generated.",
+      "short form" : "-mm"
+    },
     "GKNO-MULTIPLE-RUNS" : {
       "argument" : "--multiple-runs",
       "data type" : "string",

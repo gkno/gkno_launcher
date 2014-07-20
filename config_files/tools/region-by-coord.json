@@ -29,7 +29,7 @@
         "command line argument" : "--out",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".txt"],
+        "extensions" : [".list"],
         "modify argument name on command line" : "stdout",
         "construct filename" : {
           "method": "define name",

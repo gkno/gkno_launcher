@@ -68,6 +68,9 @@ class makefileData:
     if graphIntermediates: deleteList = config.setWhenToDeleteFiles(graph, graphIntermediates)
     graphOutputs = config.getGraphOutputs(graph, config.pipeline.workflow, deleteList, key = 'all')
 
+    # Write the intermediate files to the makefile.
+    self.writeIntermediateFiles(makefileHandle, graphIntermediates, 'all')
+
     # Write the pipeline outputs to the makefile.
     self.writeOutputFiles(graph, config, makefileHandle, graphOutputs)
 
@@ -138,6 +141,9 @@ class makefileData:
         # Detemine which files are dependencies and outputs files.
         graphDependencies  = config.getGraphDependencies(graph, self.structure.tasksInPhase[phaseID], key = key)
         graphOutputs       = config.getGraphOutputs(graph, self.structure.tasksInPhase[phaseID], deleteList, key = key)
+
+        # Write the intermediate files to the makefile.
+        self.writeIntermediateFiles(makefileHandle, graphIntermediates, key)
 
         # Write the pipeline outputs to the makefile.
         self.writeOutputFiles(graph, config, makefileHandle, graphOutputs)
@@ -247,11 +253,36 @@ class makefileData:
     print('STDOUT=', outputPath, stdoutName, sep = '', file = fileHandle)
     print('STDERR=', outputPath, stderrName, sep = '', file = fileHandle)
     print('COMPLETE_OK=', outputPath, okFile, sep = '', file = fileHandle)
+    print(file = fileHandle)
 
     # Include .DELETE_ON_ERROR in the makefile. This ensures that if the makefile execution is
     # terminated, the targets of the recipe are removed, ensuring that incomplete files are
     # left behing, potentially causing problems.
+    print('### If the pipeline terminates unexpectedly, delete all files that were in', file = fileHandle)
+    print('### the process of being generated.', file = fileHandle)
     print('.DELETE_ON_ERROR:', file = fileHandle)
+    print(file = fileHandle)
+
+  # Write out all of the intermediate files.
+  def writeIntermediateFiles(self, fileHandle, intermediates, key):
+    print('### The following files are intermediates. If the pipeline is rerun, rules for creating ', file = fileHandle)
+    print('### will not be rerun unless files prior to these rules have been updated.', file = fileHandle)
+    print('.INTERMEDIATE:', end = ' ', file = fileHandle)
+    if intermediates:
+
+      # Write out all intermediates. This is the case when only one makefile is
+      # being written.
+      if key == 'all':
+        for iteration in intermediates:
+          for nodeID, intermediateFile in intermediates[iteration]: print(intermediateFile, end = ' ', file = fileHandle)
+
+
+      # If only intermediates for a particular iteration are required.
+      else:
+        if key in intermediates:
+          for nodeID, intermediateFile in intermediates[key]: print(intermediateFile, end = ' ', file = fileHandle)
+
+    print(file = fileHandle)
     print(file = fileHandle)
 
   # Write out all of the output files.
@@ -267,12 +298,14 @@ class makefileData:
       if config.tools.getGeneralAttribute(tool, 'noOutput'): self.phonyTargets.append(task)
 
     # If there were phony targets, list these.
+    print('### List all PHONY targets. These are targets that are not actual files.', file = fileHandle)
     print('.PHONY: DELETE_COMPLETE_OK', end = ' ', file = fileHandle)
     for phonyTarget in self.phonyTargets: print(phonyTarget, end = ' ', file = fileHandle)
     print(file = fileHandle)
     print(file = fileHandle)
 
     # Print out all outputs.
+    print('### List all of the files that are required outputs of the pipeline.', file = fileHandle)
     print('all: DELETE_COMPLETE_OK', end = ' ', file = fileHandle)
 
     # Add all phony targets.
@@ -288,6 +321,8 @@ class makefileData:
 
   # Write a rule to remove the file created on successful completeion.
   def removeCompleteOk(self, fileHandle):
+    print('### Remove the file indicating successful completion of the pipeline. This file needs', file = fileHandle)
+    print('### to be recreated if the pipeline is rerun to indicate successful completion.', file = fileHandle)
     print('DELETE_COMPLETE_OK:', file = fileHandle)
     print('\t@rm -f $(COMPLETE_OK)', file = fileHandle)
     print(file = fileHandle)

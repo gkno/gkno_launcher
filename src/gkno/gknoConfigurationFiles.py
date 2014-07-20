@@ -258,6 +258,7 @@ class gknoConfigurationFiles:
             
                       # If gkno is being run in tool mode, get the arguments.
                       if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'tool':
+                        print('BILLY RAY', fileValue, longFormArgument, extensions)
                         self.errors.invalidExtension(fileValue, extensions, longFormArgument, shortFormArgument, task, '', '')
               
                       # If gkno is being run in pipeline, mode, determine if the argument with the

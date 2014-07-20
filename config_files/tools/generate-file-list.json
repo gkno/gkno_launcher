@@ -31,7 +31,6 @@
         "required" : true,
         "data type" : "string",
         "extensions" : ["no extension"],
-        "terminate if present" : true,
         "modify argument name on command line" : "stdout"
       }
     ]
