@@ -16,8 +16,14 @@
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fq", ".fq.gz", ".fastq", ".fastq.gz", ".fa"],
-        "modify argument name on command line" : "hide"
+        "extensions" : [".fq", ".fq.gz", ".fastq", ".fastq.gz", ".fa", ".fasta", ".fa.gz", ".fasta.gz"],
+        "modify argument name on command line" : "hide",
+        "allow multiple values" : true,
+        "allow list of repeated arguments" : true,
+        "modify argument values" : {
+          "command" : "<(zcat VALUE)",
+          "extensions" : [".fq.gz", ".fastq.gz", ".fa.gz", ".fasta.gz"]
+        }
       }
     ],
 
@@ -29,7 +35,7 @@
         "command line argument" : "--output",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".jfc"],
+        "extensions" : [".jf"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",

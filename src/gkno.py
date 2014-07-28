@@ -40,6 +40,9 @@ from gkno.files import *
 import gkno.gknoConfigurationFiles
 from gkno.gknoConfigurationFiles import *
 
+import gkno.drawGraph
+from gkno.drawGraph import *
+
 import gkno.helpClass
 from gkno.helpClass import *
 
@@ -56,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.30.17"
+__version__ = "1.30.18"
 __date__ = "July 2014"
 
 def main():
@@ -480,7 +483,7 @@ def main():
 
   # Check if a plotting the pipeline was requested. If so, check that a name for the output file was given and
   # draw the pipeline.
-  if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DRAW-PIPELINE', 'values'): gknoConfig.drawPipeline(pipelineGraph, config, draw)
+  if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DRAW-PIPELINE', 'values'): draw.drawPipeline(pipelineGraph, config)
   if isDebug: write.writeDebug('Plotting requirements fulfilled')
 
   # Having established the mode of operation and checked that the command lines are

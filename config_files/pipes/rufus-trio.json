@@ -1,0 +1,475 @@
+{
+  "description" : "Compare parent and mutant strains.",
+  "developmental" : true,
+
+  "tasks" : {
+    "count-parent1-kmers" : {
+      "tool" : "jellyfish-count"
+    },
+    "count-parent2-kmers" : {
+      "tool" : "jellyfish-count"
+    },
+    "merge-parent-counts" : {
+      "tool" : "jellyfish-merge"
+    },
+    "count-child-kmers" : {
+      "tool" : "jellyfish-count"
+    },
+    "build-parent1-histogram" : {
+      "tool" : "jellyfish-histo"
+    },
+    "build-parent2-histogram" : {
+      "tool" : "jellyfish-histo"
+    },
+    "build-merged-parent-histogram" : {
+      "tool" : "jellyfish-histo"
+    },
+    "build-child-histogram" : {
+      "tool" : "jellyfish-histo"
+    },
+    "replace-spaces-parent1" : {
+      "tool" : "replace-space-tab"
+    },
+    "replace-spaces-merged-parent" : {
+      "tool" : "replace-space-tab"
+    },
+    "replace-spaces-parent2" : {
+      "tool" : "replace-space-tab"
+    },
+    "replace-spaces-child" : {
+      "tool" : "replace-space-tab"
+    },
+    "copy-parent1-hist" : {
+      "tool" : "copy-file"
+    },
+    "copy-parent2-hist" : {
+      "tool" : "copy-file"
+    },
+    "copy-child-hist" : {
+      "tool" : "copy-file"
+    },
+    "plot-coverage" : {
+      "tool" : "r-plot"
+    },
+    "rename-coverage-plot" : {
+      "tool" : "rename-file"
+    },
+    "model-parents" : {
+      "tool" : "rufus-model"
+    },
+    "model-child" : {
+      "tool" : "rufus-model"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "parent1 fastq",
+      "description" : "The first mate fastq file for the first parent.",
+      "long form argument" : "--parent1-fastq",
+      "short form argument" : "-qp1",
+      "tasks" : {
+        "count-parent1-kmers" : "--in"
+      }
+    },
+    {
+      "ID" : "parent1 fastq2",
+      "description" : "The second mate fastq file for the first parent.",
+      "long form argument" : "--parent1-fastq2",
+      "short form argument" : "-qp12",
+      "tasks" : {
+        "count-parent1-kmers" : "--in"
+      }
+    },
+    {
+      "ID" : "parent2 fastq",
+      "description" : "The first mate fastq file for the second parent.",
+      "long form argument" : "--parent2-fastq",
+      "short form argument" : "-qp2",
+      "tasks" : {
+        "count-parent2-kmers" : "--in"
+      }
+    },
+    {
+      "ID" : "parent2 fastq2",
+      "description" : "The second mate fastq file for the second parent.",
+      "long form argument" : "--parent2-fastq2",
+      "short form argument" : "-qp22",
+      "tasks" : {
+        "count-parent2-kmers" : "--in"
+      }
+    },
+    {
+      "ID" : "child fastq1",
+      "description" : "The first mate fastq file for the child.",
+      "long form argument" : "--child-fastq",
+      "short form argument" : "-qc",
+      "tasks" : {
+        "count-child-kmers" : "--in"
+      }
+    },
+    {
+      "ID" : "child fastq2",
+      "description" : "The second mate fastq file for the child.",
+      "long form argument" : "--child-fastq2",
+      "short form argument" : "-qc2",
+      "tasks" : {
+        "count-child-kmers" : "--in"
+      }
+    },
+    {
+      "ID" : "parent1 output",
+      "description" : "The output file from counting the first parents k-mers. This should be left as the default value [parent1.jf] for consistency with other tools in the pipeline..",
+      "long form argument" : "--parent1-jf",
+      "short form argument" : "-p1j",
+      "tasks" : {
+        "count-parent1-kmers" : "--out"
+      }
+    },
+    {
+      "ID" : "parent2 output",
+      "description" : "The output file from counting the second parents k-mers. This should be left as the default value [parent1.jf] for consistency with other tools in the pipeline..",
+      "long form argument" : "--parent2-jf",
+      "short form argument" : "-p2j",
+      "tasks" : {
+        "count-parent2-kmers" : "--out"
+      }
+    },
+    {
+      "ID" : "child output",
+      "description" : "The output file from counting the child k-mers. This should be left as the default value [child.jf] for consistency with other tools in the pipeline..",
+      "long form argument" : "--child-jf",
+      "short form argument" : "-cj",
+      "tasks" : {
+        "count-child-kmers" : "--out"
+      }
+    },
+    {
+      "ID" : "k-mer length",
+      "description" : "The k-mer length.",
+      "long form argument" : "--k-mer",
+      "short form argument" : "-k",
+      "tasks" : {
+        "count-parent1-kmers" : "--k-mer",
+        "count-parent2-kmers" : "--k-mer",
+        "count-child-kmers" : "--k-mer",
+        "model-parents" : "--k-mer",
+        "model-child" : "--k-mer"
+      }
+    },
+    {
+      "ID" : "initial hash size",
+      "description" : "The initial hash size.",
+      "long form argument" : "--size",
+      "short form argument" : "-s",
+      "tasks" : {
+        "count-parent1-kmers" : "--size",
+        "count-parent2-kmers" : "--size",
+        "count-child-kmers" : "--size"
+      }
+    },
+    {
+      "ID" : "canonical",
+      "description" : "Count both strand, canonical representation (default: false).",
+      "long form argument" : "--canonical",
+      "short form argument" : "-ca",
+      "tasks" : {
+        "count-parent1-kmers" : "--canonical",
+        "count-parent2-kmers" : "--canonical",
+        "count-child-kmers" : "--canonical"
+      }
+    },
+    {
+      "ID" : "threads",
+      "description" : "Specifies the number of threads to use for the aligner.",
+      "long form argument" : "--processors",
+      "short form argument" : "-p",
+      "tasks" : {
+        "count-parent1-kmers" : "--processors",
+        "count-parent2-kmers" : "--processors",
+        "count-child-kmers" : "--processors"
+      }
+    },
+    {
+      "ID" : "full",
+      "description" : "Full histogram. Don't skip count 0. (default: false).",
+      "long form argument" : "--full",
+      "short form argument" : "-f",
+      "tasks" : {
+        "build-parent1-histogram" : "--full",
+        "build-parent2-histogram" : "--full",
+        "build-child-histogram" : "--full"
+      }
+    },
+    {
+      "ID" : "merged output",
+      "description" : "The merged Jellyfish counts file for both parents.",
+      "long form argument" : "--merged-parent-count-file",
+      "short form argument" : "-mpc",
+      "tasks" : {
+        "merge-parent-counts" : "--out"
+      }
+    },
+    {
+      "ID" : "parent1 histogram input",
+      "description" : "Link count-parent1-kmer output to build-parent1-histogram input for the first parent.",
+      "tasks" : {
+        "count-parent1-kmers" : "--out",
+        "build-parent1-histogram" : "--in"
+      },
+      "greedy tasks" : {
+        "merge-parent-counts" : "--in"
+      }
+    },
+    {
+      "ID" : "parent2 histogram input",
+      "description" : "Link count-parent2-kmer output to build-parent2-histogram input for the second parent.",
+      "tasks" : {
+        "count-parent2-kmers" : "--out",
+        "build-parent2-histogram" : "--in"
+      },
+      "greedy tasks" : {
+        "merge-parent-counts" : "--in"
+      }
+    },
+    {
+      "ID" : "merged parent histogram input",
+      "description" : "Link merge-parent-count output to build-merged-parent-histogram input.",
+      "tasks" : {
+        "merge-parent-counts" : "--out",
+        "build-merged-parent-histogram" : "--in"
+      }
+    },
+    {
+      "ID" : "child histogram input",
+      "description" : "Link count-child-kmer output to build-child-histogram input for the child.",
+      "tasks" : {
+        "count-child-kmers" : "--out",
+        "build-child-histogram" : "--in"
+      }
+    },
+    {
+      "ID" : "replace parent1 spaces.",
+      "description" : "replace spaces with tabs in parent1 histogram.",
+      "tasks" : {
+        "build-parent1-histogram" : "--out",
+        "replace-spaces-parent1" : "--in"
+      }
+    },
+    {
+      "ID" : "replace parent2 spaces.",
+      "description" : "replace spaces with tabs in parent2 histogram.",
+      "tasks" : {
+        "build-parent2-histogram" : "--out",
+        "replace-spaces-parent2" : "--in"
+      }
+    },
+    {
+      "ID" : "replace merged parent spaces.",
+      "description" : "replace spaces with tabs in merged parent histogram.",
+      "tasks" : {
+        "build-merged-parent-histogram" : "--out",
+        "replace-spaces-merged-parent" : "--in"
+      }
+    },
+    {
+      "ID" : "replace child spaces.",
+      "description" : "replace spaces with tabs in child histogram.",
+      "tasks" : {
+        "build-child-histogram" : "--out",
+        "replace-spaces-child" : "--in"
+      }
+    },
+    {
+      "ID" : "copy parent 1 hist",
+      "description" : "The input files to plot the coverage.",
+      "tasks" : {
+        "replace-spaces-parent1" : "--out",
+        "copy-parent1-hist" : "--in"
+      }
+    },
+    {
+      "ID" : "copy parent 2 hist",
+      "description" : "The input files to plot the coverage.",
+      "tasks" : {
+        "replace-spaces-parent2" : "--out",
+        "copy-parent2-hist" : "--in"
+      }
+    },
+    {
+      "ID" : "plot coverage inputs 3",
+      "description" : "The input files to plot the coverage.",
+      "tasks" : {
+        "replace-spaces-child" : "--out",
+        "copy-child-hist" : "--in",
+        "model-child" : "--histogram"
+      }
+    },
+    {
+      "ID" : "coverage plot input parent1",
+      "description" : "Input coverage histograms to plot for parent 1.",
+      "long form argument" : "--plot-parent1-hist-file",
+      "short form argument" : "-pp1hf",
+      "tasks" : {
+        "copy-parent1-hist" : "--out"
+      },
+      "greedy tasks" : {
+        "plot-coverage" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "coverage plot input parent2",
+      "description" : "Input coverage histograms to plot for parent 2.",
+      "long form argument" : "--plot-parent2-hist-file",
+      "short form argument" : "-pp2hf",
+      "tasks" : {
+        "copy-parent2-hist" : "--out"
+      },
+      "greedy tasks" : {
+        "plot-coverage" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "coverage plot input child",
+      "description" : "Input coverage histograms to plot",
+      "long form argument" : "--plot-child-hist-file",
+      "short form argument" : "-pchf",
+      "tasks" : {
+        "copy-child-hist" : "--out"
+      },
+      "greedy tasks" : {
+        "plot-coverage" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "plot",
+      "description" : "Plot the tab delimited file with R.",
+      "long form argument" : "--r-script-coverage",
+      "short form argument" : "-rsc",
+      "tasks" : {
+        "plot-coverage" : "--script"
+      }
+    },
+    {
+      "ID" : "coverage plot",
+      "description" : "Rename the coverage plot.",
+      "long form argument" : "--coverage-plot",
+      "short form argument" : "-cp",
+      "tasks" : {
+        "rename-coverage-plot" : "--out"
+      }
+    },
+    {
+      "ID" : "coverage plot input",
+      "description" : "Rename the coverage plot.",
+      "long form argument" : "--coverage-plot-input",
+      "short form argument" : "-cpi",
+      "tasks" : {
+        "plot-coverage" : "--out",
+        "rename-coverage-plot" : "--in"
+      }
+    },
+    {
+      "ID" : "model parents",
+      "description" : "model parents kmer distribution",
+      "tasks" : {
+        "replace-spaces-merged-parent" : "--out",
+        "model-parents" : "--histogram"
+      }
+    },
+    {
+      "ID" : "processors rufus model",
+      "description" : "The number of threads for the Rufus model step.",
+      "long form argument" : "--processors-rufus-model",
+      "short form argument" : "-prm",
+      "tasks" : {
+        "model-parents" : "--processors",
+        "model-child" : "--processors"
+      }
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "nodes" : [
+        {
+          "ID" : "k-mer",
+          "argument" : "--k-mer",
+          "values" : [23]
+        },
+        {
+          "ID" : "hash size",
+          "argument" : "--size",
+          "values" : [1000000]
+        },
+        {
+          "ID" : "canonical",
+          "argument" : "--canonical",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "full",
+          "argument" : "--full",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "merged-name",
+          "argument" : "--merged-parent-count-file",
+          "values" : ["merged-parents.jf"]
+        },
+        {
+          "ID" : "r coverage",
+          "argument" : "--r-script-coverage",
+          "values" : ["$(TOOL_BIN)/R/rufus-trio-coverage.r"]
+        },
+        {
+          "ID" : "parent1 coverage",
+          "argument" : "--plot-parent1-hist-file",
+          "values" : ["$(PWD)/parent1.r.histo"]
+        },
+        {
+          "ID" : "parent2 coverage",
+          "argument" : "--plot-parent2-hist-file",
+          "values" : ["$(PWD)/parent2.r.histo"]
+        },
+        {
+          "ID" : "child coverage",
+          "argument" : "--plot-child-hist-file",
+          "values" : ["$(PWD)/child.r.histo"]
+        },
+        {
+          "ID" : "coverage plot",
+          "argument" : "--coverage-plot",
+          "values" : ["$(PWD)/coverage.pdf"]
+        },
+        {
+          "ID" : "rufus model processors",
+          "argument" : "--processors-rufus-model",
+          "values" : [4]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "nodes" : [
+        {
+          "ID" : "k-mer",
+          "argument" : "--k-mer",
+          "values" : [18]
+        },
+        {
+          "ID" : "processors",
+          "argument" : "--processors",
+          "values" : [2]
+        }
+      ]
+    }
+  ]
+}

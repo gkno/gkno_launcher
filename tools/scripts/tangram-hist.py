@@ -37,6 +37,7 @@ for binValue in sorted(allBins):
   values = []
   print(binValue, end = '')
   for dataSet in configurationData:
-    positionList = [position for position, testBinValue in enumerate(dataSet['bin']) if testBinValue == binValue]
-    print('\t', dataSet['freq'][positionList[0]], sep = '', end = '') if len(positionList) != 0 else print('\t0', end = '')
+    if dataSet['bin']:
+      positionList = [position for position, testBinValue in enumerate(dataSet['bin']) if testBinValue == binValue]
+      print('\t', dataSet['freq'][positionList[0]], sep = '', end = '') if len(positionList) != 0 else print('\t0', end = '')
   print()

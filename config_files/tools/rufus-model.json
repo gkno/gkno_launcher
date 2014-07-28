@@ -57,7 +57,7 @@
       {
         "description" : "Output prob file.",
         "long form argument" : "--output-prob",
-        "short form argument" : "-op",
+        "short form argument" : "-pr",
         "command line argument" : "--output-prob",
         "required" : true,
         "data type" : "string",

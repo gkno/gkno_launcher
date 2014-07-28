@@ -205,16 +205,9 @@ class gknoConfigurationFiles:
   # defined by the user.  If there is a required input or output file and it does not have its value set, 
   # determine how to construct the filename and populate the node with the value.
   def constructFilenames(self, graph, config, isPipeline):
-    #previousTaskOutputIsStream = False
     for task in config.pipeline.workflow:
       numberOfIterations = 0
       tool               = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-
-      #TODO REMOVE
-      # Determine if the input and output are streams.
-      #outputIsStream             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'outputStream')
-      #inputIsStream              = True if previousTaskOutputIsStream else False
-      #previousTaskOutputIsStream = True if outputIsStream else False
 
       # Input files are predecessor nodes to the task.  Deal with the input files first.
       for fileNodeID in config.nodeMethods.getPredecessorFileNodes(graph, task):
@@ -386,6 +379,7 @@ class gknoConfigurationFiles:
   # Add additional argument values to the filename.
   def addArgumentValues(self, graph, config, arguments, task, modifiedValues):
     numberOfValues = len(modifiedValues)
+    if numberOfValues == 0: return modifiedValues
 
     # The modifiedValues structure is a dictionary.  This contains values for each iteration of the
     # pipeline to be executed.  It must be the case that the modifiedValues dictionary has the same
@@ -443,6 +437,7 @@ class gknoConfigurationFiles:
         #self.errors.missingArgumentInFilenameConstruction(graph, config, task, taskArgument, '', False)
       else:
         print('NOT HANDLED VALUES - gknoConfig.addArgumentValues')
+        print(task, taskArgument, modifiedValues)
         self.errors.terminate()
 
     return modifiedValues
@@ -676,7 +671,8 @@ class gknoConfigurationFiles:
 
     # If the extension is to remain unchanged.
     elif modifyExtension == 'retain':
-      extension     = '.' + values[1][0].rsplit('.')[-1]
+      if values: extension     = '.' + values[1][0].rsplit('.')[-1]
+      else: extension = ''
       newExtensions = [extension]
 
     elif modifyExtension == 'omit':
@@ -1266,15 +1262,6 @@ class gknoConfigurationFiles:
 
       self.errors.missingFiles(graph, config, missingFiles)
       config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-DO-NOT-EXECUTE', ['set'], write = 'replace')
-
-  # Draw the pipeline graph.
-  def drawPipeline(self, graph, config, draw):
-    filename = config.nodeMethods.getGraphNodeAttribute(graph, 'GKNO-DRAW-PIPELINE', 'values')[1][0]
-    if filename == '': self.errors.noDrawFileProvided(graph, config)
-
-    # If the filename does not have the '.dot' extension, add it.
-    if not filename.endswith('.dot'): filename += '.dot'
-    draw.drawDot(graph, config, filename)
 
   # Check to see if there are any files/directories present that are not allowed.  
   def checkForDisallowedFiles(self, graph, config, resourcePath):

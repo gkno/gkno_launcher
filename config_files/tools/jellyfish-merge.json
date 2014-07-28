@@ -1,0 +1,71 @@
+{
+  "id" : "jellyfish-merge",
+  "description" : "Merge Jellyfish count (.jf) files.",
+  "category" : "kmer processing",
+  "tools" : ["jellyfish"],
+  "path" : "Jellyfish/bin",
+  "executable" : "jellyfish",
+  "modifier" : "merge",
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The Jellyfish files to merge (at least two).",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "-in",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".jf"],
+        "modify argument name on command line" : "hide",
+        "allow multiple values" : true,
+        "allow list of repeated arguments" : true
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The merged output file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--output",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".jf"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_merged"]
+            }
+          ]
+        }
+      }
+    ] 
+  },
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "nodes" : []
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "input",
+          "argument" : "--in",
+          "values" : [
+            "$(RESOURCES)/tutorial/current/mutated_genome_1_15.jf", 
+            "$(RESOURCES)/tutorial/current/mutated_genome_1_15.jf"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "id" : "rename-file",
+  "description" : "Rename a file.",
+  "category" : "file processing",
+  "tools" : [],
+  "path" : "scripts",
+  "executable" : "rename-file.sh",
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "File to rename.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--in",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "Output file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--in",
+    "--out"
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "input",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/single.sequence.index"]
+        }
+      ]
+    }
+  ]
+}

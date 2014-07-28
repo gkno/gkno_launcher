@@ -17,7 +17,8 @@
         "required" : true,
         "data type" : "string",
         "extensions" : ["no extension"],
-        "modify argument name on command line" : "omit"
+        "modify argument name on command line" : "omit",
+        "allow multiple values" : true
       },
       {
         "description" : "R script to process.",

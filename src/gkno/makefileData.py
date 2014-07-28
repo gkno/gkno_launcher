@@ -6,6 +6,9 @@ from copy import deepcopy
 import gknoErrors
 from gknoErrors import *
 
+import argumentValues
+from argumentValues import *
+
 import pipelineStructure
 from pipelineStructure import *
 
@@ -34,6 +37,9 @@ class makefileData:
 
     # Keep track of phony targets.
     self.phonyTargets = []
+
+    # Define a class to handle modifying argument values.
+    self.valueMethods = argumentValues()
 
     # Check the platform. If 'Darwin', do not use the '-e' modifier in echo commands.
     if platform.system() == 'Darwin': self.echoModifier = ''
@@ -242,6 +248,12 @@ class makefileData:
     stderrName = makefileName.replace('.make', '.stderr')
     okFile = makefileName.replace('.make', '.ok')
 
+    # Set the SHELL variable to /bin/bash. For some operations, the default sh shell will
+    # not perform as required.
+    print('SHELL=/bin/bash', file = fileHandle)
+    print(file = fileHandle)
+
+    # Set all the required paths.
     print(file = fileHandle)
     print('### Paths to tools and resources.', file = fileHandle)
     print('GKNO_PATH=', sourcePath, "/src/gkno", sep = '', file = fileHandle)
@@ -736,6 +748,10 @@ class makefileData:
                  
                 # TODO DO I NEED TO LOOK AT OUTPUTS?
 
+          # Check if the argument values have instructions indicating modifications that need to be
+          # applied.
+          valueList = self.valueMethods.modifyArgumentValues(config, tool, argument, valueList)
+ 
           # Determine if the value is to be contained in qutotaion marks.
           inQuotations = config.tools.getArgumentAttribute(tool, argument, 'inQuotations')
   
@@ -909,7 +925,7 @@ class makefileData:
     # If there are multiple values, it is unclear which value to include in the command, so terminate.
     if len(argumentValues) != 1:
       #TODO ERROR
-      print('ERROR - replaceCommandID')
+      print('ERROR - makefile.replaceCommandID')
       self.errors.terminate()
 
     commands[iteration][0] = str(commands[iteration][0].replace(ID, str(argumentValues[0])))
