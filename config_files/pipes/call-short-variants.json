@@ -33,15 +33,6 @@
       }
     },
     {
-      "ID" : "bams",
-      "description" : "The list of input BAM files.",
-      "long form argument" : "--bam-list",
-      "short form argument" : "-l",
-      "tasks" : {
-        "merge" : "--in-list"
-      }
-    },
-    {
       "ID" : "region",
       "description" : "The genomic region for consideration.",
       "long form argument" : "--region",
@@ -49,24 +40,6 @@
       "required" : true,
       "tasks" : {
         "merge" : "--region"
-      }
-    },
-    {
-      "ID" : "region single",
-      "description" : "A list of regions to be analysed in a single makefile.",
-      "long form argument" : "--region-list-single",
-      "short form argument" : "-rls",
-      "tasks" : {
-        "merge" : "--region-list-single"
-      }
-    },
-    {
-      "ID" : "region multiple",
-      "description" : "A list of regions to be analysed in a multiple makefiles.",
-      "long form argument" : "--region-list-multiple",
-      "short form argument" : "-rlm",
-      "tasks" : {
-        "merge" : "--region-list-multiple"
       }
     },
     {

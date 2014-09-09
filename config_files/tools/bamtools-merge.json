@@ -18,19 +18,8 @@
         "required" : true,
         "data type" : "string",
         "extensions" : [".bam"],
-        "allow multiple values" : true
-      },
-      {
-        "description" : "the input BAM file list (in json format).",
-        "long form argument" : "--in-list",
-        "short form argument" : "-l",
-        "command line argument" : "-in",
-        "data type" : "string",
-        "extensions" : ["no extension"],
-        "argument list" : {
-          "use argument" : "--in",
-          "mode" : "repeat argument"
-        }
+        "allow multiple values" : true,
+        "allow list of repeated arguments" : true
       }
     ],
 
@@ -77,30 +66,6 @@
               "argument" : "tool"
             }
           ]
-        }
-      },
-      {
-        "description" : "A list of genomic regions to be applied with the --region argument. This option will lead to multiple freebayes calls in a single makefile.",
-        "long form argument" : "--region-list-single",
-        "short form argument" : "-rls",
-        "command line argument" : "none",
-        "extensions" : ["no extension"],
-        "data type" : "string",
-        "argument list" : {
-          "use argument" : "--region",
-          "mode" : "single makefile"
-        }
-      },
-      {
-        "description" : "A list of genomic regions to be applied with the --region argument. This option will lead to a single freebayes call in multiple makefiles.",
-        "long form argument" : "--region-list-multiple",
-        "short form argument" : "-rlm",
-        "command line argument" : "none",
-        "extensions" : ["no extension"],
-        "data type" : "string",
-        "argument list" : {
-          "use argument" : "--region",
-          "mode" : "multiple makefiles"
         }
       }
     ]

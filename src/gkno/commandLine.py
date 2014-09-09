@@ -20,11 +20,16 @@ class commandLine:
     self.commandLine = ''
     for argument in sys.argv: self.commandLine += argument + ' '
 
+    # Define the errors class.
+    self.errors = gknoErrors()
+
+    # Record if multiple iterations have been set by virtue of the supplied commands.
+    self.setMultipleIterations = False
+
     self.arguments          = {}
     self.argumentDictionary = {}
     self.argumentList       = []
     self.argumentsToNodes   = []
-    self.errors             = gknoErrors()
     self.linkedArguments    = {}
     self.mode               = 'help'
     self.uniqueArguments    = {}
@@ -266,6 +271,8 @@ class commandLine:
       if nodeID == None:
         #TODO DEAL WITH ERROR
         print('unknown command:', argument)
+        print(self.argumentDictionary[argument])
+        exit(0)
       else:
 
         # TODO Deal with multiple runs and parallel execution loops.

@@ -41,8 +41,8 @@ class argumentLists:
               # Get the task to which this argument points and the argument within that task to which
               # this pipeline argument points.
               # TODO Consider all nodes, not just the first in the list.
-              try: task, toolArgument = config.pipeline.commonNodes[config.pipeline.pipelineArguments[argument].configNodeID][0] 
-    
+              try: task, toolArgument = config.pipeline.commonNodes[config.pipeline.pipelineArguments[argument].configNodeID][0]
+
               # If the above failed, the argument is not an argument for the pipeline, but it may be the name of a task in 
               # the pipeline, so leave it for future consideration.
               except: continue
@@ -56,9 +56,8 @@ class argumentLists:
             # Check that this argument allows a list to be provided and if so, record if this list adds 
             # all the contents to the list of values for the argument (as opposed to creating multiple
             # executions of the command).
-            isRepeat = config.tools.getArgumentAttribute(tool, toolArgument, 'isRepeatedArgumentList')
             isList   = config.tools.getArgumentAttribute(tool, toolArgument, 'isArgumentList')
-
+            isRepeat = config.tools.getArgumentAttribute(tool, toolArgument, 'isRepeatedArgumentList')
 
             # Parse the list and modify the value in argumentDictionary from the list to the files
             # in the list. First check that the file exists.
@@ -72,7 +71,10 @@ class argumentLists:
             # argumentsToAdd list. These will be transferred to the argumentDictionary after the loop 
             # over it is complete. If this is a pipeline, find the pipeline argument that is used for
             # this argument.
-            if isRepeat: argumentsToAdd.append((toolArgument, values))
+            if isRepeat:
+              if isList: print('argumentLists.checkForLists - NOT HANDLED'); exit(0)
+              if isPipeline: argumentsToAdd.append((argument, values))
+              else: argumentsToAdd.append((toolArgument, values))
 
             # If the argument is given a list of values, but the argument is not repeatable, then
             # multiple iterations of the tool need to be run.
@@ -100,7 +102,7 @@ class argumentLists:
               # If gkno is run in tool mode.
               else:
                 if task not in gknoConfig.loopData.tasksWithMultipleValuesSet: gknoConfig.loopData.tasksWithMultipleValuesSet.append(task)
-  
+
               for iteration, value in enumerate(values):
                 gknoConfig.loopData.argumentValues[argument][iteration + 1] = [value]
                 gknoConfig.loopData.fromArgumentList                        = True
