@@ -1,7 +1,7 @@
 {
   "id" : "rename-file",
   "description" : "Rename a file.",
-  "category" : "file processing",
+  "categories" : ["General-file-processing", "Scripts"],
   "tools" : [],
   "path" : "scripts",
   "executable" : "rename-file.sh",

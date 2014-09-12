@@ -1,7 +1,7 @@
 {
   "id" : "premo",
   "description" : "Determine MosaikAligner parameters based on read and fragment length",
-  "category" : "align",
+  "categories" : ["FASTQ-processing", "Mosaik", "Marthlab-software"],
   "tools" : ["premo", "mosaik"],
   "path" : "premo/bin",
   "executable" : "premo",

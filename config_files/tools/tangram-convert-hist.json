@@ -1,13 +1,12 @@
 {
   "id" : "tangram-convert-hist",
   "description" : "Convert a binary histogram file to a json file.",
-  "category" : "file processing",
+  "categories" : ["Tangram", "Marthlab-software"],
   "tools" : ["tangram"],
   "path" : "Tangram/bin",
   "executable" : "tangram_view_scan_file.py",
   "precommand" : "python",
   "help" : "--help|-h",
-  "help group" : "SV discovery",
   "arguments" : {
     "inputs" : [
       {

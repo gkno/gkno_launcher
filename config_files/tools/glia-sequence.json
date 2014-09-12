@@ -1,8 +1,8 @@
 {
-  "id" : "glia",
+  "id" : "glia-sequence",
   "description" : "Perform local graph alignment of a specific sequence.",
   "experimental" : true,
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing", "Aligners", "Variant-graph", "Marthlab-software"],
   "tools" : ["glia"],
   "path" : "glia",
   "executable" : "glia",
@@ -82,7 +82,7 @@
       {
         "description" : "The alignment mismatch score (default -10).",
         "long form argument" : "--mismatch",
-        "short form argument" : "-mm",
+        "short form argument" : "-ms",
         "command line argument" : "--mismatch",
         "data type" : "integer",
         "extensions" : ["no extension"]

@@ -1,7 +1,7 @@
 {
   "id" : "samtools-reheader",
   "description" : "Replace the header in a BAM file.",
-  "category" : "reference processing",
+  "categories" : ["BAM-processing"],
   "tools" : ["samtools"],
   "path" : "samtools",
   "executable" : "samtools",

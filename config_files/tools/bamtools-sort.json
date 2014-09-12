@@ -1,13 +1,12 @@
 {
   "id" : "bamtools-sort",
   "description" : "Sort a BAM file",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing", "Bamtools", "Marthlab-software"],
   "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "sort",
   "help" : "--help|-h",
-  "help group" : "Bamtools bam processing",
   "arguments" : {
     "inputs" : [
       {

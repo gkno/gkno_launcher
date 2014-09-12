@@ -1,5 +1,6 @@
 {
-  "description" : "Extract paired end fastqs from a bam files and compress and check.",
+  "description" : "Extract paired end fastqs from a bam file, compress and check.",
+  "categories" : ["BAM-processing"],
 
   "tasks" : {
     "extract" : {

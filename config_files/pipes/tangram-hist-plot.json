@@ -1,5 +1,6 @@
 {
   "description" : "Generate histogram of Tangram fragment length distribution.",
+  "categories" : ["Visualisation"],
 
   "tasks" : {
     "convert-to-json" : {

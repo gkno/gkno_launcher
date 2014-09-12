@@ -1,13 +1,12 @@
 {
   "id" : "vcf-sort",
   "description" : "Sort a vcf file.",
-  "category" : "variant postprocessing",
+  "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
   "executable" : "vcfsort",
   "hide tool" : false,
   "help" : "--help|-h",
-  "help group" : "VCF processing",
   "arguments" : {
     "inputs" : [
       {

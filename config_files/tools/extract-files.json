@@ -1,7 +1,7 @@
 {
   "id" : "extract-files-from-list",
   "description" : "Extract files containing given strings from a list.",
-  "category" : "file processing",
+  "categories" : ["General-file-processing", "Scripts"],
   "tools" : [],
   "path" : "scripts",
   "executable" : "extract-files-from-list.sh",

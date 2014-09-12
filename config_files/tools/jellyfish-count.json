@@ -1,7 +1,7 @@
 {
   "id" : "jellyfish-count",
   "description" : "Count k-mers in fasta or fastq files.",
-  "category" : "kmer processing",
+  "categories" : ["Kmer-processing", "Jellyfish"],
   "tools" : ["jellyfish"],
   "path" : "Jellyfish/bin",
   "executable" : "jellyfish",

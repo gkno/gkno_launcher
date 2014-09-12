@@ -1,12 +1,11 @@
 {
   "id" : "tangram-bam",
   "description" : "Add ZA tags (see Mosaik documentation) to BAM files. This ensures compatibility between Tangram and all alignment tools - not just Mosaik.",
-  "category" : "alignment processing",
+  "categories" : ["Tangram", "BAM-processing", "Marthlab-software"],
   "tools" : ["tangram"],
   "path" : "Tangram/bin",
   "executable" : "tangram_bam",
   "help" : "--help|-h",
-  "help group" : "BAM processing",
   "arguments" : {
     "inputs" : [
       {

@@ -1,7 +1,7 @@
 {
   "id" : "copy-file",
   "description" : "Copy a file.",
-  "category" : "file processing",
+  "categories" : ["General-file-processing", "Scripts"],
   "tools" : [],
   "path" : "scripts",
   "executable" : "copy-file.sh",

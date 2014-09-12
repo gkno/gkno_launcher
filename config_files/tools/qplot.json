@@ -1,7 +1,7 @@
 {
   "id" : "qplot",
   "description" : "Calculate and display bam summary statistics.",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing", "Visualisation", "Michigan-software"],
   "tools" : ["qplot"],
   "path" : "qplot/bin",
   "executable" : "qplot",

@@ -1,14 +1,13 @@
 {
   "id" : "snpeff-download",
   "description" : "Annotate the closest genomic region.",
-  "category" : "annotation",
+  "categories" : ["Annotation"],
   "tools" : ["snpEff"],
   "path" : "snpEff",
   "executable" : "snpEff.jar",
   "precommand" : "java -Xmx4g -jar",
   "modifier" : "closest",
   "help" : "--help|-h",
-  "help group" : "Annotation",
   "arguments" : {
     "inputs" : [
       {

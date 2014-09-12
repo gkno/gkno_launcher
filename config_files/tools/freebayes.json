@@ -1,12 +1,11 @@
 {
   "id" : "freebayes",
   "description" : "Bayesian variant and haplotype calling",
-  "category" : "variant discovery",
+  "categories" : ["Variant-discovery", "Short-variant-discovery", "Marthlab-software"],
   "tools" : ["freebayes"],
   "path" : "freebayes/bin",
   "executable" : "freebayes",
   "help" : "--help|-h",
-  "help group" : "Short variant discovery",
   "arguments" : {
     "inputs" : [
       {

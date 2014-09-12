@@ -1,7 +1,7 @@
 {
   "id" : "jellyfish-merge",
   "description" : "Merge Jellyfish count (.jf) files.",
-  "category" : "kmer processing",
+  "categories" : ["Kmer-processing", "Jellyfish"],
   "tools" : ["jellyfish"],
   "path" : "Jellyfish/bin",
   "executable" : "jellyfish",

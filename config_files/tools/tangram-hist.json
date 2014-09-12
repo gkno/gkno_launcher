@@ -1,7 +1,7 @@
 {
   "id" : "tangram-hist",
   "description" : "Convert a json format Tangram histogram into a tab delimited file.",
-  "category" : "file processing",
+  "categories" : ["Tangram", "Marthlab-software"],
   "tools" : [],
   "path" : "scripts",
   "executable" : "tangram-hist.py",

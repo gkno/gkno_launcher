@@ -1,7 +1,7 @@
 {
   "id" : "jellyfish-histo",
   "description" : "Create a histogram of k-mer occurrences.",
-  "category" : "kmer processing",
+  "categories" : ["Kmer-processing", "Jellyfish"],
   "tools" : ["jellyfish"],
   "path" : "Jellyfish/bin",
   "executable" : "jellyfish",

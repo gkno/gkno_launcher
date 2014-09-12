@@ -1,14 +1,13 @@
 {
   "id" : "picard-mark-duplicates",
   "description" : "Mark duplicate reads.",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing"],
   "tools" : ["picard"],
   "path" : "picard/dist",
   "executable" : "MarkDuplicates.jar",
   "precommand" : "java -Xmx8g -jar",
   "argument delimiter" : "=",
   "help" : "--help|-h",
-  "help group" : "BAM processing",
   "arguments" : {
     "inputs" : [
       {

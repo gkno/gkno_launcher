@@ -1,12 +1,11 @@
 {
   "id" : "gzip-delete",
   "description" : "Compress a file using gzip.",
-  "category" : "file processing",
+  "categories" : ["General-file-processing", "Scripts"],
   "tools" : [],
   "path" : "no path",
   "executable" : "gzip",
   "help" : "--help|-h",
-  "help group" : "File compression",
   "arguments" : {
     "inputs" : [
       {

@@ -1,6 +1,6 @@
 {
   "description" : "Align paired-end fastq files using Mosaik.",
-  "help group" : "Alignment pipelines",
+  "categories" : ["Alignment"],
 
   "tasks" : {
     "generate-mosaik-parameters" : {

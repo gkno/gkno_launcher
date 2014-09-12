@@ -1,13 +1,12 @@
 {
   "id" : "recab",
   "description" : "Recalibrate base qualities in a BAM file (University of Michigan).",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing", "Michigan-software"],
   "tools" : ["bamUtil", "libStatGen"],
   "path" : "bamUtil/bin",
   "executable" : "bam",
   "modifier" : "recab",
   "help" : "--help|-h",
-  "help group" : "BAM processing",
   "arguments" : {
     "inputs" : [
       {    

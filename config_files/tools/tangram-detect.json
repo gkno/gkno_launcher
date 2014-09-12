@@ -1,12 +1,11 @@
 {
   "id" : "tangram-detect",
   "description" : "Detect and genotype structural variation events.",
-  "category" : "variant discovery",
+  "categories" : ["Tangram", "Variant-discovery", "SV-discovery", "Marthlab-software"],
   "tools" : ["tangram"],
   "path" : "Tangram/bin",
   "executable" : "tangram_detect",
   "help" : "--help|-h",
-  "help group" : "SV discovery",
   "arguments" : {
     "inputs" : [
       {

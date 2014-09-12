@@ -1,7 +1,7 @@
 {
   "id" : "mutatrix",
   "description" : "Generates a simulated population with no linkage, but allele frequency spectrum drawn from 1/n, where n is the minor allele frequency.",
-  "category" : "simulation",
+  "categories" : ["Simulation", "FASTA-processing", "Marthlab-software"],
   "tools" : ["mutatrix"],
   "path" : "mutatrix",
   "executable" : "mutatrix",

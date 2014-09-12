@@ -2,7 +2,7 @@
   "id" : "rufus-overlap-hash",
   "description" : "A greedy overlap assembler that attempts to assemble all reads that share at least one k-mer.",
   "experimental" : true,
-  "category" : "kmer processing",
+  "categories" : ["FASTQ-processing", "Rufus", "Marthlab-software"],
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",
   "executable" : "Overlap19",

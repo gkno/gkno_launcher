@@ -1,7 +1,7 @@
 {
   "id" : "bgzip-decompress",
   "description" : "Compress a file using bgzip without removing the original file.",
-  "category" : "file processing",
+  "categories" : ["General-file-processing"],
   "tools" : ["tabix"],
   "path" : "tabix",
   "executable" : "bgzip",

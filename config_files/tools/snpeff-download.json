@@ -1,14 +1,13 @@
 {
   "id" : "snpeff-download",
   "description" : "Download database for use with snpEff.",
-  "category" : "annotation",
+  "categories" : ["Annotation"],
   "tools" : ["snpEff"],
   "path" : "snpEff",
   "executable" : "snpEff.jar",
   "precommand" : "java -Xmx4g -jar",
   "modifier" : "download",
   "help" : "--help|-h",
-  "help group" : "Annotation",
   "arguments" : {
     "inputs" : [
     ],

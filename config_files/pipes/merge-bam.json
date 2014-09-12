@@ -1,6 +1,6 @@
 {
   "description" : "Merge together all bam files for a sample and mark duplicate reads.",
-  "help group" : "Alignment processing",
+  "categories" : ["BAM-processing"],
 
   "tasks" : {
     "merge-bam" : {
@@ -28,15 +28,6 @@
       "short form argument" : "-b",
       "tasks" : {
         "merge-bam" : "--in"
-      }
-    },
-    {
-      "ID" : "input list",
-      "description" : "A json file containing a list of input BAM file.",
-      "long form argument" : "--bam-list",
-      "short form argument" : "-bl",
-      "tasks" : {
-        "merge-bam" : "--in-list"
       }
     },
     {

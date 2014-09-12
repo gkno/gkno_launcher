@@ -1,12 +1,11 @@
 {
   "id" : "vcf-filter",
   "description" : "Filter vcf files on a variety of parameters.",
-  "category" : "variant postprocessing",
+  "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
   "executable" : "vcffilter",
   "help" : "--help|-h",
-  "help group" : "VCF processing",
   "arguments" : {
     "inputs" : [
       {

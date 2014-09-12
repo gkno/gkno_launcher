@@ -72,22 +72,19 @@ class gknoConfigurationFiles:
       elif files.endswith('.json'): self.jsonFiles['pipelines'][files] = True
 
   # Check if the pipeline/tool name is valid.
-  def checkPipelineName(self, gknoHelp, isPipeline, name):
+  def checkPipelineName(self, gknoHelp, isPipeline, name, mode):
 
     # If this is a tool, check against the available tools.
-    if (not isPipeline) and name:
+    if mode == 'tool':
       if name + '.json' not in self.jsonFiles['tools']:
-        gknoHelp.printHelp   = True
+        gknoHelp.writeHelp   = True
         gknoHelp.toolHelp    = True
         gknoHelp.invalidTool = True
 
     # Now check for pipelines.
-    else:
-      if not name or name == '-h' or name == '--help':
-        gknoHelp.printHelp    = True
-        gknoHelp.pipelineHelp = True
-      elif name + '.json' not in self.jsonFiles['pipelines']:
-        gknoHelp.printHelp       = True
+    elif mode == 'pipeline':
+      if name + '.json' not in self.jsonFiles['pipelines']:
+        gknoHelp.writeHelp       = True
         gknoHelp.pipelineHelp    = True
         gknoHelp.invalidPipeline = True
 

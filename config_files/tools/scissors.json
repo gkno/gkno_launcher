@@ -1,12 +1,11 @@
 {
   "id" : "scissors",
   "description" : "Performs local split read alignments.",
-  "category" : "align",
+  "categories" : ["Aligners", "Marthlab-software"],
   "tools" : ["scissors"],
   "path" : "scissors/bin",
   "executable" : "scissors",
   "help" : "--help|-h",
-  "help group" : "Split read alignment",
   "arguments" : {
     "inputs" : [
       {

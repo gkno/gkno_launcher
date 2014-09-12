@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.30.19"
+__version__ = "1.31.0"
 __date__ = "September 2014"
 
 def main():
@@ -128,7 +128,7 @@ def main():
   # Get information on the mode being run. The pipelineName is the name of the pipeline
   # or the tool if being run in tool mode.
   admin.isRequested, admin.mode = commands.isAdminMode(admin.allModes)
-  isPipeline                    = commands.setMode(admin.isRequested)
+  isPipeline                    = commands.setMode(admin.isRequested, gknoHelp)
   config.isPipeline             = isPipeline
   runName                       = commands.getPipelineName(isPipeline)
 
@@ -149,27 +149,27 @@ def main():
   gknoConfig.getJsonFiles(configurationFilesPath)
 
   # Check if the pipeline/tool name is valid.
-  if commands.mode != 'admin': gknoConfig.checkPipelineName(gknoHelp, isPipeline, runName)
+  if commands.mode != 'admin': gknoConfig.checkPipelineName(gknoHelp, isPipeline, runName, commands.mode)
   if isDebug: write.writeDebug('Checked pipeline name.')
 
-  # Check if help has been requested on the command line.  Search for the '--help'
-  # or '-h' arguments on the command line. If help has been requested, print out the required
-  # help.
-  gknoHelp.checkForHelp(isPipeline, runName, admin, commands.mode)
+  # Check if a parameter set has been selected. If so, store the name of the parameter set.
   parameterSetName = commands.getParameterSetName(pipelineGraph, config, isPipeline)
-  if gknoHelp.printHelp and not gknoHelp.specificPipelineHelp:
-    gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath, runName, parameterSetName)
   if isDebug: write.writeDebug('Got parameter set name.')
 
   # Print gkno title and version to the screen.
   write.printHeader(__version__, __date__, gknoCommitID)
+
+  # Check if help has been requested on the command line.  Search for the '--help'
+  # or '-h' arguments on the command line. If help has been requested, print out the required
+  # help.
+  gknoHelp.checkForHelp(pipelineGraph, config, gknoConfig, isPipeline, runName, admin, commands.mode, toolConfigurationFilesPath, pipelineConfigurationFilesPath, parameterSetName)
 
   # No admin mode requested. Prepare to setup our tool or pipeline run.
   if not admin.isRequested:
 
     # Make sure we've actually been "built" before doing any real processing.
     # Skip this requirement if we're only going to be printing a help message later.
-    if not gknoHelp.printHelp and not admin.isBuilt():
+    if not gknoHelp.writeHelp and not admin.isBuilt():
       errors.gknoNotBuilt()
       errors.terminate()
 
@@ -180,7 +180,7 @@ def main():
       phoneHomeID               = 'pipes/' + runName
       filename                  = pipelineConfigurationFilesPath + runName + '.json'
       pipelineConfigurationData = config.fileOperations.readConfigurationFile(filename)
-      config.pipeline.processConfigurationData(pipelineConfigurationData, runName, gknoConfig.jsonFiles['tools'], allowTermination = True)
+      config.pipeline.processConfigurationData(pipelineConfigurationData, runName, gknoConfig.jsonFiles['tools'], gknoHelp.allowedPipelineCategories, allowTermination = True)
       config.parameterSets.checkParameterSets(runName, pipelineConfigurationData['parameter sets'], isPipeline, isExternal = False)
       config.parameterSets.checkExternalParameterSets(config.fileOperations, filename, runName, gknoConfig.jsonFiles['tools'], isPipeline)
       del(pipelineConfigurationData)
@@ -208,7 +208,7 @@ def main():
   
         # Ensure that the tool configuration file is well constructed and put all of the data
         # in data structures.  Each tool in each configuration file gets its own data structure.
-        config.tools.processConfigurationData(tool, toolConfigurationData, allowTermination = True)
+        config.tools.processConfigurationData(tool, toolConfigurationData, gknoHelp.allowedToolCategories, allowTermination = True)
   
         # Read the parameter set information for each tool and store in config.parameterSets. Default parameters for all
         # tools will be used, and then overwritten by pipeline parameter set information, command lined arguments etc.
@@ -253,7 +253,7 @@ def main():
     # If help was requested on this specific pipeline, the information now exists to generate
     # the help information.
     if gknoHelp.specificPipelineHelp:
-      gknoHelp.specificPipelineUsage(pipelineGraph, config, gknoConfig, runName, toolConfigurationFilesPath, parameterSetName)
+      gknoHelp.writeSpecificPipelineUsage(pipelineGraph, config, gknoConfig, runName, toolConfigurationFilesPath, parameterSetName)
 
   # If being run in the tool mode.
   elif commands.mode == 'tool':
@@ -262,7 +262,7 @@ def main():
 
     # Ensure that the tool configuration file is well constructed and put all of the data
     # in data structures.  Each tool in each configuration file gets its own data structure.
-    config.tools.processConfigurationData(runName, toolConfigurationData, allowTermination = True)
+    config.tools.processConfigurationData(runName, toolConfigurationData, gknoHelp.allowedToolCategories, allowTermination = True)
     config.parameterSets.checkParameterSets(runName, toolConfigurationData['parameter sets'], isPipeline, isExternal = False)
     config.parameterSets.checkExternalParameterSets(config.fileOperations, toolFile, runName, gknoConfig.jsonFiles['tools'], isPipeline)
     del(toolConfigurationData)
@@ -287,8 +287,8 @@ def main():
 
   # If help was requested or there were problems (e.g. the tool name or pipeline
   # name did not exist), print out the required usage information.
-  if gknoHelp.printHelp and not gknoHelp.specificPipelineHelp:
-    gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath, runName, parameterSetName)
+  #if gknoHelp.writeHelp and not gknoHelp.specificPipelineHelp:
+  #  gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath, runName, parameterSetName)
 
   # Populate the tl.arguments structure with the arguments with defaults from the tool configuration files.
   # The x.arguments structures for each of the classes used in gkno has the same format (a dictionary whose

@@ -1,7 +1,7 @@
 {
   "id" : "fastq-mr",
   "description" : "Generate a multiple runs input file with all fastq files from a directory.",
-  "category" : "file processing",
+  "categories" : ["FASTQ-processing", "Scripts"],
   "tools" : [],
   "path" : "scripts",
   "executable" : "fastq-list.sh",

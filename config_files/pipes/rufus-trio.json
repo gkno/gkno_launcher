@@ -1,6 +1,7 @@
 {
   "description" : "Compare parent and mutant strains.",
   "developmental" : true,
+  "categories" : ["Reference-free"],
 
   "tasks" : {
     "count-parent1-kmers" : {

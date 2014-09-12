@@ -1,12 +1,11 @@
 {
   "id" : "tangram-index",
   "description" : "Create an indexed reference file including the mobile elements",
-  "category" : "reference processing",
+  "categories" : ["FASTA-processing", "Tangram", "Marthlab-software"],
   "tools" : ["tangram"],
   "path" : "Tangram/bin",
   "executable" : "tangram_index",
   "help" : "--help|-h",
-  "help group" : "SV discovery",
   "arguments" : {
     "inputs" : [
       {

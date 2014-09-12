@@ -1,7 +1,7 @@
 {
   "id" : "tabix-index-vcf",
   "description" : "Index a VCF file using tabix.",
-  "category" : "variant postprocessing",
+  "categories" : ["VCF-processing"],
   "tools" : ["tabix"],
   "path" : "tabix",
   "executable" : "tabix",

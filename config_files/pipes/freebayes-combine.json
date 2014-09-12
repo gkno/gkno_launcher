@@ -1,5 +1,6 @@
 {
   "description" : "Call variants and combine into a single vcf file.",
+  "categories" : ["Variant-discovery"],
 
   "tasks" : {
     "call" : {

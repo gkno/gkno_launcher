@@ -2,7 +2,7 @@
   "id" : "rufus-model",
   "description" : "Performs an analysis of the k-mer frequency histogram, outputting cutoffs for the maximum error rate and minimum coverage for a given sample.",
   "experimental" : true,
-  "category" : "modeling",
+  "categories" : ["Kmer-processing", "Rufus", "Marthlab-software"],
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",
   "executable" : "ModelDist2",

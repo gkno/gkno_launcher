@@ -1,13 +1,12 @@
 {
   "id" : "gatk-recalibrate-bq",
   "description" : "Recalibrate base qualities",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing"],
   "tools" : ["gatk"],
   "path" : "gatk/dist",
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx2g -jar",
   "help" : "--help|-h",
-  "help group" : "BAM processing",
   "arguments" : {
     "inputs" : [
       {

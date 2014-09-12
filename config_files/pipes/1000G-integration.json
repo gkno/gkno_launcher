@@ -1,7 +1,8 @@
 {
-  "description" : ".",
+  "description" : "",
   "hide in help" : true,
   "developmental" : true,
+  "categories" : ["1000G-pipelines", "Variant-graph", "Variant-discovery"],
 
   "tasks" : {
     "merge-bam" : {
@@ -285,7 +286,7 @@
     }
   ],
 
-  "instances" : [
+  "parameter sets" : [
     {
       "ID" : "default",
       "description" : "The default instance sets all the parameters for the pipeline to run.",

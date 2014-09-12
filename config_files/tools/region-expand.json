@@ -1,12 +1,11 @@
 {
   "id" : "region-expand",
   "description" : "Given a list of genomic regions, output a list of expanded regions.",
-  "category" : "file processing",
+  "categories" : ["Genome-regions", "Scripts"],
   "tools" : [],
   "path" : "genomicRegions",
   "executable" : "expand.sh",
   "help" : "--help|-h",
-  "help group" : "Genomic region processing",
   "arguments" : {
     "inputs" : [
       {

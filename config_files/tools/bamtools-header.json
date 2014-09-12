@@ -1,13 +1,12 @@
 {
   "id" : "bamtools-header",
   "description" : "Prints header from BAM file(s).",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing", "Bamtools", "Marthlab-software"],
   "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "header",
   "help" : "--help|-h",
-  "help group" : "Bamtools bam processing",
   "arguments" : {
     "inputs" : [
       {

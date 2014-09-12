@@ -2,7 +2,7 @@
   "id" : "rufus-build-hash",
   "description" : "Performs an intersection of two k-mer frequencies and identifies k-mers that are unique to one of the samples. The reads containing these k-mers potentially harbour mutations. These k-mers are provided in the output.",
   "experimental" : true,
-  "category" : "kmer processing",
+  "categories" : ["Kmer-processing", "Marthlab-software", "Rufus"],
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",
   "executable" : "RUFUSv6.BuildHash",
@@ -63,7 +63,7 @@
       {
         "description" : "",
         "long form argument" : "--max-depth-reference",
-        "short form argument" : "-mr",
+        "short form argument" : "-mdr",
         "command line argument" : "--max-depth-reference",
         "required" : true,
         "data type" : "integer",

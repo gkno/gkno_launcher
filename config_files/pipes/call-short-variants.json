@@ -1,5 +1,6 @@
 {
   "description" : "Call short variants using freebayes.",
+  "categories" : ["Variant-discovery"],
 
   "tasks" : {
     "merge" : {

@@ -1,13 +1,12 @@
 {
   "id" : "bamtools-resolve",
   "description" : "Resolves paired-end reads (marking the IsProperPair flag as needed).",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing", "Bamtools", "Marthlab-software"],
   "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "resolve",
   "help" : "--help|-h",
-  "help group" : "Bamtools bam processing",
   "arguments" : {
     "inputs" : [
       {

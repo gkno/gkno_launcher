@@ -1,12 +1,11 @@
 {
   "id" : "tangram-merge",
   "description" : "Merges fragment length distributions from multiple BAM files.",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing", "Tangram", "Marthlab-software"],
   "tools" : ["tangram"],
   "path" : "Tangram/bin",
   "executable" : "tangram_merge",
   "help" : "--help|-h",
-  "help group" : "SV discovery",
   "arguments" : {
     "inputs" : [
       {

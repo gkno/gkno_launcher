@@ -1,12 +1,11 @@
 {
   "id" : "region-by-coordinate",
   "description" : "Given a chromosome and a list of integers, a set of regions are generated.",
-  "category" : "file processing",
+  "categories" : ["Genome-regions", "Scripts"],
   "tools" : [],
   "path" : "genomicRegions",
   "executable" : "byCoordinate.sh",
   "help" : "--help|-h",
-  "help group" : "Genomic region processing",
   "arguments" : {
     "inputs" : [
       {

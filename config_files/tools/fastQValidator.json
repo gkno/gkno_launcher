@@ -1,7 +1,7 @@
 {
   "id" : "fastQValidator",
   "description" : "Validate a fastq file.",
-  "category" : "sequence processing",
+  "categories" : ["FASTQ-processing", "Michigan-software"],
   "tools" : ["fastQValidator"],
   "path" : "fastQValidator/bin",
   "executable" : "fastQValidator",

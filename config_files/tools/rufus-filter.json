@@ -2,7 +2,7 @@
   "id" : "rufus-filter",
   "description" : "All reads in a provided fastq file that contain a k-mer listed in the input l-mer list are output.",
   "experimental" : true,
-  "category" : "sequence processing",
+  "categories" : ["FASTQ-processing", "Rufus", "Marthlab-software"],
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",
   "executable" : "RUFUSv5.Filter",
@@ -12,7 +12,7 @@
       {
         "description" : "Input hash list.",
         "long form argument" : "--hash-list",
-        "short form argument" : "-h",
+        "short form argument" : "-hl",
         "command line argument" : "--hash-list",
         "required" : true,
         "data type" : "string",

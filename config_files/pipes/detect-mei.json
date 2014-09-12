@@ -1,6 +1,6 @@
 {
   "description" : "Starting from fasta and fastq files, prepare MOSAIK reference files, align reads and search for mobile element insertions (MEIs).",
-  "help group" : "MEI pipelines",
+  "categories" : ["SV-discovery", "Variant-discovery"],
 
   "tasks" : {
     "generate-regions" : {

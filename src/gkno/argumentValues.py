@@ -19,7 +19,7 @@ class argumentValues:
     # Errors class.
     self.errors = gknoErrors()
 
-  # Check if any arguments have instructipns on how to modify argument values before
+  # Check if any arguments have instructions on how to modify argument values before
   # writing them to the command line.
   def modifyArgumentValues(self, config, tool, argument, values):
 

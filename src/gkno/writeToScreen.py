@@ -21,7 +21,7 @@ class writeToScreen:
     commitLength = len(gknoCommitID) + 14
     length       = max(commitLength, 29)
     print('=' * length, file = sys.stdout)
-    print('  Boston College gkno package', file = sys.stdout)
+    print('  University of Utah gkno package', file = sys.stdout)
     print(file = sys.stdout)
     print('  version:    ', version, sep = '', file = sys.stdout)
     print('  date:       ', date, sep = '', file = sys.stdout)

@@ -1,5 +1,6 @@
 {
   "description" : "Generate hashes for a reference fasta.",
+  "categories" : ["FASTA-processing"],
 
   "tasks" : {
     "count-kmers" : {
@@ -22,7 +23,7 @@
   "nodes" : [
     {
       "ID" : "fasta",
-      "description" : "The input fast file.",
+      "description" : "The input fasta file.",
       "long form argument" : "--fasta",
       "short form argument" : "-fa",
       "tasks" : {

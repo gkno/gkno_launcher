@@ -1,12 +1,11 @@
 {
   "id" : "mosaik-jump",
   "description" : "Generate the jump database for a Mosaik reference",
-  "category" : "reference processing",
+  "categories" : ["FASTA-processing", "Mosaik", "Marthlab-software"],
   "tools" : ["mosaik"],
   "path" : "MOSAIK/bin",
   "executable" : "MosaikJump",
   "help" : "--help|-h",
-  "help group" : "Mosaik alignment software",
   "arguments" : {
     "inputs" : [
       {    

@@ -1,13 +1,12 @@
 {
   "id" : "bamtools-merge",
   "description" : "Filter a BAM file on many parameters or combinations of parameters.",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing", "Bamtools", "Marthlab-software"],
   "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "merge",
   "help" : "--help|-h",
-  "help group" : "Bamtools bam processing",
   "arguments" : {
     "inputs" : [
       {

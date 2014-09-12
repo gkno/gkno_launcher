@@ -1,7 +1,7 @@
 {
   "id" : "musket",
   "description" : "Parallel multi-stage k-mer based error corrector.",
-  "category" : "sequence preprocessing",
+  "categories" : ["FASTQ-processing"],
   "tools" : ["musket"],
   "path" : "musket",
   "executable" : "musket",

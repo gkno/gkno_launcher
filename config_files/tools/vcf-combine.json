@@ -1,12 +1,11 @@
 {
   "id" : "vcf-combone",
   "description" : "Combine vcf file.",
-  "category" : "variant postprocessing",
+  "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
   "executable" : "vcfcombine",
   "help" : "--help|-h",
-  "help group" : "VCF processing",
   "arguments" : {
     "inputs" : [
       {

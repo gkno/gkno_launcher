@@ -1,13 +1,12 @@
 {
   "id" : "bam-to-fastq",
   "description" : "Convert a fastq file back to a pair of fastq files.",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing"],
   "tools" : ["bamUtil", "libStatGen"],
   "path" : "bamUtil/bin",
   "executable" : "bam",
   "modifier" : "bam2FastQ",
   "help" : "--help|-h",
-  "help group" : "BAM processing",
   "arguments" : {
     "inputs" : [
       {

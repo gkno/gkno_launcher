@@ -2,7 +2,7 @@
   "id" : "rufus-overlap",
   "description" : "A greedy overlap assembler that attempts to assemble all reads.",
   "experimental" : true,
-  "category" : "kmer processing",
+  "categories" : ["FASTQ-processing", "Rufus", "Marthlab-software"],
   "tools" : ["Rufus"],
   "path" : "Rufus/bin",
   "executable" : "OverlapRegion2",

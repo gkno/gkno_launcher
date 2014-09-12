@@ -1,13 +1,12 @@
 {
   "id" : "mason-illumina",
   "description" : "Generate simulated Illumina reads.",
-  "category" : "simulation",
+  "categories" : ["Simulation"],
   "tools" : ["seqan"],
   "path" : "seqan/build/Release/bin",
   "executable" : "mason",
   "modifier" : "illumina",
   "help" : "--help|-h",
-  "help group" : "Simulation",
   "arguments" : {
     "inputs" : [
       {

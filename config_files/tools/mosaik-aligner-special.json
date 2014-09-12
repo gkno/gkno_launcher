@@ -1,12 +1,11 @@
 {
   "id" : "mosaik-aligner-special",
   "description" : "Pairwise alignment of a read archive with additional 'special' reference sequences. The special sequences must all have a common prefix and alignment to them will be shown in the ZA tags. No primary alignments to the 'special' sequences will occur.",
-  "category" : "align",
+  "categories" : ["Aligners", "Mosaik", "Marthlab-software"],
   "tools" : ["mosaik"],
   "path" : "MOSAIK/bin",
   "executable" : "MosaikAligner",
   "help" : "--help|-h",
-  "help group" : "Mosaik alignment software",
   "arguments" : {
     "inputs" : [
       {

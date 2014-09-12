@@ -1,13 +1,12 @@
 {
   "id" : "bwa-mem",
   "description" : "Pairwise alignment of anext-generation sequencing reads against a reference genome.",
-  "category" : "align",
+  "categories" : ["Aligners", "BWA"],
   "tools" : ["bwa"],
   "path" : "bwa",
   "executable" : "bwa",
   "modifier" : "mem",
   "help" : "--help|-h",
-  "help group" : "Pairwise alignment",
   "arguments" : {
     "inputs" : [
       {

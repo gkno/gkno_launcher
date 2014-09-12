@@ -1,7 +1,7 @@
 {
   "id" : "concatenate-files",
   "description" : "Join multiple files",
-  "category" : "file processing",
+  "categories" : ["General-file-processing", "Scripts"],
   "tools" : [],
   "path" : "no path",
   "hide tool" : true,

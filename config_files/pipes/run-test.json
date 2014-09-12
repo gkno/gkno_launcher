@@ -1,6 +1,6 @@
 {
   "description" : "Test pipeline to ensure proper operation.",
-  "help group" : "Test pipelines",
+  "categories" : [],
 
   "tasks" : {
     "merge-reference" : {

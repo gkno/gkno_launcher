@@ -1,5 +1,6 @@
 {
   "description" : "Check MEI calls using local graph alignment.",
+  "categories" : ["Variant-graph", "Variant-discovery"],
 
   "tasks" : {
     "merge-reference" : {

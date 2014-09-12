@@ -45,24 +45,49 @@ class commandLine:
   # Check if a mode has been defined.  The mode is either 'pipe', 'run-test' or
   # a tool name.  If nothing is set, then no mode is chosen and the general help
   # message will be displayed.
-  def setMode(self, isAdmin):
-    isPipeline = False
-
-    try: argument = sys.argv[1]
-    except: return False
+  def setMode(self, isAdmin, gknoHelp):
 
     # If help is requested, a mode isn't set.
-    if isAdmin: self.mode = 'admin'
-    elif argument == '-h' or argument == '--help': self.mode = 'help'
-    elif argument == 'pipe':
-      self.mode  = 'pipeline'
-      isPipeline = True
-    elif argument == 'run-test':
-      self.mode = 'pipeline'
-      isPipeline = True
-    else: self.mode = 'tool'
+    if isAdmin:
+      self.mode = 'admin'
+      return False
 
-    return isPipeline
+    # If -h or --help appear anywhere on the command line, help is requested.
+    for counter, argument in enumerate(sys.argv):
+      if argument == '--help' or argument == '-h':
+        gknoHelp.writeHelp = True
+        if sys.argv[1] == 'pipe' or sys.argv[1] == 'run-test':
+          self.mode = 'pipeline'
+          return True
+        else:
+          if counter == 1: self.mode = 'help'
+          else: self.mode = 'tool'
+          return False
+
+    # Get the first entry on the command line.
+    try: argument = sys.argv[1]
+    except:
+      self.mode = 'help'
+      return False
+
+    # If the first entry on the command line begins with '-', this is a command
+    # requesting help.
+    if argument.startswith('-'):
+      self.mode = 'help'
+      return False
+
+    # If a pipeline is being run:
+    if argument == 'pipe' or argument == 'run-test':
+      self.mode  = 'pipeline'
+
+      # If no further information is provided on the command line, help is required.
+      try: pipelineName = sys.argv[2]
+      except: self.mode = 'help'
+      return True
+
+    # Anything else implies a tool name.
+    self.mode = 'tool'
+    return False
 
   # If gkno is being run in pipeline mode, get the name of the pipeline.
   def getPipelineName(self, isPipeline):

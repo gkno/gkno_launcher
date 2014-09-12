@@ -1,13 +1,12 @@
 {
   "id" : "bwa-index",
   "description" : "Generate the FM-index for use with bwa alignment.",
-  "category" : "reference processing",
+  "categories" : ["FASTA-processing", "BWA"],
   "tools" : ["bwa"],
   "path" : "bwa",
   "executable" : "bwa",
   "modifier" : "index",
   "help" : "--help|-h",
-  "help group" : "FASTA processing",
   "arguments" : {
     "inputs" : [
       {

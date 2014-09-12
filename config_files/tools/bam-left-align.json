@@ -1,0 +1,102 @@
+{
+  "id" : "bam-left-align",
+  "description" : "Left-aligns and merges the insertions and deletions in all alignments in stdin.  Iterates until each alignment is stable through a left-realignment step.",
+  "categories" : ["BAM-processing"],
+  "tools" : ["freebayes"],
+  "path" : "freebayes/bin",
+  "executable" : "bamleftalign",
+  "input is stream" : true,
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The input BAM file.",
+        "long form argument" : "--bam",
+        "short form argument" : "-b",
+        "command line argument" : "none",
+        "required" : true,
+        "extensions" : [".bam"],
+        "data type" : "string",
+        "hide in help" : true,
+        "if input is stream" : "do not include",
+        "is stream" : true
+      },
+      {
+        "description" : "FASTA reference file to use for realignment (required)",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "--fasta-reference",
+        "required" : true,
+        "extensions" : [".fa", ".fasta"],
+        "data type" : "string"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The output BAM file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "extensions" : [".bam"],
+        "data type" : "string",
+        "modify argument name on command line" : "stdout",
+        "if output to stream" : "do not include",
+        "hide in help" : true,
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--bam",
+          "modify extension" : "append",
+          "modify text" : [
+            {
+              "add text" : ["_left-aligned"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "options" : [
+      {
+        "description" : "Iterate the left-realignment no more than this many times.",
+        "long form argument" : "--max-iterations",
+        "short form argument" : "-m",
+        "command line argument" : "--max-iterations",
+        "extensions" : ["no extension"],
+        "data type" : "integer"
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "BAM1",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"],
+          "argument" : "--bam"
+        },
+        {
+          "ID" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"],
+          "argument" : "--fasta-reference"
+        },
+        {
+          "ID" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
+    } 
+  ]
+}

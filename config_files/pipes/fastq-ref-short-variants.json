@@ -1,6 +1,6 @@
 {
   "description" : "Starting from fasta and fastq files, prepare MOSAIK reference files, align reads and call short variants.",
-  "help group" : "Short variant discovery",
+  "categories" : ["Alignment", "1000G-pipelines", "Variant-discovery"],
 
   "tasks" : {
     "build-reference" : {
@@ -335,24 +335,6 @@
       "short form argument" : "-r",
       "tasks" : {
         "call-short-variants" : "--region"
-      }
-    },
-    {
-      "ID" : "region list single",
-      "description" : "A list of genomic regions to analyse (in a single makefile).",
-      "long form argument" : "--region-list-single-test",
-      "short form argument" : "-rls",
-      "tasks" : {
-        "call-short-variants" : "--region-list-single"
-      }
-    },
-    {
-      "ID" : "region list multiple",
-      "description" : "A list of genomic regions to analyse (in multiple makefiles).",
-      "long form argument" : "--region-list-multiple",
-      "short form argument" : "-rlm",
-      "tasks" : {
-        "call-short-variants" : "--region-list-multiple"
       }
     }
   ],

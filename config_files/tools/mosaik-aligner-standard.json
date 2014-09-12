@@ -1,12 +1,11 @@
 {
   "id" : "mosaik-aligner-standard",
   "description" : "Pairwise alignment of a read archive.",
-  "category" : "align",
+  "categories" : ["Aligners", "Mosaik", "Marthlab-software"],
   "tools" : ["mosaik"],
   "path" : "MOSAIK/bin",
   "executable" : "MosaikAligner",
   "help" : "--help|-h",
-  "help group" : "Mosaik alignment software",
   "arguments" : {
     "inputs" : [
       {

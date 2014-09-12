@@ -1,12 +1,11 @@
 {
   "id" : "vcf-intersect",
   "description" : "Filter vcf files on a variety of parameters.",
-  "category" : "variant postprocessing",
+  "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
   "executable" : "vcfintersect",
   "help" : "--help|-h",
-  "help group" : "VCF processing",
   "arguments" : {
     "inputs" : [
       {

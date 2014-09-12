@@ -1,7 +1,7 @@
 {
   "id" : "picard-create-sequence-dictionary",
   "description" : "Generate a dictionary containing all of the sequences in the input reference fasta.",
-  "category" : "reference processing",
+  "categories" : ["FASTA-processing"],
   "tools" : ["picard"],
   "path" : "picard/dist",
   "executable" : "CreateSequenceDictionary.jar",

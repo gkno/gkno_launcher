@@ -1,7 +1,7 @@
 {
   "id" : "r-plot",
   "description" : "Run an R script to plot.",
-  "category" : "data visualisation",
+  "categories" : ["Visualisation"],
   "tools" : [],
   "path" : "no path",
   "executable" : "R",

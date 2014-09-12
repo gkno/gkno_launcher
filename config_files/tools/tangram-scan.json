@@ -1,12 +1,11 @@
 {
   "id" : "tangram-scan",
   "description" : "Generate a histogram of the fragment length distributions of the input libraries.",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing", "Tangram", "Marthlab-software"],
   "tools" : ["tangram"],
   "path" : "Tangram/bin",
   "executable" : "tangram_scan",
   "help" : "--help|-h",
-  "help group" : "SV discovery",
   "arguments" : {
     "inputs" : [
       {

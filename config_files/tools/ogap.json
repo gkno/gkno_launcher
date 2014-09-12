@@ -1,12 +1,11 @@
 {
   "id" : "ogap",
   "description" : "Realigns alignments optimized to open gaps in low-entropy sequence.",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing", "Marthlab-software"],
   "tools" : ["ogap"],
   "path" : "ogap",
   "executable" : "ogap",
   "help" : "--help|-h",
-  "help group" : "BAM processing",
   "hide tool" : true,
   "input is stream" : true,
   "arguments" : {

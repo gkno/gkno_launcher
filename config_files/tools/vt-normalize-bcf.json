@@ -1,13 +1,12 @@
 {
   "id" : "vt-normalize",
   "description" : "Normalizes variants in a VCF file.",
-  "category" : "variant processing",
+  "categories" : ["VCF-processing"],
   "tools" : ["vt"],
   "path" : "vt/",
   "executable" : "vt",
   "modifier" : "normalize",
   "help" : "--help|-h",
-  "help group" : "VCF processing",
   "arguments" : {
     "inputs" : [
       {

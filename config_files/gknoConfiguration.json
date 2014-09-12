@@ -1,9 +1,23 @@
 {
   "gkno options" : {
+    "GKNO-ALL-PIPELINES" : {
+      "argument" : "--all-pipelines",
+      "data type" : "flag",
+      "description" : "Print all available pipelines to screen.",
+      "short form" : "-apo",
+      "value" : ["unset"]
+    },
+    "GKNO-ALL-TOOLS" : {
+      "argument" : "--all-tools",
+      "data type" : "flag",
+      "description" : "Print all available tools to screen.",
+      "short form" : "-ato",
+      "value" : ["unset"]
+    },
     "GKNO-HELP" : {
       "argument" : "--help",
-      "data type" : "flag",
-      "description" : "Do not log this run of gkno.",
+      "data type" : "string",
+      "description" : "Print requested help message.",
       "short form" : "-h",
       "value" : ["unset"]
     },
@@ -97,6 +111,13 @@
       "description" : "Path for output files if not defined.  Default: current directory.",
       "short form" : "-op"
     },
+    "GKNO-PIPELINE-CATEGORIES" : {
+      "argument" : "--pipeline-categories",
+      "data type" : "flag",
+      "description" : "Display all available pipeline categories.",
+      "short form" : "-pcat",
+      "value" : ["unset"]
+    },
     "GKNO-TASK-STDOUT" : {
       "argument" : "--task-stdout", 
       "data type" : "bool",
@@ -115,6 +136,13 @@
       "data type" : "flag",
       "description" : "Generate extended timing information for all tasks.",
       "short form" : "-ta",
+      "value" : ["unset"]
+    },
+    "GKNO-TOOL-CATEGORIES" : {
+      "argument" : "--tool-categories",
+      "data type" : "flag",
+      "description" : "Display all available tool categories.",
+      "short form" : "-tcat",
       "value" : ["unset"]
     },
     "GKNO-VERBOSE" : {

@@ -1,13 +1,12 @@
 {
   "id" : "bamtools-index",
   "description" : "Index a BAM file.",
-  "category" : "alignment processing",
+  "categories" : ["BAM-processing", "Bamtools", "Marthlab-software"],
   "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "index",
   "help" : "--help|-h",
-  "help group" : "Bamtools bam processing",
   "arguments" : {
     "inputs" : [
       {

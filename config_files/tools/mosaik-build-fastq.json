@@ -1,12 +1,11 @@
 {
   "id" : "mosaik-build-fastq",
   "description" : "Build the Mosaik read archive",
-  "category" : "sequence preprocessing",
+  "categories" : ["FASTQ-processing", "Mosaik", "Marthlab-software"],
   "tools" : ["mosaik"],
   "path" : "MOSAIK/bin",
   "executable" : "MosaikBuild",
   "help" : "--help|-h",
-  "help group" : "Mosaik alignment software",
   "arguments" : {
     "inputs" : [
       {    
