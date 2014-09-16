@@ -94,3 +94,6 @@
 [submodule "tools/bwa"]
 	path = tools/bwa
 	url = https://github.com/gkno/bwa.git
+[submodule "tools/pindel"]
+	path = tools/pindel
+	url = https://github.com/gkno/pindel.git
