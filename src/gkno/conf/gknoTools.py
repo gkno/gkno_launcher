@@ -133,6 +133,9 @@ class GknoTool(object):
   def makeClean(self):
     return self.runCommand("make clean")
 
+  def install(self, optionString):
+    return self.runCommand("./INSTALL " + optionString)
+
 ###############################################################
 
 # bamtools
@@ -490,6 +493,21 @@ class Picard(GknoTool):
       return False
     return self.ant("-lib lib/ant package-commands")
 
+# pindel 
+class Pindel(GknoTool):
+  def __init__(self):
+    super(Pindel, self).__init__()
+    self.name       = "pindel"
+    self.installDir = "pindel"
+
+  def doBuild(self):
+    return self.install(optionString = '../samtools')
+
+  # $ ant sam-jar
+  # $ ant -lib lib/ant package-commands
+  def doUpdate(self):
+    return self.install(optionString = '../samtools')
+
 # premo
 class Premo(GknoTool):
   def __init__(self):
@@ -753,7 +771,7 @@ List = [
         Picard(),
         Premo(),
         Rufus(),
-        SamTools(), 
+        SamTools(), Pindel(), # <-- Keep this order
         Scissors(),
         Seqan(),       
         SnpEff(),
