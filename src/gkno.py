@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.32.0"
+__version__ = "1.32.1"
 __date__ = "September 2014"
 
 def main():
@@ -220,22 +220,27 @@ def main():
     # Check that any argument in a pipeline configuration file node taht defines a filename stub
     # is linked to other stub arguments, or that the desired extension is included in the node.
     config.pipeline.checkCommonNodes(config.tools)
+    if isDebug: write.writeDebug('Checked common nodes.')
 
     # For each task in the pipeline, build an individual graph consisting of a task node, input
     # option nodes (all input and output file arguments are treated as option nodes) and finally
     # all input and output files are given file nodes.  Nodes are merged later to generate the
     # final pipeline.
     config.buildTaskGraph(pipelineGraph, config.pipeline.taskAttributes.keys())
+    if isDebug: write.writeDebug('Built task graphs.')
 
     # Attach additional information from the pipeline configuration file to the nodes.
     config.assignPipelineAttributes(pipelineGraph, config.pipeline.taskAttributes.keys())
+    if isDebug: write.writeDebug('Assigned pipeline attributes.')
 
     # Add the pipeline arguments to the nodeIDs dictionary.
     config.nodeMethods.getPipelineArgumentNodes(pipelineGraph, config)
+    if isDebug: write.writeDebug('Got pipeline argument nodes.')
   
     # Now that every task in the pipeline has an individual graph built, use the information
     # in the pipeline configuration file to merge nodes and build the final pipeline graph.
     config.mergeNodes(pipelineGraph)
+    if isDebug: write.writeDebug('Merged nodes.')
   
     # Generate the workflow using a topological sort of the pipeline graph.
     config.pipeline.workflow = config.generateWorkflow(pipelineGraph)

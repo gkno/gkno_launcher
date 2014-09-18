@@ -1,0 +1,186 @@
+{
+  "description" : "Call variant break pointss using pindel.",
+  "categories" : ["Variant-discovery"],
+
+  "tasks" : {
+    "generate-config" : {
+      "tool" : "pindel-bam-config"
+    },
+    "breakpoint-discovery" : {
+      "tool" : "pindel-detect"
+    },
+    "convert-BP-to-vcf" : {
+      "tool" : "pindel-to-vcf"
+    },
+    "convert-CloseEndMapped-to-vcf" : {
+      "tool" : "pindel-to-vcf"
+    },
+    "convert-D-to-vcf" : {
+      "tool" : "pindel-to-vcf"
+    },
+    "convert-INT-final-to-vcf" : {
+      "tool" : "pindel-to-vcf"
+    },
+    "convert-INV-to-vcf" : {
+      "tool" : "pindel-to-vcf"
+    },
+    "convert-LI-to-vcf" : {
+      "tool" : "pindel-to-vcf"
+    },
+    "convert-RP-to-vcf" : {
+      "tool" : "pindel-to-vcf"
+    },
+    "convert-SI-to-vcf" : {
+      "tool" : "pindel-to-vcf"
+    },
+    "convert-TD-to-vcf" : {
+      "tool" : "pindel-to-vcf"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "dir",
+      "description" : "The directory containing the BAM files.",
+      "long form argument" : "--dir",
+      "short form argument" : "-d",
+      "tasks" : {
+        "generate-config" : "--dir"
+      }
+    },
+    {
+      "ID" : "config",
+      "description" : "The bam config file.",
+      "long form argument" : "--config",
+      "short form argument" : "-c",
+      "tasks" : {
+        "generate-config" : "--out",
+        "breakpoint-discovery" : "--in"
+      }
+    },
+    {
+      "ID" : "insert",
+      "description" : "The average insert size.",
+      "long form argument" : "--insert",
+      "short form argument" : "-s",
+      "tasks" : {
+        "generate-config" : "--insert"
+      }
+    },
+    {
+      "ID" : "ref",
+      "description" : "The FASTA reference.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "tasks" : {
+        "breakpoint-discovery" : "--fasta-reference",
+        "convert-BP-to-vcf" : "--fasta-reference",
+        "convert-CloseEndMapped-to-vcf" : "--fasta-reference",
+        "convert-D-to-vcf" : "--fasta-reference",
+        "convert-INT-final-to-vcf" : "--fasta-reference",
+        "convert-INV-to-vcf" : "--fasta-reference",
+        "convert-LI-to-vcf" : "--fasta-reference",
+        "convert-RP-to-vcf" : "--fasta-reference",
+        "convert-SI-to-vcf" : "--fasta-reference",
+        "convert-TD-to-vcf" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "region",
+      "description" : "The genomic region for consideration.",
+      "long form argument" : "--region",
+      "short form argument" : "-rg",
+      "tasks" : {
+        "breakpoint-discovery" : "--region"
+      }
+    },
+    {
+      "ID" : "convert",
+      "description" : "Convert pindel output to vcf.",
+      "tasks" : {
+        "breakpoint-discovery" : "--out",
+        "convert-BP-to-vcf" : "--pindel-file",
+        "convert-CloseEndMapped-to-vcf" : "--pindel-file",
+        "convert-D-to-vcf" : "--pindel-file",
+        "convert-INT-final-to-vcf" : "--pindel-file",
+        "convert-INV-to-vcf" : "--pindel-file",
+        "convert-LI-to-vcf" : "--pindel-file",
+        "convert-RP-to-vcf" : "--pindel-file",
+        "convert-SI-to-vcf" : "--pindel-file",
+        "convert-TD-to-vcf" : "--pindel-file"
+      },
+      "extensions" : {
+        "convert-BP-to-vcf" : {
+          "--pindel-file" : "_BP"
+        },
+        "convert-CloseEndMapped-to-vcf" : {
+          "--pindel-file" : "_CloseEndMapped"
+        },
+        "convert-D-to-vcf" : {
+          "--pindel-file" : "_D"
+        },
+        "convert-INT-final-to-vcf" : {
+          "--pindel-file" : "_INT_final"
+        },
+        "convert-INV-to-vcf" : {
+          "--pindel-file" : "_INV"
+        },
+        "convert-LI-to-vcf" : {
+          "--pindel-file" : "_LI"
+        },
+        "convert-RP-to-vcf" : {
+          "--pindel-file" : "_RP"
+        },
+        "convert-SI-to-vcf" : {
+          "--pindel-file" : "_SI"
+        },
+        "convert-TD-to-vcf" : {
+          "--pindel-file" : "_TD"
+        }
+      }
+    },
+    {
+      "ID" : "ref-name",
+      "description" : "The name and version of the reference FASTA.",
+      "long form argument" : "--reference-name",
+      "short form argument" : "-n",
+      "tasks" : {
+        "convert-BP-to-vcf" : "--reference-name",
+        "convert-CloseEndMapped-to-vcf" : "--reference-name",
+        "convert-D-to-vcf" : "--reference-name",
+        "convert-INT-final-to-vcf" : "--reference-name",
+        "convert-INV-to-vcf" : "--reference-name",
+        "convert-LI-to-vcf" : "--reference-name",
+        "convert-RP-to-vcf" : "--reference-name",
+        "convert-SI-to-vcf" : "--reference-name",
+        "convert-TD-to-vcf" : "--reference-name"
+      }
+    },
+    {
+      "ID" : "ref-date",
+      "description" : "The date of the reference FASTA.",
+      "long form argument" : "--reference-date",
+      "short form argument" : "-a",
+      "tasks" : {
+        "convert-BP-to-vcf" : "--reference-date",
+        "convert-CloseEndMapped-to-vcf" : "--reference-date",
+        "convert-D-to-vcf" : "--reference-date",
+        "convert-INT-final-to-vcf" : "--reference-date",
+        "convert-INV-to-vcf" : "--reference-date",
+        "convert-LI-to-vcf" : "--reference-date",
+        "convert-RP-to-vcf" : "--reference-date",
+        "convert-SI-to-vcf" : "--reference-date",
+        "convert-TD-to-vcf" : "--reference-date"
+      }
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "The default parameter set sets all the parameters for the pipeline to run.",
+      "nodes" : [
+      ]
+    }
+  ]
+}
