@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.32.1"
+__version__ = "1.32.2"
 __date__ = "September 2014"
 
 def main():
@@ -244,6 +244,7 @@ def main():
   
     # Generate the workflow using a topological sort of the pipeline graph.
     config.pipeline.workflow = config.generateWorkflow(pipelineGraph)
+    config.pipeline.workflow = config.correctWorkflowForStreams(pipelineGraph, config.pipeline.workflow)
 
     # Check to see if any tasks in the pipeline are isolated, i.e. they share no files with any other task
     # in the pipeline.
