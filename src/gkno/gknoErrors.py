@@ -399,6 +399,17 @@ argument existed to set this value. Please see the documentation to see how to i
     self.writeFormattedText(errorType = 'error')
     self.terminate()
 
+  def invalidExtensionInConstruction(self, task, tool, longFormArgument, baseArgument, values):
+    self.text.append('Error constructing filename.')
+    self.text.append('Task \'' + task + '\' using tool \'' + tool + '\' requires a file to be defined for the tool argument \'' + longFormArgument + \
+    '\'. This file is constructed using the values already set for the argument \'' + baseArgument + '\' for the same tool. The files associated ' + \
+    'with this argument do not have the expected extension, however, so the filename could not be created. An example of a filename with an ' + \
+    'unrecognised extension is \'' + values[1][0] + '\'. Please check the tool configuration file for tool \'' + tool + '\' to check the ' + \
+    'allowed extensions. If the filename was set on the command line, please provide an allowed extension. If not, please check the pipeline ' + \
+    'configuration file and ensure that linked tools are compatible.')
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   # Attempt to strip non-existent text from filename.
   def failedToRemoveText(self, task, tool, argument, value, removeText, isPipeline):
     self.text.append('Failed to remove text in filename construction.')

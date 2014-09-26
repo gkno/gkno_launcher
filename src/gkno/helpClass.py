@@ -108,6 +108,7 @@ class helpClass:
     self.allowedPipelineCategories['SV-discovery']      = 'Pipelines including detection of structural variations.'
     self.allowedPipelineCategories['Variant-discovery'] = 'Pipelines including variant discovery tasks.'
     self.allowedPipelineCategories['Variant-graph']     = 'Alignments using a variant graph are incorporated.'
+    self.allowedPipelineCategories['VCF-processing']    = 'Process VCF files.'
     self.allowedPipelineCategories['Visualisation']     = 'Visualisation and plotting pipelines.'
 
   # Check if help has been requested on the command line.  Search for the '--help'

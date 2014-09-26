@@ -76,8 +76,13 @@ class commandLine:
       self.mode = 'help'
       return False
 
+    # If this is the test pipeline.
+    if argument == 'run-test':
+      self.mode = 'pipeline'
+      return True
+
     # If a pipeline is being run:
-    if argument == 'pipe' or argument == 'run-test':
+    if argument == 'pipe':
       self.mode  = 'pipeline'
 
       # If no further information is provided on the command line, help is required.

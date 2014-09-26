@@ -248,7 +248,6 @@ class gknoConfigurationFiles:
             
                       # If gkno is being run in tool mode, get the arguments.
                       if config.nodeMethods.getGraphNodeAttribute(graph, 'gkno', 'tool') == 'tool':
-                        print('BILLY RAY', fileValue, longFormArgument, extensions)
                         self.errors.invalidExtension(fileValue, extensions, longFormArgument, shortFormArgument, task, '', '')
               
                       # If gkno is being run in pipeline, mode, determine if the argument with the
@@ -332,7 +331,7 @@ class gknoConfigurationFiles:
     # Generate the filename for the option node.  Since this is a filename stub, this will not have any
     # extension.
     originalExtensions        = config.tools.getArgumentAttribute(tool, baseArgument, 'extensions')
-    modifiedValues, extension = self.modifyExtensions(values, originalExtensions, '', replace = True)
+    modifiedValues, extension, success = self.modifyExtensions(values, originalExtensions, '', replace = True)
     for iteration in modifiedValues: modifiedValues[iteration] = [value.split('/')[-1] for value in modifiedValues[iteration]]
 
     # If the construction instructions indicate that values from another argument should be included
@@ -557,6 +556,7 @@ class gknoConfigurationFiles:
     optionNodeID      = config.nodeMethods.getOptionNodeIDFromFileNodeID(fileNodeID)
     longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
     shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'shortFormArgument')
+    isInput           = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'isInput')
     instructions      = config.tools.getArgumentAttribute(tool, longFormArgument, 'constructionInstructions')
     baseArgument      = instructions['use argument']
     modifyExtension   = instructions['modify extension']
@@ -572,7 +572,15 @@ class gknoConfigurationFiles:
       baseNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, task, baseArgument, 'file')
       if baseNodeIDs: baseNodeID = config.nodeMethods.getOptionNodeIDFromFileNodeID(baseNodeIDs[0])
       else: self.errors.unsetBaseNode(graph, config, task, longFormArgument, baseArgument)
-    else: baseNodeID = config.nodeMethods.getNodeIDWithPredecessor(graph, baseNodeIDs, task)
+    else: 
+
+      # TODO CHECK THE LOGIC HERE
+      # If there are multiple base nodes, return no values. Do not try to pick from a set, unless
+      # this is an output file. In that case, pick a baseNodeID that has values.
+      if isInput: return {}
+      else:
+        baseNodeID = config.nodeMethods.getNodeIDWithPredecessor(graph, baseNodeIDs, task)
+        values     = config.nodeMethods.getGraphNodeAttribute(graph, baseNodeID, 'values')
 
     # Find all predecessor file nodes and then identify the file associated with the baseNodeID.
     # Get the values from this file node.  Some of the values associated with option nodes are
@@ -659,12 +667,12 @@ class gknoConfigurationFiles:
     originalExtensions = config.tools.getArgumentAttribute(tool, baseArgument, 'extensions')
     if modifyExtension == 'replace':
       newExtensions             = config.tools.getArgumentAttribute(tool, longFormArgument, 'extensions')
-      modifiedValues, extension = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = True)
+      modifiedValues, extension, success = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = True)
 
     # If the new extension should be appended to the end of the original file.
     elif modifyExtension == 'append':
       newExtensions             = config.tools.getArgumentAttribute(tool, longFormArgument, 'extensions')
-      modifiedValues, extension = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = False)
+      modifiedValues, extension, success = self.modifyExtensions(modifiedValues, originalExtensions, newExtensions, replace = False)
 
     # If the extension is to remain unchanged.
     elif modifyExtension == 'retain':
@@ -674,10 +682,13 @@ class gknoConfigurationFiles:
 
     elif modifyExtension == 'omit':
       newExtensions             = ['']
-      modifiedValues, extension = self.modifyExtensions(modifiedValues, originalExtensions, '', replace = True)
+      modifiedValues, extension, success = self.modifyExtensions(modifiedValues, originalExtensions, '', replace = True)
 
     # If an unknown operation was included, terminate.
     else: self.errors.unknownExtensionModification(tool, longFormArgument, modifyExtension)
+
+    # If the extension was not successfully set, terminate.
+    if not success: self.errors.invalidExtensionInConstruction(task, tool, longFormArgument, baseArgument, modifiedValues)
 
     # If the construction instructions indicate that text in the values is to be modified, perform the
     # modifications.
@@ -745,7 +756,9 @@ class gknoConfigurationFiles:
 
   # Modify the extensions for files.
   def modifyExtensions(self, values, extensionsA, extensionsB, replace):
-    modifiedValues = {}
+    modifiedValues    = {}
+    matchedExtensions = True
+    failedValue       = ''
 
     # The replacement extension may also be a list of allowed values.  Choose the first value in
     # this list as the extension to use.
@@ -756,25 +769,44 @@ class gknoConfigurationFiles:
     for valueID in values:
       newValuesList = []
       for value in values[valueID]:
+        isValueMatched = False
         for extension in extensionsA:
 
           # If the value ends with the given extension, or the extension is not known.
-          if value.endswith(extension) or extension == 'no extension':
+          if value.endswith(extension) or (extension == 'no extension'):
 
-            # If the extension wasn't provided, just use the extension that is on the
-            # file.
-            if extension == 'no extension' and '.' in value: extension = value.split('.')[-1]
-            else: extensions = ''
-            string  = str(extension)
+            # If the extension wasn't provided, just use the extension that is on the file.
+            string = extension
+            if extension == 'no extension' and '.' in value: string = str(value.split('.')[-1])
+            elif extension == 'no extension': string = ''
 
-            if replace: newValuesList.append(value.replace(string, replaceExtension))
-            else: newValuesList.append(value + replaceExtension)
+            # Replace the extension.
+            if replace:
+              if replaceExtension == 'no extension' and string != '': newValuesList.append(str(value.replace(string, '')))
+              elif replaceExtension != 'no extension' and string != '': newValuesList.append(str(value.replace(string, replaceExtension)))
+              elif replaceExtension != 'no extension': newValuesList.append(str(value) + str(replaceExtension))
+
+            # If the new extension is just being appended.
+            else:
+              if replaceExtension != 'no extension': newValuesList.append(str(value + replaceExtension))
+
+            # Mark that the extension has been handled.
+            isValueMatched = True
             break
+
+        # If the value failed to match an extension, set matchedExtensions to False. If any value
+        # fails to match an extension, gkno will terminate.
+        if not isValueMatched:
+          matchedExtensions = False
+          failedValue       = value
 
       # Update the modifiedValues dictionary to reflect the modified extensions.
       modifiedValues[valueID] = newValuesList
 
-    return modifiedValues, replaceExtension
+    # If any values failed, send a failed value back.
+    if not matchedExtensions: modifiedValues[1] = [failedValue]
+
+    return modifiedValues, replaceExtension, matchedExtensions
 
   # Construct a file of known name.
   def constructKnownFilename(self, graph, config, task, fileNodeID):

@@ -42,8 +42,8 @@ class dataConsistency:
       # output data.
       if (noInputDataSets != noOutputDataSets) and (noOutputDataSets != 1):
         #TODO ERROR
-        print('ERROR - dataConsistency.checkNumberOfOutputFiles')
-        self.error.terminate()
+        print('ERROR - dataConsistency.checkNumberOfOutputFiles', noInputDataSets, noOutputDataSets)
+        self.errors.terminate()
 
       # Loop over the output files to see if amendments are required.
       if noInputDataSets != noOutputDataSets:
@@ -72,9 +72,15 @@ class dataConsistency:
           # be required, which would require multiple executions (hence multiple output files).
 
           if len(values) == 1 and requiresMultipleOutputs:
-            extensions = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowedExtensions')
-            self.updateOutputFiles(graph, config, optionNodeID, values, extensions, noInputDataSets)
-            self.updateOutputFiles(graph, config, fileNodeID, values, extensions, noInputDataSets)
+            isFilenameStub = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isFilenameStub')
+
+            # If this is a filename stub, supply the extensions expected for this file.
+            if isFilenameStub:
+              self.updateOutputStub(graph, config, optionNodeID, fileNodeID, noInputDataSets)
+            else:
+              extensions = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'allowedExtensions')
+              self.updateOutputFiles(graph, config, optionNodeID, values, extensions, noInputDataSets)
+              self.updateOutputFiles(graph, config, fileNodeID, values, extensions, noInputDataSets)
             config.nodeMethods.setGraphNodeAttribute(graph, task, 'numberOfDataSets', noInputDataSets)
 
   # Update the output nodes to have the correct number of iterations.
@@ -115,3 +121,68 @@ class dataConsistency:
 
     # Replace the node values.
     config.nodeMethods.setGraphNodeAttribute(graph, nodeID, 'values', modifiedValues)
+
+  # Update the output nodes to have the correct number of iterations.
+  def updateOutputStub(self, graph, config, optionNodeID, fileNodeID, noInputDataSets):
+
+    # Get the extension for the file node.
+    extension = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'allowedExtensions')[0]
+
+    # Parse each iteration in the option node and modify the values. It is possible that the same
+    # option node can be sent here multiple times. If the values have already been modified, do not
+    # modify again.
+    isOptionNodeModified = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isValuesModified')
+    if not isOptionNodeModified:
+      config.nodeMethods.setGraphNodeAttribute(graph, optionNodeID, 'isValuesModified', True)
+      modifiedOptionValues = {}
+      optionNodeValues     = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
+      for counter in range(1, noInputDataSets + 1, 1):
+        newOptionSet = []
+        for value in optionNodeValues[1]: newOptionSet.append(value + '_' + str(counter))
+        modifiedOptionValues[counter] = newOptionSet
+
+      # Replace the node values.
+      config.nodeMethods.setGraphNodeAttribute(graph, optionNodeID, 'values', modifiedOptionValues)
+
+    # Now handle the file node.
+    modifiedFileValues   = {}
+    fileNodeValues       = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'values')
+    for counter in range(1, noInputDataSets + 1, 1):
+      newFileSet = []
+
+      # The extension needs to be removed when dealing with the file node values.
+      for value in fileNodeValues[1]:
+        if not value.endswith(extension):
+          print('ERROR: dataConsistency.updateOutputStub'); exit(0)
+
+        newFileSet.append(value.rsplit(extension)[0] + '_' + str(counter) + extension)
+      modifiedFileValues[counter] = newFileSet
+
+    # Replace the node values.
+    config.nodeMethods.setGraphNodeAttribute(graph, fileNodeID, 'values', modifiedFileValues)
+
+  # Parse all of the requested nodes and check to see if the included values have the correct extensions.
+  def checkExtensions(self, graph, config):
+
+    # Loop over all the nodes of the requested type.
+    for task in config.pipeline.workflow:
+      print('\tTEST', task)
+      self.checkFileExtensions(graph, config, config.nodeMethods.getPredecessorFileNodes(graph, task))
+      self.checkFileExtensions(graph, config, config.nodeMethods.getSuccessorFileNodes(graph, task))
+
+  # Parse the files and check the extensions.
+  def checkFileExtensions(self, graph, config, nodeIDs):
+    for nodeID in nodeIDs:
+      values     = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'values')
+      extensions = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'allowedExtensions')
+
+      for iteration in values:
+        isMatchedExtension = False
+        for value in values[iteration]:
+          for extension in extensions:
+            if value.endswith(str(extension)):
+              isMatchedExtension = True
+              break
+
+        # If the value did not match any of the allowed extensions, terminate.
+        #if not isMatchedExtension:

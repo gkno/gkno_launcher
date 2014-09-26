@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.32.2"
+__version__ = "1.32.3"
 __date__ = "September 2014"
 
 def main():
@@ -217,7 +217,7 @@ def main():
         del(toolConfigurationData)
     if isDebug: write.writeDebug('Got parameter set information for pipeline tools.')
 
-    # Check that any argument in a pipeline configuration file node taht defines a filename stub
+    # Check that any argument in a pipeline configuration file node that defines a filename stub
     # is linked to other stub arguments, or that the desired extension is included in the node.
     config.pipeline.checkCommonNodes(config.tools)
     if isDebug: write.writeDebug('Checked common nodes.')
@@ -242,6 +242,10 @@ def main():
     config.mergeNodes(pipelineGraph)
     if isDebug: write.writeDebug('Merged nodes.')
   
+    # Now add any additional edges defined in the configuration file to the graph.
+    config.processOriginatingEdges(pipelineGraph)
+    if isDebug: write.writeDebug('Processed additional edges.')
+
     # Generate the workflow using a topological sort of the pipeline graph.
     config.pipeline.workflow = config.generateWorkflow(pipelineGraph)
     config.pipeline.workflow = config.correctWorkflowForStreams(pipelineGraph, config.pipeline.workflow)
@@ -376,6 +380,9 @@ def main():
   if isDebug: write.writeDebug('Export parameter set: ' + str(isExportParameterSet))
   if not isExportParameterSet:
 
+    #
+    #isCorrectExtensions = consistency.checkExtensions(pipelineGraph, config)
+
     # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
     # defined by the user.  If there is a required input or output file and it does not have its value set, 
     # determine how to construct the filename and populate the node with the value.
@@ -406,7 +413,6 @@ def main():
   write.writeDone()
   if config.hasCommandToEvaluate: config.pipeline.workflow = config.generateWorkflow(pipelineGraph)
   if isPipeline: write.writePipelineWorkflow(pipelineGraph, config, gknoHelp)
-    
   if isDebug: write.writeDebug('Identified commands to evaluate')
 
   # Prior to filling in missing filenames, check that all of the supplied data is consistent with
