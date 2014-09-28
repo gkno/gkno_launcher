@@ -166,7 +166,6 @@ class dataConsistency:
 
     # Loop over all the nodes of the requested type.
     for task in config.pipeline.workflow:
-      print('\tTEST', task)
       self.checkFileExtensions(graph, config, config.nodeMethods.getPredecessorFileNodes(graph, task))
       self.checkFileExtensions(graph, config, config.nodeMethods.getSuccessorFileNodes(graph, task))
 
