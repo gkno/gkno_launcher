@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.33.1"
+__version__ = "1.34.2"
 __date__ = "September 2014"
 
 def main():
@@ -276,7 +276,7 @@ def main():
     # Ensure that the tool configuration file is well constructed and put all of the data
     # in data structures.  Each tool in each configuration file gets its own data structure.
     config.tools.processConfigurationData(runName, toolConfigurationData, gknoHelp.allowedToolCategories, allowTermination = True)
-    config.parameterSets.checkParameterSets(pipelineGraph, runName, toolConfigurationData['parameter sets'], isPipeline, isExternal = False)
+    config.parameterSets.checkParameterSets(runName, toolConfigurationData['parameter sets'], isPipeline, isExternal = False)
     config.parameterSets.checkExternalParameterSets(config.fileOperations, toolFile, runName, gknoConfig.jsonFiles['tools'], isPipeline)
     config.parameterSets.getLongFormArguments(pipelineGraph, config.edgeMethods, config.tools, config.pipeline, runName, isPipeline)
     del(toolConfigurationData)
