@@ -1,6 +1,6 @@
 {
-  "id" : "bgzip-decompress",
-  "description" : "Decompress a file using bgzip.",
+  "id" : "bgzip",
+  "description" : "Compress a streaming file using bgzip.",
   "categories" : ["General-file-processing"],
   "tools" : ["tabix"],
   "path" : "tabix",
@@ -9,13 +9,13 @@
   "arguments" : {
     "inputs" : [
       {
-        "description" : "The file to be decompressed.",
+        "description" : "The file to be compressed.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".gz"],
+        "extensions" : ["no extension"],
         "modify argument name on command line" : "hide",
         "if input is stream" : "do not include"
       }
@@ -29,43 +29,18 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["no extension"],
+        "extensions" : [".gz"],
         "modify argument name on command line" : "stdout",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
-          "modify extension" : "replace"
+          "modify extension" : "append"
         }
-      }
-    ],
-
-    "options" : [
-      {
-        "description" : "Decompress the file [SET].",
-        "long form argument" : "--decompress",
-        "short form argument" : "-d",
-        "command line argument" : "-d",
-        "required" : true,
-        "data type" : "flag",
-        "extensions" : ["no extension"],
-        "hide in help" : true
-      },
-      {
-        "description" : "Write decompressed file to stdout.",
-        "long form argument" : "--stdout",
-        "short form argument" : "-s",
-        "command line argument" : "-c",
-        "required" : true,
-        "data type" : "flag",
-        "extensions" : ["no extension"],
-        "hide in help" : true
       }
     ]
   },
 
   "argument order" : [
-    "--decompress",
-    "--stdout",
     "--in",
     "--out"
   ],
@@ -75,16 +50,6 @@
       "ID" : "default",
       "description" : "Default parameter set requires the users input for all files.",
       "nodes" : [
-        {
-          "ID" : "decompress",
-          "argument" : "--decompress",
-          "values" : ["set"]
-        },
-        {
-          "ID" : "stdout",
-          "argument" : "--stdout",
-          "values" : ["set"]
-        }
       ]
     },
 
@@ -94,13 +59,13 @@
       "nodes" : [
         {
           "ID" : "vcf",
-          "argument" : "--in",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"],
+          "argument" : "--in"
         },
         {
           "ID" : "output path",
-          "argument" : "--output-path",
-          "values" : ["./"]
+          "values" : ["./"],
+          "argument" : "--output-path"
         }
       ]
     }

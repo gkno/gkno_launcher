@@ -379,12 +379,12 @@
         },
         {
           "ID" : "reference",
-          "argument" : "--fasta-reference",
+          "argument" : "-f",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
         },
         {
           "ID" : "output path",
-          "argument" : "--output-path",
+          "argument" : "-op",
           "values" : ["./"]
         }
       ]

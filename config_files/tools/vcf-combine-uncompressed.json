@@ -1,29 +1,31 @@
 {
-  "id" : "vcf-sort",
-  "description" : "Sort a vcf file.",
+  "id" : "vcf-combine-uncompressed",
+  "description" : "Combine uncompressed vcf files.",
   "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
-  "executable" : "vcfsort",
-  "hide tool" : false,
+  "executable" : "vcfcombine",
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
       {
-        "description" : "The input vcf file.",
+        "description" : "The input VCF file(s).",
         "long form argument" : "--vcf",
-        "short form argument" : "-i",
-        "command line argument" : "--in",
+        "short form argument" : "-v",
+        "command line argument" : "none",
         "required" : true,
-        "extensions" : [".vcf", ".vcf.gz"],
+        "extensions" : [".vcf"],
         "if input is stream" : "do not include",
-        "data type" : "string"
+        "modify argument name on command line" : "hide",
+        "data type" : "string",
+        "allow multiple values" : true,
+        "allow list of repeated arguments" : true
       }
     ],
 
     "outputs" : [
       {
-        "description" : "The output sorted VCF file.",
+        "description" : "The output combined VCF file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "--out",
@@ -38,16 +40,28 @@
           "modify extension" : "replace",
           "modify text" : [
             {
-              "add text" : ["_sorted"]
+              "add text" : ["_combined"]
             }
           ]
         }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The region to bound the merge.",
+        "long form argument" : "--region",
+        "short form argument" : "-r",
+        "command line argument" : "-r",
+        "data type" : "string",
+        "extensions" : ["no extension"]
       }
     ]
   },
 
   "argument order" : [
     "--vcf",
+    "--region",
     "--out"
   ],
 

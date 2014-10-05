@@ -10,8 +10,8 @@
     "inputs" : [
       {
         "description" : "The input vcf file.",
-        "long form argument" : "--in",
-        "short form argument" : "-i",
+        "long form argument" : "--vcf",
+        "short form argument" : "-v",
         "command line argument" : "--in",
         "required" : true,
         "extensions" : [".vcf", ".vcf.gz"],
@@ -34,7 +34,7 @@
         "if output to stream" : "do not include",
         "construct filename" : {
           "method" : "from tool argument",
-          "use argument" : "--in",
+          "use argument" : "--vcf",
           "modify extension" : "replace",
           "modify text" : [
             {
@@ -83,7 +83,7 @@
       {
         "description" : "Inverts the filter, e.g. grep -v.",
         "long form argument" : "--invert",
-        "short form argument" : "-v",
+        "short form argument" : "-iv",
         "command line argument" : "--invert",
         "extensions" : ["no extension"],
         "data type" : "flag"
@@ -175,7 +175,7 @@
     "--invert",
     "--or",
     "--region",
-    "--in",
+    "--vcf",
     "--out"
   ],
 
@@ -193,7 +193,7 @@
       "nodes" : [
         {
           "ID" : "vcf",
-          "argument" : "--in",
+          "argument" : "--vcf",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
         },
         {

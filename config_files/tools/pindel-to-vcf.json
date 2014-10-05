@@ -1,0 +1,106 @@
+{
+  "id" : "pindel-to-vcf",
+  "description" : "Convert pindel output to vcf.",
+  "categories" : ["SV-discovery", "VCF-processing"],
+  "tools" : ["pindel"],
+  "path" : "pindel",
+  "executable" : "pindel2vcf",
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The pindel output file containing SVs.",
+        "long form argument" : "--pindel-file",
+        "short form argument" : "-p",
+        "command line argument" : "--pindel_output",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "The FASTA reference sequence.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-f",
+        "command line argument" : "--reference",
+        "required" : true,
+        "extensions" : [".fa", ".fasta"],
+        "data type" : "string"
+      }
+    ],
+  
+    "outputs" : [
+      {
+        "description" : "The output VCF prefix.",
+        "long form argument" : "--vcf",
+        "short form argument" : "-v",
+        "command line argument" : "--vcf",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".vcf"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--pindel-file",
+          "modify extension" : "append"
+        }
+      }
+    ],
+  
+    "Optional parameters" : [
+      {
+        "description" : "The name and version of the reference.",
+        "long form argument" : "--reference-name",
+        "short form argument" : "-n",
+        "command line argument" : "--reference_name",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "data type" : "string"
+      },
+      {
+        "description" : "The date of the reference genome version.",
+        "long form argument" : "--reference-date",
+        "short form argument" : "-a",
+        "command line argument" : "--reference_date",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "data type" : "string"
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "nodes" : []
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "input",
+          "argument" : "--pindel-file",
+          "values" : ["$(RESOURCES)/tutorial/current/pindel_RP"]
+        },
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "ID" : "reference-name",
+          "argument" : "--reference-name",
+          "values" : ["chr20_fragment"]
+        },
+        {
+          "ID" : "reference-date",
+          "argument" : "--reference-date",
+          "values" : ["2014"]
+        }
+      ]
+    }
+  ]
+}

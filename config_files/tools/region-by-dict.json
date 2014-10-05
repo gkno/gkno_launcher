@@ -107,6 +107,18 @@
           "values" : [10000]
         }
       ]
+    },
+
+    {
+      "ID" : "human",
+      "description" : "Parameter set for the human genome.",
+      "nodes" : [
+        {
+          "ID" : "dictionary",
+          "argument" : "--reference-dictionary",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37.dict"]
+        }
+      ]
     }
   ]
 }

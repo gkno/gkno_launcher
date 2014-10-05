@@ -34,6 +34,7 @@
         "required" : true,
         "data type" : "string",
         "extensions" : [".bam"],
+        "if output to stream" : "do not include",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",

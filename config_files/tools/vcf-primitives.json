@@ -10,7 +10,7 @@
     "inputs" : [
       {
         "description" : "The input vcf file.",
-        "long form argument" : "--in",
+        "long form argument" : "--vcf",
         "short form argument" : "-i",
         "command line argument" : "--in",
         "required" : true,
@@ -33,7 +33,7 @@
         "modify argument name on command line" : "stdout",
         "construct filename" : {
           "method" : "from tool argument",
-          "use argument" : "--in",
+          "use argument" : "--vcf",
           "modify extension" : "replace",
           "modify text" : [
             {
@@ -76,7 +76,7 @@
     "--use-mnps",
     "--tag-parsed",
     "--max-length",
-    "--in",
+    "--vcf",
     "--out"
   ],
 
@@ -94,7 +94,7 @@
       "nodes" : [
         {
           "ID" : "vcf",
-          "argument" : "--in",
+          "argument" : "--vcf",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
         },
         {

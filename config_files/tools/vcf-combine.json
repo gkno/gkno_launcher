@@ -1,6 +1,6 @@
 {
-  "id" : "vcf-combone",
-  "description" : "Combine vcf file.",
+  "id" : "vcf-combine",
+  "description" : "Combine vcf files.",
   "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
@@ -9,17 +9,34 @@
   "arguments" : {
     "inputs" : [
       {
-        "description" : "The input vcf file(s).",
-        "long form argument" : "--in",
-        "short form argument" : "-i",
+        "description" : "The input bgzipped VCF file(s).",
+        "long form argument" : "--vcf",
+        "short form argument" : "-v",
         "command line argument" : "none",
         "required" : true,
-        "extensions" : [".vcf"],
+        "extensions" : [".vcf.gz"],
         "if input is stream" : "do not include",
         "modify argument name on command line" : "hide",
         "data type" : "string",
         "allow multiple values" : true,
         "allow list of repeated arguments" : true
+      },
+      {
+        "description" : "VCF index file.",
+        "long form argument" : "--vcf-index",
+        "short form argument" : "-vi",
+        "command line argument" : "--vcf-index",
+        "required" : true,
+        "required if stream" : false,
+        "extensions" : [".tbi"],
+        "data type" : "string",
+        "allow multiple values" : true,
+        "modify argument name on command line" : "omit",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--vcf",
+          "modify extension" : "append"
+        }
       }
     ],
 
@@ -36,7 +53,7 @@
         "modify argument name on command line" : "stdout",
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--in",
+          "use argument" : "--vcf",
           "modify extension" : "replace",
           "modify text" : [
             {
@@ -60,7 +77,8 @@
   },
 
   "argument order" : [
-    "--in",
+    "--vcf",
+    "--vcf-index",
     "--region",
     "--out"
   ],
@@ -79,7 +97,7 @@
         {
           "ID" : "vcf",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"],
-          "argument" : "--in"
+          "argument" : "--vcf"
         },
         {
           "ID" : "output path",

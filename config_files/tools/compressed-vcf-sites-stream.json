@@ -1,10 +1,10 @@
 {
-  "id" : "compressed-vcf-sites",
+  "id" : "compressed-vcf-sites-stream",
   "description" : "Strips a compressed VCF file of genotype information.",
   "categories" : ["VCF-processing", "Scripts"],
   "tools" : [],
   "path" : "scripts",
-  "executable" : "compressed-vcf-sites.sh",
+  "executable" : "compressed-vcf-sites-stream.sh",
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
@@ -30,7 +30,7 @@
         "data type" : "string",
         "extensions" : [".sites.vcf"],
         "hide in help" : true,
-        "modify argument name on command line" : "hide",
+        "modify argument name on command line" : "stdout",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--vcf",
