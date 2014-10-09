@@ -496,7 +496,7 @@ class helpClass:
     sys.stdout.flush()
 
     # If this pipeline has different parameter sets, print them to screen.
-    self.getParameterSets(config, gknoConfig, toolConfigurationFilesPath, '', 'tool', tool)
+    self.getParameterSets(graph, config, gknoConfig, toolConfigurationFilesPath, '', 'tool', tool)
     if config.parameterSets.parameterSetAttributes[tool]:
 
       # Determine the longest parameter set name.
@@ -556,7 +556,7 @@ class helpClass:
       sys.stdout.flush()
 
   # Get parameter set information.
-  def getParameterSets(self, config, gknoConfig, toolConfigurationFilesPath, pipelineConfigurationFilesPath, mode, name):
+  def getParameterSets(self, graph, config, gknoConfig, toolConfigurationFilesPath, pipelineConfigurationFilesPath, mode, name):
 
     # Define information based on whether a tool or pipeline is being run.
     if mode == 'tool':
@@ -574,12 +574,12 @@ class helpClass:
 
     # Open the pipeline configuration file and process the parameter set data.
     configurationData = config.fileOperations.readConfigurationFile(filePath + name + '.json')
-    config.parameterSets.checkParameterSets(name, configurationData['parameter sets'], isPipeline, isExternal = False)
+    config.parameterSets.checkParameterSets(graph, name, configurationData['parameter sets'], isPipeline, isExternal = False)
 
     # Now get any external parameter sets.
     if externalFilename + '.json' in gknoConfig.jsonFiles[text]:
       configurationData = config.fileOperations.readConfigurationFile(externalFilePath)
-      config.parameterSets.checkParameterSets(name, configurationData['parameter sets'], isPipeline, isExternal = True)
+      config.parameterSets.checkParameterSets(graph, name, configurationData['parameter sets'], isPipeline, isExternal = True)
 
   # Write out parameter sets.
   def writeParameterSets(self, config, tool, parameterSetName):
