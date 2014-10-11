@@ -9,9 +9,9 @@
   "arguments" : {
     "inputs" : [
       {
-        "description" : "A file containing a list of integers.",
-        "long form argument" : "--coordinate-list",
-        "short form argument" : "-l",
+        "description" : "A file containing a list of genomic positions around which to generate windows (chromosome entered with --chromosome).",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "--coordinate-list",
         "required" : true,
         "data type" : "string",
@@ -33,7 +33,7 @@
         "construct filename" : {
           "method": "define name",
           "filename" : "region-windows",
-          "for multiple runs connect to" : "--coordinate-list",
+          "for multiple runs connect to" : "--in",
           "add extension" : true
         }
       }
@@ -74,7 +74,7 @@
   },
 
   "argument order" : [
-    "--coordinate-list",
+    "--in",
     "--chromosome",
     "--minimum",
     "--maximum",
@@ -86,6 +86,33 @@
       "ID" : "default",
       "description" : "Default parameter set requires the users input for all files.",
       "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "input",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/genomic-positions.txt"]
+        },
+        {
+          "ID" : "chromosome",
+          "argument" : "--chromosome",
+          "values" : [20]
+        },
+        {
+          "ID" : "min",
+          "argument" : "--minimum",
+          "values" : [1000]
+        },
+        {
+          "ID" : "max",
+          "argument" : "--maximum",
+          "values" : [2000]
+        }
       ]
     }
   ]

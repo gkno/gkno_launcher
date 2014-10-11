@@ -24,8 +24,8 @@
     {
       "ID" : "input",
       "description" : "The input bam files.",
-      "long form argument" : "--bam",
-      "short form argument" : "-b",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
       "tasks" : {
         "merge-bam" : "--in"
       }
@@ -67,7 +67,7 @@
       "nodes" : [
         {
           "ID" : "bam1",
-          "argument" : "--bam",
+          "argument" : "--in",
           "values" : [
             "$(RESOURCES)/tutorial/current/mutated_genome.bam",
             "$(RESOURCES)/tutorial/current/mutated_genome_set2.bam"

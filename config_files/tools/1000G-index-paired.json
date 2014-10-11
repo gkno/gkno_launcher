@@ -10,8 +10,8 @@
     "inputs" : [
       {
         "description" : "Sequence index file to parse.",
-        "long form argument" : "--index-file",
-        "short form argument" : "-i",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
         "command line argument" : "--index-file",
         "required" : true,
         "data type" : "string",
@@ -33,7 +33,7 @@
         "construct filename" : {
           "method": "define name",
           "filename" : "paired_end_read",
-          "for multiple runs connect to" : "--index-file",
+          "for multiple runs connect to" : "--index",
           "add extension" : true
         }
       }
@@ -62,9 +62,9 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "Path to the fastq files. Default: current working directory.",
-        "long form argument" : "--fastq-path",
-        "short form argument" : "-f",
+        "description" : "Path to directory containing the fastq files. Default: current working directory.",
+        "long form argument" : "--path",
+        "short form argument" : "-d",
         "command line argument" : "--fastq-path",
         "data type" : "string",
         "extensions" : ["no extension"],
@@ -75,9 +75,9 @@
 
   "argument order" : [
     "--read-type",
-    "--index-file",
+    "--index",
     "--merge-samples",
-    "--fastq-path",
+    "--path",
     "--out"
   ],
 
@@ -105,7 +105,7 @@
       "nodes" : [
         {
           "ID" : "index",
-          "argument" : "--index-file",
+          "argument" : "--index",
           "values" : ["$(RESOURCES)/tutorial/current/paired.sequence.index"]
         },
         {
@@ -115,7 +115,7 @@
         },
         {
           "ID" : "path",
-          "argument" : "--fastq-path",
+          "argument" : "--path",
           "values" : ["$(RESOURCES)/tutorial/current"]
         }
       ]
@@ -127,7 +127,7 @@
       "nodes" : [
         {
           "ID" : "index",
-          "argument" : "--index-file",
+          "argument" : "--index",
           "values" : ["$(RESOURCES)/tutorial/current/paired.sequence.index"]
         },
         {
@@ -137,7 +137,7 @@
         },
         {
           "ID" : "path",
-          "argument" : "--fastq-path",
+          "argument" : "--path",
           "values" : ["$(RESOURCES)/tutorial/current"]
         }
       ]

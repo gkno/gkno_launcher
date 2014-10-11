@@ -122,8 +122,8 @@
       },
       {
         "description" : "Number of threads [>=2, default: 2].",
-        "long form argument" : "--processors",
-        "short form argument" : "-p",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
         "command line argument" : "-p",
         "data type" : "integer",
         "extensions" : ["no extension"]
@@ -141,7 +141,7 @@
     "--maximum-mutations",
     "--maximum-iterations",
     "--minimum-multiplicity",
-    "--processors",
+    "--threads",
     "--fastq",
     "--fastq2"
   ],
@@ -162,8 +162,8 @@
           "values" : [268435456]
         },
         {
-          "ID" : "processors",
-          "argument" : "--processors",
+          "ID" : "threads",
+          "argument" : "--threads",
           "values" : [2]
         }
       ]

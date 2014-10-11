@@ -10,7 +10,7 @@
   "arguments" : {
     "inputs" : [
       {
-        "description" : "the reference fasta file",
+        "description" : "The reference fasta file.",
         "long form argument" : "--fasta-reference",
         "short form argument" : "-r",
         "command line argument" : "--reference_sequence",
@@ -19,9 +19,9 @@
         "extensions" : [".fasta", ".fa"]
       },
       {
-        "description" : "the reference fasta index file",
-        "long form argument" : "--fasta-reference-index",
-        "short form argument" : "-ri",
+        "description" : "The reference fasta index file.",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
         "command line argument" : "--fasta-reference-index",
         "required" : true,
         "data type" : "string",
@@ -34,7 +34,7 @@
         }
       },
       {
-        "description" : "the reference fasta dictionary file",
+        "description" : "The reference fasta dictionary file.",
         "long form argument" : "--fasta-reference-dictionary",
         "short form argument" : "-rd",
         "command line argument" : "--fastq-reference-dictionary",
@@ -49,7 +49,7 @@
         }
       },
       {
-        "description" : "input SAM or BAM file(s)",
+        "description" : "The input SAM or BAM file(s).",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "--input_file",
@@ -58,7 +58,7 @@
         "extensions" : [".sam", ".bam"]
       },
       {
-        "description" : "input SAM or BAM index file(s)",
+        "description" : "The input SAM or BAM index file(s).",
         "long form argument" : "--in-index",
         "short form argument" : "-ii",
         "command line argument" : "--in-index",
@@ -73,7 +73,7 @@
         }
       },
       {
-        "description" : "input covariates table recalibration file",
+        "description" : "The input covariates table recalibration file.",
         "long form argument" : "--covariates-file",
         "short form argument" : "-c",
         "command line argument" : "--BQSR",
@@ -85,7 +85,7 @@
 
     "outputs" : [
       {
-        "description" : "the output recalibrated BAM file",
+        "description" : "The output recalibrated BAM file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "--out",
@@ -107,7 +107,7 @@
 
     "options" : [
       {
-        "description" : "type of analysis to run",
+        "description" : "The type of analysis to run.",
         "long form argument" : "--analysis-type",
         "short form argument" : "-a",
         "command line argument" : "--analysis_type",
@@ -115,7 +115,7 @@
         "extensions" : ["no extension"]
       },
       {
-        "description" : "Do not write out the original qualities as an extra tag in the BAM file",
+        "description" : "Do not write out the original qualities as an extra tag in the BAM file.",
         "long form argument" : "--do-not-write-original-quals",
         "short form argument" : "-noq",
         "command line argument" : "--doNotWriteOriginalQuals",

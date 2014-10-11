@@ -10,7 +10,7 @@
   "arguments" : {
     "inputs" : [
       {
-        "description" : "The input fasta/fastq file.",
+        "description" : "The input FASTA/FASTQ file.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "-in",
@@ -72,9 +72,9 @@
         "extensions" : ["no extension"]
       },
       {
-        "description" : "Number of processors.",
-        "long form argument" : "--processors",
-        "short form argument" : "-p",
+        "description" : "Number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
         "command line argument" : "--threads",
         "data type" : "integer",
         "extensions" : ["no extension"]
@@ -93,7 +93,7 @@
   "argument order" : [
     "--k-mer",
     "--size",
-    "--processors",
+    "--threads",
     "--canonical",
     "--out",
     "--in"

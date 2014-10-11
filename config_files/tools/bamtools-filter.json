@@ -20,18 +20,6 @@
         "allow multiple values" : true
       },
       {
-        "description" : "the input BAM file list (in json format).",
-        "long form argument" : "--in-list",
-        "short form argument" : "-l",
-        "command line argument" : "-in",
-        "data type" : "string",
-        "extensions" : [".bam"],
-        "argument list" : {
-          "use argument" : "--in",
-          "mode" : "repeat argument"
-        }
-      },
-      {
         "description" : "the filter script file (see bamtools documentation for more information).",
         "long form argument" : "--script",
         "short form argument" : "-s",
@@ -68,7 +56,7 @@
       {
         "description" : "only read data from this genomic region.",
         "long form argument" : "--region",
-        "short form argument" : "-r",
+        "short form argument" : "-rg",
         "command line argument" : "-region",
         "extensions" : ["no extension"],
         "data type" : "string",

@@ -41,8 +41,8 @@
     "outputs" : [
       {
         "description" : "Output a plot of summary statistics.",
-        "long form argument" : "--plot",
-        "short form argument" : "-p",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
         "command line argument" : "--plot",
         "data type" : "string",
         "extensions" : [".pdf"]
@@ -191,7 +191,7 @@
   "argument order" : [
     "--fasta-reference",
     "--dbsnp",
-    "--plot",
+    "--out",
     "--stats",
     "--skip-read1",
     "--skip-read2",

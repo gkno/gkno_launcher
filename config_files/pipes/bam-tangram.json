@@ -45,32 +45,32 @@
     },
     {
       "ID" : "processors",
-      "description" : "The number of processors to use.",
-      "long form argument" : "--processors",
-      "short form argument" : "-p",
+      "description" : "The number of threads to use.",
+      "long form argument" : "--threads",
+      "short form argument" : "-t",
       "tasks" : {
-        "detect-mei" : "--processors"
+        "detect-mei" : "--threads"
       }
     },
     {
       "ID" : "bam list",
       "description" : "List of bam files.",
-      "long form argument" : "--bam-list",
-      "short form argument" : "-bl",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
       "required" : true,
       "tasks" : {
-        "scan-bam-files" : "--in-list",
-        "detect-mei" : "--in-list"
+        "scan-bam-files" : "--in",
+        "detect-mei" : "--in"
       }
     },
     {
       "ID" : "tangram directory",
       "description" : "The output directory for Tangram files.",
-      "long form argument" : "--tangram-directory",
-      "short form argument" : "-td",
+      "long form argument" : "--path",
+      "short form argument" : "-p",
       "required" : true,
       "tasks" : {
-        "scan-bam-files" : "--output-directory"
+        "scan-bam-files" : "--path"
       }
     },
     {
@@ -114,10 +114,10 @@
     {
       "ID" : "vcf",
       "description" : "Output MEIs.",
-      "long form argument" : "--vcf",
-      "short form argument" : "-v",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
       "tasks" : {
-        "detect-mei" : "--vcf"
+        "detect-mei" : "--out"
       }
     }
   ],
@@ -134,7 +134,7 @@
         },
         {
           "ID" : "tangram directoey",
-          "argument" : "--tangram-directory",
+          "argument" : "--path",
           "values" : ["$(PWD)/tangram_files"]
         }
       ]
@@ -156,12 +156,12 @@
         },
         {
           "ID" : "bam list",
-          "argument" : "--bam-list",
+          "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/bam_list.txt"]
         },
         {
           "ID" : "vcf",
-          "argument" : "--vcf",
+          "argument" : "--out",
           "values" : ["tangram_mei_calls.vcf"]
         },
         {

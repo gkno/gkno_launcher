@@ -12,8 +12,8 @@
     "inputs" : [
       {
         "description" : "The input bam.",
-        "long form argument" : "--bam",
-        "short form argument" : "-b",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "--bam",
         "required" : true,
         "if input is stream" : "do not include",
@@ -41,8 +41,8 @@
       },
       {
         "description" : "The genome DAG index.",
-        "long form argument" : "--vcf-index",
-        "short form argument" : "-vi",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
         "command line argument" : "--vcf-index",
         "required" : true,
         "data type" : "string",
@@ -70,7 +70,7 @@
         "if output to stream" : "do not include",
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--bam",
+          "use argument" : "--in",
           "modify extension" : "replace",
           "modify text" : [
             {
@@ -273,7 +273,7 @@
   },
 
   "argument order" : [
-    "--bam",
+    "--in",
     "--realign-bam",
     "--fasta-reference",
     "--vcf",
@@ -321,7 +321,7 @@
       "nodes" : [
         {
           "ID" : "bam",
-          "argument" : "--bam",
+          "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {

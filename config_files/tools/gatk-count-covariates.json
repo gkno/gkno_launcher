@@ -10,7 +10,7 @@
   "arguments" : {
     "inputs" : [
       {
-        "description" : "the reference fasta file",
+        "description" : "The reference FASTA file.",
         "long form argument" : "--fasta-reference",
         "short form argument" : "-r",
         "command line argument" : "--reference_sequence",
@@ -19,10 +19,10 @@
         "extensions" : [".fasta", ".fa"]
       },
       {
-        "description" : "the reference fasta index file",
-        "long form argument" : "--fasta-reference-index",
-        "short form argument" : "-ri",
-        "command line argument" : "--fasta-reference-index",
+        "description" : "The reference FASTA index file.",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "string",
         "modify argument name on command line" : "omit",
@@ -34,7 +34,7 @@
         }
       },
       {
-        "description" : "the reference fasta dictionary file",
+        "description" : "The reference FASTA dictionary file.",
         "long form argument" : "--fasta-reference-dictionary",
         "short form argument" : "-rd",
         "command line argument" : "--fasta-reference-dictionary",
@@ -49,7 +49,7 @@
         }
       },
       {
-        "description" : "input SAM or BAM file(s)",
+        "description" : "The input SAM or BAM file(s).",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "--input_file",
@@ -58,10 +58,10 @@
         "extensions" : [".sam", ".bam"]
       },
       {
-        "description" : "input SAM or BAM index file(s)",
+        "description" : "Input SAM or BAM index file(s).",
         "long form argument" : "--in-index",
         "short form argument" : "-ii",
-        "command line argument" : "--in-index",
+        "command line argument" : "none",
         "required" : true,
         "data type" : "string",
         "modify argument name on command line" : "omit",
@@ -73,7 +73,7 @@
         }
       },
       {
-        "description" : "vcf file containing known variant sites",
+        "description" : "A vcf file containing known variant sites.",
         "long form argument" : "--known-sites",
         "short form argument" : "-k",
         "command line argument" : "-knownSites",
@@ -85,7 +85,7 @@
 
     "outputs" : [
       {
-        "description" : "output covariates table recalibration file",
+        "description" : "The output covariates table recalibration file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "--out",
@@ -102,7 +102,7 @@
 
     "options" : [
       {
-        "description" : "minimum level of logging",
+        "description" : "The minimum level of logging.",
         "long form argument" : "--logging-level",
         "short form argument" : "-l",
         "command line argument" : "--logging_level",
@@ -111,7 +111,7 @@
         "extensions" : [".vcf"]
       },
       {
-        "description" : "type of analysis to run",
+        "description" : "The type of analysis to run.",
         "long form argument" : "--analysis-type",
         "short form argument" : "-a",
         "command line argument" : "--analysis_type",
@@ -119,7 +119,7 @@
         "extensions" : ["no extension"]
       },
       {
-        "description" : "covariates to be used",
+        "description" : "The covariates to be used.",
         "long form argument" : "--covariate",
         "short form argument" : "-c",
         "command line argument" : "--covariate",
@@ -128,7 +128,7 @@
         "allow multiple values" : true
       },
       {
-        "description" : "disable indel recalibration (not available in GATK-Lite)",
+        "description" : "Disable indel recalibration (not available in GATK-Lite).",
         "long form argument" : "--disable-indel-quals",
         "short form argument" : "-d",
         "command line argument" : "--disable_indel_quals",

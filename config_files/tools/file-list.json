@@ -10,9 +10,9 @@
   "arguments" : {
     "inputs" : [
       {
-        "description" : "Directory from which to extract files.",
-        "long form argument" : "--dir",
-        "short form argument" : "-d",
+        "description" : "Path to directory from which to extract files.",
+        "long form argument" : "--path",
+        "short form argument" : "-p",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
@@ -49,7 +49,7 @@
   },
 
   "argument order" : [
-    "--dir",
+    "--path",
     "--extension",
     "--out"
   ],
@@ -73,7 +73,7 @@
       "nodes" : [
         {
           "ID" : "files",
-          "argument" : "--dir",
+          "argument" : "--path",
           "values" : ["$(RESOURCES)/tutorial/current"]
         },
         {

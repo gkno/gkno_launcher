@@ -25,7 +25,7 @@
       {
         "description" : "The FM index",
         "long form argument" : "--index",
-        "short form argument" : "-i",
+        "short form argument" : "-x",
         "command line argument" : "-p",
         "required" : true,
         "data type" : "string",

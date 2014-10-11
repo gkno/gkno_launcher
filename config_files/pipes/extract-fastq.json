@@ -18,28 +18,10 @@
     {
       "ID" : "bam",
       "description" : "The input BAM file.",
-      "long form argument" : "--bam",
-      "short form argument" : "-b",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
       "tasks" : {
-        "extract" : "--bam"
-      }
-    },
-    {
-      "ID" : "bam list single",
-      "description" : "A list of input BAM files to be processed in a single makefile.",
-      "long form argument" : "--bam-list-single",
-      "short form argument" : "-bls",
-      "tasks" : {
-        "extract" : "--bam-list-single"
-      }
-    },
-    {
-      "ID" : "bam list multiple",
-      "description" : "A list of input BAM files to be processed in multiple makefiles.",
-      "long form argument" : "--bam-list-multiple",
-      "short form argument" : "-blm",
-      "tasks" : {
-        "extract" : "--bam-list-multiple"
+        "extract" : "--in"
       }
     },
     {
@@ -85,7 +67,7 @@
       "nodes" : [
         {
           "ID" : "bam",
-          "argument" : "--bam",
+          "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {

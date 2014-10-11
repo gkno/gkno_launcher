@@ -1,6 +1,6 @@
 {
   "id" : "bwa-mem",
-  "description" : "Pairwise alignment of anext-generation sequencing reads against a reference genome.",
+  "description" : "Pairwise alignment of next-generation sequencing reads against a reference genome.",
   "categories" : ["Aligners", "BWA"],
   "tools" : ["bwa"],
   "path" : "bwa",
@@ -24,8 +24,8 @@
     "outputs" : [
       {
         "description" : "The output alignment file",
-        "long form argument" : "--sam",
-        "short form argument" : "-s",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
@@ -40,7 +40,7 @@
       {
         "description" : "FM-index files (prefix).",
         "long form argument" : "--index",
-        "short form argument" : "-i",
+        "short form argument" : "-x",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",

@@ -116,9 +116,9 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "Number of processors.",
-        "long form argument" : "--processors",
-        "short form argument" : "-p",
+        "description" : "Number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
         "command line argument" : "--threads",
         "required" : true,
         "data type" : "integer",
@@ -138,7 +138,7 @@
     "--number-shared-k-mers",
     "--out",
     "--lc",
-    "--processors"
+    "--threads"
   ],
 
   "parameter sets" : [
@@ -147,8 +147,8 @@
       "description" : "Default parameter set requires the users input for all files.",
       "nodes" : [
         {
-          "ID" : "processors",
-          "argument" : "--processors",
+          "ID" : "threads",
+          "argument" : "--threads",
           "values" : [1]
         }
       ]

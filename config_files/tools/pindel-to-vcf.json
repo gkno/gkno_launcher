@@ -10,8 +10,8 @@
     "inputs" : [
       {
         "description" : "The pindel output file containing SVs.",
-        "long form argument" : "--pindel-file",
-        "short form argument" : "-p",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "--pindel_output",
         "required" : true,
         "data type" : "string",
@@ -20,7 +20,7 @@
       {
         "description" : "The FASTA reference sequence.",
         "long form argument" : "--fasta-reference",
-        "short form argument" : "-f",
+        "short form argument" : "-r",
         "command line argument" : "--reference",
         "required" : true,
         "extensions" : [".fa", ".fasta"],
@@ -31,15 +31,15 @@
     "outputs" : [
       {
         "description" : "The output VCF prefix.",
-        "long form argument" : "--vcf",
-        "short form argument" : "-v",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
         "command line argument" : "--vcf",
         "required" : true,
         "data type" : "string",
         "extensions" : [".vcf"],
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--pindel-file",
+          "use argument" : "--in",
           "modify extension" : "append"
         }
       }
@@ -82,7 +82,7 @@
       "nodes" : [
         {
           "ID" : "input",
-          "argument" : "--pindel-file",
+          "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/pindel_RP"]
         },
         {

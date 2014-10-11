@@ -10,8 +10,8 @@
     "inputs" : [
       {
         "description" : "A reference fasta dictionary.",
-        "long form argument" : "--reference-dictionary",
-        "short form argument" : "-d",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
@@ -42,7 +42,7 @@
         "construct filename" : {
           "method": "define name",
           "filename" : "region-windows",
-          "for multiple runs connect to" : "--reference-dictionary",
+          "for multiple runs connect to" : "--in",
           "add extension" : true
         }
       }
@@ -72,7 +72,7 @@
   },
 
   "argument order" : [
-    "--reference-dictionary",
+    "--in",
     "--window-size",
     "--reference-sequences",
     "--invert-sequences",
@@ -98,7 +98,7 @@
       "nodes" : [
         {
           "ID" : "dictionary",
-          "argument" : "--reference-dictionary",
+          "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dict"]
         },
         {

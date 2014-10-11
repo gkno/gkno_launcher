@@ -23,8 +23,8 @@
     "outputs" : [
       {
         "description" : "the output list of variants.",
-        "long form argument" : "--vcf",
-        "short form argument" : "-v",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
         "command line argument" : "--vcf",
         "required" : true,
         "data type" : "string",
@@ -220,7 +220,7 @@
     "--random-seed",
     "--dry-run",
     "--fasta-reference",
-    "--vcf"
+    "--out"
   ],
 
   "parameter sets" : [

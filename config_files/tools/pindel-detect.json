@@ -20,7 +20,7 @@
       {
         "description" : "The FASTA reference sequence.",
         "long form argument" : "--fasta-reference",
-        "short form argument" : "-f",
+        "short form argument" : "-r",
         "command line argument" : "--fasta",
         "required" : true,
         "extensions" : [".fa", ".fasta"],
@@ -62,16 +62,16 @@
       {
         "description" : "<chrom>:<start_position>..<end_position>. Limit analysis to the specified region, 0-base coordinates, end_position not included (same as BED format).",
         "long form argument" : "--region",
-        "short form argument" : "-r",
+        "short form argument" : "-rg",
         "command line argument" : "--chromosome",
         "extensions" : ["no extension"],
         "required" : true,
         "data type" : "string"
       },
       {
-        "description" : "Number of threads",
-        "long form argument" : "--processors",
-        "short form argument" : "-p",
+        "description" : "Number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
         "command line argument" : "--number_of_threads",
         "extensions" : ["no extension"],
         "data type" : "integer"

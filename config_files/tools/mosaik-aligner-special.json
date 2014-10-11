@@ -10,8 +10,8 @@
     "inputs" : [
       {
         "description" : "The input read file",
-        "long form argument" : "--read-archive",
-        "short form argument" : "-a",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
@@ -20,7 +20,7 @@
       {
         "description" : "The input reference file (Mosaik native dat file)",
         "long form argument" : "--mosaik-reference",
-        "short form argument" : "-r",
+        "short form argument" : "-m",
         "command line argument" : "-ia",
         "required" : true,
         "data type" : "string",
@@ -64,8 +64,8 @@
     "outputs" : [
       {
         "description" : "The output alignment file",
-        "long form argument" : "--bam",
-        "short form argument" : "-b",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
         "command line argument" : "-out",
         "required" : true,
         "data type" : "string",
@@ -77,7 +77,7 @@
         ],
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--read-archive",
+          "use argument" : "--in",
           "modify extension" : "omit"
         }
       }
@@ -147,9 +147,9 @@
         "extensions" : ["no extension"]
       },    
       {
-        "description" : "Uses the specified number of processors",
-        "long form argument" : "--processors",
-        "short form argument" : "-p",
+        "description" : "Uses the specified number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
         "command line argument" : "-p",
         "data type" : "integer",
         "extensions" : ["no extension"]
@@ -203,7 +203,7 @@
         {
           "ID" : "read archive",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.mkb"],
-          "argument" : "--read-archive"
+          "argument" : "--in"
         },
         {
           "ID" : "prefix",

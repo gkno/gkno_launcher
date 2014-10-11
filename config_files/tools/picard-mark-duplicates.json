@@ -11,7 +11,7 @@
   "arguments" : {
     "inputs" : [
       {
-        "description" : "the input BAM file.",
+        "description" : "The input BAM file.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "INPUT",
@@ -23,7 +23,7 @@
 
     "outputs" : [
       {
-        "description" : "the output BAM file.",
+        "description" : "The output BAM file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "OUTPUT",
@@ -60,8 +60,8 @@
     "options" : [
       {
         "description" : "Temporary directory for storing temporary data.",
-        "long form argument" : "--temp-dir",
-        "short form argument" : "-t",
+        "long form argument" : "--path",
+        "short form argument" : "-p",
         "command line argument" : "TMP_DIR",
         "data type" : "string",
         "extensions" : ["no extension"]
@@ -87,7 +87,7 @@
         },
         {
           "ID" : "temp dir",
-          "argument" : "--temp-dir",
+          "argument" : "--path",
           "values" : ["./"]
         },
         {

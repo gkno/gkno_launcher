@@ -10,8 +10,8 @@
     "inputs" : [
       {
         "description" : "The input vcf file.",
-        "long form argument" : "--vcf",
-        "short form argument" : "-v",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "--in",
         "required" : true,
         "extensions" : [".vcf", ".vcf.gz"],
@@ -34,7 +34,7 @@
         "if output to stream" : "do not include",
         "construct filename" : {
           "method" : "from tool argument",
-          "use argument" : "--vcf",
+          "use argument" : "--in",
           "modify extension" : "replace",
           "modify text" : [
             {
@@ -99,7 +99,7 @@
       {
         "description" : "Specify a region on which to target the filtering, requires a BGZF compressed file which has been indexed with tabix.  Any number of regions may be specified.",
         "long form argument" : "--region",
-        "short form argument" : "-r",
+        "short form argument" : "-rg",
         "command line argument" : "--region",
         "extensions" : ["no extension"],
         "data type" : "string"
@@ -175,7 +175,7 @@
     "--invert",
     "--or",
     "--region",
-    "--vcf",
+    "--in",
     "--out"
   ],
 
@@ -193,7 +193,7 @@
       "nodes" : [
         {
           "ID" : "vcf",
-          "argument" : "--vcf",
+          "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
         },
         {

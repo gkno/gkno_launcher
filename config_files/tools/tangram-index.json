@@ -31,8 +31,8 @@
     "outputs" : [
       {
         "description" : "The output reference file.",
-        "long form argument" : "--tangram-reference",
-        "short form argument" : "-tr",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
         "command line argument" : "-out",
         "required" : true,
         "data type" : "string",
@@ -58,7 +58,7 @@
       "nodes" : [
         {
           "ID" : "output",
-          "argument" : "--tangram-reference",
+          "argument" : "--out",
           "values" : ["tangram-reference.dat"]
         }
       ]
@@ -77,11 +77,6 @@
           "ID" : "special reference",
           "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"],
           "argument" : "--special-reference"
-        },
-        {
-          "ID" : "output",
-          "argument" : "--tangram-reference",
-          "values" : ["tangram-reference.dat"]
         },
         {
           "ID" : "output path",

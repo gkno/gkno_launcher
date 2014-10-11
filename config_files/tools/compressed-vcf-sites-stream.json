@@ -10,8 +10,8 @@
     "inputs" : [
       {
         "description" : "The input compressed VCF file.",
-        "long form argument" : "--vcf",
-        "short form argument" : "-v",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
@@ -33,7 +33,7 @@
         "modify argument name on command line" : "stdout",
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--vcf",
+          "use argument" : "--in",
           "modify extension" : "replace"
         }
       }
@@ -54,7 +54,7 @@
       "nodes" : [
         {
           "ID" : "dictionary",
-          "argument" : "--vcf",
+          "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
         }
       ]

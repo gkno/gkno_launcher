@@ -55,6 +55,11 @@
           "ID" : "input",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/single.sequence.index"]
+        },
+        {
+          "ID" : "output",
+          "argument" : "--out",
+          "values" : ["$(PWD)/output.index"]
         }
       ]
     }

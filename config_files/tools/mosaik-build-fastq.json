@@ -9,7 +9,7 @@
   "arguments" : {
     "inputs" : [
       {    
-        "description" : "The FASTQ file",
+        "description" : "The FASTQ file.",
         "long form argument" : "--fastq",
         "short form argument" : "-q",
         "command line argument" : "-q",
@@ -18,7 +18,7 @@
         "extensions" : [".fastq", ".fq", ".fastq.gz", ".fq.gz"]
       },
       {    
-        "description" : "The FASTQ 2nd mate",
+        "description" : "The FASTQ 2nd mate.",
         "long form argument" : "--fastq2",
         "short form argument" : "-q2",
         "command line argument" : "-q2",
@@ -29,9 +29,9 @@
 
     "outputs" : [
       {    
-        "description" : "The output read file",
-        "long form argument" : "--read-archive",
-        "short form argument" : "-a",
+        "description" : "The output read file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
         "command line argument" : "-out",
         "required" : true,
         "data type" : "string",

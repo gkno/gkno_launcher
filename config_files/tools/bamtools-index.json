@@ -22,7 +22,7 @@
   
     "outputs" : [
       {
-        "description" : "the index file.",
+        "description" : "The index file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "-out",

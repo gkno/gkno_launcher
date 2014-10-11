@@ -11,8 +11,8 @@
     "inputs" : [
       {
         "description" : "Input histogram of hash counts.",
-        "long form argument" : "--histogram",
-        "short form argument" : "-hi",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "--histogram",
         "required" : true,
         "data type" : "string",
@@ -24,7 +24,7 @@
     "outputs" : [
       {
         "description" : "Output dist file.",
-        "long form argument" : "--output-dist",
+        "long form argument" : "--out-dist",
         "short form argument" : "-od",
         "command line argument" : "--output-dist",
         "required" : true,
@@ -34,13 +34,13 @@
         "hide in help" : true,
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--histogram",
+          "use argument" : "--in",
           "modify extension" : "append"
         }
       },
       {
         "description" : "The model file contains information on how to fit normal distributions to the k-mer frequency histogram as well as suggested cut-off values for other Rufus tools.",
-        "long form argument" : "--output-model",
+        "long form argument" : "--out-model",
         "short form argument" : "-om",
         "command line argument" : "--output-model",
         "required" : true,
@@ -50,13 +50,13 @@
         "hide in help" : true,
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--histogram",
+          "use argument" : "--in",
           "modify extension" : "append"
         }
       },
       {
         "description" : "Output prob file.",
-        "long form argument" : "--output-prob",
+        "long form argument" : "--out-prob",
         "short form argument" : "-pr",
         "command line argument" : "--output-prob",
         "required" : true,
@@ -66,7 +66,7 @@
         "hide in help" : true,
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--histogram",
+          "use argument" : "--in",
           "modify extension" : "append"
         }
       }
@@ -84,9 +84,9 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "Number of processors.",
-        "long form argument" : "--processors",
-        "short form argument" : "-p",
+        "description" : "Number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
         "command line argument" : "--threads",
         "required" : true,
         "data type" : "integer",
@@ -97,12 +97,12 @@
   },
 
   "argument order" : [
-    "--histogram",
+    "--in",
     "--k-mer",
-    "--processors",
-    "--output-dist",
-    "--output-model",
-    "--output-prob"
+    "--threads",
+    "--out-dist",
+    "--out-model",
+    "--out-prob"
   ],
 
   "parameter sets" : [
@@ -111,8 +111,8 @@
       "description" : "Default parameter set requires the users input for all files.",
       "nodes" : [
         {
-          "ID" : "processors",
-          "argument" : "--processors",
+          "ID" : "threads",
+          "argument" : "--threads",
           "values" : [1]
         }
       ]

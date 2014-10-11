@@ -86,9 +86,9 @@
         }
       },
       {
-        "description" : "Scratch directory for generated files.",
-        "long form argument" : "--temp-directory",
-        "short form argument" : "-t",
+        "description" : "Path to the scratch directory for generated files.",
+        "long form argument" : "--path",
+        "short form argument" : "-p",
         "command line argument" : "-tmp",
         "directory" : true,
         "temporary" : true,
@@ -162,7 +162,7 @@
         },
         {
           "ID" : "temp directory",
-          "argument" : "--temp-directory",
+          "argument" : "--path",
           "values" : ["$(PWD)/$(MAKEFILE_ID)_tmp"]
         },
         {

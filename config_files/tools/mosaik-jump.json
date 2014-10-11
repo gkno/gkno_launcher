@@ -9,9 +9,9 @@
   "arguments" : {
     "inputs" : [
       {    
-        "description" : "Input reference file",
+        "description" : "The input MOSAIK reference file.",
         "long form argument" : "--mosaik-reference",
-        "short form argument" : "-r",
+        "short form argument" : "-m",
         "command line argument" : "-ia",
         "required" : true,
         "data type" : "string",
@@ -70,7 +70,7 @@
       {    
         "description" : "The amount memory used when sorting <Gb>",
         "long form argument" : "--memory",
-        "short form argument" : "-m",
+        "short form argument" : "-e",
         "command line argument" : "-mem",
         "extensions" : ["no extension"],
         "data type" : "integer"

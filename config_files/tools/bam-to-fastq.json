@@ -11,41 +11,17 @@
     "inputs" : [
       {
         "description" : "Input BAM file name (must be sorted).",
-        "long form argument" : "--bam",
-        "short form argument" : "-b",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "--in",
         "required" : true,
         "data type" : "string",
         "extensions" : [".bam"]
       },
       {
-        "description" : "Input list of BAM files to process in a single makefile.",
-        "long form argument" : "--bam-list-single",
-        "short form argument" : "-bls",
-        "command line argument" : "none",
-        "data type" : "string",
-        "extensions" : [".bam"],
-        "argument list" : {
-          "use argument" : "--bam",
-          "mode" : "single makefile"
-        }
-      },
-      {
-        "description" : "Input list of BAM files to process in multiple makefiles.",
-        "long form argument" : "--bam-list-multiple",
-        "short form argument" : "-blm",
-        "command line argument" : "none",
-        "data type" : "string",
-        "extensions" : [".bam"],
-        "argument list" : {
-          "use argument" : "--bam",
-          "mode" : "multiple makefiles"
-        }
-      },
-      {
         "description" : "Reference file for converting '=' in the sequence to the actual base if '=' are found and the refFile is not specified, 'N' is written to the FASTQ.",
         "long form argument" : "--fasta-reference",
-        "short form argument" : "-f",
+        "short form argument" : "-r",
         "command line argument" : "--refFile",
         "required" : true,
         "data type" : "string",
@@ -70,7 +46,7 @@
         ],
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--bam",
+          "use argument" : "--in",
           "modify extension" : "replace"
         }
       }
@@ -150,7 +126,7 @@
       "nodes" : [
         {
           "ID" : "bam",
-          "argument" : "--bam",
+          "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {

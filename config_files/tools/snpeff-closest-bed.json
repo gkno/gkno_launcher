@@ -61,8 +61,8 @@
     "Genome path" : [
       {
         "description" : "Path to genome files (not necesary if the genome was downloaded using 'gkno snpeff-download').",
-        "long form argument" : "--genome-path",
-        "short form argument" : "-gp",
+        "long form argument" : "--path",
+        "short form argument" : "-p",
         "command line argument" : "-gp",
         "required" : true,
         "modify argument name on command line" : "omit",
@@ -95,7 +95,7 @@
   "argument order" : [
     "--transcription-start-site",
     "--bed",
-    "--genome-path",
+    "--path",
     "--genome",
     "--in",
     "--out"
@@ -108,7 +108,7 @@
       "nodes" : [
         {
           "ID" : "genome path",
-          "argument" : "--genome-path",
+          "argument" : "--path",
           "values" : ["$(TOOL_BIN)/snpEff/data"]
         },
         {

@@ -6,6 +6,9 @@
     "merge-reference" : {
       "tool" : "concatenate-files"
     },
+    "index-reference" : {
+      "tool" : "samtools-index-fasta"
+    },
     "build-reference" : {
       "tool" : "mosaik-build-reference"
     },
@@ -65,6 +68,7 @@
       "short form argument" : "-mf",
       "tasks" : {
         "merge-reference" : "--out",
+        "index-reference" : "--fasta-reference",
         "build-reference" : "--fasta-reference",
         "recalibrate-bq" : "--fasta-reference",
         "variant-call" : "--fasta-reference"
@@ -143,8 +147,8 @@
       "long form argument" : "--read-archive",
       "short form argument" : "-a",
       "tasks" : {
-        "build-read-archive" : "--read-archive",
-        "align" : "--read-archive"
+        "build-read-archive" : "--out",
+        "align" : "--in"
       }
     },
     {
@@ -187,7 +191,7 @@
       "ID" : "sort",
       "description" : "Linking tasks. No argument.",
       "tasks" : {
-        "align" : "--bam",
+        "align" : "--out",
         "sort-primary-bam" : "--in"
       },
       "extensions" : {
@@ -222,12 +226,20 @@
       }
     },
     {
+      "ID" : "index file",
+      "description" : "Freebayes requires FASTA index.",
+      "tasks" : {
+        "index-reference" : "--out",
+        "variant-call" : "--fasta-index"
+      }
+    },
+    {
       "ID" : "call",
       "description" : "Linking tasks. No argument.",
       "tasks" : {
         "mark-duplicates" : "--out",
         "index-final-bam" : "--in",
-        "variant-call" : "--bam"
+        "variant-call" : "--in"
       }
     },
     {
@@ -243,7 +255,7 @@
       "ID" : "filter",
       "description" : "Linking tasks. No argument.",
       "tasks" : {
-        "variant-call" : "--vcf",
+        "variant-call" : "--out",
         "filter-variants" : "--in"
       }
     },
@@ -270,7 +282,7 @@
       "description" : "Linking tasks. No argument.",
       "tasks" : {
         "index-final-bam" : "--out",
-        "variant-call" : "--bam-index"
+        "variant-call" : "--index"
       }
     }
   ],

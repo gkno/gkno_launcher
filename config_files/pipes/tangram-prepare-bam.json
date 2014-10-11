@@ -27,55 +27,19 @@
     {
       "ID" : "bam",
       "description" : "The input BAM file.",
-      "long form argument" : "--bam",
-      "short form argument" : "-b",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
       "tasks" : {
-        "convert" : "--bam"
-      }
-    },
-    {
-      "ID" : "bam list s",
-      "description" : "A list of input BAM files to process in a single makefile.",
-      "long form argument" : "--bam-list-single",
-      "short form argument" : "-bls",
-      "tasks" : {
-        "convert" : "--bam-list-single"
-      }
-    },
-    {
-      "ID" : "bam list m",
-      "description" : "A list of input BAM files to process in a single makefile.",
-      "long form argument" : "--bam-list-multiple",
-      "short form argument" : "-blm",
-      "tasks" : {
-        "convert" : "--bam-list-multiple"
+        "convert" : "--in"
       }
     },
     {
       "ID" : "region",
       "description" : "The genomic region to consider (whole genome or chromosome recommended).",
       "long form argument" : "--region",
-      "short form argument" : "-r",
+      "short form argument" : "-rg",
       "tasks" : {
         "convert" : "--region"
-      }
-    },
-    {
-      "ID" : "region single",
-      "description" : "A list of regions to be analysed in a single makefile.",
-      "long form argument" : "--region-list-single",
-      "short form argument" : "-rls",
-      "tasks" : {
-        "convert" : "--region-list-single"
-      }
-    },
-    {
-      "ID" : "regions",
-      "description" : "A list of regions to be analysed in multiple makefiles.",
-      "long form argument" : "--region-list-multiple",
-      "short form argument" : "-rlm",
-      "tasks" : {
-        "convert" : "--region-list-multiple"
       }
     },
     {
@@ -116,7 +80,7 @@
         },
         {
           "ID" : "bam",
-          "argument" : "--bam",
+          "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {

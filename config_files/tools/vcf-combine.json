@@ -10,8 +10,8 @@
     "inputs" : [
       {
         "description" : "The input bgzipped VCF file(s).",
-        "long form argument" : "--vcf",
-        "short form argument" : "-v",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "none",
         "required" : true,
         "extensions" : [".vcf.gz"],
@@ -23,8 +23,8 @@
       },
       {
         "description" : "VCF index file.",
-        "long form argument" : "--vcf-index",
-        "short form argument" : "-vi",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
         "command line argument" : "--vcf-index",
         "required" : true,
         "required if stream" : false,
@@ -34,7 +34,7 @@
         "modify argument name on command line" : "omit",
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--vcf",
+          "use argument" : "--in",
           "modify extension" : "append"
         }
       }
@@ -53,7 +53,7 @@
         "modify argument name on command line" : "stdout",
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--vcf",
+          "use argument" : "--in",
           "modify extension" : "replace",
           "modify text" : [
             {
@@ -68,7 +68,7 @@
       {
         "description" : "The region to bound the merge.",
         "long form argument" : "--region",
-        "short form argument" : "-r",
+        "short form argument" : "-rg",
         "command line argument" : "-r",
         "data type" : "string",
         "extensions" : ["no extension"]
@@ -77,8 +77,8 @@
   },
 
   "argument order" : [
-    "--vcf",
-    "--vcf-index",
+    "--in",
+    "--index",
     "--region",
     "--out"
   ],
@@ -97,7 +97,7 @@
         {
           "ID" : "vcf",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"],
-          "argument" : "--vcf"
+          "argument" : "--in"
         },
         {
           "ID" : "output path",

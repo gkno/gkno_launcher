@@ -10,8 +10,8 @@
     "inputs" : [
       {
         "description" : "Path to directory where the fastq files reside.",
-        "long form argument" : "--directory",
-        "short form argument" : "-d",
+        "long form argument" : "--path",
+        "short form argument" : "-p",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
@@ -33,7 +33,7 @@
         "construct filename" : {
           "method": "define name",
           "filename" : "fastq-list",
-          "for multiple runs connect to" : "--directory",
+          "for multiple runs connect to" : "--path",
           "add extension" : true
         }
       }
@@ -62,7 +62,7 @@
   },
 
   "argument order" : [
-    "--directory",
+    "--path",
     "--out",
     "--suffix",
     "--suffix-mate2"
@@ -82,7 +82,7 @@
       "nodes" : [
         {
           "ID" : "files",
-          "argument" : "--directory",
+          "argument" : "--path",
           "values" : [
             "$(RESOURCES)/tutorial/current"
           ]

@@ -11,8 +11,8 @@
     "inputs" : [
       {
         "description" : "The input BAM file(s).",
-        "long form argument" : "--bam",
-        "short form argument" : "-b",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
@@ -52,7 +52,7 @@
 
   "argument order" : [
     "--insert",
-    "--bam",
+    "--in",
     "--out"
   ],
 
@@ -70,7 +70,7 @@
       "nodes" : [
         {
           "ID" : "files",
-          "argument" : "--bam",
+          "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam", "$(RESOURCES)/tutorial/current/mutated_genome_set2.bam"]
         },
         {

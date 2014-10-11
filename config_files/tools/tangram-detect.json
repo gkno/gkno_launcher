@@ -28,8 +28,8 @@
       },
       {
         "description" : "The list of input BAM files.",
-        "long form argument" : "--in-list",
-        "short form argument" : "-l",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
@@ -38,42 +38,19 @@
       {
         "description" : "Tangram reference sequence file.",
         "long form argument" : "--tangram-reference",
-        "short form argument" : "-r",
+        "short form argument" : "-tr",
         "command line argument" : "-ref",
+        "required" : true,
         "data type" : "string",
         "extensions" : [".dat"]
-      },
-      {
-        "description" : "A list of genomic regions (generates multiple rules in a single makefile).",
-        "long form argument" : "--region-list-single",
-        "short form argument" : "-rls",
-        "command line argument" : "none",
-        "data type" : "string",
-        "extensions" : ["no extension"],
-        "argument list" : {
-          "use argument" : "--region",
-          "mode" : "single makefile"
-        }
-      },
-      {
-        "description" : "A list of genomic regions (generates multiple makefiles).",
-        "long form argument" : "--region-list-multiple",
-        "short form argument" : "-rlm",
-        "command line argument" : "none",
-        "data type" : "string",
-        "extensions" : ["no extension"],
-        "argument list" : {
-          "use argument" : "--region",
-          "mode" : "multiple makefiles"
-        }
       }
     ],
 
     "outputs" : [
       {
         "description" : "The output file (including path) [stdout].",
-        "long form argument" : "--vcf",
-        "short form argument" : "-v",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
         "command line argument" : "-out",
         "required" : true,
         "data type" : "string",
@@ -82,7 +59,7 @@
         "construct filename" : {
           "method": "define name",
           "filename" : "tangram_calls",
-          "for multiple runs connect to" : "--in-list",
+          "for multiple runs connect to" : "--in",
           "add extension" : true
         }
       }
@@ -199,8 +176,8 @@
       },
       {
         "description" : "Number of threads [1].",
-        "long form argument" : "--processors",
-        "short form argument" : "-p",
+        "long form argument" : "--threadss",
+        "short form argument" : "-t",
         "command line argument" : "-p",
         "data type" : "integer",
         "extensions" : ["no extension"]
@@ -227,8 +204,8 @@
       "nodes" : [
         {
           "ID" : "list",
-          "values" : ["$(RESOURCES)/tutorial/current/tangram-bam-list.txt"],
-          "argument" : "--in-list"
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/tangram-bam-list.txt"]
         },
         {
           "ID" : "genotype",

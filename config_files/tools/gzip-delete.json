@@ -30,7 +30,7 @@
         "required" : true,
         "data type" : "string",
         "extensions" : [".gz"],
-        "modify argument name on command line" : "input stream stdout",
+        "modify argument name on command line" : "omit",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",

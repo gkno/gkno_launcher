@@ -10,8 +10,8 @@
     "inputs" : [
       {
         "description" : "Path of the directory containing the fragment length distribution information (output of tangram-scan).",
-        "long form argument" : "--directory",
-        "short form argument" : "-d",
+        "long form argument" : "--path",
+        "short form argument" : "-p",
         "command line argument" : "-dir",
         "required" : true,
         "data type" : "string",

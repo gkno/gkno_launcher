@@ -31,7 +31,7 @@
       {
         "description" : "FM-index files (prefix).",
         "long form argument" : "--index",
-        "short form argument" : "-i",
+        "short form argument" : "-x",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
@@ -51,8 +51,8 @@
     "outputs" : [
       {
         "description" : "The output alignment file",
-        "long form argument" : "--sam",
-        "short form argument" : "-s",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",

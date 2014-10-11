@@ -10,8 +10,8 @@
     "inputs" : [
       {
         "description" : "The list of input BAM files.",
-        "long form argument" : "--in-list",
-        "short form argument" : "-l",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
@@ -22,8 +22,8 @@
     "outputs" : [
       {
         "description" : "Path of the output directory.  This must be empty or non-existent.",
-        "long form argument" : "--output-directory",
-        "short form argument" : "-d",
+        "long form argument" : "--path",
+        "short form argument" : "-p",
         "command line argument" : "-dir",
         "required" : true,
         "directory" : true,
@@ -42,9 +42,9 @@
         "hide in help" : true,
         "construct filename" : {
           "method": "define name",
-          "directory argument" : "--output-directory",
+          "directory argument" : "--path",
           "filename" : "lib_table",
-          "for multiple runs connect to" : "--in-list",
+          "for multiple runs connect to" : "--in",
           "add extension" : true
         }
       },
@@ -60,9 +60,9 @@
         "modify argument name on command line" : "omit",
         "construct filename" : {
           "method": "define name",
-          "directory argument" : "--output-directory",
+          "directory argument" : "--path",
           "filename" : "hist",
-          "for multiple runs connect to" : "--in-list",
+          "for multiple runs connect to" : "--in",
           "add extension" : true
         }
       }
@@ -118,11 +118,11 @@
         {
           "ID" : "list",
           "values" : ["$(RESOURCES)/tutorial/current/tangram-bam-list.txt"],
-          "argument" : "--in-list"
+          "argument" : "--in"
         },
         {
           "ID" : "output",
-          "argument" : "--output-directory",
+          "argument" : "--path",
           "values" : ["tangram-files"]
         },
         {

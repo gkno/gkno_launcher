@@ -29,8 +29,8 @@
       },
       {
         "description" : "The genome DAG index.",
-        "long form argument" : "--vcf-index",
-        "short form argument" : "-vi",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
         "command line argument" : "--vcf-index",
         "required" : true,
         "data type" : "string",

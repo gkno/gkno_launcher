@@ -90,8 +90,8 @@
       "long form argument" : "--read-archive",
       "short form argument" : "-a",
       "tasks" : {
-        "build-read-archive" : "--read-archive",
-        "align" : "--read-archive"
+        "build-read-archive" : "--out",
+        "align" : "--in"
       },
       "delete files" : true
     },
@@ -143,10 +143,10 @@
     {
       "ID" : "threads",
       "description" : "Specifies the number of threads to use for the aligner.",
-      "long form argument" : "--processors",
-      "short form argument" : "-p",
+      "long form argument" : "--threads",
+      "short form argument" : "-t",
       "tasks" : {
-        "align" : "--processors"
+        "align" : "--threads"
       }
     },
     {
@@ -171,7 +171,7 @@
       "ID" : "aligned bam",
       "description" : "Linking tasks only.",
       "tasks" : {
-        "align" : "--bam",
+        "align" : "--out",
         "sort-bam" : "--in"
       },
       "extensions" : {

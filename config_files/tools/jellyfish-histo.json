@@ -48,9 +48,9 @@
         "extensions" : ["no extension"]
       },
       {
-        "description" : "Number of processors.",
-        "long form argument" : "--processors",
-        "short form argument" : "-p",
+        "description" : "Number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
         "command line argument" : "--threads",
         "data type" : "integer",
         "extensions" : ["no extension"]
@@ -60,7 +60,7 @@
 
   "argument order" : [
     "--full",
-    "--processors",
+    "--threads",
     "--out",
     "--in"
   ],

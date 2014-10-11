@@ -10,8 +10,8 @@
     "inputs" : [
       {
         "description" : "Add FILE to the set of BAM files to be analyzed.",
-        "long form argument" : "--bam",
-        "short form argument" : "-b",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "--bam",
         "required" : true,
         "extensions" : [".bam"],
@@ -26,41 +26,46 @@
       },
       {
         "description" : "bam index file.",
-        "long form argument" : "--bam-index",
-        "short form argument" : "-bi",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
         "command line argument" : "--bam-index",
         "required" : true,
         "required if stream" : false,
         "extensions" : [".bai"],
         "data type" : "string",
+        "hide in help" : true,
         "allow multiple values" : true,
         "modify argument name on command line" : "omit",
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--bam",
+          "use argument" : "--in",
           "modify extension" : "append"
-        }
-      },
-      {
-        "description" : "the input BAM file list.",
-        "long form argument" : "--bam-list",
-        "short form argument" : "-bl",
-        "command line argument" : "none",
-        "data type" : "string",
-        "extensions" : [".bam"],
-        "argument list" : {
-          "use argument" : "--bam",
-          "mode" : "repeat argument"
         }
       },
       {
         "description" : "Use FILE as the reference sequence for analysis.",
         "long form argument" : "--fasta-reference",
-        "short form argument" : "-f",
+        "short form argument" : "-r",
         "command line argument" : "--fasta-reference",
         "required" : true,
         "extensions" : [".fa", ".fasta"],
         "data type" : "string"
+      },
+      {
+        "description" : "The FASTA reference index file.",
+        "long form argument" : "--fasta-index",
+        "short form argument" : "-fx",
+        "command line argument" : "none",
+        "required" : true,
+        "extensions" : [".fai"],
+        "hide in help" : true,
+        "modify argument name on command line" : "omit",
+        "data type" : "string",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "append"
+        }
       },
       {
         "description" : "Limit analysis to targets listed in the BED-format FILE.",
@@ -99,8 +104,8 @@
     "outputs" : [
       {
         "description" : "Output VCF-format results to FILE.",
-        "long form argument" : "--vcf",
-        "short form argument" : "-v",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
         "command line argument" : "--vcf",
         "required" : true,
         "extensions" : [".vcf"],
@@ -108,7 +113,7 @@
         "if output to stream" : "do not include",
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--bam",
+          "use argument" : "--in",
           "modify extension" : "replace"
         }
       }
@@ -126,7 +131,7 @@
       {
         "description" : "Ignore insertion and deletion alleles.",
         "long form argument" : "--no-indels",
-        "short form argument" : "-i",
+        "short form argument" : "-ni",
         "command line argument" : "--no-indels",
         "extensions" : ["no extension"],
         "data type" : "flag"
@@ -185,7 +190,7 @@
       {
         "description" : "<chrom>:<start_position>..<end_position>. Limit analysis to the specified region, 0-base coordinates, end_position not included (same as BED format).",
         "long form argument" : "--region",
-        "short form argument" : "-r",
+        "short form argument" : "-rg",
         "command line argument" : "--region",
         "extensions" : ["no extension"],
         "data type" : "string"
@@ -323,7 +328,7 @@
       "nodes" : [
         {
           "ID" : "BAM1",
-          "argument" : "--bam",
+          "argument" : "--in",
           "values" : [
             "$(RESOURCES)/tutorial/current/mutated_genome.bam",
             "$(RESOURCES)/tutorial/current/mutated_genome_set2.bam"
