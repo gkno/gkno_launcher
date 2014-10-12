@@ -74,6 +74,45 @@ class gknoErrors:
     print('================================================================================================', file=sys.stderr)
     exit(2)
 
+  #######################################
+  # Errors with the tool/pipeline name. #
+  #######################################
+
+  # gkno is being run in tool mode, but a pipeline name was supplied, or vice versa.
+  def suggestMode(self, providedName, suggestedName, mode):
+    if mode == 'tool': usage = 'gkno pipe ' + suggestedName + ' [options]'
+    else: usage = 'gkno ' + suggestedName + ' [options]'
+
+    # If the mode is 'tool', the alternative mode is 'pipeline' and vice versa.
+    alternativeMode = 'tool' if mode == 'pipeline' else 'pipeline'
+
+    self.text.append('Invalid ' + mode + ' name.')
+    self.text.append('gkno is being run in ' + mode + ' mode, but the ' + mode + ' name provided is invalid. The provided name is, however, ' + \
+    'a valid ' + alternativeMode + '. If this is not the intended tool/pipeline, please check the provided command line. If it is, please ' + \
+    'use the following syntax:')
+    self.text.append('\t')
+    self.text.append('\t' + usage)
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
+  # The provided name is neither a tool or a pipeline. Suggest the mode and name that is
+  # closest to what was typed.
+  def suggestMostLikely(self, mode, providedName, mostLikelyMode, mostLikelyName):
+
+    # Define the usage syntax.
+    if mostLikelyMode == 'tool': usage = 'gkno ' + mostLikelyName + ' [options]'
+    else: usage = 'gkno pipe ' + mostLikelyName + ' [options]'
+
+    self.text.append('Invalid tool/pipeline name.')
+    self.text.append('gkno is being run in ' + mode + ' mode, but the given ' + mode + ' name is neither a valid tool or pipeline. The ' + \
+    'provided name is most similar to the ' + mostLikelyMode + ', ' + mostLikelyName + '. If this was not the intended mode of operation, ' + \
+    'please check the provided mode of operation (tool or pipeline) and the name. If this was the intended mode of operation, please use the ' + \
+    'syntax:')
+    self.text.append('\t')
+    self.text.append('\t' + usage)
+    self.writeFormattedText(errorType = 'error')
+    self.terminate()
+
   ##################################
   # Errors with configuration file #
   ##################################

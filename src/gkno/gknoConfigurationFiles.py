@@ -676,9 +676,10 @@ class gknoConfigurationFiles:
 
     # If the extension is to remain unchanged.
     elif modifyExtension == 'retain':
-      if values: extension     = '.' + values[1][0].rsplit('.')[-1]
+      if values: extension = '.' + values[1][0].rsplit('.')[-1]
       else: extension = ''
       newExtensions = [extension]
+      success       = True
 
     elif modifyExtension == 'omit':
       newExtensions             = ['']

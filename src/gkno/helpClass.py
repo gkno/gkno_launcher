@@ -113,7 +113,7 @@ class helpClass:
 
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line.
-  def checkForHelp(self, graph, config, gknoConfig, isPipeline, runName, admin, mode, toolConfigurationFilesPath, pipelineConfigurationFilesPath, parameterSetName):
+  def checkForHelp(self, graph, config, jsonFiles, isPipeline, runName, admin, mode, toolConfigurationFilesPath, pipelineConfigurationFilesPath, parameterSetName):
 
     # Check if tool or pipeline categories should be displayed.
     for counter, argument in enumerate(sys.argv[1:]):
@@ -155,8 +155,8 @@ class helpClass:
     if self.writeHelp:
 
       # If the help requires info from all tools or pipelines, get the necessary data.
-      if self.toolHelp or mode == 'tool': self.getTools(config, gknoConfig, toolConfigurationFilesPath)
-      if self.pipelineHelp and mode != 'pipeline': self.getPipelines(config, gknoConfig, pipelineConfigurationFilesPath)
+      if self.toolHelp or mode == 'tool': self.getTools(config, jsonFiles, toolConfigurationFilesPath)
+      if self.pipelineHelp and mode != 'pipeline': self.getPipelines(config, jsonFiles, pipelineConfigurationFilesPath)
   
       # If all tools or pipelines  are to written to screen.
       if self.allTools: self.writeToolModeUsage(config, admin)
@@ -185,7 +185,7 @@ class helpClass:
       # after the pipeline has been built. Certain information (e.g. the workflow), need to be determined prior
       # to printing out help.
       if mode == 'tool':
-        self.writeSpecificToolUsage(graph, config, gknoConfig, runName, toolConfigurationFilesPath, parameterSetName)
+        self.writeSpecificToolUsage(graph, config, jsonFiles, runName, toolConfigurationFilesPath, parameterSetName)
         exit(0)
       if isPipeline:
         self.specificPipelineHelp = True
@@ -217,7 +217,7 @@ class helpClass:
     exit(0)
 
   # Get information on all avilable tools and pipelines.
-  def getTools(self, config, gknoConfig, toolConfigurationFilesPath):
+  def getTools(self, config, jsonFiles, toolConfigurationFilesPath):
 
     # Some tools may have malformed configuration files. Instead of failing when those files are
     # processed, the failed tools are logged and are noted in the help.
@@ -225,7 +225,7 @@ class helpClass:
 
     # Open each tool file, check that it is a valid json file and get the tool description and
     # whether the tool is hidden.
-    for filename in gknoConfig.jsonFiles['tools']:
+    for filename in jsonFiles['tools']:
       filePath           = toolConfigurationFilesPath + filename
       tool               = filename[:len(filename) - 5]
 
@@ -267,7 +267,7 @@ class helpClass:
       if len(tool) > self.toolLength: self.toolLength = len(tool)
 
   # Get information on pipelines.
-  def getPipelines(self, config, gknoConfig, pipelineConfigurationFilesPath):
+  def getPipelines(self, config, jsonFiles, pipelineConfigurationFilesPath):
 
     # Some tools may have malformed configuration files. Instead of failing when those files are
     # processed, the failed tools are logged and are noted in the help.
@@ -275,7 +275,7 @@ class helpClass:
 
     # Open each pipeline file, check that it is a valid json file and get the pipeline description and
     # whether the tool is hidden.
-    for filename in gknoConfig.jsonFiles['pipelines']:
+    for filename in jsonFiles['pipelines']:
       filePath = pipelineConfigurationFilesPath + filename
       pipeline = filename[:len(filename) - 5]
 
@@ -288,7 +288,7 @@ class helpClass:
 
       if openFileSuccess:
         config.pipeline.clearPipeline()
-        success = config.pipeline.processConfigurationData(configurationData, pipeline, gknoConfig.jsonFiles['tools'], self.allowedPipelineCategories, allowTermination = False)
+        success = config.pipeline.processConfigurationData(configurationData, pipeline, jsonFiles['tools'], self.allowedPipelineCategories, allowTermination = False)
 
         try: description = config.pipeline.getPipelineAttribute('description')
         except: description = 'Description could not be found.'
@@ -478,7 +478,7 @@ class helpClass:
     else: self.writePipelineCategories()
 
   # Print out tool usage.
-  def writeSpecificToolUsage(self, graph, config, gknoConfig, tool, toolConfigurationFilesPath, parameterSetName):
+  def writeSpecificToolUsage(self, graph, config, jsonFiles, tool, toolConfigurationFilesPath, parameterSetName):
     print('===================', file = sys.stdout)
     print('  gkno tool usage', file = sys.stdout)
     print('===================', file = sys.stdout)
@@ -496,7 +496,7 @@ class helpClass:
     sys.stdout.flush()
 
     # If this pipeline has different parameter sets, print them to screen.
-    self.getParameterSets(graph, config, gknoConfig, toolConfigurationFilesPath, '', 'tool', tool)
+    self.getParameterSets(graph, config, jsonFiles, toolConfigurationFilesPath, '', 'tool', tool)
     if config.parameterSets.parameterSetAttributes[tool]:
 
       # Determine the longest parameter set name.
@@ -556,7 +556,7 @@ class helpClass:
       sys.stdout.flush()
 
   # Get parameter set information.
-  def getParameterSets(self, graph, config, gknoConfig, toolConfigurationFilesPath, pipelineConfigurationFilesPath, mode, name):
+  def getParameterSets(self, graph, config, jsonFiles, toolConfigurationFilesPath, pipelineConfigurationFilesPath, mode, name):
 
     # Define information based on whether a tool or pipeline is being run.
     if mode == 'tool':
@@ -577,7 +577,7 @@ class helpClass:
     config.parameterSets.checkParameterSets(graph, name, configurationData['parameter sets'], isPipeline, isExternal = False)
 
     # Now get any external parameter sets.
-    if externalFilename + '.json' in gknoConfig.jsonFiles[text]:
+    if externalFilename + '.json' in jsonFiles[text]:
       configurationData = config.fileOperations.readConfigurationFile(externalFilePath)
       config.parameterSets.checkParameterSets(graph, name, configurationData['parameter sets'], isPipeline, isExternal = True)
 
@@ -635,7 +635,7 @@ class helpClass:
 
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
-  def writeSpecificPipelineUsage(self, graph, config, gknoConfig, name, toolConfigurationFilesPath, parameterSetName):
+  def writeSpecificPipelineUsage(self, graph, config, jsonFiles, name, toolConfigurationFilesPath, parameterSetName):
     length = len(name) + 26
     print('=' * length)
     print('  gkno pipeline usage - ', name, sep = '', file = sys.stdout)
@@ -739,7 +739,7 @@ class helpClass:
     length = 0
     for task in config.pipeline.workflow: length = len(task) if (len(task) > length) else length
 
-    self.getTools(config, gknoConfig, toolConfigurationFilesPath)
+    self.getTools(config, jsonFiles, toolConfigurationFilesPath)
     for task in sorted(config.pipeline.workflow):
       associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
       if associatedTool in self.availableTools: isHidden = self.availableTools[associatedTool][1]

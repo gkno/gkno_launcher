@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.37.0"
+__version__ = "1.37.1"
 __date__ = "October 2014"
 
 def main():
@@ -120,6 +120,9 @@ def main():
   # Class for determine status of execution.
   status = gknoStatus()
 
+  # Define a class for handling the json files.
+  fileMethods = files()
+
   # Define a help class.  This provides usage information for the user. Also define an object used
   # for writing to screen.
   gknoHelp = helpClass()
@@ -146,10 +149,10 @@ def main():
   # purpose etc.  These are contained in config_files/tools.  Find all of the config files
   # and create a hash table with all available tools.
   if isDebug: write.writeDebug('Finding all json configuration files.')
-  gknoConfig.getJsonFiles(configurationFilesPath)
+  jsonFiles = fileMethods.getJsonFiles(configurationFilesPath)
 
   # Check if the pipeline/tool name is valid.
-  if commands.mode != 'admin': gknoConfig.checkPipelineName(gknoHelp, isPipeline, runName, commands.mode)
+  if commands.mode != 'admin': fileMethods.checkPipelineName(commands.mode, runName)
   if isDebug: write.writeDebug('Checked pipeline name.')
 
   # Check if a parameter set has been selected. If so, store the name of the parameter set.
@@ -162,7 +165,7 @@ def main():
   # Check if help has been requested on the command line.  Search for the '--help'
   # or '-h' arguments on the command line. If help has been requested, print out the required
   # help.
-  gknoHelp.checkForHelp(pipelineGraph, config, gknoConfig, isPipeline, runName, admin, commands.mode, toolConfigurationFilesPath, pipelineConfigurationFilesPath, parameterSetName)
+  gknoHelp.checkForHelp(pipelineGraph, config, jsonFiles, isPipeline, runName, admin, commands.mode, toolConfigurationFilesPath, pipelineConfigurationFilesPath, parameterSetName)
 
   # No admin mode requested. Prepare to setup our tool or pipeline run.
   if not admin.isRequested:
@@ -180,9 +183,9 @@ def main():
       phoneHomeID               = 'pipes/' + runName
       filename                  = pipelineConfigurationFilesPath + runName + '.json'
       pipelineConfigurationData = config.fileOperations.readConfigurationFile(filename)
-      config.pipeline.processConfigurationData(pipelineConfigurationData, runName, gknoConfig.jsonFiles['tools'], gknoHelp.allowedPipelineCategories, allowTermination = True)
+      config.pipeline.processConfigurationData(pipelineConfigurationData, runName, jsonFiles['tools'], gknoHelp.allowedPipelineCategories, allowTermination = True)
       config.parameterSets.checkParameterSets(pipelineGraph, runName, pipelineConfigurationData['parameter sets'], isPipeline, isExternal = False)
-      config.parameterSets.checkExternalParameterSets(pipelineGraph, config.fileOperations, filename, runName, gknoConfig.jsonFiles['tools'], isPipeline)
+      config.parameterSets.checkExternalParameterSets(pipelineGraph, config.fileOperations, filename, runName, jsonFiles['tools'], isPipeline)
       config.parameterSets.getLongFormArguments(pipelineGraph, config.edgeMethods, config.tools, config.pipeline, runName, isPipeline)
       del(pipelineConfigurationData)
       if isDebug: write.writeDebug('Processed pipeline configuration file.')
@@ -214,7 +217,7 @@ def main():
         # Read the parameter set information for each tool and store in config.parameterSets. Default parameters for all
         # tools will be used, and then overwritten by pipeline parameter set information, command lined arguments etc.
         config.parameterSets.checkParameterSets(pipelineGraph, tool, toolConfigurationData['parameter sets'], False, isExternal = False)
-        config.parameterSets.checkExternalParameterSets(pipelineGraph, config.fileOperations, toolFile, tool, gknoConfig.jsonFiles['tools'], False)
+        config.parameterSets.checkExternalParameterSets(pipelineGraph, config.fileOperations, toolFile, tool, jsonFiles['tools'], False)
         config.parameterSets.getLongFormArguments(pipelineGraph, config.edgeMethods, config.tools, config.pipeline, runName, isPipeline)
         del(toolConfigurationData)
 
@@ -277,7 +280,7 @@ def main():
     # in data structures.  Each tool in each configuration file gets its own data structure.
     config.tools.processConfigurationData(runName, toolConfigurationData, gknoHelp.allowedToolCategories, allowTermination = True)
     config.parameterSets.checkParameterSets(pipelineGraph, runName, toolConfigurationData['parameter sets'], isPipeline, isExternal = False)
-    config.parameterSets.checkExternalParameterSets(pipelineGraph, config.fileOperations, toolFile, runName, gknoConfig.jsonFiles['tools'], isPipeline)
+    config.parameterSets.checkExternalParameterSets(pipelineGraph, config.fileOperations, toolFile, runName, jsonFiles['tools'], isPipeline)
     config.parameterSets.getLongFormArguments(pipelineGraph, config.edgeMethods, config.tools, config.pipeline, runName, isPipeline)
     del(toolConfigurationData)
 
@@ -330,7 +333,7 @@ def main():
   write.writeCheckingParameterSetInformation()
 
   # Check to see if the requested parameter set is available.
-  config.parameterSets.checkRequestedParameterSet(configurationFilesPath, runName, parameterSetName, gknoConfig.jsonFiles, isPipeline)
+  config.parameterSets.checkRequestedParameterSet(configurationFilesPath, runName, parameterSetName, jsonFiles, isPipeline)
 
   # Check to see if any of the parameter set arguments are gkno specific arguments. First check default
   # arguments, then the specified parameter set.
