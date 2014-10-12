@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.38.1"
+__version__ = "1.38.2"
 __date__ = "October 2014"
 
 def main():
@@ -151,10 +151,6 @@ def main():
   if isDebug: write.writeDebug('Finding all json configuration files.')
   jsonFiles = fileMethods.getJsonFiles(configurationFilesPath)
 
-  # Check if the pipeline/tool name is valid.
-  if commands.mode != 'admin': fileMethods.checkPipelineName(commands.mode, runName)
-  if isDebug: write.writeDebug('Checked pipeline name.')
-
   # Check if a parameter set has been selected. If so, store the name of the parameter set.
   parameterSetName = commands.getParameterSetName(pipelineGraph, config, isPipeline)
   if isDebug: write.writeDebug('Got parameter set name.')
@@ -166,6 +162,10 @@ def main():
   # or '-h' arguments on the command line. If help has been requested, print out the required
   # help.
   gknoHelp.checkForHelp(pipelineGraph, config, jsonFiles, isPipeline, runName, admin, commands.mode, toolConfigurationFilesPath, pipelineConfigurationFilesPath, parameterSetName)
+
+  # Check if the pipeline/tool name is valid.
+  if commands.mode != 'admin': fileMethods.checkPipelineName(commands.mode, runName)
+  if isDebug: write.writeDebug('Checked pipeline name.')
 
   # No admin mode requested. Prepare to setup our tool or pipeline run.
   if not admin.isRequested:
