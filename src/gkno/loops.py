@@ -70,7 +70,7 @@ class loops:
 
     # Validate the file and import the information into a data structure.
     filename = files[0].replace('$(RESOURCES)/', resourcePath) if files[0].startswith('$(RESOURCES)') else files[0]
-    data = config.fileOperations.readConfigurationFile(filename)
+    data     = config.fileOperations.readConfigurationFile(filename)
     self.validateMultipleRunsFiles(graph, config, filename, hasMultipleRuns, data, isPipeline, name)
 
     return hasMultipleRuns, hasInternalLoop
@@ -112,7 +112,7 @@ class loops:
     else: self.checkMultipleRunsArgumentsTool(graph, config, data, name, filename)
 
     # Now loop over all the data sets and store the argument values.
-    self.processValues(graph, config, data, filename, hasMultipleRuns)
+    self.processValues(graph, config, data, filename, hasMultipleRuns, isPipeline)
 
   # Check that all arguments in the multiple runs/internal loop file are valid for the current
   # pipeline.
@@ -137,6 +137,8 @@ class loops:
         # tool argument.
         task, toolArgument = config.pipeline.pipelineToTaskArgument[pipelineLongFormArgument][0]
         tool               = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+
+        # TODO IS THIS STILL REQUIRED AFTER LIST UPDATE?
         if config.tools.getArgumentAttribute(tool, toolArgument, 'listArgument'):
           try: linkedPipelineArgument = config.pipeline.taskArgument[task][config.tools.getArgumentAttribute(tool, toolArgument, 'listArgument')]
           except: print('ERROR - gknoConfigurationFiles.checkMultipleRunsArgumentsTool'); self.errors.terminate(); #TODO ERROR
@@ -196,7 +198,7 @@ class loops:
     data['arguments'] = deepcopy(argumentList)
 
   # Process the argument values in the multiple run/internal loop file.
-  def processValues(self, graph, config, data, filename, hasMultipleRuns):
+  def processValues(self, graph, config, data, filename, hasMultipleRuns, isPipeline):
 
     for iteration, dataSet in enumerate(data['values']):
       argumentList = data['arguments']
@@ -210,6 +212,7 @@ class loops:
       for argument, value in zip(argumentList, dataSet):
         self.argumentValues[argument][iteration + 1] = []
 
+        # TODO CHECK IF THIS IS STILL REQUIRED AFTER LIST UPDATE.
         # If this argument points to a list, open the file and add all the contained values to
         # the data structure.
         if argument in self.listArguments:
@@ -224,6 +227,37 @@ class loops:
           for dataValue in [name.strip() for name in listData]: values.append(dataValue)
           if not values: self.errors.emptyArgumentList(argument, value)
           self.argumentValues[argument][iteration + 1].append(values)
+
+        #TODO REMOVE THIS elif IF THE ABOVE IS REMOVED.
+        elif value.endswith('.list'):
+
+          # Check to see if the argument allows multiple values to be set.
+          if isPipeline:
+            pipelineLongFormArgument, pipelineShortFormArgument = config.pipeline.getLongFormArgument(graph, argument)
+            task, toolArgument = config.pipeline.pipelineToTaskArgument[pipelineLongFormArgument][0]
+            tool               = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+          
+          # TODO Handle tools.
+          else:
+            print('ERROR: loops.processValues - Not handled tools'); exit(0)
+
+          # If the tool argument does not allow multiple values, terminate.
+          isAllowMultipleValues = config.tools.getArgumentAttribute(tool, toolArgument, 'allowMultipleValues')
+          #TODO ERROR
+          if not isAllowMultipleValues: print('ERROR: loops.processValues - argument does not allow multiple values.'); exit(0)
+
+          # Open the file containing the list of values.
+          try: listValues = open(value)
+          except: self.errors.missingFileCommandLine(graph, config, argument, value)
+
+          # If there were already values assigned to this argument, append these to the new values.
+          values = []
+          for dataValue in self.argumentValues[argument][iteration + 1]: values.append(dataValue)
+
+          # Loop over all the values in the file and add them to the data structure,
+          for dataValue in [name.strip() for name in listValues]: values.append(dataValue)
+          if not values: self.errors.emptyArgumentList(argument, value)
+          self.argumentValues[argument][iteration + 1] = values
 
         else:
           self.argumentValues[argument][iteration + 1].append(str(value))

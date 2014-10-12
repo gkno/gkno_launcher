@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.37.1"
+__version__ = "1.38.0"
 __date__ = "October 2014"
 
 def main():
@@ -302,11 +302,6 @@ def main():
     write.writeDone()
   if isDebug: write.writeDebug('Parsed command line.')
 
-  # If help was requested or there were problems (e.g. the tool name or pipeline
-  # name did not exist), print out the required usage information.
-  #if gknoHelp.writeHelp and not gknoHelp.specificPipelineHelp:
-  #  gknoHelp.printUsage(pipelineGraph, config, gknoConfig, admin, toolConfigurationFilesPath, pipelineConfigurationFilesPath, runName, parameterSetName)
-
   # Populate the tl.arguments structure with the arguments with defaults from the tool configuration files.
   # The x.arguments structures for each of the classes used in gkno has the same format (a dictionary whose
   # keys are the names of tools: each tool is itself a dictionary of command line arguments, the value being
@@ -357,11 +352,13 @@ def main():
   write.writeDone()
   if isDebug: write.writeDebug('Checked parameter set information.')
 
-  # Attach the values of the pipeline arguments to the relevant nodes.
+  # Check to see if any of the arguments points to lists. If so, open the file list and populate the
+  # argument with all of the values.
   write.writeCheckingLists()
   hasMultipleRuns, hasInternalLoop = lists.checkForLists(pipelineGraph, config, gknoConfig, runName, commands.argumentDictionary)
   write.writeDone()
 
+  # Attach the values of the pipeline arguments to the relevant nodes.
   write.writeAssignPipelineArgumentsToNodes()
   if isPipeline: commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
   else: commands.attachToolArgumentsToNodes(pipelineGraph, config, gknoConfig)
