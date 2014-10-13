@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.38.3"
+__version__ = "1.38.4"
 __date__ = "October 2014"
 
 def main():
@@ -269,7 +269,7 @@ def main():
     # If help was requested on this specific pipeline, the information now exists to generate
     # the help information.
     if gknoHelp.specificPipelineHelp:
-      gknoHelp.writeSpecificPipelineUsage(pipelineGraph, config, gknoConfig, runName, toolConfigurationFilesPath, parameterSetName)
+      gknoHelp.writeSpecificPipelineUsage(pipelineGraph, config, jsonFiles, runName, toolConfigurationFilesPath, parameterSetName)
 
   # If being run in the tool mode.
   elif commands.mode == 'tool':
