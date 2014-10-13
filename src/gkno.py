@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.38.4"
+__version__ = "1.38.5"
 __date__ = "October 2014"
 
 def main():
@@ -218,7 +218,7 @@ def main():
         # tools will be used, and then overwritten by pipeline parameter set information, command lined arguments etc.
         config.parameterSets.checkParameterSets(pipelineGraph, tool, toolConfigurationData['parameter sets'], False, isExternal = False)
         config.parameterSets.checkExternalParameterSets(pipelineGraph, config.fileOperations, toolFile, tool, jsonFiles['tools'], False)
-        config.parameterSets.getLongFormArguments(pipelineGraph, config.edgeMethods, config.tools, config.pipeline, runName, isPipeline)
+        config.parameterSets.getLongFormArguments(pipelineGraph, config.edgeMethods, config.tools, config.pipeline, tool, False)
         del(toolConfigurationData)
 
     if isDebug: write.writeDebug('Got parameter set information for pipeline tools.')

@@ -384,7 +384,7 @@
         },
         {
           "ID" : "reference",
-          "argument" : "-f",
+          "argument" : "--fasta-reference",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
         },
         {

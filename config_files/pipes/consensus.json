@@ -257,10 +257,10 @@
     {
       "ID" : "bam",
       "description" : "The input BAM file(s).",
-      "long form argument" : "-bam",
-      "short form argument" : "-b",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
       "tasks" : {
-        "generate-config" : "--bam",
+        "generate-config" : "--in",
         "merge-bams" : "--in",
         "merge-bams-graph" : "--in"
       }
@@ -322,43 +322,43 @@
       "description" : "Convert pindel output to vcf.",
       "tasks" : {
         "breakpoint-discovery" : "--out",
-        "convert-BP-to-vcf" : "--pindel-file",
-        "convert-CloseEndMapped-to-vcf" : "--pindel-file",
-        "convert-D-to-vcf" : "--pindel-file",
-        "convert-INT-final-to-vcf" : "--pindel-file",
-        "convert-INV-to-vcf" : "--pindel-file",
-        "convert-LI-to-vcf" : "--pindel-file",
-        "convert-RP-to-vcf" : "--pindel-file",
-        "convert-SI-to-vcf" : "--pindel-file",
-        "convert-TD-to-vcf" : "--pindel-file"
+        "convert-BP-to-vcf" : "--in",
+        "convert-CloseEndMapped-to-vcf" : "--in",
+        "convert-D-to-vcf" : "--in",
+        "convert-INT-final-to-vcf" : "--in",
+        "convert-INV-to-vcf" : "--in",
+        "convert-LI-to-vcf" : "--in",
+        "convert-RP-to-vcf" : "--in",
+        "convert-SI-to-vcf" : "--in",
+        "convert-TD-to-vcf" : "--in"
       },
       "extensions" : {
         "convert-BP-to-vcf" : {
-          "--pindel-file" : "_BP"
+          "--in" : "_BP"
         },
         "convert-CloseEndMapped-to-vcf" : {
-          "--pindel-file" : "_CloseEndMapped"
+          "--in" : "_CloseEndMapped"
         },
         "convert-D-to-vcf" : {
-          "--pindel-file" : "_D"
+          "--in" : "_D"
         },
         "convert-INT-final-to-vcf" : {
-          "--pindel-file" : "_INT_final"
+          "--in" : "_INT_final"
         },
         "convert-INV-to-vcf" : {
-          "--pindel-file" : "_INV"
+          "--in" : "_INV"
         },
         "convert-LI-to-vcf" : {
-          "--pindel-file" : "_LI"
+          "--in" : "_LI"
         },
         "convert-RP-to-vcf" : {
-          "--pindel-file" : "_RP"
+          "--in" : "_RP"
         },
         "convert-SI-to-vcf" : {
-          "--pindel-file" : "_SI"
+          "--in" : "_SI"
         },
         "convert-TD-to-vcf" : {
-          "--pindel-file" : "_TD"
+          "--in" : "_TD"
         }
       }
     },
@@ -400,10 +400,10 @@
       "ID" : "combine-BP",
       "description" : "combine BP vcf files",
       "tasks" : {
-        "convert-BP-to-vcf" : "--vcf"
+        "convert-BP-to-vcf" : "--out"
       },
       "greedy tasks" : {
-        "combine-BP-vcf" : "--vcf"
+        "combine-BP-vcf" : "--in"
       },
       "delete files" : true
     },
@@ -411,10 +411,10 @@
       "ID" : "combine-CloseEndMapped",
       "description" : "combine CloseEndMapped vcf files",
       "tasks" : {
-        "convert-CloseEndMapped-to-vcf" : "--vcf"
+        "convert-CloseEndMapped-to-vcf" : "--out"
       },
       "greedy tasks" : {
-        "combine-CloseEndMapped-vcf" : "--vcf"
+        "combine-CloseEndMapped-vcf" : "--in"
       },
       "delete files" : true
     },
@@ -422,10 +422,10 @@
       "ID" : "combine-D",
       "description" : "combine D vcf files",
       "tasks" : {
-        "convert-D-to-vcf" : "--vcf"
+        "convert-D-to-vcf" : "--out"
       },
       "greedy tasks" : {
-        "combine-D-vcf" : "--vcf"
+        "combine-D-vcf" : "--in"
       },
       "delete files" : true
     },
@@ -433,10 +433,10 @@
       "ID" : "combine-INT-final",
       "description" : "combine INT-final vcf files",
       "tasks" : {
-        "convert-INT-final-to-vcf" : "--vcf"
+        "convert-INT-final-to-vcf" : "--out"
       },
       "greedy tasks" : {
-        "combine-INT-final-vcf" : "--vcf"
+        "combine-INT-final-vcf" : "--in"
       },
       "delete files" : true
     },
@@ -444,10 +444,10 @@
       "ID" : "combine-INV",
       "description" : "combine INV vcf files",
       "tasks" : {
-        "convert-INV-to-vcf" : "--vcf"
+        "convert-INV-to-vcf" : "--out"
       },
       "greedy tasks" : {
-        "combine-INV-vcf" : "--vcf"
+        "combine-INV-vcf" : "--in"
       },
       "delete files" : true
     },
@@ -455,10 +455,10 @@
       "ID" : "combine-LI",
       "description" : "combine LI vcf files",
       "tasks" : {
-        "convert-LI-to-vcf" : "--vcf"
+        "convert-LI-to-vcf" : "--out"
       },
       "greedy tasks" : {
-        "combine-LI-vcf" : "--vcf"
+        "combine-LI-vcf" : "--in"
       },
       "delete files" : true
     },
@@ -466,10 +466,10 @@
       "ID" : "combine-RP",
       "description" : "combine RP vcf files",
       "tasks" : {
-        "convert-RP-to-vcf" : "--vcf"
+        "convert-RP-to-vcf" : "--out"
       },
       "greedy tasks" : {
-        "combine-RP-vcf" : "--vcf"
+        "combine-RP-vcf" : "--in"
       },
       "delete files" : true
     },
@@ -477,10 +477,10 @@
       "ID" : "combine-SI",
       "description" : "combine SI vcf files",
       "tasks" : {
-        "convert-SI-to-vcf" : "--vcf"
+        "convert-SI-to-vcf" : "--out"
       },
       "greedy tasks" : {
-        "combine-SI-vcf" : "--vcf"
+        "combine-SI-vcf" : "--in"
       },
       "delete files" : true
     },
@@ -488,10 +488,10 @@
       "ID" : "combine-TD",
       "description" : "combine TD vcf files",
       "tasks" : {
-        "convert-TD-to-vcf" : "--vcf"
+        "convert-TD-to-vcf" : "--out"
       },
       "greedy tasks" : {
-        "combine-TD-vcf" : "--vcf"
+        "combine-TD-vcf" : "--in"
       },
       "delete files" : true
     },
@@ -579,7 +579,7 @@
       "description" : "Call variants on the BAM file using freebayes.",
       "tasks" : {
         "merge-bams" : "--out",
-        "freebayes" : "--bam"
+        "freebayes" : "--in"
       }
     },
     {
@@ -666,10 +666,10 @@
       "ID" : "combine-freebayes",
       "description" : "Combine Freebayes vcf files.",
       "tasks" : {
-        "freebayes" : "--vcf"
+        "freebayes" : "--out"
       },
       "greedy tasks" : {
-        "combine-freebayes" : "--vcf"
+        "combine-freebayes" : "--in"
       },
       "delete files" : true
     },
@@ -698,7 +698,7 @@
         "compress-BP-vcf" : "--out"
       },
       "tasks" : {
-        "generate-BP-sites" : "--vcf"
+        "generate-BP-sites" : "--in"
       }
     },
     {
@@ -724,7 +724,7 @@
         "compress-CloseEndMapped-vcf" : "--out"
       },
       "tasks" : {
-        "generate-CloseEndMapped-sites" : "--vcf"
+        "generate-CloseEndMapped-sites" : "--in"
       }
     },
     {
@@ -750,7 +750,7 @@
         "compress-D-vcf" : "--out"
       },
       "tasks" : {
-        "generate-D-sites" : "--vcf"
+        "generate-D-sites" : "--in"
       }
     },
     {
@@ -776,7 +776,7 @@
         "compress-INT-final-vcf" : "--out"
       },
       "tasks" : {
-        "generate-INT-final-sites" : "--vcf"
+        "generate-INT-final-sites" : "--in"
       }
     },
     {
@@ -802,7 +802,7 @@
         "compress-INV-vcf" : "--out"
       },
       "tasks" : {
-        "generate-INV-sites" : "--vcf"
+        "generate-INV-sites" : "--in"
       }
     },
     {
@@ -828,7 +828,7 @@
         "compress-LI-vcf" : "--out"
       },
       "tasks" : {
-        "generate-LI-sites" : "--vcf"
+        "generate-LI-sites" : "--in"
       }
     },
     {
@@ -854,7 +854,7 @@
         "compress-RP-vcf" : "--out"
       },
       "tasks" : {
-        "generate-RP-sites" : "--vcf"
+        "generate-RP-sites" : "--in"
       }
     },
     {
@@ -880,7 +880,7 @@
         "compress-SI-vcf" : "--out"
       },
       "tasks" : {
-        "generate-SI-sites" : "--vcf"
+        "generate-SI-sites" : "--in"
       }
     },
     {
@@ -906,7 +906,7 @@
         "compress-TD-vcf" : "--out"
       },
       "tasks" : {
-        "generate-TD-sites" : "--vcf"
+        "generate-TD-sites" : "--in"
       }
     },
     {
@@ -932,7 +932,7 @@
         "compress-freebayes" : "--out"
       },
       "tasks" : {
-        "generate-freebayes-sites" : "--vcf"
+        "generate-freebayes-sites" : "--in"
       }
     },
     {
@@ -967,7 +967,7 @@
         "compress-TD-sites" : "--out"
       },
       "tasks" : {
-        "combine-all" : "--vcf"
+        "combine-all" : "--in"
       }
     },
     {
@@ -986,7 +986,7 @@
         "index-TD-sites" : "--out"
       },
       "tasks" : {
-        "combine-all" : "--vcf-index"
+        "combine-all" : "--index"
       }
     },
     {
@@ -1075,7 +1075,7 @@
       "description" : "Call variants using the variant graph.",
       "tasks" : {
         "merge-bams-graph" : "--out",
-        "variant-graph-align" : "--bam"
+        "variant-graph-align" : "--in"
       }
     },
     {
@@ -1094,7 +1094,7 @@
       "ID" : "union-vcf-index",
       "description" : "The genome DAG index.",
       "tasks" : {
-        "variant-graph-align" : "--vcf-index"
+        "variant-graph-align" : "--index"
       },
       "originating edges" : {
         "index-union" : "--out"
@@ -1113,17 +1113,17 @@
       "description" : "Call variants from the realigned BAM file.",
       "tasks" : {
         "sort-alignments" : "--out",
-        "call-final-variants" : "--bam"
+        "call-final-variants" : "--in"
       }
     },
     {
       "ID" : "combine-regional",
       "description" : "Combine the regional VCF files.",
       "tasks" : {
-        "call-final-variants" : "--vcf"
+        "call-final-variants" : "--out"
       },
       "greedy tasks" : {
-        "combine-regional-variants" : "--vcf"
+        "combine-regional-variants" : "--in"
       },
       "delete files" : true
     },
@@ -1263,6 +1263,46 @@
           "ID" : "ref date",
           "argument" : "--reference-date",
           "values" : ["2009"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "nodes" : [
+        {
+          "ID" : "bam",
+          "argument" : "--in",
+          "values" : [
+            "$(RESOURCES)/tutorial/current/mutated_genome.bam",
+            "$(RESOURCES)/tutorial/current/mutated_genome_set2.bam"
+          ]
+        },
+        {
+          "ID" : "reference-name",
+          "argument" : "--reference-name",
+          "values" : ["REF"]
+        },
+        {
+          "ID" : "reference-date",
+          "argument" : "--reference-date",
+          "values" : [2014]
+        },
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "ID" : "region",
+          "argument" : "--region",
+          "values" : [20]
+        },
+        {
+          "ID" : "insert",
+          "argument" : "--insert",
+          "values" : [200]
         }
       ]
     }
