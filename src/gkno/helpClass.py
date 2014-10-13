@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from __future__ import print_function
+from difflib import SequenceMatcher
 
 import gknoErrors
 from gknoErrors import *
@@ -435,10 +436,12 @@ class helpClass:
     print('====================', file = sys.stdout)
     print(file = sys.stdout)
 
-    # Check that the requested category is valid.
+    # Check that the requested category is valid. If not, find the closest category to that written.
+    isInvalidCategory = False
     if category not in allowedCategories:
-      self.invalidCategory(isToolHelp, allowedCategories, category)
-      exit(0)
+      isInvalidCategory = True
+      providedCategory  = category
+      category          = self.findCategory(category, allowedCategories)
 
     runType = 'tools' if isToolHelp else 'pipelines'
     self.writeFormattedText('', 'Following is a list of ' + runType + ' in the category \'' + category + '\'', 0, 1, '')
@@ -464,18 +467,39 @@ class helpClass:
       printValue  = value + ": "
       self.writeFormattedText(printValue, description, length + 2, 2, '')
 
+    # If the entered category did not exactly match one of the supplied categories, provide
+    # a warning that the provided list was based on the assumed most likely category.
+    if isInvalidCategory: self.invalidCategory(providedCategory, category)
+
+  # Compare the given category against all the available categories and determine which
+  # was the most likely.
+  def findCategory(self, category, allowedCategories):
+    maxRatio           = 0
+    mostLikelyCategory = ''
+    for allowedCategory in allowedCategories:
+      match = SequenceMatcher(None, allowedCategory, category)
+      ratio = match.ratio()
+      if ratio > maxRatio:
+        maxRatio           = ratio
+        mostLikelyCategory = allowedCategory
+
+    return mostLikelyCategory
+
   # If the requested category is not available, write out the available categories.
-  def invalidCategory(self, isToolHelp, allowedCategories, category):
+  def invalidCategory(self, providedCategory, category):
 
     # Suppress writing the header when writing available categories.
     self.suppressHeader = True
 
     # Define text for the output message.
-    runType         = 'tool' if isToolHelp else 'pipeline'
-    self.writeFormattedText('', 'The requested category \'' + category + '\' is not valid. The available ' + runType + ' categories are:', 0, 1, '')
     print(file = sys.stdout)
-    if isToolHelp: self.writeToolCategories()
-    else: self.writePipelineCategories()
+    print('===============', file = sys.stdout)
+    print('    WARNING    ', file = sys.stdout)
+    print('===============', file = sys.stdout)
+    print(file = sys.stdout)
+    self.writeFormattedText('', 'The requested category \'' + providedCategory + '\' is not valid. The shown tools are available ' + \
+    'in the \'' + category + '\' category. If this was not the desired category, please check the command line.', 0, 1, '')
+    print(file = sys.stdout)
 
   # Print out tool usage.
   def writeSpecificToolUsage(self, graph, config, jsonFiles, tool, toolConfigurationFilesPath, parameterSetName):
