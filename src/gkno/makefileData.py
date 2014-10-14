@@ -752,8 +752,9 @@ class makefileData:
           # applied.
           valueList = self.valueMethods.modifyArgumentValues(config, tool, argument, valueList)
  
-          # Determine if the value is to be contained in qutotaion marks.
+          # Determine if the value is to be contained in qutotaion marks or spaces.
           inQuotations = config.tools.getArgumentAttribute(tool, argument, 'inQuotations')
+          inSpaces     = config.tools.getArgumentAttribute(tool, argument, 'inSpaces')
   
           # Write the arguments and or values to the makefile.
           for valueCounter, value in enumerate(valueList):
@@ -778,8 +779,9 @@ class makefileData:
                 if value: value = 'true'  
                 else: value = 'false'
 
-              # Modify the value to include qutation marks if necessary.
+              # Modify the value to include qutation marks and/or if necessary.
               if inQuotations: value = str('"') + str(value) + str('"')
+              if inSpaces: value = self.addSpaces(value)
 
               # If the argument has been modified due to receiving an input stream, use the given argument.
               if useArgument:
@@ -1040,3 +1042,39 @@ class makefileData:
         arguments[argument].append((optionNodeID, values))
 
     return arguments
+
+  # Add spaces around operators. Note that the operator may be a single operator, e.g. '>',
+  # or multiple, e.g. '>='. Assume that there is, at most, only one compound operator in the
+  # string.
+  def addSpaces(self, value):
+    hasOperator   = False
+    firstPosition = 0
+    lastPosition  = 0
+
+    # Define allowed operators.
+    operators = []
+    operators.append('=')
+    operators.append('>')
+    operators.append('<')
+    operators.append('!')
+
+    # Find the position of the first operator in the string.
+    for counter, character in enumerate(value):
+      if character in operators:
+        firstPosition = counter
+        hasOperator   = True
+        break
+
+    # If no operator was found, return the original value.
+    if not hasOperator: return value
+
+    for counter, character in enumerate(reversed(value)):
+      if character in operators:
+        lastPosition = counter
+        break
+
+    # The counter was running backwards, so find the position relative to the start of the string.
+    lastPosition = len(value) - lastPosition
+
+    # Return the modified value.
+    return str(value[0: firstPosition] + ' ' + value[firstPosition: lastPosition] + ' ' + value[lastPosition: len(value)])

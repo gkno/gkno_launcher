@@ -54,7 +54,8 @@
         "allow multiple values" : true,
         "extensions" : ["no extension"],
         "data type" : "string",
-        "include value in quotations" : true
+        "include value in quotations" : true,
+        "place spaces around operator" : true
       },
       {
         "description" : "Specifies a filter to apply to the genotype fields of records.",
