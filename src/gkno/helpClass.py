@@ -901,22 +901,10 @@ class helpClass:
     print('Usage: gkno pipe <pipeline name> [options]', file = sys.stdout)
     print(file = sys.stdout)
 
-    # Sort all of the pipelines into their groups.
-    pipelineGroups = {}
-    for pipeline in self.availablePipelines.keys():
-
-      # Get the pipeline group to which this tool belongs.
-      pipelineGroup = self.availablePipelines[pipeline][1]
-      if pipelineGroup not in pipelineGroups: pipelineGroups[pipelineGroup] = []
-      pipelineGroups[pipelineGroup].append(pipeline)
-    sortedGroups = sorted(list(pipelineGroups.keys()))
-
     # Write the pipelines to screen.
-    for pipelineGroup in sortedGroups:
-      print('     ', pipelineGroup, ':', sep = '', file = sys.stdout)
-      for pipeline in pipelineGroups[pipelineGroup]:
-        self.writeFormattedText(pipeline + ':', self.availablePipelines[pipeline][0], self.pipelineLength + 5, 2, '')
-      print(file = sys.stdout)
+    sortedPipelines = sorted(list(self.availablePipelines.keys()))
+    for pipeline in sortedPipelines: self.writeFormattedText(pipeline + ':', self.availablePipelines[pipeline][0], self.pipelineLength + 5, 2, '')
+    print(file = sys.stdout)
 
     # Write the developmental pipelines to screen.
     if self.developmentalPipelines:
