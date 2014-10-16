@@ -1,0 +1,153 @@
+{
+  "description" : "Prepare BAM file for the haplotype caller and generate gvcf files for each sample.",
+  "categories" : ["BAM-processing", "Variant-discovery"],
+
+  "tasks" : {
+    "create-target-intervals" : {
+      "tool" : "gatk-realigner-target-creator"
+    },
+    "realign-indels" : {
+      "tool" : "gatk-indel-realigner"
+    },
+    "index-realigned" : {
+      "tool" : "bamtools-index"
+    },
+    "recalibrate" : {
+      "tool" : "gatk-recalibrate-bq"
+    },
+    "index-recalibrated" : {
+      "tool" : "bamtools-index"
+    },
+    "print-reads" : {
+      "tool" : "gatk-print-reads"
+    },
+    "single-sample-call" : {
+      "tool" : "gatk-haplotype-caller"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "input",
+      "description" : "The input bam files.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "tasks" : {
+        "create-target-intervals" : "--in",
+        "realign-indels" : "--in"
+      }
+    },
+    {
+      "ID" : "reference",
+      "description" : "The FASTA reference.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "tasks" : {
+        "create-target-intervals" : "--fasta-reference",
+        "realign-indels" : "--fasta-reference",
+        "recalibrate" : "--fasta-reference",
+        "print-reads" : "--fasta-reference",
+        "single-sample-call" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "known-alleles",
+      "description" : "Known variant alleles.",
+      "long form argument" : "--known-sites",
+      "short form argument" : "-k",
+      "tasks" : {
+        "create-target-intervals" : "--known-sites",
+        "realign-indels" : "--known-sites",
+        "recalibrate" : "--known-sites"
+      }
+    },
+    {
+      "ID" : "region",
+      "description" : "The genomic regions to analyze.",
+      "long form argument" : "--region",
+      "short form argument" : "-rg",
+      "tasks" : {
+        "create-target-intervals" : "--region",
+        "single-sample-call" : "--region"
+      }
+    },
+    {
+      "ID" : "intervals",
+      "description" : "Indel target regions.",
+      "tasks" : {
+        "create-target-intervals" : "--out",
+        "realign-indels" : "--intervals"
+      }
+    },
+    {
+      "ID" : "indel-realigned",
+      "description" : "Index the indel realigned BAM files.",
+      "tasks" : {
+        "realign-indels" : "--out",
+        "index-realigned" : "--in",
+        "recalibrate" : "--in",
+        "print-reads" : "--in"
+      }
+    },
+    {
+      "ID" : "indel-index",
+      "description" : "The realigned BAM index is required.",
+      "tasks" : {
+        "index-realigned" : "--out",
+        "recalibrate" : "--in-index",
+        "print-reads" : "--in-index"
+      }
+    },
+    {
+      "ID" : "dbsnp",
+      "description" : "The dbSNP database.",
+      "long form argument" : "--dbsnp",
+      "short form argument" : "-d",
+      "tasks" : {},
+      "additional nodes" : {
+        "recalibrate" : "--known-sites"
+      }
+    },
+    {
+      "ID" : "recalibration-output",
+      "description" : "The output recalibration table.",
+      "tasks" : {
+        "recalibrate" : "--out",
+        "print-reads" : "--recalibration-table"
+      }
+    },
+    {
+      "ID" : "index-recalibrated",
+      "description" : "Index the recalibrated BAM file.",
+      "tasks" : {
+        "print-reads" : "--out",
+        "index-recalibrated" : "--in",
+        "single-sample-call" : "--in"
+      }
+    },
+    {
+      "ID" : "single-index",
+      "description" : "The haplotype caller needs the BAM index.",
+      "tasks" : {
+        "index-recalibrated" : "--out",
+        "single-sample-call" : "--in-index"
+      }
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

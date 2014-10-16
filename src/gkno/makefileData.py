@@ -387,13 +387,6 @@ class makefileData:
       # Loop over the iterations.
       for counter in range(minIteration, maxIteration + 1):
 
-        # Determine the task in which each intermediate file is last used. This will allow the files to
-        # be deleted as early as possible in the pipeline.
-        #FIXME REMOVE
-        #deleteList = {}
-        #if graphIntermediates: deleteList = config.setWhenToDeleteFiles(graph, graphIntermediates)
-        #print('BOB', deleteList)
-
         # Loop over all the tasks in this piped grouping to find the dependencies and outputs. An output that
         # is piped into the next tool is not an output and shouldn't be considered. Similarly, an input stream
         # should not be included.
@@ -642,9 +635,9 @@ class makefileData:
         else:
 
           # Determine if this argument is a flag or a file.
-          isFlag    = True if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag' else False
-          isFile    = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile')
-          isGreedy  = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isGreedy')
+          isFlag   = True if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag' else False
+          isFile   = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile')
+          isGreedy = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'isGreedy')
   
           # If this argument is greedy, put all values into the first iteration.
           if isGreedy and len(values) != 1:
@@ -654,7 +647,7 @@ class makefileData:
   
           # Deal with arguments that are not greedy.
           else:
-  
+
             # If the iteration exists, put the values into valueList.
             if iteration in values: valueList = values[iteration]
   

@@ -77,6 +77,7 @@ class helpClass:
     self.allowedToolCategories['BWA']                     = 'BWA mapping and file processing.',
     self.allowedToolCategories['FASTA-processing']        = 'Tools for processing FASTA files.'
     self.allowedToolCategories['FASTQ-processing']        = 'Tools for processing FASTQ files.'
+    self.allowedToolCategories['GATK']                    = 'GATK tools.'
     self.allowedToolCategories['Genome-regions']          = 'Tools to manipulate genome region coordinates.'
     self.allowedToolCategories['General-file-processing'] = 'Tools for processing files.'
     self.allowedToolCategories['Jellyfish']               = 'Jellyfish package tools.'

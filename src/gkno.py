@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.38.8"
+__version__ = "1.38.9"
 __date__ = "October 2014"
 
 def main():
@@ -324,6 +324,11 @@ def main():
       else: errors.failedToolBuilds(admin.builtTools)
     else: errors.terminate()
   
+  # Check if the pipeline configuration file contains any 'additional nodes'. If so, build them into the graph.
+  if isPipeline:
+    config.processAdditionalNodes(pipelineGraph)
+    config.connectPipelineArgumentsFromAdditionalNodes(pipelineGraph)
+
   # Check if a parameter set was requested by the user.  If so, get the data and add the values to the data nodes.
   write.writeCheckingParameterSetInformation()
 

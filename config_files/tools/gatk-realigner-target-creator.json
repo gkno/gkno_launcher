@@ -1,6 +1,6 @@
 {
-  "id" : "gatk-recalibrate-bq",
-  "description" : "Recalibrate base qualities.",
+  "id" : "gatk-realigner-target-creator",
+  "description" : "Create a list of target intervals.",
   "categories" : ["GATK"],
   "tools" : ["gatk"],
   "path" : "gatk",
@@ -61,31 +61,22 @@
         "description" : "A vcf file containing known variant sites.",
         "long form argument" : "--known-sites",
         "short form argument" : "-k",
-        "command line argument" : "--knownSites",
+        "command line argument" : "--known",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".vcf", ".vcf.gz"],
-        "allow multiple values" : true
-      },
-      {
-        "description" : "A list of target intervals.",
-        "long form argument" : "--intervals",
-        "short form argument" : "-n",
-        "command line argument" : "--targetIntervals",
-        "data type" : "string",
-        "extensions" : [".intervals"]
+        "extensions" : [".vcf", ".vcf.gz"]
       }
     ],
 
     "outputs" : [
       {
-        "description" : "The output recalibration table.",
+        "description" : "The output covariates targets list.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "--out",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".table"],
+        "extensions" : [".intervals"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -136,7 +127,7 @@
         {
           "ID" : "analysis",
           "argument" : "--analysis-type",
-          "values" : ["BaseRecalibrator"]
+          "values" : ["RealignerTargetCreator"]
         }
       ]
     },

@@ -1,6 +1,6 @@
 {
-  "id" : "gatk-recalibrate-bq",
-  "description" : "Recalibrate base qualities.",
+  "id" : "gatk-print-reads",
+  "description" : "Write out reads to a BAM file.",
   "categories" : ["GATK"],
   "tools" : ["gatk"],
   "path" : "gatk",
@@ -58,38 +58,33 @@
         }
       },
       {
-        "description" : "A vcf file containing known variant sites.",
-        "long form argument" : "--known-sites",
-        "short form argument" : "-k",
-        "command line argument" : "--knownSites",
-        "required" : true,
+        "description" : "A recalibration table from the gatk-recalibrate-bq.",
+        "long form argument" : "--recalibration-table",
+        "short form argument" : "-t",
+        "command line argument" : "--BQSR",
         "data type" : "string",
-        "extensions" : [".vcf", ".vcf.gz"],
-        "allow multiple values" : true
-      },
-      {
-        "description" : "A list of target intervals.",
-        "long form argument" : "--intervals",
-        "short form argument" : "-n",
-        "command line argument" : "--targetIntervals",
-        "data type" : "string",
-        "extensions" : [".intervals"]
+        "extensions" : [".table"]
       }
     ],
 
     "outputs" : [
       {
-        "description" : "The output recalibration table.",
+        "description" : "The output recalibrated BAM file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "--out",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".table"],
+        "extensions" : [".bam"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
-          "modify extension" : "replace"
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_gatk_recalibrated"]
+            }
+          ]
         }
       }
     ],
@@ -136,7 +131,7 @@
         {
           "ID" : "analysis",
           "argument" : "--analysis-type",
-          "values" : ["BaseRecalibrator"]
+          "values" : ["PrintReads"]
         }
       ]
     },
@@ -154,11 +149,6 @@
           "ID" : "bam",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
-        },
-        {
-          "ID" : "dbSNP",
-          "argument" : "--known-sites",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"]
         },
         {
           "ID" : "output path",

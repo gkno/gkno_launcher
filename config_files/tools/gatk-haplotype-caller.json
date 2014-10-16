@@ -1,6 +1,6 @@
 {
-  "id" : "gatk-recalibrate-bq",
-  "description" : "Recalibrate base qualities.",
+  "id" : "gatk-haplotype-caller",
+  "description" : "Generate variants using the haplotype caller.",
   "categories" : ["GATK"],
   "tools" : ["gatk"],
   "path" : "gatk",
@@ -56,40 +56,27 @@
           "use argument" : "--in",
           "modify extension" : "append"
         }
-      },
-      {
-        "description" : "A vcf file containing known variant sites.",
-        "long form argument" : "--known-sites",
-        "short form argument" : "-k",
-        "command line argument" : "--knownSites",
-        "required" : true,
-        "data type" : "string",
-        "extensions" : [".vcf", ".vcf.gz"],
-        "allow multiple values" : true
-      },
-      {
-        "description" : "A list of target intervals.",
-        "long form argument" : "--intervals",
-        "short form argument" : "-n",
-        "command line argument" : "--targetIntervals",
-        "data type" : "string",
-        "extensions" : [".intervals"]
       }
     ],
 
     "outputs" : [
       {
-        "description" : "The output recalibration table.",
+        "description" : "The output VCF file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "--out",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".table"],
+        "extensions" : [".vcf"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
-          "modify extension" : "replace"
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : [".g"]
+            }
+          ]
         }
       }
     ],
@@ -119,6 +106,39 @@
         "command line argument" : "--intervals",
         "data type" : "string",
         "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Mode for emitting experimental reference confidence scores.",
+        "long form argument" : "--emit-reference-confidence",
+        "short form argument" : "-e",
+        "command line argument" : "--emitRefConfidence",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Type of IndexCreator to use for VCF/BCF indices (DYNAMIC_SEEK|DYNAMIC_SIZE|LINEAR|INTERVAL) [default: LINEAR].",
+        "long form argument" : "--variant-index-type",
+        "short form argument" : "-v",
+        "command line argument" : "--variant_index_type",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Parameter to pass to the VCF/BCF IndexCreator [default: 128000].",
+        "long form argument" : "--variant-index-parameter",
+        "short form argument" : "-p",
+        "command line argument" : "--variant_index_parameter",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "One or more specific annotations to apply to variant calls.",
+        "long form argument" : "--annotation",
+        "short form argument" : "-n",
+        "command line argument" : "--annotation",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "allow multiple values" : true
       }
     ]
   },
@@ -136,7 +156,27 @@
         {
           "ID" : "analysis",
           "argument" : "--analysis-type",
-          "values" : ["BaseRecalibrator"]
+          "values" : ["HaplotypeCaller"]
+        },
+        {
+          "ID" : "gvcf",
+          "argument" : "--emit-reference-confidence",
+          "values" : ["GVCF"]
+        },
+        {
+          "ID" : "index-type",
+          "argument" : "--variant-index-type",
+          "values" : ["LINEAR"]
+        },
+        {
+          "ID" : "index-parameter",
+          "argument" : "--variant-index-parameter",
+          "values" : [128000]
+        },
+        {
+          "ID" : "annotations",
+          "argument" : "--annotation",
+          "values" : ["Coverage", "QualByDepth", "FisherStrand", "MappingQualityRankSumTest", "ReadPosRankSumTest"]
         }
       ]
     },
@@ -154,11 +194,6 @@
           "ID" : "bam",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
-        },
-        {
-          "ID" : "dbSNP",
-          "argument" : "--known-sites",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"]
         },
         {
           "ID" : "output path",
