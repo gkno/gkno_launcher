@@ -286,29 +286,6 @@ class Freebayes(GknoTool):
       return False 
     return self.make()
 
-# gatk
-class Gatk(GknoTool):
-  def __init__(self):
-    super(Gatk, self).__init__()
-    self.name       = "gatk"
-    self.installDir = "gatk"
-
-  # N.B. - We're just going to require scala up front. Letting GATK compile 
-  # scala failed on at least one machine (StackOverflowException). Providing 
-  # it beforehand skirts this issue. Once we can trust GATK's build to succeed, 
-  # we may remove this prerequisite and just let GATK build normally.
-
-  # $ ant clean
-  # $ ant -Dcompile.scala.by.default=false
-  def doBuild(self):
-    if not self.antClean():
-      return False
-    return self.doUpdate()
-
-  # $ ant -Dcompile.scala.by.default=false
-  def doUpdate(self):
-    return self.ant()
-
 # glia
 class Glia(GknoTool):
   def __init__(self):
@@ -760,7 +737,6 @@ List = [
         Blast(),
         Bwa(),
         Freebayes(),
-        Gatk(),
         Glia(),
         Jellyfish(),
         LibStatGen(), BamUtil(), FastQValidator(), Qplot(), VerifyBamID(), # <-- Keep this order
