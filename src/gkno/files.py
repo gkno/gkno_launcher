@@ -48,7 +48,7 @@ class files:
 
     # Find configuration files for pipelines.
     for files in os.listdir(path + "pipes"):
-      if files.endswith('_parameterSets.json'): self.jsonFiles['pipeline paraeter sets'][files] = True
+      if files.endswith('_parameterSets.json'): self.jsonFiles['pipeline parameter sets'][files] = True
       if files.endswith('.json'): self.jsonFiles['pipelines'][files] = True
 
     return self.jsonFiles

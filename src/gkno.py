@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.39.2"
+__version__ = "1.39.3"
 __date__ = "October 2014"
 
 def main():
@@ -458,7 +458,7 @@ def main():
     if hasMultipleRuns: config.errors.exportParameterSetForMultipleRuns()
     if isPipeline: config.exportParameterSet(pipelineGraph, pipelineConfigurationFilesPath, runName, isPipeline)
     else: config.exportParameterSet(pipelineGraph, toolConfigurationFilesPath, runName, isPipeline) 
-    config.nodeMethods.addValuesToGraphNode(pipelineGraph, 'GKNO-EXECUTE', [False], write = 'replace')
+    config.nodeMethods.addValuesToGraphNode(pipelineGraph, 'GKNO-DO-NOT-EXECUTE', [True], write = 'replace')
     generateMakefiles = False
 
   # Find the maximum number of datasets for each task.
