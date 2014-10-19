@@ -189,16 +189,9 @@
     "index-TD-sites" : {
       "tool" : "tabix-index-vcf"
     },
-    "generate-freebayes-sites" : {
-      "tool" : "compressed-vcf-sites-stream",
-      "output to stream" : true
-    },
-    "compress-freebayes-sites" : {
-      "tool" : "bgzip-stream"
-    },
-    "index-freebayes-sites" : {
-      "tool" : "tabix-index-vcf"
-    },
+
+
+
     "merge-bams" : {
       "tool" : "bamtools-merge",
       "output to stream" : true
@@ -216,6 +209,43 @@
     "index-freebayes" : {
       "tool" : "tabix-index-vcf"
     },
+    "generate-freebayes-sites" : {
+      "tool" : "compressed-vcf-sites-stream",
+      "output to stream" : true
+    },
+    "compress-freebayes-sites" : {
+      "tool" : "bgzip-stream"
+    },
+    "index-freebayes-sites" : {
+      "tool" : "tabix-index-vcf"
+    },
+
+
+    "gatk-call" : {
+      "tool" : "gatk-genotype-gvcfs"
+    },
+    "combine-gatk" : {
+      "tool" : "vcf-combine-uncompressed",
+      "output to stream" : true
+    },
+    "compress-gatk" : {
+      "tool" : "bgzip-stream"
+    },
+    "index-gatk" : {
+      "tool" : "tabix-index-vcf"
+    },
+    "generate-gatk-sites" : {
+      "tool" : "compressed-vcf-sites-stream",
+      "output to stream" : true
+    },
+    "compress-gatk-sites" : {
+      "tool" : "bgzip-stream"
+    },
+    "index-gatk-sites" : {
+      "tool" : "tabix-index-vcf"
+    },
+
+
     "combine-all" : {
       "tool" : "vcf-combine",
       "output to stream" : true
@@ -301,6 +331,7 @@
         "convert-SI-to-vcf" : "--fasta-reference",
         "convert-TD-to-vcf" : "--fasta-reference",
         "freebayes" : "--fasta-reference",
+        "gatk-call" : "--fasta-reference",
         "variant-graph-align" : "--fasta-reference",
         "call-final-variants" : "--fasta-reference"
       }
@@ -314,6 +345,7 @@
       "tasks" : {
         "breakpoint-discovery" : "--region",
         "merge-bams" : "--region",
+        "gatk-call" : "--region",
         "merge-bams-graph" : "--region"
       }
     },
@@ -951,11 +983,80 @@
         "index-freebayes-sites" : "--in"
       }
     },
+
+
+    {
+      "ID" : "gatk-call",
+      "description" : "Joint genotype gcvf files using GATK.",
+      "long form argument" : "--in-gvcf",
+      "short form argument" : "-g",
+      "tasks" : {
+        "gatk-call" : "--in"
+      }
+    },
+    {
+      "ID" : "combine-gatk",
+      "description" : "Combine GATK vcf files.",
+      "tasks" : {
+        "gatk-call" : "--out"
+      },
+      "greedy tasks" : {
+        "combine-gatk" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "compress-gatk",
+      "description" : "Compress the GATK VCF file.",
+      "long form argument" : "--gatk-vcf",
+      "short form argument" : "-k",
+      "tasks" : {
+        "combine-gatk" : "--out",
+        "compress-gatk" : "--in"
+      }
+    },
+    {
+      "ID" : "index-gatk",
+      "description" : "Index the GATK vcf",
+      "tasks" : {
+        "compress-gatk" : "--out",
+        "index-gatk" : "--in"
+      }
+    },
+    {
+      "ID" : "generate-gatk-sites",
+      "description" : "Generate a GATK sites VCF.",
+      "originating edges" : {
+        "compress-gatk" : "--out"
+      },
+      "tasks" : {
+        "generate-gatk-sites" : "--in"
+      }
+    },
+    {
+      "ID" : "compress-gatk-sites",
+      "description" : "Compress the GATK sites VCF.",
+      "tasks" : {
+        "generate-gatk-sites" : "--out",
+        "compress-gatk-sites" : "--in"
+      }
+    },
+    {
+      "ID" : "index-gatk-sites",
+      "description" : "Index the GATK sites VCF.",
+      "tasks" : {
+        "compress-gatk-sites" : "--out",
+        "index-gatk-sites" : "--in"
+      }
+    },
+
+
     {
       "ID" : "combine-sites",
       "description" : "Combine all sites VCF files.",
       "originating edges" : {
         "compress-freebayes-sites" : "--out",
+        "compress-gatk-sites" : "--out",
         "compress-BP-sites" : "--out",
         "compress-CloseEndMapped-sites" : "--out",
         "compress-D-sites" : "--out",
@@ -975,6 +1076,7 @@
       "description" : "Indexes for use in combine",
       "originating edges" : {
         "index-freebayes-sites" : "--out",
+        "index-gatk-sites" : "--out",
         "index-BP-sites" : "--out",
         "index-CloseEndMapped-sites" : "--out",
         "index-D-sites" : "--out",
@@ -1168,6 +1270,11 @@
           "values" : ["freebayes-calls.vcf"]
         },
         {
+          "ID" : "gatk-vcf",
+          "argument" : "--gatk-vcf",
+          "values" : ["gatk-calls.vcf"]
+        },
+        {
           "ID" : "final-vcf",
           "argument" : "--final-vcf",
           "values" : ["final-call-set.vcf"]
@@ -1252,7 +1359,7 @@
         {
           "ID" : "reference",
           "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37.fa"]
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
         },
         {
           "ID" : "ref name",

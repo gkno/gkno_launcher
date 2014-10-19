@@ -115,8 +115,8 @@
       "nodes" : [
         {
           "ID" : "dictionary",
-          "argument" : "--reference-dictionary",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37.dict"]
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.dict"]
         }
       ]
     }
