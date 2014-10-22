@@ -511,16 +511,14 @@ class commandLine:
               if config.edgeMethods.checkIfEdgeExists(graph, task, fileNodeID): attachedFileNodeIDs.append(fileNodeID)
 
           # Determine if the file node is from a filename stub.
-          if isInput: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, attachedFileNodeIDs[0], task, 'isFilenameStub')
-          else: isFilenameStub = config.edgeMethods.getEdgeAttribute(graph, task, attachedFileNodeIDs[0], 'isFilenameStub')
+          tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
+          longFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
+          isFilenameStub   = config.tools.getArgumentAttribute(tool, longFormArgument, 'isFilenameStub')
 
           # If the file is a filename stub, find the extensions to add to the base value and
           # define the file node values.
           if isFilenameStub:
-            tool = config.pipeline.taskAttributes[task].tool
-            if isInput: argument = config.edgeMethods.getEdgeAttribute(graph, attachedFileNodeIDs[0], task, 'longFormArgument')
-            else: argument = config.edgeMethods.getEdgeAttribute(graph, task, attachedFileNodeIDs[0], 'longFormArgument')
-            extensions = config.tools.getArgumentAttribute(tool, argument, 'filenameExtensions')
+            extensions = config.tools.getArgumentAttribute(tool, longFormArgument, 'filenameExtensions')
 
             # Check that the number of file nodes is the same as the number of extensions.
             if len(extensions) != len(attachedFileNodeIDs):
