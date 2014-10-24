@@ -731,7 +731,6 @@ class Wham(GknoTool):
     self.installDir = "wham"
 
   def doBuild(self):
-    if not self.runCommand("git checkout v1.1.0"): return False
     return self.make()
 
   def doUpdate(self):
