@@ -4,9 +4,6 @@
 [submodule "tools/freebayes"]
 	path = tools/freebayes
         url = https://github.com/gkno/freebayes.git
-[submodule "tools/gatk"]
-	path = tools/gatk
-        url = https://github.com/gkno/gatk.git
 [submodule "tools/MOSAIK"]
 	path = tools/MOSAIK
         url = https://github.com/gkno/MOSAIK.git
@@ -97,3 +94,6 @@
 [submodule "tools/pindel"]
 	path = tools/pindel
 	url = https://github.com/gkno/pindel.git
+[submodule "tools/wham"]
+	path = tools/wham
+	url = https://github.com/gkno/wham.git

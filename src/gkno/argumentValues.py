@@ -46,3 +46,13 @@ class argumentValues:
 
     # If there are no instructions, return the original values.
     else: return values
+
+  # Modify the list of values to produce a comma separated list.
+  def produceCommaSeparatedList(self, values):
+    output = str(values[0])
+
+    # Loop over the list.
+    for value in values[1:]: output = output + str(',') + str(value)
+
+    # Return the string of comma separated values as a list.
+    return [output]

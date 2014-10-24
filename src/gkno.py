@@ -59,7 +59,7 @@ import gkno.writeToScreen
 from gkno.writeToScreen import *
 
 __author__ = "Alistair Ward"
-__version__ = "1.40.1"
+__version__ = "1.41.0"
 __date__ = "October 2014"
 
 def main():
@@ -328,6 +328,7 @@ def main():
   if isPipeline:
     config.processAdditionalNodes(pipelineGraph)
     config.connectPipelineArgumentsFromAdditionalNodes(pipelineGraph)
+    if isDebug: write.writeDebug('Processed additional nodes.')
 
   # Check if a parameter set was requested by the user.  If so, get the data and add the values to the data nodes.
   write.writeCheckingParameterSetInformation()

@@ -744,6 +744,11 @@ class makefileData:
           # Check if the argument values have instructions indicating modifications that need to be
           # applied.
           valueList = self.valueMethods.modifyArgumentValues(config, tool, argument, valueList)
+
+          # If the command line should consist of a comma separated list of values, update the valueList to 
+          # reflect this.
+          if config.tools.getArgumentAttribute(tool, argument, 'isCommaSeparatedList'):
+            valueList = self.valueMethods.produceCommaSeparatedList(valueList)
  
           # Determine if the value is to be contained in qutotaion marks or spaces.
           inQuotations = config.tools.getArgumentAttribute(tool, argument, 'inQuotations')
@@ -758,7 +763,7 @@ class makefileData:
 
             # If anything needs to be written to the makefile, write it.
             if includeArgument:
-  
+
               # Determine the argument delimiter for this tool.
               delimiter = config.nodeMethods.getGraphNodeAttribute(graph, task, 'delimiter')
 

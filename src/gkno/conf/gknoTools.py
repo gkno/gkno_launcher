@@ -723,6 +723,20 @@ class Vt(GknoTool):
   def doUpdate(self):
     return self.make()
 
+# wham-bam
+class Wham(GknoTool):
+  def __init__(self):
+    super(Wham, self).__init__()
+    self.name       = "wham"
+    self.installDir = "wham"
+
+  def doBuild(self):
+    if not self.runCommand("git checkout v1.1.0"): return False
+    return self.make()
+
+  def doUpdate(self):
+    return self.make()
+
 ##############################################################
 # Add any new built-in gkno tools to the list below.
 
@@ -754,6 +768,7 @@ List = [
         Tabix(),
         Tangram(),
         VcfLib(),
-        Vt()
+        Vt(),
+        Wham()
        ]
 

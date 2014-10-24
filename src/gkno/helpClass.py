@@ -74,7 +74,7 @@ class helpClass:
     self.allowedToolCategories['Annotation']              = 'Functional annotation of genetic variants.'
     self.allowedToolCategories['Bamtools']                = 'Tools included in the Bamtools library.'
     self.allowedToolCategories['BAM-processing']          = 'Tools for manipulating BAM files.'
-    self.allowedToolCategories['BWA']                     = 'BWA mapping and file processing.',
+    self.allowedToolCategories['BWA']                     = 'BWA mapping and file processing.'
     self.allowedToolCategories['FASTA-processing']        = 'Tools for processing FASTA files.'
     self.allowedToolCategories['FASTQ-processing']        = 'Tools for processing FASTQ files.'
     self.allowedToolCategories['GATK']                    = 'GATK tools.'
@@ -93,7 +93,7 @@ class helpClass:
     self.allowedToolCategories['Tangram']                 = 'Tangram MEI detection package.'
     self.allowedToolCategories['Variant-discovery']       = 'Detection of all classes of variants.'
     self.allowedToolCategories['Variant-graph']           = 'Alignment and detection using a variant graph.'
-    self.allowedToolCategories['vcflib'        ]          = 'vcflib VCF processing tool kit.',
+    self.allowedToolCategories['Vcflib'        ]          = 'vcflib VCF processing tool kit.'
     self.allowedToolCategories['VCF-processing']          = 'Tools used for processing VCF files.'
     self.allowedToolCategories['Visualisation']           = 'Visualisation and plotting tools.'
 
