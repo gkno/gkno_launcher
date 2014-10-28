@@ -17,6 +17,14 @@ class taskAttributes:
     self.task            = None
     self.tool            = None
 
+# Define a class to hold information for shared nodes.
+class sharedNodeTaskAttributes:
+  def __init__(self):
+    self.pipeline     = None
+    self.pipelineNode = None
+    self.task         = None
+    self.taskArgument = None
+
 # Define a class to store information on shared pipeline nodes.
 class sharedGraphNodes:
   def __init__(self):
@@ -34,6 +42,10 @@ class sharedGraphNodes:
 
     # Information on the tasks and arguments sharing the node.
     self.nodes = {}
+
+    # Define a structure to hold information on all the tasks that the shared graph node points
+    # to.
+    self.sharedNodeTasks = []
 
 # Define a class to store information on unique pipeline nodes.
 class uniqueGraphNodes:
@@ -119,6 +131,9 @@ class pipelineConfiguration:
 
     # Parse the shared node information.
     if success: success = self.checkSharedNodes(data)
+
+    # Now check that the contents of each 'node' within the shared node information is valid.
+    if success: success = self.checkSharedNodeTasks()
 
   # Process the top level pipeline configuration information.
   def checkTopLevelInformation(self, data):
@@ -228,8 +243,10 @@ class pipelineConfiguration:
 
       # Each task must define either a tool or a pipeline. Check that one is defined. Checking if
       # the tool or pipeline is valid is performed later when all pipelines have been evaluated.
+      # If a task points to a pipeline, set the hasPipelineAsTask variable to True.
       tool     = self.getTaskAttribute(attributes.task, 'tool')
       pipeline = self.getTaskAttribute(attributes.task, 'pipeline')
+      if pipeline != None: self.hasPipelineAsTask = True
       #TODO ERROR
       if tool == None and pipeline == None: print('pipeline.checkPipelineTasks - 5'); exit(0)
 
@@ -375,6 +392,66 @@ class pipelineConfiguration:
 
     return True
 
+  # For each task in each shared graph node, ensure that the information in the configuration
+  # file is complete.
+  def checkSharedNodeTasks(self):
+
+    # Define the allowed nodes attributes.
+    allowedAttributes                        = {}
+    allowedAttributes['pipeline']            = (str, False, True, 'pipeline')
+    allowedAttributes['pipeline graph node'] = (str, False, True, 'pipelineNode')
+    allowedAttributes['task']                = (str, False, True, 'task')
+    allowedAttributes['task argument']       = (str, False, True, 'taskArgument')
+
+    # Loop over all of the defined nodes.
+    for nodeID in self.sharedNodeAttributes:
+      for node in self.sharedNodeAttributes[nodeID].nodes:
+
+        # Check that the supplied structure is a dictionary.
+        if not isinstance(node, dict):
+          #TODO ERROR
+          if self.allowTermination: print('pipeline.checkSharedNodeTasks - 1'); exit(0) # nodeIsNotADictionary
+          else: return False
+  
+        # Define the attributes object.
+        attributes = sharedNodeTaskAttributes()
+  
+        # Keep track of the observed required values.
+        observedAttributes = {}
+  
+        # Loop over all attributes in the node.
+        for attribute in node:
+          if attribute not in allowedAttributes:
+            # TODO ERROR
+            if self.allowTermination: print('pipeline.checkSharedNodeTasks - 2'); exit(0) # invalidAttributeInNodes
+            else: return False
+  
+          # Check that the value given to the attribute is of the correct type. If the value is unicode,
+          # convert to a string first.
+          value = str(node[attribute]) if isinstance(node[attribute], unicode) else node[attribute]
+          if allowedAttributes[attribute][0] != type(value):
+            if self.allowTermination: print('pipeline.checkSharedNodeTasks - 3'); exit(0) # incorrectTypeInPipelineConfigurationFile
+            else: return False
+  
+          # Mark the attribute as seen.
+          observedAttributes[attribute] = True
+  
+          # Store the given attribtue.
+          if allowedAttributes[attribute][2]: self.setAttribute(attributes, allowedAttributes[attribute][3], node[attribute])
+  
+        # Having parsed all of the general attributes attributes, check that all those that are required
+        # are present.
+        for attribute in allowedAttributes:
+          if allowedAttributes[attribute][1] and attribute not in observedAttributes:
+            #TODO ERROR
+            if self.allowTermination: print('pipeline.checkSharedNodeTasks - 4'); exit(0) # missingAttributeInPipelineConfigurationFile
+            else: return False
+  
+        #TODO INCLUDE A CHECK TO ENSURE THAT AN ALLOWED COMBINATION OF FIELDS IS PRESENT.
+
+        # Store the attributes.
+        self.sharedNodeAttributes[nodeID].sharedNodeTasks.append(attributes)
+
   # Set a value in the toolAttributes.
   def setAttribute(self, attributes, attribute, value):
     try: test = getattr(attributes, attribute)
@@ -391,19 +468,6 @@ class pipelineConfiguration:
     setattr(attributes, attribute, value)
 
     return attributes
-
-  # Identify if a pipeline contains another pipeline.
-  def containsPipeline(self):
-    nestedPipelines = []
-
-    # Loop over all the pipeline tasks and check if any are listed as a pipeline.
-    for task in self.pipelineTasks:
-      if self.pipelineTasks[task].isTaskAPipeline:
-        self.hasPipelineAsTask = True
-        nestedPipelines.append((task, self.pipelineTasks[task].tool))
-
-    # Return a list of the nested pipelines.
-    return nestedPipelines
 
   # Get all of the tools used by the pipeline.
   def getAllTools(self):
