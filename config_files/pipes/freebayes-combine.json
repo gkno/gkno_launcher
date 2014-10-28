@@ -7,7 +7,14 @@
       "tool" : "freebayes"
     },
     "combine" : {
-      "tool" : "vcf-combine"
+      "tool" : "vcf-combine-uncompressed",
+      "output to stream" : true
+    },
+    "compress" : {
+      "tool" : "bgzip-stream"
+    },
+    "index" : {
+      "tool" : "tabix-index-vcf"
     }
   },
 
@@ -50,6 +57,25 @@
         "combine" : "--in"
       },
       "delete files" : true
+    },
+    {
+      "ID" : "compress",
+      "description" : "Compress the VCF file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "tasks" : {
+        "combine" : "--out",
+        "compress" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "index",
+      "description" : "Index the VCF file.",
+      "tasks" : {
+        "compress" : "--out",
+        "index" : "--in"
+      }
     }
   ],
 
