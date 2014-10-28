@@ -13,9 +13,9 @@ import sys
 # Define a class to store task attribtues.
 class taskAttributes:
   def __init__(self):
-    self.task            = ''
-    self.tool            = ''
-    self.isTaskAPipeline = False
+    self.pipeline        = None
+    self.task            = None
+    self.tool            = None
 
 # Define a class to store information on shared pipeline nodes.
 class sharedGraphNodes:
@@ -49,6 +49,10 @@ class uniqueGraphNodes:
     # Define arguments.
     self.longFormArgument  = None
     self.shortFormArgument = None
+
+    # Define the pipeline that the task and argument to which this node points resides. If None,
+    # the task resides in the pipeline defined by the current pipeline configuration file.
+    self.pipeline = None
 
     # Define the task and argument to which this node applies.
     self.task         = None
@@ -171,10 +175,10 @@ class pipelineConfiguration:
   def checkPipelineTasks(self, data):
 
     # Define the allowed general attributes.
-    allowedAttributes                       = {}
-    allowedAttributes['task is a pipeline'] = (str, False, True, 'isTaskAPipeline')
-    allowedAttributes['task name']          = (str, True, True, 'task')
-    allowedAttributes['tool']               = (str, True, True, 'tool')
+    allowedAttributes             = {}
+    allowedAttributes['pipeline'] = (str, False, True, 'pipeline')
+    allowedAttributes['task']     = (str, True, True, 'task')
+    allowedAttributes['tool']     = (str, False, True, 'tool')
 
     for taskInformation in data:
 
@@ -213,13 +217,6 @@ class pipelineConfiguration:
           if self.allowTermination: print('pipeline.checkPipelineTasks - 3', attribute); exit(0) # missingAttributeInPipelineConfigurationFile
           else: return False
 
-# FIXME CHECK THAT THE SUPPLIED TOOLS/PIPELINES ARE AVAILABLE.
-#      # Check that each task has a tool defined and that a tool configuration file exists for this tool.
-#      tool = tasks[task]['tool']
-#      if tool + '.json' not in toolFiles:
-#        if self.allowTermination: self.errors.invalidToolInPipelineConfigurationFile(pipeline, task, tool)
-#        else: return False
-
       # Check that the task name is unique.
       if attributes.task in self.pipelineTasks:
         #TODO ERROR
@@ -228,6 +225,13 @@ class pipelineConfiguration:
 
       # Store the attributes for the task.
       self.pipelineTasks[attributes.task] = attributes
+
+      # Each task must define either a tool or a pipeline. Check that one is defined. Checking if
+      # the tool or pipeline is valid is performed later when all pipelines have been evaluated.
+      tool     = self.getTaskAttribute(attributes.task, 'tool')
+      pipeline = self.getTaskAttribute(attributes.task, 'pipeline')
+      #TODO ERROR
+      if tool == None and pipeline == None: print('pipeline.checkPipelineTasks - 5'); exit(0)
 
     return True
 
@@ -242,8 +246,9 @@ class pipelineConfiguration:
     allowedAttributes['id']                  = (str, True, True, 'id')
     allowedAttributes['description']         = (str, True, True, 'description')
     allowedAttributes['long form argument']  = (str, False, True, 'longFormArgument')
+    allowedAttributes['pipeline']            = (str, False, True, 'pipeline')
     allowedAttributes['short form argument'] = (str, False, True, 'shortFormArgument')
-    allowedAttributes['task']                = (str, False, True, 'task')
+    allowedAttributes['task']                = (str, True, True, 'task')
     allowedAttributes['task argument']       = (str, False, True, 'taskArgument')
 
     # Loop over all of the defined nodes.
@@ -298,12 +303,6 @@ class pipelineConfiguration:
 
       # Store the attributes.
       self.uniqueNodeAttributes[nodeID] = attributes
-
-    # Having ensured that the configuration is correctly formatted, ensure that all the tasks that the
-    # unique graph nodes point to are valid.
-    for nodeID in self.uniqueNodeAttributes:
-      #TODO ERROR
-      if self.uniqueNodeAttributes[nodeID].task not in self.pipelineTasks: print('pipeline.checkUniqueNodes - 6'); exit(0)
 
     return True
 
@@ -429,10 +428,31 @@ class pipelineConfiguration:
       #TODO ERROR
       if self.getUniqueNodeAttribute(nodeID, 'task') not in allTasks: print('pipeline.checkContainedTasks'); exit(0)
 
+    # Check the tasks that shared nodes point to.
+    for sharedNodeID in self.sharedNodeAttributes.keys():
+      for node in self.sharedNodeAttributes[sharedNodeID].nodes:
+        isTaskInOtherPipeline = self.getSharedNodeTaskAttribute(node, 'connect to task in pipeline')
+        isTaskInOtherPipeline = self.getSharedNodeTaskAttribute(node, 'connect to node')
+        task                  = self.getSharedNodeTaskAttribute(node, 'task')
+        taskArgument          = self.getSharedNodeTaskAttribute(node, 'task argument')
+        print('\t\tTEST', sharedNodeID, task, taskArgument, isTaskInOtherPipeline)
+
+  # Get a pipeline task attribute.
+  def getTaskAttribute(self, task, attribute):
+    try: return getattr(self.pipelineTasks[task], attribute)
+    except: return None
+
   # Get an attribute about a unique node.
   def getUniqueNodeAttribute(self, nodeID, attribute):
-    #TODO ERROR
-    try: value = getattr(self.uniqueNodeAttributes[nodeID], attribute)
-    except: print('pipeline.getUniqueNodeAttribute'); exit(0)
+    try: return getattr(self.uniqueNodeAttributes[nodeID], attribute)
+    except: return None
 
-    return value
+  # Get an attribute about a shared node.
+  def getSharedNodeAttribute(self, nodeID, attribute):
+    try: return getattr(self.sharedNodeAttributes[nodeID], attribute)
+    except: return None
+
+  # Get attributes for a task defined in the shared node section.
+  def getSharedNodeTaskAttribute(self, node, attribute):
+    try: return node[attribute]
+    except: return None
