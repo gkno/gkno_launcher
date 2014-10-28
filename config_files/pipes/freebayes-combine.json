@@ -16,7 +16,7 @@
       "ID" : "bam",
       "description" : "The input BAM file.",
       "long form argument" : "--in",
-      "short form argument" : "-b",
+      "short form argument" : "-i",
       "tasks" : {
         "call" : "--in"
       }
