@@ -671,7 +671,8 @@ class helpClass:
 
     # Print out the decription of the pipeline.
     print('     Description:', file = sys.stdout)
-    self.writeFormattedText('', config.pipeline.attributes.description, 0, 2, '')
+    description = 'No description' if not config.pipeline.attributes.description else config.pipeline.attributes.description
+    self.writeFormattedText('', description, 0, 2, '')
     print(file = sys.stdout)
 
     # Write out the pipeline workflow.

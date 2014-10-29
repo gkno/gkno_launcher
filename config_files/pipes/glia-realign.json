@@ -1,8 +1,8 @@
 {
-  "description" : "",
+  "description" : "Realign a BAM file against the variant graph with glia.",
   "hide in help" : true,
   "developmental" : true,
-  "categories" : ["1000G-pipelines", "Variant-graph", "Variant-discovery"],
+  "categories" : ["Alignment", "Variant-graph"],
 
   "tasks" : {
     "merge-bam" : {
