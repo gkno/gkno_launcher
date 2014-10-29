@@ -57,75 +57,75 @@ class pipelineGraph:
     # Loop over all the pipeline tasks and build a node for each task. If the task is
     # a pipeline, ignore it.
     for task in pipeline.pipelineTasks:
-      if not pipeline.pipelineTasks[task].isTaskAPipeline: self.addTaskNode(address + str(task), pipeline.pipelineTasks[task].tool)
+      if not pipeline.getTaskAttribute(task, 'pipeline'): self.addTaskNode(address + str(task), pipeline.getTaskAttribute(task, 'tool'))
 
     # Add unique nodes.
-    self.addUniqueNodes(tools, pipeline.uniqueNodeAttributes, pipeline.pipelineTasks, address)
+    self.addUniqueNodes(tools, pipeline)
 
     # Add shared nodes.
-    self.addSharedNodes(tools, pipeline.sharedNodeAttributes, pipeline.pipelineTasks, address)
+    self.addSharedNodes(tools, pipeline)
 
   # Add unique graph nodes to the graph.
   # TODO ADD ATTRIBUTES TO NODE
-  def addUniqueNodes(self, tools, attributes, tasks, address):
-    for nodeID in attributes:
-      nodeAddress = str(address + nodeID)
+  def addUniqueNodes(self, tools, pipeline):
+    for nodeID in pipeline.uniqueNodeAttributes:
 
       # Get the task this node points to and determine if it is a tool or a pipeline.
-      task            = attributes[nodeID].task
-      tool            = tasks[task].tool
-      isTaskAPipeline = tasks[task].isTaskAPipeline
+      pipelineContainingTask = pipeline.getUniqueNodeAttribute(nodeID, 'pipeline')
+      task                   = pipeline.getUniqueNodeAttribute(nodeID, 'task')
+      taskArgument           = pipeline.getUniqueNodeAttribute(nodeID, 'taskArgument')
+      tool                   = pipeline.getTaskAttribute(task, 'tool')
+
+      # Define the pipeline relative address.
+      address = str(pipeline.address + '.') if pipeline.address else str('')
 
       #TODO If task is a pipeline.
-      if isTaskAPipeline: pass
+      if pipelineContainingTask: print('graph.addUniqueNodes - NOT HANDLED PIPELINE')
       else:
-        longFormArgument = attributes[nodeID].longFormArgument
-        isInput          = tools[tool].argumentAttributes[longFormArgument].isInput
-        isOutput         = tools[tool].argumentAttributes[longFormArgument].isOutput
+        isInput  = tools[tool].getArgumentAttribute(taskArgument, 'isInput')
+        isOutput = tools[tool].getArgumentAttribute(taskArgument, 'isOutput')
 
         # TODO DEAL WITH ATTRIBUTES
         if isInput:
-          self.addFileNode(nodeAddress)
-          self.graph.add_edge(nodeAddress, address + task, attributes = {})
+          self.addFileNode(address + nodeID)
+          self.graph.add_edge(address + nodeID, address + task, attributes = {})
         elif isOutput:
-          self.addFileNode(nodeAddress)
-          self.graph.add_edge(address + task, nodeAddress)
+          self.addFileNode(address + nodeID)
+          self.graph.add_edge(address + task, address + nodeID)
         else:
-          self.addOptionNode(nodeAddress)
-          self.graph.add_edge(nodeAddress, address + task)
+          self.addOptionNode(address + nodeID)
+          self.graph.add_edge(address + nodeID, address + task)
 
   # Add shared nodes to the graph.
   # TODO ADD ATTRIBUTES
-  def addSharedNodes(self, tools, attributes, tasks, address):
-    for sharedNodeID in attributes:
-      print('TEST', sharedNodeID, address)
-      for node in attributes[sharedNodeID].nodes:
-        task         = node['task']
-        taskArgument = node['task argument']
+  def addSharedNodes(self, tools, pipeline):
+    for sharedNodeID in pipeline.getSharedNodeIDs():
+      for node in pipeline.getSharedNodeTasks(sharedNodeID):
+        nodeInPipeline = pipeline.getSharedNodeTaskAttribute(node, 'pipeline')
+        pipelineNodeID = pipeline.getSharedNodeTaskAttribute(node, 'pipelineNodeID')
+        task           = pipeline.getSharedNodeTaskAttribute(node, 'task')
+        taskArgument   = pipeline.getSharedNodeTaskAttribute(node, 'taskArgument')
 
-        # Check if the task is a nested pipeline.
-        # TODO INCLUDE METHODS TO GET THESE VALUES
-        isTaskAPipeline = False if task in tasks else True
-        print('\tTEST', task, taskArgument, isTaskAPipeline)
-
-        if isTaskAPipeline:
-          pass
+        if nodeInPipeline:
+          print('graph.addSharedNodes - HANDLE PIPELINE')
 
         # If the task is running a tool, build the node and add the required edges.
         else:
 
           # Check the taskArgument to identify if this node is a file or an option node.
-          tool     = tasks[task].tool
-          isInput  = tools[tool].argumentAttributes[taskArgument].isInput
-          isOutput = tools[tool].argumentAttributes[taskArgument].isOutput
+          tool     = pipeline.getTaskAttribute(task, 'tool')
+          isInput  = tools[tool].getArgumentAttribute(taskArgument, 'isInput')
+          isOutput = tools[tool].getArgumentAttribute(taskArgument, 'isOutput')
           isFile   = True if (isInput or isOutput) else False
-          print('\tTEST', task, taskArgument, isTaskAPipeline, address + sharedNodeID, isInput, isOutput, isFile)
+
+          # Define the pipeline relative address.
+          address = str(pipeline.address + '.') if pipeline.address else str('')
 
           # If the node is a file node.
           if isFile:
-            if address + sharedNodeID not in self.graph: self.addFileNode(address + sharedNodeID)
-            if isInput: self.graph.add_edge(address + sharedNodeID, address + task)
-            elif isOutput: self.graph.add_edge(address + task, address + sharedNodeID)
+            if address + sharedNodeID not in self.graph: self.addFileNode(str(address + sharedNodeID))
+            if isInput: self.graph.add_edge(str(address + sharedNodeID), str(address + task))
+            elif isOutput: self.graph.add_edge(str(address + task), str(address + sharedNodeID))
 
           # If the node is an option node.
           else:

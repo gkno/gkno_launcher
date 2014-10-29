@@ -56,13 +56,12 @@ def main():
   while checkForNestedPipelines:
     tierHasNestedPipeline = False
     for currentPipeline in pipelineConfigurationData[tier - 1]:
-      nestedPipelines = currentPipeline.containsPipeline()
 
       # If the pipeline contains a pipeline as a task, process the configuration file for that
       # pipeline and add to the pipelines in the current tier.
       if currentPipeline.hasPipelineAsTask:
         tierHasNestedPipeline = True
-        for taskPointingToNestedPipeline, nestedPipeline in nestedPipelines:
+        for taskPointingToNestedPipeline, nestedPipeline in currentPipeline.requiredPipelines:
           filename = pipelineConfigurationFilesPath + str(nestedPipeline) + '.json'
           pipeline = pipelineConfiguration()
           pipeline.getConfigurationData(filename)
@@ -83,13 +82,16 @@ def main():
   # Get a list of all the tools used in the pipeline. Also get a list of all the tasks used in
   # the pipeline. This list will include expand all of the nested pipelines into the constituent
   # tasks.
-  allUsedTools = []
-  allUsedTasks = []
+  allUsedTools     = []
+  allUsedTasks     = []
+  allUniqueNodeIDs = []
+  allSharedNodeIDs = []
   for tier in pipelineConfigurationData.keys():
     for pipeline in pipelineConfigurationData[tier]:
-      tasks, tools = pipeline.getAllTools()
-      allUsedTasks += tasks
-      allUsedTools += tools
+      allUsedTasks += [pipeline.address + '.' + str(task) if pipeline.address else str(task) for task in pipeline.allTasks]
+      allUsedTools += pipeline.allTools
+      allUniqueNodeIDs += [pipeline.address + '.' + str(nodeID) if pipeline.address else str(nodeID) for nodeID in pipeline.uniqueNodeIDs]
+      allSharedNodeIDs += [pipeline.address + '.' + str(nodeID) if pipeline.address else str(nodeID) for nodeID in pipeline.sharedNodeIDs]
 
   # Remove duplicated tools (the tasks cannot have duplicates).
   allUsedTools = list(set(allUsedTools))
@@ -98,8 +100,7 @@ def main():
   # task in the pipeline addresses a node in a contained pipeline, knowledge of all pipelines is
   # required to perform this check.
   for tier in pipelineConfigurationData.keys():
-    for pipeline in pipelineConfigurationData[tier]: pipeline.checkContainedTasks(allUsedTasks)
-  exit(0)
+    for pipeline in pipelineConfigurationData[tier]: pipeline.checkContainedTasks(allUsedTasks, allUniqueNodeIDs, allSharedNodeIDs)
 
   # Loop over the list of required tools, open and process their configuration files and store.
   toolConfigurationData = {}
@@ -117,6 +118,7 @@ def main():
   for tier in reversed(pipelineConfigurationData.keys()):
     for pipeline in pipelineConfigurationData[tier]: graph.buildPipelineTasks(toolConfigurationData, pipeline)
 
+  exit(0)
   workflow = graph.generateWorkflow()
   for nodeID in workflow:
     nodeType = getattr(graph.graph.node[nodeID]['attributes'], 'nodeType')

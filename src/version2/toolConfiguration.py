@@ -969,3 +969,8 @@ class toolConfiguration:
     setattr(attributes, attribute, value)
 
     return attributes
+
+  # Get a tool argument attribute.
+  def getArgumentAttribute(self, argument, attribute):
+    try: return getattr(self.argumentAttributes[argument], attribute)
+    except: return None
