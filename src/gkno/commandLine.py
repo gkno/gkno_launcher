@@ -513,7 +513,7 @@ class commandLine:
           # Determine if the file node is from a filename stub.
           tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
           longFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
-          isFilenameStub   = config.tools.getArgumentAttribute(tool, longFormArgument, 'isFilenameStub')
+          isFilenameStub   = config.tools.getArgumentAttribute(tool, longFormArgument, 'isFilenameStub') if longFormArgument != None else False
 
           # If the file is a filename stub, find the extensions to add to the base value and
           # define the file node values.

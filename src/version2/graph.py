@@ -89,12 +89,15 @@ class pipelineGraph:
         if isInput:
           self.addFileNode(address + nodeID)
           self.graph.add_edge(address + nodeID, address + task, attributes = {})
+          print('\tADDED EDGE FROM FILE NODE', address + nodeID, 'TO TASK', address + task)
         elif isOutput:
           self.addFileNode(address + nodeID)
           self.graph.add_edge(address + task, address + nodeID)
+          print('\tADDED EDGE FROM TASK', address + task, 'TO FILE NODE', address + nodeID)
         else:
           self.addOptionNode(address + nodeID)
           self.graph.add_edge(address + nodeID, address + task)
+          print('\tADDED EDGE FROM OPTION NODE', address + nodeID, 'TO TASK', address + task)
 
   # Add shared nodes to the graph.
   # TODO ADD ATTRIBUTES
@@ -124,13 +127,18 @@ class pipelineGraph:
           # If the node is a file node.
           if isFile:
             if address + sharedNodeID not in self.graph: self.addFileNode(str(address + sharedNodeID))
-            if isInput: self.graph.add_edge(str(address + sharedNodeID), str(address + task))
-            elif isOutput: self.graph.add_edge(str(address + task), str(address + sharedNodeID))
+            if isInput:
+              self.graph.add_edge(str(address + sharedNodeID), str(address + task))
+              print('\tADDED EDGE FROM FILE NODE', address + sharedNodeID, 'TO TASK', address + task)
+            elif isOutput:
+              self.graph.add_edge(str(address + task), str(address + sharedNodeID))
+              print('\tADDED EDGE FROM TASK', address + task, 'TO FILE NODE', address + sharedNodeID)
 
           # If the node is an option node.
           else:
             if address + sharedNodeID not in self.graph: self.addOptionNode(address + sharedNodeID)
             self.graph.add_edge(address + sharedNodeID, address + task)
+            print('\tADDED EDGE FROM OPTION NODE', address + sharedNodeID, 'TO TASK', address + task)
 
   # Add a task node to the graph.
   #TODO ADD TOOLS CLASS ATTRIBUTES TO TASK NODE.

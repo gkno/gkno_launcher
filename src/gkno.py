@@ -440,9 +440,10 @@ def main():
   # not always sufficient. In some cases, more than one pipeline argument can point to the same node. If
   # both pipeline arguments are required, but only one is set, the node being pointed to will have data, so
   # no error will be thrown. So, check that all pipeline arguments that are listed as required, have indeed
-  # been set.
-  config.checkArguments(pipelineGraph, commands, runName, parameterSetName, hasMultipleRuns or hasInternalLoop, gknoConfig.loopData)
-  if isDebug: write.writeDebug('Checked arguments')
+  # been set. Do not perform this check if writing out a parameter set.
+  if not isExportParameterSet:
+    config.checkArguments(pipelineGraph, commands, runName, parameterSetName, hasMultipleRuns or hasInternalLoop, gknoConfig.loopData)
+    if isDebug: write.writeDebug('Checked arguments')
 
   # If the tool/pipeline is being run in multiple-runs or internal loop mode, it is possible that there are
   # multiple sets of input data and only a single output. This will only occur if the argument being repeated

@@ -2367,8 +2367,8 @@ argument existed to set this value. Please see the documentation to see how to i
   # If a tool is added, but the tool added is invalid.
   def invalidToolAdded(self, tools):
     self.text.append('Attempt to add an invalid tool.')
-    self.text.append('An attempt to add a tool to the gkno distribution was made, but the requested tool is not available in gkno. The tool added' + \
-    'must be one of the following:')
+    self.text.append('An attempt to add a tool to the gkno distribution was made, but the requested tool is not available in gkno. The tool ' + \
+    'added must be one of the following:')
     for tool in tools: self.text.append('\t' + tool.name)
     self.text.append('\t')
     self.writeFormattedText(errorType = 'error')
