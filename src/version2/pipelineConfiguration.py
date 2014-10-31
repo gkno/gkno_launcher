@@ -47,6 +47,10 @@ class sharedGraphNodes:
     # to.
     self.sharedNodeTasks = []
 
+    # If the shared node contains any task that points to another pipeline, mark it.
+    self.containsTaskInAnotherPipeline = False
+    self.containsNodeInAnotherPipeline = False
+
 # Define a class to store information on unique pipeline nodes.
 class uniqueGraphNodes:
   def __init__(self):
@@ -342,6 +346,13 @@ class pipelineConfiguration:
           if self.allowTermination: print('pipeline.checkUniqueNodes - 5'); exit(0) # missingAttributeInPipelineConfigurationFile
           else: return False
 
+      # If the nodeID already exists in the attributes, a node of this name has already been seen. All 
+      #nodes must have a unique name.
+      if nodeID in self.uniqueNodeAttributes: print('pipeline.checkUniqueNodes - 6'); exit(0)
+
+      # Also check that the node id is not the name of a task.
+      if nodeID in self.allTasks: print('pipeline.checkUniqueNodes - 7'); exit(0)
+
       # Store the attributes.
       self.uniqueNodeAttributes[nodeID] = attributes
 
@@ -414,6 +425,13 @@ class pipelineConfiguration:
           if self.allowTermination: print('pipeline.checkSharedNodes - 5'); exit(0) # missingAttributeInPipelineConfigurationFile
           else: return False
 
+      # If the nodeID already exists in the attributes, a node of this name has already been seen. All 
+      #nodes must have a unique name.
+      if nodeID in self.sharedNodeAttributes: print('pipeline.checkSharedNodes - 6'); exit(0)
+
+      # Also check that the node id is not the name of a task.
+      if nodeID in self.allTasks: print('pipeline.checkSharedNodes - 7'); exit(0)
+
       # Store the attributes.
       self.sharedNodeAttributes[nodeID] = attributes
 
@@ -476,6 +494,10 @@ class pipelineConfiguration:
   
         #TODO INCLUDE A CHECK TO ENSURE THAT AN ALLOWED COMBINATION OF FIELDS IS PRESENT.
 
+        # If this node contains a link to a task or a node in another pipeline, record this.
+        if attributes.pipelineNodeID: self.sharedNodeAttributes[nodeID].containsNodeInAnotherPipeline = True
+        if attributes.pipeline: self.sharedNodeAttributes[nodeID].containsTaskInAnotherPipeline = True
+
         # Store the attributes.
         self.sharedNodeAttributes[nodeID].sharedNodeTasks.append(attributes)
 
@@ -499,7 +521,7 @@ class pipelineConfiguration:
   # Check that all references to tasks in the pipeline configuration file are valid. The task may
   # be a task in a contained pipeline and not within the pipeline being checked. The allTasks
   # list contains all of the tasks in all of the pipelines.
-  def checkContainedTasks(self, allTasks, allUniqueNodeIDs, allSharedNodeIDs):
+  def checkContainedTasks(self, superPipeline):
 
     # Check the tasks that any unique nodes point to.
     for nodeID in self.uniqueNodeAttributes.keys():
@@ -515,7 +537,7 @@ class pipelineConfiguration:
 
       # If the task is not listed as one of the pipeline tasks. terminate.
       #TODO ERROR
-      if task not in allTasks: print('pipeline.checkContainedTasks'); exit(0)
+      if task not in superPipeline.tasks: print('pipeline.checkContainedTasks'); exit(0)
 
     # Check the tasks that shared nodes point to.
     for sharedNodeID in self.sharedNodeAttributes.keys():
@@ -538,24 +560,35 @@ class pipelineConfiguration:
 
           # If the task is not listed as one of the pipeline tasks. terminate.
           #TODO ERROR
-          if pipelineNodeID not in allUniqueNodeIDs and pipelineNodeID not in allSharedNodeIDs: print('pipeline.checkContainedTasks - 4'); exit(0)
+          if pipelineNodeID not in superPipeline.uniqueNodeIDs and pipelineNodeID not in superPipeline.sharedNodeIDs:
+            print('pipeline.checkContainedTasks - 4'); exit(0)
 
         # If the shared node is a task in another pipeline, check that the task exists.
         elif pipeline:
           task = pipeline + '.' + task
           if self.address: task = self.address + '.' + task
           #TODO ERROR
-          if task not in allTasks: print('pipeline.checkContainedTasks - 5'); exit(0)
+          if task not in superPipeline.tasks: print('pipeline.checkContainedTasks - 5'); exit(0)
 
         # Finally, if the shared node points to a task from this pipeline.
         else:
           if self.address: task = self.address + '.' + task
           #TODO ERROR
-          if task not in allTasks: print('pipeline.checkContainedTasks - 6'); exit(0)
+          if task not in superPipeline.tasks: print('pipeline.checkContainedTasks - 6'); exit(0)
+
+  # Return a list of all the tasks in the pipeline.
+  def getAllTasks(self):
+    try: return self.allTasks
+    except: return None
 
   # Get a pipeline task attribute.
   def getTaskAttribute(self, task, attribute):
     try: return getattr(self.pipelineTasks[task], attribute)
+    except: return None
+
+  # Get a list of all unique node IDs.
+  def getUniqueNodeIDs(self):
+    try: return self.uniqueNodeAttributes.keys()
     except: return None
 
   # Get an attribute about a unique node.
