@@ -1,7 +1,7 @@
 {
   "id" : "vcf-filter",
   "description" : "Filter vcf files on a variety of parameters.",
-  "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
+  "categories" : ["VCF-processing", "Vcflib", "Marthlab-software"],
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
   "executable" : "vcffilter",

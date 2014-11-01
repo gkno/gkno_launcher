@@ -159,6 +159,15 @@
       }
     },
     {
+      "ID" : "max-mismatch",
+      "description" : "Specifies the maximum percentage of allowed mismatched.",
+      "long form argument" : "--mismatch-percentage",
+      "short form argument" : "-mmp",
+      "tasks" : {
+        "align" : "--mismatch-percentage"
+      }
+    },
+    {
       "ID" : "max hash",
       "description" : "Specifies the maximum number of positions stored for each hash.",
       "long form argument" : "--maximum-hashes-per-seed",

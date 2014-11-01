@@ -1,14 +1,10 @@
 {
-  "description" : "Call short variants using freebayes.",
+  "description" : "Call variants and combine into a single vcf file.",
   "categories" : ["Variant-discovery"],
 
   "tasks" : {
-    "merge" : {
-      "tool" : "bamtools-merge",
-      "output to stream" : true
-    },
     "call" : {
-      "tool" : "freebayes"
+      "tool" : "wham-bam"
     },
     "combine" : {
       "tool" : "vcf-combine-uncompressed",
@@ -25,11 +21,29 @@
   "nodes" : [
     {
       "ID" : "bam",
-      "description" : "The input BAM file.",
+      "description" : "The input (case) BAM file(s).",
       "long form argument" : "--in",
       "short form argument" : "-i",
       "tasks" : {
-        "merge" : "--in"
+        "call" : "--in"
+      }
+    },
+    {
+      "ID" : "background",
+      "description" : "Background (control) BAM files.",
+      "long form argument" : "--background-bams",
+      "short form argument" : "-b",
+      "tasks" : {
+        "call" : "--background-bams"
+      }
+    },
+    {
+      "ID" : "bed",
+      "description" : "A BED file defining regions to score.",
+      "long form argument" : "--bed",
+      "short form argument" : "-s",
+      "tasks" : {
+        "call" : "--bed"
       }
     },
     {
@@ -39,24 +53,16 @@
       "short form argument" : "-rg",
       "required" : true,
       "tasks" : {
-        "merge" : "--region"
+        "call" : "--region"
       }
     },
     {
-      "ID" : "ref",
-      "description" : "The fasta reference.",
-      "long form argument" : "--fasta-reference",
-      "short form argument" : "-r",
+      "ID" : "threads",
+      "description" : "Use the specified number of threads.",
+      "long form argument" : "--threads",
+      "short form argument" : "-t",
       "tasks" : {
-        "call" : "--fasta-reference"
-      }
-    },
-    {
-      "ID" : "call",
-      "description" : "Call variants on the bam file.",
-      "tasks" : {
-        "merge" : "--out",
-        "call" : "--in"
+        "call" : "--threads"
       }
     },
     {
@@ -72,15 +78,18 @@
     },
     {
       "ID" : "compress",
-      "description" : "Compress the final vcf file.",
+      "description" : "Compress the VCF file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
       "tasks" : {
         "combine" : "--out",
         "compress" : "--in"
-      }
+      },
+      "delete files" : true
     },
     {
       "ID" : "index",
-      "description" : "Index the final vcf file.",
+      "description" : "Index the VCF file.",
       "tasks" : {
         "compress" : "--out",
         "index" : "--in"
@@ -103,30 +112,15 @@
         {
           "ID" : "bam",
           "argument" : "--in",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam", "$(RESOURCES)/tutorial/current/mutated_genome_set2.bam"]
-        },
-        {
-          "ID" : "ref",
-          "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
-        },
-        {
-          "ID" : "region",
-          "argument" : "--region",
-          "values" : [20]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         }
       ]
     },
 
     {
       "ID" : "human",
-      "description" : "The parameter set for the human genome.",
+      "description" : "Parameter set for the human genome.",
       "nodes" : [
-        {
-          "ID" : "ref",
-          "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
-        }
       ]
     }
   ]

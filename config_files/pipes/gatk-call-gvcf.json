@@ -51,6 +51,18 @@
       }
     },
     {
+      "ID" : "threads",
+      "description" : "The number of threads to use.",
+      "long form argument" : "--threads",
+      "short form argument" : "-t",
+      "tasks" : {
+        "create-target-intervals" : "--threads",
+        "recalibrate" : "--threads",
+        "print-reads" : "--threads",
+        "single-sample-call" : "--threads"
+      }
+    },
+    {
       "ID" : "known-alleles",
       "description" : "Known variant alleles.",
       "long form argument" : "--known-sites",
@@ -147,6 +159,18 @@
       "ID" : "test",
       "description" : "Test parameter set for the test harness.",
       "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "human",
+      "description" : "Human instance uses resources for the human genome.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        }
       ]
     }
   ]

@@ -1,7 +1,7 @@
 {
   "id" : "vcf-primitives",
   "description" : "Split single vcf records into multiple primitives (gaps, mismatches).",
-  "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
+  "categories" : ["VCF-processing", "Vcflib", "Marthlab-software"],
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
   "executable" : "vcfallelicprimitives",

@@ -60,7 +60,7 @@
       {
         "description" : "A recalibration table from the gatk-recalibrate-bq.",
         "long form argument" : "--recalibration-table",
-        "short form argument" : "-t",
+        "short form argument" : "-c",
         "command line argument" : "--BQSR",
         "data type" : "string",
         "extensions" : [".table"]
@@ -113,6 +113,14 @@
         "short form argument" : "-rg",
         "command line argument" : "--intervals",
         "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "The number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
+        "command line argument" : "--num_threads",
+        "data type" : "integer",
         "extensions" : ["no extension"]
       }
     ]

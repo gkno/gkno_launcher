@@ -747,7 +747,7 @@ class makefileData:
 
           # If the command line should consist of a comma separated list of values, update the valueList to 
           # reflect this.
-          if config.tools.getArgumentAttribute(tool, argument, 'isCommaSeparatedList'):
+          if config.tools.getArgumentAttribute(tool, argument, 'isCommaSeparatedList') and valueList:
             valueList = self.valueMethods.produceCommaSeparatedList(valueList)
  
           # Determine if the value is to be contained in qutotaion marks or spaces.

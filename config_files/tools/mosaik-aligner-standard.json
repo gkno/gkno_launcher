@@ -146,7 +146,7 @@
         "extensions" : ["no extension"]
       },    
       {
-        "description" : "Uses the specified number of threads.",
+        "description" : "Use the specified number of threads.",
         "long form argument" : "--threads",
         "short form argument" : "-t",
         "command line argument" : "-p",

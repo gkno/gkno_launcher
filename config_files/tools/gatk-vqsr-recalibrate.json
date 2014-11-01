@@ -1,6 +1,6 @@
 {
-  "id" : "gatk-genotype-gvcfs",
-  "description" : "Joint call genotypes from a list of GVCF files.",
+  "id" : "gatk-vqsr-recalibrate",
+  "description" : "Recalibrate the VCF files.",
   "categories" : ["GATK"],
   "tools" : ["gatk"],
   "path" : "gatk",
@@ -34,21 +34,63 @@
         }
       },
       {
-        "description" : "The input GVCF file(s).",
+        "description" : "The raw input variants to be recalibrated.",
         "long form argument" : "--in",
         "short form argument" : "-i",
-        "command line argument" : "--variant",
+        "command line argument" : "--input",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".vcf"],
-        "allow multiple values" : true,
-        "allow list of repeated arguments" : true
+        "extensions" : [".vcf", ".vcf.gz"]
+      },
+      {
+        "description" : "The input recal file used by ApplyRecalibration.",
+        "long form argument" : "--recal-file",
+        "short form argument" : "-rf",
+        "command line argument" : "--recal_file",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".recal"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_vqsr"]
+            },
+            {
+              "add argument values" : ["--mode"]
+            }
+          ]
+        }
+      },
+      {
+        "description" : "The input tranches file describing where to cut the data.",
+        "long form argument" : "--tranches-file",
+        "short form argument" : "-tf",
+        "command line argument" : "--tranches_file",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".tranches"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_vqsr"]
+            },
+            {
+              "add argument values" : ["--mode"]
+            }
+          ]
+        }
       }
     ],
 
     "outputs" : [
       {
-        "description" : "The output VCF file.",
+        "description" : "The output filtered and recalibrated VCF file in which each variant is annotated with its VQSLOD value",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "--out",
@@ -61,7 +103,7 @@
           "modify extension" : "replace",
           "modify text" : [
             {
-              "add text" : ["_joint_call"]
+              "add text" : ["_gatk_recalibrated"]
             }
           ]
         }
@@ -95,13 +137,21 @@
         "extensions" : ["no extension"]
       },
       {
-        "description" : "One or more specific annotations to apply to variant calls.",
-        "long form argument" : "--annotation",
-        "short form argument" : "-n",
-        "command line argument" : "--annotation",
+        "description" : "Recalibration mode to employ (SNP|INDEL|BOTH).",
+        "long form argument" : "--mode",
+        "short form argument" : "-m",
+        "command line argument" : "--mode",
+        "required" : true,
         "data type" : "string",
-        "extensions" : ["no extension"],
-        "allow multiple values" : true
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "The truth sensitivity level at which to start filtering.",
+        "long form argument" : "--truth-sensitivity",
+        "short form argument" : "-s",
+        "command line argument" : "--ts_filter_level",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
       },
       {
         "description" : "The number of threads.",
@@ -127,12 +177,7 @@
         {
           "ID" : "analysis",
           "argument" : "--analysis-type",
-          "values" : ["GenotypeGVCFs"]
-        },
-        {
-          "ID" : "annotations",
-          "argument" : "--annotation",
-          "values" : ["Coverage", "QualByDepth", "FisherStrand", "MappingQualityRankSumTest", "ReadPosRankSumTest"]
+          "values" : ["ApplyRecalibration"]
         }
       ]
     },
@@ -147,11 +192,6 @@
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
         },
         {
-          "ID" : "bam",
-          "argument" : "--in",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
-        },
-        {
           "ID" : "output path",
           "values" : ["./"],
           "argument" : "--output-path"
@@ -160,13 +200,45 @@
     },
 
     {
-      "ID" : "human",
-      "description" : "Parameter set for the human genome.",
+      "ID" : "human-snp",
+      "description" : "Parameter set for recalibrating SNPs in the human genome.",
       "nodes" : [
         {
           "ID" : "reference",
           "argument" : "--fasta-reference",
           "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "ID" : "mode",
+          "argument" : "--mode",
+          "values" : ["SNP"]
+        },
+        {
+          "ID" : "sensitivity",
+          "argument" : "--truth-sensitivity",
+          "values" : [99.0]
+        }
+      ]
+    },
+
+    {
+      "ID" : "human-indel",
+      "description" : "Parameter set for recalibrating indels in the human genome.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "ID" : "mode",
+          "argument" : "--mode",
+          "values" : ["INDEL"]
+        },
+        {
+          "ID" : "sensitivity",
+          "argument" : "--truth-sensitivity",
+          "values" : [99.0]
         }
       ]
     }

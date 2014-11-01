@@ -1,0 +1,102 @@
+{
+  "id" : "wham-bam",
+  "description" : "Structural variant detection.",
+  "categories" : ["Variant-discovery", "SV-discovery"],
+  "tools" : ["wham-bam"],
+  "path" : "wham/bin",
+  "executable" : "WHAM-BAM",
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "Input BAM file(s).",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "-t",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bam"],
+        "allow multiple values" : true,
+        "comma separated list" : true,
+        "allow list of repeated arguments" : true
+      },
+      {
+        "description" : "Background BAM file(s). If specified, association testing is done between the input (case) and background (control) BAMs.",
+        "long form argument" : "--background-bams",
+        "short form argument" : "-b",
+        "command line argument" : "-b",
+        "data type" : "string",
+        "extensions" : [".bam"],
+        "allow multiple values" : true,
+        "comma separated list" : true,
+        "allow list of repeated arguments" : true
+      },
+      {
+        "description" : "A BED file defining regions to score.",
+        "long form argument" : "--bed",
+        "short form argument" : "-e",
+        "command line argument" : "-e",
+        "extensions" : [".bed"],
+        "data type" : "string"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The output VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "-out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".vcf"],
+        "modify argument name on command line" : "stdout",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_wham"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The genomic region to analyse.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "command line argument" : "-r",
+        "extensions" : ["no extension"],
+        "data type" : "string"
+      },
+      {
+        "description" : "Use the specified number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
+        "command line argument" : "-x",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

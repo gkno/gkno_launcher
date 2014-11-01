@@ -345,8 +345,17 @@
       "tasks" : {
         "breakpoint-discovery" : "--region",
         "merge-bams" : "--region",
-        "gatk-call" : "--region",
         "merge-bams-graph" : "--region"
+      }
+    },
+    {
+      "ID" : "GATK-region",
+      "description" : "The genomic region for consideration.",
+      "long form argument" : "--gatk-region",
+      "short form argument" : "-rg2",
+      "required" : true,
+      "tasks" : {
+        "gatk-call" : "--region"
       }
     },
     {
@@ -1365,6 +1374,28 @@
           "ID" : "ref name",
           "argument" : "--reference-name",
           "values" : ["REF"]
+        },
+        {
+          "ID" : "ref date",
+          "argument" : "--reference-date",
+          "values" : ["2009"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "human",
+      "description" : "Parameter set for the human genome.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "ID" : "ref name",
+          "argument" : "--reference-name",
+          "values" : ["b37"]
         },
         {
           "ID" : "ref date",

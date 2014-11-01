@@ -5,7 +5,7 @@
   "tools" : ["gatk"],
   "path" : "gatk",
   "executable" : "GenomeAnalysisTK.jar",
-  "precommand" : "java -Xmx2g -jar",
+  "precommand" : "java -Xmx16g -jar",
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [

@@ -1,7 +1,7 @@
 {
   "id" : "vcf-combine",
   "description" : "Combine vcf files.",
-  "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
+  "categories" : ["VCF-processing", "Vcflib", "Marthlab-software"],
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
   "executable" : "vcfcombine",

@@ -415,12 +415,12 @@
         {
           "ID" : "jump database",
           "argument" : "--jump-database",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_15"]
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_moblist_15"]
         },
         {
           "ID" : "reference",
           "argument" : "--mosaik-reference",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37.dat"]
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_moblist.dat"]
         },
         {
           "ID" : "se neural net",

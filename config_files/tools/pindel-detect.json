@@ -25,6 +25,22 @@
         "required" : true,
         "extensions" : [".fa", ".fasta"],
         "data type" : "string"
+      },
+      {
+        "description" : "A filename of a list of SV calls for assembling breakpoints - types: DEL, INS, DUP, INV, CTX and ITX. File format: Type chrA posA Confidence_Range_A chrB posB Confidence_Range_B. Example: DEL chr1 10000 50 chr2 20000 100.",
+        "long form argument" : "--input-sv-calls",
+        "short form argument" : "-is",
+        "command line argument" : "--input_SV_Calls_for_assembly",
+        "extensions" : ["no extension"],
+        "data type" : "string"
+      },
+      {
+        "description" : "A file with ploidy information per chromosome for genotyping. Each line: ChrName Ploidy. For example, chr1 2.",
+        "long form argument" : "--ploidy-file",
+        "short form argument" : "-p",
+        "command line argument" : "--Ploidy",
+        "extensions" : ["no extension"],
+        "data type" : "flag"
       }
     ],
   
@@ -55,6 +71,15 @@
           "use argument" : "--in",
           "modify extension" : "omit"
         }
+      },
+      {
+        "description" : "Specifies a file to write Pindel's log to [default: pindel.log].",
+        "long form argument" : "--log-file",
+        "short form argument" : "-l",
+        "required" : true,
+        "command line argument" : "--name_of_logfile",
+        "extensions" : [".log"],
+        "data type" : "string"
       }
     ],
   
@@ -75,6 +100,150 @@
         "command line argument" : "--number_of_threads",
         "extensions" : ["no extension"],
         "data type" : "integer"
+      },
+      {
+        "description" : "Search for discordant read-pair signal to improve sensitivity [default: true].",
+        "long form argument" : "--read-pair",
+        "short form argument" : "-rp",
+        "command line argument" : "--RP",
+        "extensions" : ["no extension"],
+        "data type" : "bool"
+      },
+      {
+        "description" : "The minimum number of bases required to match the reference [default: 8].",
+        "long form argument" : "--minimum-matches",
+        "short form argument" : "-ma",
+        "command line argument" : "--min_distance_to_the_end",
+        "extensions" : ["no extension"],
+        "data type" : "bool"
+      },
+      {
+        "description" : "The maximum size of structural variations to be detected; the higher this number, the greater the number of SVs reported, but the computational cost and memory requirements increase, as does the rate of false positives. 1=128, 2=512, 3=2,048, 4=8,092, 5=32,368, 6=129,472, 7=517,888, 8=2,071,552, 9=8,286,208. [maximum: 9, default: 4].", 
+        "long form argument" : "--maximum-range-index",
+        "short form argument" : "-mri",
+        "command line argument" : "--max_range_index",
+        "extensions" : ["no extension"],
+        "data type" : "integer"
+      },
+      {
+        "description" : "For saving RAM, divides the reference in bins of X million bases and only analyzes the reads that belong in the current bin, [default: 5 (=5 million)].",
+        "long form argument" : "--window-size",
+        "short form argument" : "-w",
+        "command line argument" : "--window_size",
+        "extensions" : ["no extension"],
+        "data type" : "integer"
+      },
+      {
+        "description" : "The expected fraction of sequencing errors [default 0.01].",
+        "long form argument" : "--error-rate",
+        "short form argument" : "-e",
+        "command line argument" : "--sequencing_error_rate",
+        "extensions" : ["no extension"],
+        "data type" : "float"
+      },
+      {
+        "description" : "Pindel only reports reads if they can be fit around an event within a certain number of mismatches. If the fraction of sequencing errors is 0.01, (so we'd expect a total error rate of 0.011 since on average 1 in 1000 bases is a SNP) and Pindel calls a deletion, but there are 4 mismatched bases in the new fit of the Pindel read (100 bases) to the reference genome, Pindel would calculate that with an error rate of 0.01 (=0.011 including SNPs) the chance that there are 0, 1 or 2 mismatched bases in the reference genome is 90%. Setting -E to .90 (=90%) will therefore throw away all reads with 3 or more mismatches, even though that means that you throw away 1 in 10 valid reads. Increasing this parameter to say 0.99 will increase the sensitivity of Pindel, though you may get more false positives. Decreasing the parameter ensures you only get very good matches but Pindel may not find as many events. [default: 0.95].",
+        "long form argument" : "--sensitivity",
+        "short form argument" : "-s",
+        "command line argument" : "--sensitivity",
+        "extensions" : ["no extension"],
+        "data type" : "float"
+      },
+      {
+        "description" : "Only reads with more than this fraction of mismatches to the reference genome will be considered as harboring potential SVs. [default: 0.02].",
+        "long form argument" : "--maximum-allowed-mismatch-rate",
+        "short form argument" : "-mmr",
+        "command line argument" : "--maximum_allowed_mismatch_rate",
+        "extensions" : ["no extension"],
+        "data type" : "float"
+      },
+      {
+        "description" : "The edit distance between reads and the reference genome. Reads greater than or equal to the edit distance (>= NM) will be realigned [default: 2]",
+        "long form argument" : "--edit-distance",
+        "short form argument" : "-ed",
+        "command line argument" : "--NM",
+        "extensions" : ["no extension"],
+        "data type" : "float"
+      },
+      {
+        "description" : "Search for consensus indels to correct contigs [default: false].",
+        "long form argument" : "--indel-correction",
+        "short form argument" : "-ic",
+        "command line argument" : "--IndelCorrection",
+        "extensions" : ["no extension"],
+        "data type" : "float"
+      },
+      {
+        "description" : "Turn on germline filtering. Less sensistive and you may miss somatic calls [default: false].",
+        "long form argument" : "--normal-samples",
+        "short form argument" : "-ns",
+        "command line argument" : "--NormalSamples",
+        "extensions" : ["no extension"],
+        "data type" : "float"
+      },
+      {
+        "description" : "Pindel will only map part of a read to the reference genome if there are no other candidate positions with no more than the specified number of mismatches. The bigger the value, the more accurate but less sensitive [minimum: 1, default: 1]",
+        "long form argument" : "--additional-mismatch",
+        "short form argument" : "-am",
+        "command line argument" : "--additional_mismatch",
+        "extensions" : ["no extension"],
+        "data type" : "integer"
+      },
+      {
+        "description" : "At the point where the read is split into two, there should be at least this number of perfectly matching bases between read and reference [default: 3].",
+        "long form argument" : "--minimum-perfect-matches-around-breakpoint",
+        "short form argument" : "-mp",
+        "command line argument" : "--min_perfect_match_around_BP",
+        "extensions" : ["no extension"],
+        "data type" : "integer"
+      },
+      {
+        "description" : "Only report inversions greater than this number of bases [default: 50].",
+        "long form argument" : "--minimum-inversion-size",
+        "short form argument" : "-mis",
+        "command line argument" : "--min_inversion_size",
+        "extensions" : ["no extension"],
+        "data type" : "integer"
+      },
+      {
+        "description" : "Only consider reads as evidence if they map with more than X bases to the reference [default: 30].",
+        "long form argument" : "--minimum-number-matched-bases",
+        "short form argument" : "-mb",
+        "command line argument" : "--min_num_matched_bases",
+        "extensions" : ["no extension"],
+        "data type" : "integer"
+      },
+      {
+        "description" : "The SV size above which a more stringent filter is applied which demands that both sides of the SV are mapped with sufficiently long strings of bases [default: 0].",
+        "long form argument" : "--balance-cutoff",
+        "short form argument" : "-b",
+        "command line argument" : "--balance_cutoff",
+        "extensions" : ["no extension"],
+        "data type" : "integer"
+      },
+      {
+        "description" : "The minimum mapping quality of the reads Pindel uses as anchor. If you only need high confidence calls, set this to 30 or higher [default: 0].",
+        "long form argument" : "--anchor-quality",
+        "short form argument" : "-q",
+        "command line argument" : "--anchor_quality",
+        "extensions" : ["no extension"],
+        "data type" : "integer"
+      },
+      {
+        "description" : "Pindel only calls events which have this number or more supporting reads [default: 3].",
+        "long form argument" : "--minimum-support",
+        "short form argument" : "-ms",
+        "command line argument" : "--minimum_support_for_event",
+        "extensions" : ["no extension"],
+        "data type" : "integer"
+      },
+      {
+        "description" : "Genotype variants.",
+        "long form argument" : "--genotyping",
+        "short form argument" : "-g",
+        "command line argument" : "--genotyping",
+        "extensions" : ["no extension"],
+        "data type" : "flag"
       }
     ]
   },
@@ -83,7 +252,13 @@
     {
       "ID" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : []
+      "nodes" : [
+        {
+          "ID" : "log",
+          "argument" : "--log-file",
+          "values" : ["pindel.log"]
+        }
+      ]
     },
 
     {

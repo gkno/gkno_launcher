@@ -1,7 +1,7 @@
 {
   "id" : "vcf-sort",
   "description" : "Sort a vcf file.",
-  "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
+  "categories" : ["VCF-processing", "Vcflib", "Marthlab-software"],
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
   "executable" : "vcfsort",
