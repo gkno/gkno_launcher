@@ -18,7 +18,7 @@ class taskAttributes:
     self.tool            = None
 
 # Define a class to hold information for shared nodes.
-class sharedNodeTaskAttributes:
+class nodeTaskAttributes:
   def __init__(self):
     self.pipeline       = None
     self.pipelineNodeID = None
@@ -74,6 +74,18 @@ class uniqueGraphNodes:
     self.task         = None
     self.taskArgument = None
 
+# Define a class to store information on edges to be created. These are defined using the
+# 'connect nodes and edges' section in the pipeline configuration file.
+class edgeDefinitions:
+  def __init__(self):
+
+    #An id for the node.
+    self.id = None
+
+    # Store information on the source and targets.
+    self.sourceInformation = []
+    self.targetInformation = []
+
 # Define a class to store general pipeline attributes,
 class pipelineConfiguration:
   def __init__(self):
@@ -102,14 +114,13 @@ class pipelineConfiguration:
     # Pipeline graph nodes that are kept as unique for a specific task,
     self.uniqueNodeAttributes = {}
 
+    # The connections that need to be made between nodes and tasks.
+    self.connections = {}
+
     # If the pipeline contains tasks that are themselves pipelines. Store all of the pipelines
     # used in this pipeline.
     self.hasPipelineAsTask = False
     self.requiredPipelines = []
-
-    # Store all of the unique and shared node IDs.
-    self.uniqueNodeIDs = []
-    self.sharedNodeIDs = []
 
     # If the pipeline is nested within other pipelines, the nodes associated with this pipeline
     # have an address to locate them within the graph structure. For example, if the main pipeline
@@ -120,6 +131,10 @@ class pipelineConfiguration:
     # It is sometimes desirable to allow all steps to be processed without termination. Other
     # times, if a problem is encountered, execution should terminate. Keep track of this.
     self.allowTermination = True
+
+    # As pipeline configuration files are processed, success will identify whether a problem was
+    # encountered.
+    self.success = True
 
   # Open a configuration file, process the data and return.
   def getConfigurationData(self, filename):
@@ -137,67 +152,36 @@ class pipelineConfiguration:
     success = self.checkTopLevelInformation(data)
 
     # Parse the tasks comprising the pipeline.
-    if success: success = self.checkPipelineTasks(data['pipeline tasks'])
+    if self.success: self.checkPipelineTasks(data['pipeline tasks'])
 
     # Parse the unique node information.
-    if success: success = self.checkUniqueNodes(data)
+    if self.success: self.checkUniqueNodes(data)
 
     # Parse the shared node information.
-    if success: success = self.checkSharedNodes(data)
+    if self.success: self.checkSharedNodes(data)
 
     # Now check that the contents of each 'node' within the shared node information is valid.
-    if success: success = self.checkSharedNodeTasks()
+    if self.success: self.checkSharedNodeTasks()
+
+    # Check that any nodes and tasks to be joined are correctly defined.
+    if self.success: self.checkDefinedEdges(data)
 
   # Process the top level pipeline configuration information.
   def checkTopLevelInformation(self, data):
 
     # Define the allowed general attributes.
-    allowedAttributes                       = {}
-    allowedAttributes['id']                 = (str, True, True, 'id')
-    allowedAttributes['description']        = (str, True, True, 'description')
-    allowedAttributes['categories']         = (list, True, True, 'categories')
-    allowedAttributes['parameter sets']     = (list, True, False, None)
-    allowedAttributes['pipeline tasks']     = (list, True, False, None)
-    allowedAttributes['shared graph nodes'] = (list, False, False, None)
-    allowedAttributes['unique graph nodes'] = (list, False, False, None)
+    allowedAttributes                            = {}
+    allowedAttributes['id']                      = (str, True, True, 'id')
+    allowedAttributes['description']             = (str, True, True, 'description')
+    allowedAttributes['categories']              = (list, True, True, 'categories')
+    allowedAttributes['connect nodes to tasks' ] = (list, False, False, None)
+    allowedAttributes['parameter sets']          = (list, True, False, None)
+    allowedAttributes['pipeline tasks']          = (list, True, False, None)
+    allowedAttributes['shared graph nodes']      = (list, False, False, None)
+    allowedAttributes['unique graph nodes']      = (list, False, False, None)
 
-    # Keep track of the observed required values.
-    observedAttributes = {}
-
-    # Loop over all of the attributes in the configuration file.
-    for attribute in data:
-
-      # If the value is not in the allowedAttributes, it is not an allowed value and execution
-      # should be terminate with an error.
-      if attribute not in allowedAttributes:
-        #TODO ERROR
-        if self.allowTermination: print('pipeline.checkTopLevelInformation - 1'); exit(0) # invalidGeneralAttributeInConfigurationFile
-        else: return False
-
-      # Mark this values as having been observed,
-      observedAttributes[attribute] = True
-
-      # Check that the value given to the attribute is of the correct type. If the value is unicode,
-      # convert to a string first.
-      value = str(data[attribute]) if isinstance(data[attribute], unicode) else data[attribute]
-      if allowedAttributes[attribute][0] != type(value):
-        #TODO ERROR
-        if self.allowTermination: print('pipeline.checkTopLevelInformation - 2'); exit(0) # incorrectTypeInPipelineConfigurationFile
-        else: return False
-
-      # At this point, the attribute in the configuration file is allowed and of valid type. Check that 
-      # the value itself is valid (if necessary) and store the value.
-      if allowedAttributes[attribute][2]: setattr(self, attribute, value)
-
-    # Having parsed all of the general attributes attributes, check that all those that are required
-    # are present.
-    for attribute in allowedAttributes:
-      if allowedAttributes[attribute][1] and attribute not in observedAttributes:
-        #TODO ERROR
-        if self.allowTermination: print('pipeline.checkTopLevelInformation - 3'); exit(0) # missingGeneralAttributeInConfigurationFile
-        return False
-
-    return True
+    # Check the attributes against the allowed attributes and make sure everything is ok.
+    self = self.checkAttributes(data, allowedAttributes, self)
 
   # Check the pipeline tasks. Ensure that all of the tasks are either available tools or other pipelines.
   def checkPipelineTasks(self, data):
@@ -213,43 +197,16 @@ class pipelineConfiguration:
       # Define a class to store task attribtues.
       attributes = taskAttributes()
 
-      # Keep track of the observed required values.
-      observedAttributes = {}
-
-      # Loop over the included attributes.
-      for attribute in taskInformation:
-        value = str(taskInformation[attribute])
-
-        if attribute not in allowedAttributes:
-          #TODO ERROR
-          if self.allowTermination: print('pipeline.checkPipelineTasks - 1'); exit(0) # invalidAttributeInTasks
-          return False
-
-        # Check that the value given to the attribute is of the correct type.
-        if allowedAttributes[attribute][0] != type(value):
-          #TODO ERROR
-          if self.allowTermination: print('pipeline.checkPipelineTasks - 2'); exit(0) # incorrectTypeInPipelineConfigurationFile
-          else: return False
-
-        # Mark the attribute as seen.
-        observedAttributes[attribute] = True
-
-        # Store the given attribtue.
-        if allowedAttributes[attribute][2]: self.setAttribute(attributes, allowedAttributes[attribute][3], value)
-
-      # Having parsed all of the general attributes attributes, check that all those that are required
-      # are present.
-      for attribute in allowedAttributes:
-        if allowedAttributes[attribute][1] and attribute not in observedAttributes:
-          #TODO ERROR
-          if self.allowTermination: print('pipeline.checkPipelineTasks - 3', attribute); exit(0) # missingAttributeInPipelineConfigurationFile
-          else: return False
+      # Check all the supplied attributes.
+      attributes = self.checkAttributes(taskInformation, allowedAttributes, attributes)
 
       # Check that the task name is unique.
       if attributes.task in self.pipelineTasks:
         #TODO ERROR
         if self.allowTermination: print('pipeline.checkPipelineTasks - 4', attributes.task); exit(0)
-        else: return False
+        else:
+          self.success = False
+          return
 
       # Store the attributes for the task.
       self.pipelineTasks[attributes.task] = attributes
@@ -275,13 +232,11 @@ class pipelineConfiguration:
         self.requiredPipelines.append((attributes.task, pipeline))
         self.hasPipelineAsTask = True
 
-    return True
-
   # If information on unique nodes exists, check that everything is valid.
   def checkUniqueNodes(self, data):
 
     # If there is not information on unique graph nodes, return.
-    if 'unique graph nodes' not in data: return True
+    if 'unique graph nodes' not in data: return
 
     # Define the allowed nodes attributes.
     allowedAttributes                        = {}
@@ -297,72 +252,29 @@ class pipelineConfiguration:
     for uniqueNode in data['unique graph nodes']:
 
       # Check that the supplied structure is a dictionary.
-      if not isinstance(uniqueNode, dict):
-        #TODO ERROR
-        if self.allowTermination: print('checkUniqueNodes - 1'); exit(0) # nodeIsNotADictionary
-        else: return False
+      if not self.checkIsDictionary(uniqueNode): return
 
       # Define the attributes object.
       attributes = uniqueGraphNodes()
 
-      # Keep track of the observed required values.
-      observedAttributes = {}
-
-      # Check that the node has an ID. This will be used to identify the node in error messages.
-      try: nodeID = str(uniqueNode['id'])
-      except:
-        #TODO ERROR
-        if self.allowTermination: print('pipeline.checkUniqueNodes - 2'); exit(0) # noIDInPipelineNode
-        else: return False
-
-      # Store the node ID.
-      self.uniqueNodeIDs.append(nodeID)
-
-      # Loop over all attributes in the node.
-      for attribute in uniqueNode:
-        if attribute not in allowedAttributes:
-          # TODO ERROR
-          if self.allowTermination: print('pipeline.checkUniqueNodes - 3'); exit(0) # invalidAttributeInNodes
-          else: return False
-
-        # Check that the value given to the attribute is of the correct type. If the value is unicode,
-        # convert to a string first.
-        value = str(uniqueNode[attribute]) if isinstance(uniqueNode[attribute], unicode) else uniqueNode[attribute]
-        if allowedAttributes[attribute][0] != type(value):
-          if self.allowTermination: print('pipeline.checkUniqueNodes - 4'); exit(0) # incorrectTypeInPipelineConfigurationFile
-          else: return False
-
-        # Mark the attribute as seen.
-        observedAttributes[attribute] = True
-
-        # Store the given attribtue.
-        if allowedAttributes[attribute][2]: self.setAttribute(attributes, allowedAttributes[attribute][3], uniqueNode[attribute])
-
-      # Having parsed all of the general attributes attributes, check that all those that are required
-      # are present.
-      for attribute in allowedAttributes:
-        if allowedAttributes[attribute][1] and attribute not in observedAttributes:
-          #TODO ERROR
-          if self.allowTermination: print('pipeline.checkUniqueNodes - 5'); exit(0) # missingAttributeInPipelineConfigurationFile
-          else: return False
+      # Check the attributes conform to expectations.
+      attributes = self.checkAttributes(uniqueNode, allowedAttributes, attributes)
 
       # If the nodeID already exists in the attributes, a node of this name has already been seen. All 
       #nodes must have a unique name.
-      if nodeID in self.uniqueNodeAttributes: print('pipeline.checkUniqueNodes - 6'); exit(0)
+      if attributes.id in self.uniqueNodeAttributes: print('pipeline.checkUniqueNodes - 6'); exit(0)
 
       # Also check that the node id is not the name of a task.
-      if nodeID in self.allTasks: print('pipeline.checkUniqueNodes - 7'); exit(0)
+      if attributes.id in self.allTasks: print('pipeline.checkUniqueNodes - 7'); exit(0)
 
       # Store the attributes.
-      self.uniqueNodeAttributes[nodeID] = attributes
-
-    return True
+      self.uniqueNodeAttributes[attributes.id] = attributes
 
   # If information on shared nodes exists, check that everything is valid.
   def checkSharedNodes(self, data):
 
     # If there is not information on unique graph nodes, return.
-    if 'shared graph nodes' not in data: return True
+    if 'shared graph nodes' not in data: return
 
     # Define the allowed nodes attributes.
     allowedAttributes                           = {}
@@ -376,66 +288,23 @@ class pipelineConfiguration:
     for sharedNode in data['shared graph nodes']:
 
       # Check that the supplied structure is a dictionary.
-      if not isinstance(sharedNode, dict):
-        #TODO ERROR
-        if self.allowTermination: print('checkSharedNodes - 1'); exit(0) # nodeIsNotADictionary
-        else: return False
+      if not self.checkIsDictionary(sharedNode): return
 
       # Define the attributes object.
       attributes = sharedGraphNodes()
 
-      # Keep track of the observed required values.
-      observedAttributes = {}
-
-      # Check that the node has an ID. This will be used to identify the node in error messages.
-      try: nodeID = str(sharedNode['id'])
-      except:
-        #TODO ERROR
-        if self.allowTermination: print('pipeline.checkSharedNodes - 2'); exit(0) # noIDInPipelineNode
-        else: return False
-
-      # Store the node ID.
-      self.sharedNodeIDs.append(nodeID)
-
-      # Loop over all attributes in the node.
-      for attribute in sharedNode:
-        if attribute not in allowedAttributes:
-          # TODO ERROR
-          if self.allowTermination: print('pipeline.checkSharedNodes - 3'); exit(0) # invalidAttributeInNodes
-          else: return False
-
-        # Check that the value given to the attribute is of the correct type. If the value is unicode,
-        # convert to a string first.
-        value = str(sharedNode[attribute]) if isinstance(sharedNode[attribute], unicode) else sharedNode[attribute]
-        if allowedAttributes[attribute][0] != type(value):
-          if self.allowTermination: print('pipeline.checkSharedNodes - 4'); exit(0) # incorrectTypeInPipelineConfigurationFile
-          else: return False
-
-        # Mark the attribute as seen.
-        observedAttributes[attribute] = True
-
-        # Store the given attribtue.
-        if allowedAttributes[attribute][2]: self.setAttribute(attributes, allowedAttributes[attribute][3], sharedNode[attribute])
-
-      # Having parsed all of the general attributes attributes, check that all those that are required
-      # are present.
-      for attribute in allowedAttributes:
-        if allowedAttributes[attribute][1] and attribute not in observedAttributes:
-          #TODO ERROR
-          if self.allowTermination: print('pipeline.checkSharedNodes - 5'); exit(0) # missingAttributeInPipelineConfigurationFile
-          else: return False
+      # Check the attributes conform to expectations.
+      attributes = self.checkAttributes(sharedNode, allowedAttributes, attributes)
 
       # If the nodeID already exists in the attributes, a node of this name has already been seen. All 
       #nodes must have a unique name.
-      if nodeID in self.sharedNodeAttributes: print('pipeline.checkSharedNodes - 6'); exit(0)
+      if attributes.id in self.sharedNodeAttributes: print('pipeline.checkSharedNodes - 6'); exit(0)
 
       # Also check that the node id is not the name of a task.
-      if nodeID in self.allTasks: print('pipeline.checkSharedNodes - 7'); exit(0)
+      if attributes.id in self.allTasks: print('pipeline.checkSharedNodes - 7'); exit(0)
 
       # Store the attributes.
-      self.sharedNodeAttributes[nodeID] = attributes
-
-    return True
+      self.sharedNodeAttributes[attributes.id] = attributes
 
   # For each task in each shared graph node, ensure that the information in the configuration
   # file is complete.
@@ -453,45 +322,14 @@ class pipelineConfiguration:
       for node in self.sharedNodeAttributes[nodeID].nodes:
 
         # Check that the supplied structure is a dictionary.
-        if not isinstance(node, dict):
-          #TODO ERROR
-          if self.allowTermination: print('pipeline.checkSharedNodeTasks - 1'); exit(0) # nodeIsNotADictionary
-          else: return False
-  
+        if not self.checkIsDictionary(node): return
+
         # Define the attributes object.
-        attributes = sharedNodeTaskAttributes()
+        attributes = nodeTaskAttributes()
   
-        # Keep track of the observed required values.
-        observedAttributes = {}
-  
-        # Loop over all attributes in the node.
-        for attribute in node:
-          if attribute not in allowedAttributes:
-            # TODO ERROR
-            if self.allowTermination: print('pipeline.checkSharedNodeTasks - 2'); exit(0) # invalidAttributeInNodes
-            else: return False
-  
-          # Check that the value given to the attribute is of the correct type. If the value is unicode,
-          # convert to a string first.
-          value = str(node[attribute]) if isinstance(node[attribute], unicode) else node[attribute]
-          if allowedAttributes[attribute][0] != type(value):
-            if self.allowTermination: print('pipeline.checkSharedNodeTasks - 3'); exit(0) # incorrectTypeInPipelineConfigurationFile
-            else: return False
-  
-          # Mark the attribute as seen.
-          observedAttributes[attribute] = True
-  
-          # Store the given attribtue.
-          if allowedAttributes[attribute][2]: self.setAttribute(attributes, allowedAttributes[attribute][3], str(node[attribute]))
-  
-        # Having parsed all of the general attributes attributes, check that all those that are required
-        # are present.
-        for attribute in allowedAttributes:
-          if allowedAttributes[attribute][1] and attribute not in observedAttributes:
-            #TODO ERROR
-            if self.allowTermination: print('pipeline.checkSharedNodeTasks - 4'); exit(0) # missingAttributeInPipelineConfigurationFile
-            else: return False
-  
+        # Check that the supplied attributes are valid.
+        attributes = self.checkAttributes(node, allowedAttributes, attributes)
+
         #TODO INCLUDE A CHECK TO ENSURE THAT AN ALLOWED COMBINATION OF FIELDS IS PRESENT.
 
         # If this node contains a link to a task or a node in another pipeline, record this.
@@ -500,6 +338,115 @@ class pipelineConfiguration:
 
         # Store the attributes.
         self.sharedNodeAttributes[nodeID].sharedNodeTasks.append(attributes)
+
+  # Check that defined edges are correctly included.
+  def checkDefinedEdges(self, data):
+
+    if 'connect nodes to tasks' not in data: return
+
+    # Define the allowed attributes.
+    allowedAttributes            = {}
+    allowedAttributes['targets'] = (list, True, False, None)
+    allowedAttributes['id']      = (str, True, True, 'id')
+    allowedAttributes['sources'] = (list, True, False, None)
+
+    # Define the allowed source attributes.
+    allowedSourceAttributes                  = {}
+    allowedSourceAttributes['pipeline']      = (str, False, True, 'pipeline')
+    allowedSourceAttributes['task']          = (str, True, True, 'task')
+    allowedSourceAttributes['task argument'] = (str, True, True, 'taskArgument')
+
+    # Define the allowed target attributes.
+    allowedTargetAttributes                  = {}
+    allowedTargetAttributes['pipeline']      = (str, False, True, 'pipeline')
+    allowedTargetAttributes['task']          = (str, True, True, 'task')
+    allowedTargetAttributes['task argument'] = (str, True, True, 'taskArgument')
+
+    # Loop over all the defined definitions.
+    for information in data['connect nodes to tasks']:
+
+      # Check that the supplied structure is a dictionary.
+      if not self.checkIsDictionary(information): return
+
+      # Define the attributes object.
+      attributes = edgeDefinitions()
+
+      # Check the attributes conform to expectations.
+      attributes = self.checkAttributes(information, allowedAttributes, attributes)
+
+      # Loop over all the listed sources and check the information.
+      for source in information['sources']:
+        if not self.checkIsDictionary(source): return
+        sourceAttributes = nodeTaskAttributes()
+        sourceAttributes = self.checkAttributes(source, allowedSourceAttributes, sourceAttributes)
+        attributes.sourceInformation.append(sourceAttributes)
+
+      # Loop over all the listed targets and check the information.
+      for target in information['targets']:
+        if not self.checkIsDictionary(target): return
+        targetAttributes = nodeTaskAttributes()
+        targetAttributes = self.checkAttributes(target, allowedTargetAttributes, targetAttributes)
+        attributes.targetInformation.append(targetAttributes)
+
+      # Store the ID.
+      self.connections[attributes.id] = attributes
+
+  # Check general attribute information.
+  def checkAttributes(self, data, allowedAttributes, attributes):
+
+    # Keep track of the observed required values.
+    observedAttributes = {}
+
+    # Loop over all of the attributes in the configuration file.
+    for attribute in data:
+
+      # If the value is not in the allowedAttributes, it is not an allowed value and execution
+      # should be terminate with an error.
+      if attribute not in allowedAttributes:
+        #TODO ERROR
+        if self.allowTermination: print('pipeline.checkAttributes - 1 - invalid', attribute); exit(0) # invalidGeneralAttributeInConfigurationFile
+        else:
+          self.success = False
+          return None
+
+      # Mark this values as having been observed,
+      observedAttributes[attribute] = True
+
+      # Check that the value given to the attribute is of the correct type. If the value is unicode,
+      # convert to a string first.
+      value = str(data[attribute]) if isinstance(data[attribute], unicode) else data[attribute]
+      if allowedAttributes[attribute][0] != type(value):
+        #TODO ERROR
+        if self.allowTermination: print('pipeline.checkAttributes - 2'); exit(0) # incorrectTypeInPipelineConfigurationFile
+        else:
+          self.success = False
+          return None
+
+      # At this point, the attribute in the configuration file is allowed and of valid type. Check that 
+      # the value itself is valid (if necessary) and store the value.
+      #if allowedAttributes[attribute][2]: setattr(self, attribute, value)
+      if allowedAttributes[attribute][2]: self.setAttribute(attributes, allowedAttributes[attribute][3], value)
+
+    # Having parsed all of the general attributes attributes, check that all those that are required
+    # are present.
+    for attribute in allowedAttributes:
+      if allowedAttributes[attribute][1] and attribute not in observedAttributes:
+        #TODO ERROR
+        if self.allowTermination: print('pipeline.checkAttributes - 3 - missing', attribute); exit(0) # missingGeneralAttributeInConfigurationFile
+        else:
+          self.success = False
+          return None
+
+    return attributes
+
+  # Check that the supplied value is a dictionary.
+  def checkIsDictionary(self, node):
+    if not isinstance(node, dict):
+      #TODO ERROR
+      if self.allowTermination: print('pipeline.checkIsDictionary - 1'); exit(0) # nodeIsNotADictionary
+      else: self.success = False
+
+    return True
 
   # Set a value in the toolAttributes.
   def setAttribute(self, attributes, attribute, value):
@@ -537,15 +484,15 @@ class pipelineConfiguration:
 
       # If the task is not listed as one of the pipeline tasks. terminate.
       #TODO ERROR
-      if task not in superPipeline.tasks: print('pipeline.checkContainedTasks'); exit(0)
+      if task not in superPipeline.tasks: print('pipeline.checkContainedTasks - 1', task); exit(0)
 
     # Check the tasks that shared nodes point to.
     for sharedNodeID in self.sharedNodeAttributes.keys():
       for node in self.sharedNodeAttributes[sharedNodeID].sharedNodeTasks:
-        task           = self.getSharedNodeTaskAttribute(node, 'task')
-        taskArgument   = self.getSharedNodeTaskAttribute(node, 'taskArgument')
-        pipeline       = self.getSharedNodeTaskAttribute(node, 'pipeline')
-        pipelineNodeID = self.getSharedNodeTaskAttribute(node, 'pipelineNodeID')
+        task           = self.getNodeTaskAttribute(node, 'task')
+        taskArgument   = self.getNodeTaskAttribute(node, 'taskArgument')
+        pipeline       = self.getNodeTaskAttribute(node, 'pipeline')
+        pipelineNodeID = self.getNodeTaskAttribute(node, 'pipelineNodeID')
 
         # If the shared node is a defined node in another pipeline, ensure that no task or
         # argument are supplied. If they are terminate, as there is more information than
@@ -612,6 +559,16 @@ class pipelineConfiguration:
     except: return None
 
   # Get attributes for a task defined in the shared node section.
-  def getSharedNodeTaskAttribute(self, node, attribute):
+  def getNodeTaskAttribute(self, node, attribute):
     try: return getattr(node, attribute)
+    except: return None
+
+  # Get source information for edges defined in the configuration file.
+  def getSources(self, node):
+    try: return self.connections[node].sourceInformation
+    except: return None
+
+  # Get target information for edges defined in the configuration file.
+  def getTargets(self, node):
+    try: return self.connections[node].targetInformation
     except: return None

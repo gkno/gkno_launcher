@@ -62,6 +62,9 @@ class pipelineGraph:
     # Add shared nodes.
     self.addSharedNodes(tools, pipeline, superPipeline)
 
+    # Join tasks and nodes as instructed.
+    self.connectNodesToTasks(tools, pipeline, superPipeline)
+
   # Add unique graph nodes to the graph.
   # TODO ADD ATTRIBUTES TO NODE
   def addUniqueNodes(self, tools, pipeline):
@@ -86,10 +89,9 @@ class pipelineGraph:
         #TODO ERROR
         if taskNodeAddress not in self.graph: print('graph.addUniqueNodes - 1'); exit(0)
 
-        # Determine if this is a file or an option.
-        
-
       else:
+
+        # Determine if this is a file or an option.
         isInput  = tools[tool].getArgumentAttribute(taskArgument, 'isInput')
         isOutput = tools[tool].getArgumentAttribute(taskArgument, 'isOutput')
 
@@ -130,9 +132,9 @@ class pipelineGraph:
     for node in pipeline.getSharedNodeTasks(sharedNodeID):
 
       # Get the task and the task argument and whether it is external.
-      task             = pipeline.getSharedNodeTaskAttribute(node, 'task')
-      taskArgument     = pipeline.getSharedNodeTaskAttribute(node, 'taskArgument')
-      externalPipeline = pipeline.getSharedNodeTaskAttribute(node, 'pipeline')
+      task             = pipeline.getNodeTaskAttribute(node, 'task')
+      taskArgument     = pipeline.getNodeTaskAttribute(node, 'taskArgument')
+      externalPipeline = pipeline.getNodeTaskAttribute(node, 'pipeline')
 
       # From this point on, only consider internal tasks. External task links will be added later.
       if not externalPipeline:
@@ -151,23 +153,41 @@ class pipelineGraph:
   # Construct edges to an existing node from another pipeline.
   def constructEdgesToExistingNode(self, tools, pipeline, superPipeline, sharedNodeID):
 
+    # Define the pipeline address.
+    address = str(pipeline.address + '.') if pipeline.address else str('')
+
     # Loop over the nodes and determine the existing node.
     nodes = []
     for node in pipeline.getSharedNodeTasks(sharedNodeID):
-      if pipeline.getSharedNodeTaskAttribute(node, 'pipelineNodeID'): nodes.append(node)
+      if pipeline.getNodeTaskAttribute(node, 'pipelineNodeID'): nodes.append(node)
 
-    # If there are multiple nodes in another pipeline, there is an error in the configuration file.
-    # TODO LOOK AT THIS AND THE SHARED TASK ROUTINE BELOW. CONSIDER TWO CONTAINED VARIANT CALLING
-    # PIPELINES AND YOU WNAT TO JOIN THE INPUT BAM NODE TO AN OUTPUT FROM THE CURRENT PIPELINE.
-    # THE CURRENT PIPELINE NODE WOULD BE SHARED WITH NODES FROM TWO PIPELINES. 
-    # TODO ERROR
-    if len(nodes) != 1: print('constructEdgesToExistingNode - NOT HANDLED MULTIPLE SHARED NODES'); exit(0)
-    externalPipeline = pipeline.getSharedNodeTaskAttribute(nodes[0], 'pipeline')
-    externalNode     = pipeline.getSharedNodeTaskAttribute(nodes[0], 'pipelineNodeID')
+    # If there are multiple nodes in another pipeline, then these need to be merged. An example of this
+    # situation could that two variant calling pipelines have been implemented as pipelines within a
+    # pipeline. The input files to both these pipelines were generated when the pipelines were constructed.
+    # One of these nodes should be kept and the others deleted. The edges should be replaced to the kept
+    # node.
+    #
+    # Define the node being kept.
+    externalPipeline = pipeline.getNodeTaskAttribute(nodes[0], 'pipeline')
+    externalNode     = pipeline.getNodeTaskAttribute(nodes[0], 'pipelineNodeID')
 
-    # Determine the full address of the node.
-    address      = str(pipeline.address + '.') if pipeline.address else str('')
+    # Determine the full address of the node being kept..
     nodeAddress  = str(externalPipeline + '.' + externalNode)
+
+    # Loop over the nodes to be removed.
+    for node in nodes[1:]:
+
+      # Get the address of the node to delete.
+      externalPipeline  = pipeline.getNodeTaskAttribute(node, 'pipeline')
+      externalNode      = pipeline.getNodeTaskAttribute(node, 'pipelineNodeID')
+      deleteNodeAddress = str(address + externalPipeline + '.' + externalNode)
+
+      # Get all the predecessors and successors and recreate the edges to the node being kept.
+      for predecessorID in self.graph.predecessors(deleteNodeAddress): self.graph.add_edge(predecessorID, nodeAddress)
+      for successorID in self.graph.successors(deleteNodeAddress): self.graph.add_edge(nodeAddress, successorID)
+
+      # Remove the node.
+      self.graph.remove_node(deleteNodeAddress)
 
     # Check that the node exists.
     #TODO ERROR
@@ -176,9 +196,9 @@ class pipelineGraph:
 
     # Loop over the nodes and add edges to the existing node (ignoring the node in the other pipeline).
     for node in pipeline.getSharedNodeTasks(sharedNodeID):
-      if not pipeline.getSharedNodeTaskAttribute(node, 'pipeline'):
-        taskArgument = pipeline.getSharedNodeTaskAttribute(node, 'taskArgument')
-        task         = pipeline.getSharedNodeTaskAttribute(node, 'task')
+      if not pipeline.getNodeTaskAttribute(node, 'pipeline'):
+        taskArgument = pipeline.getNodeTaskAttribute(node, 'taskArgument')
+        task         = pipeline.getNodeTaskAttribute(node, 'task')
 
         # Check the taskArgument to identify if this node is a file or an option node.
         tool     = pipeline.getTaskAttribute(task, 'tool')
@@ -197,10 +217,10 @@ class pipelineGraph:
 
     # Loop over the nodes and connect the tasks from external pipelines to the existing node.
     for node in pipeline.getSharedNodeTasks(sharedNodeID):
-      externalPipeline = pipeline.getSharedNodeTaskAttribute(node, 'pipeline')                     
+      externalPipeline = pipeline.getNodeTaskAttribute(node, 'pipeline')                     
       if externalPipeline:
-        task         = pipeline.getSharedNodeTaskAttribute(node, 'task')                         
-        taskArgument = pipeline.getSharedNodeTaskAttribute(node, 'taskArgument')                         
+        task         = pipeline.getNodeTaskAttribute(node, 'task')                         
+        taskArgument = pipeline.getNodeTaskAttribute(node, 'taskArgument')                         
         taskAddress  = str(externalPipeline + '.' + task)
 
         # Check the taskArgument to identify if this node is a file or an option node.
@@ -210,6 +230,62 @@ class pipelineGraph:
 
         # Add the node and edges.
         self.addNodeAndEdges(sharedNodeID, address, taskAddress, isInput, isOutput)
+
+  # Connect nodes and tasks as instructed in the pipeline configuration file.
+  def connectNodesToTasks(self, tools, pipeline, superPipeline):
+
+    # Determine the pipeline address and the node address.
+    address = str(pipeline.address + '.') if pipeline.address else str('')
+
+    # Loop over all the pipeline connections.
+    for nodeID in pipeline.connections:
+
+      # Store the source node IDs.
+      sourceNodeIDs = []
+
+      # Determine all the source nodes.
+      for source in pipeline.getSources(nodeID):
+        externalPipeline = pipeline.getNodeTaskAttribute(source, 'pipeline')
+        externalNode     = pipeline.getNodeTaskAttribute(source, 'pipelineNodeID')
+        task             = pipeline.getNodeTaskAttribute(source, 'task')
+        taskArgument     = pipeline.getNodeTaskAttribute(source, 'taskArgument')
+
+        # Determine the pipeline relative task address.
+        taskAddress = str(externalPipeline + '.' + task) if externalPipeline else str(task)
+
+        # If the source node already exists, it is defined with the external node. Store this source
+        # node ID.
+        if externalNode: sourceNodeIDs.append(str(address + externalPipeline + '.' + externalNode))
+
+        # If the external node isn't specified, the node needs to be created. The source must be a
+        # file node (not a task), otherwise this would create a situation with multiple tasks producing
+        # the same output file. In creatinf the node, this must therefore be the output of the defined
+        # task. 
+        #TODO PUT IN A CHECK THAT IF CREATING NODES, THE ABOVE LOGIC IS VALID.
+        else:
+          if nodeID in superPipeline.sharedNodeIDs or nodeID in superPipeline.uniqueNodeIDs: print('graph.connectNodesToTasks - 2'); exit(0)
+
+          # Generate the node address (e.g. the output file for a task in the external pipeline).
+          nodeAddress = str(externalPipeline + '.' + nodeID) if externalPipeline else str(nodeID)
+
+          # Create the file node and connect it to the task for which it is an output.
+          self.addNodeAndEdges(nodeAddress, address, taskAddress, False, True)
+
+          # Store the node ID for connecting to the target task node.
+          sourceNodeIDs.append(str(address + nodeAddress))
+
+      # Loop over the target nodes and join the sources to them.
+      for target in pipeline.getTargets(nodeID):
+        externalPipeline = pipeline.getNodeTaskAttribute(target, 'pipeline')
+        externalNode     = pipeline.getNodeTaskAttribute(target, 'pipelineNodeID')
+        task             = pipeline.getNodeTaskAttribute(target, 'task')
+        taskArgument     = pipeline.getNodeTaskAttribute(target, 'taskArgument')
+
+        # Determine the pipeline relative task address.
+        taskAddress = str(externalPipeline + '.' + task) if externalPipeline else str(task)
+
+        # Connect all the source nodes to the target node.
+        for sourceNodeID in sourceNodeIDs: self.graph.add_edge(sourceNodeID, taskAddress)
 
   # Add a node if necessary and add edges.
   def addNodeAndEdges(self, nodeID, address, task, isInput, isOutput):

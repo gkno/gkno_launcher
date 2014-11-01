@@ -47,7 +47,7 @@ def main():
 
   # TODO REMOVE
   pipelineConfigurationFilesPath = sourcePath + '/development/'
-  filename = pipelineConfigurationFilesPath + 'biggest.json'
+  filename = pipelineConfigurationFilesPath + 'two-freebayes.json'
 
   pipelineConfigurationData    = {}
   pipelineConfigurationData[1] = []
@@ -116,6 +116,7 @@ def main():
 
   plot = plotGraph()
   plot.plot(graph.graph.copy(), 'test.dot')
+
   #workflow = graph.generateWorkflow()
 
 if __name__ == "__main__":
