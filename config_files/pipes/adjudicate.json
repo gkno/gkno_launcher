@@ -1,8 +1,8 @@
 {
-  "description" : "",
+  "description" : "Call variants for a sample using an input vcf to create the variant graph for realignment.",
   "hide in help" : true,
   "developmental" : true,
-  "categories" : ["1000G-pipelines", "Variant-graph", "Variant-discovery"],
+  "categories" : ["Variant-graph", "Variant-discovery"],
 
   "tasks" : {
     "merge-bam" : {
@@ -13,21 +13,18 @@
       "tool" : "glia",
       "output to stream" : true
     },
-    "sort" : {
-      "tool" : "bamtools-sort"
-    },
-    "index" : {
-      "tool" : "bamtools-index"
-    },
     "call-short-variants" : {
-      "tool" : "freebayes",
+      "tool" : "freebayes"
+    },
+    "combine" : {
+      "tool" : "vcf-combine-uncompressed",
       "output to stream" : true
     },
     "compress" : {
-      "tool" : "gzip-delete"
+      "tool" : "bgzip-stream"
     },
-    "generate-sites" : {
-      "tool" : "compressed-vcf-sites"
+    "index" : {
+      "tool" : "tabix-index-vcf"
     }
   },
 
@@ -35,19 +32,10 @@
     {
       "ID" : "bam",
       "description" : "The input BAM file.",
-      "long form argument" : "--bam",
-      "short form argument" : "-b",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
       "tasks" : {
         "merge-bam" : "--in"
-      }
-    },
-    {
-      "ID" : "bams",
-      "description" : "The list of input BAM files.",
-      "long form argument" : "--bam-list",
-      "short form argument" : "-l",
-      "tasks" : {
-        "merge-bam" : "--in-list"
       }
     },
     {
@@ -62,20 +50,11 @@
       }
     },
     {
-      "ID" : "expanded regions",
-      "description" : "The list of expanded regions.",
-      "long form argument" : "--region-list",
-      "short form argument" : "-rl",
-      "tasks" : {
-        "merge-bam" : "--region-list-single"
-      }
-    },
-    {
       "ID" : "merge output",
       "description" : "Pipe merged BAM to glia.",
       "tasks" : {
         "merge-bam" : "--out",
-        "graph-align" : "--bam"
+        "graph-align" : "--in"
       }
     },
     {
@@ -161,31 +140,12 @@
       }
     },
     {
-      "ID" : "sort",
-      "description" : "Sort the BAM file.",
+      "ID" : "recall",
+      "description" : "Recall variants.",
       "tasks" : {
         "graph-align" : "--out",
-        "sort" : "--in"
+        "call-short-variants" : "--in"
       }
-    },
-    {
-      "ID" : "index",
-      "description" : "Index the BAM file.",
-      "tasks" : {
-        "sort" : "--out",
-        "index" : "--in",
-        "call-short-variants" : "--bam"
-      },
-      "delete files" : true
-    },
-    {
-      "ID" : "index file",
-      "description" : "Ensure that Index has been done.",
-      "tasks" : {
-        "index" : "--out",
-        "call-short-variants" : "--bam-index"
-      },
-      "delete files" : true
     },
     {
       "ID" : "alternate fraction",
@@ -272,16 +232,29 @@
       "ID" : "variants",
       "description" : "Compress freebayes output.",
       "tasks" : {
-        "call-short-variants" : "--vcf",
+        "call-short-variants" : "--out"
+      },
+      "greedy tasks" : {
+        "combine" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "compress",
+      "description" : "Compress the combined VCF.",
+      "tasks" : {
+        "combine" : "--out",
         "compress" : "--in"
       }
     },
     {
-      "ID" : "sites",
-      "description" : "Generate sites vcf.",
+      "ID" : "index",
+      "description" : "The final compressed VCF file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
       "tasks" : {
         "compress" : "--out",
-        "generate-sites" : "--vcf"
+        "index" : "--in"
       }
     }
   ],
@@ -309,7 +282,7 @@
         {
           "ID" : "window",
           "argument" : "--realignment-window",
-          "values" : [1000]
+          "values" : [1500]
         },
         {
           "ID" : "soft-clip threshold",
@@ -355,6 +328,18 @@
           "ID" : "geno iterations",
           "argument" : "--genotyping-max-iterations",
           "values" : [10]
+        }
+      ]
+    },
+
+    {
+      "ID" : "human",
+      "description" : "Parameter set for the human genome.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
         }
       ]
     }
