@@ -1,11 +1,11 @@
 {
-  "id" : "vt-normalize",
-  "description" : "Normalizes variants in a VCF file.",
+  "id" : "vt-subset",
+  "description" : "Subsets a VCF file to a set of variants that are polymorphic on a selected set of individuals.",
   "categories" : ["VCF-processing"],
   "tools" : ["vt"],
   "path" : "vt/",
   "executable" : "vt",
-  "modifier" : "normalize",
+  "modifier" : "subset",
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
@@ -25,19 +25,18 @@
         "extensions" : [".vcf", ".vcf.gz"]
       },
       {
-        "description" : "The FASTA reference sequence file",
-        "long form argument" : "--fasta-reference",
-        "short form argument" : "-r",
-        "command line argument" : "-r",
-        "required" : true,
-        "data type" : "string",
-        "extensions" : [".fa", ".fasta"]
-      },
-      {
-        "description" : "A file containing list of intervals.",
+        "description" : "A file containing a list of intervals.",
         "long form argument" : "--intervals-file",
         "short form argument" : "-if",
         "command line argument" : "-I",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "A file containing a list of samples.",
+        "long form argument" : "--samples-file",
+        "short form argument" : "-s",
+        "command line argument" : "-s",
         "data type" : "string",
         "extensions" : ["no extension"]
       }
@@ -45,13 +44,13 @@
   
     "outputs" : [
       {
-        "description" : "The normalized VCF file.",
+        "description" : "The output compressed VCF file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "-o",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".vcf"],
+        "extensions" : [".vcf.gz"],
         "if output to stream" : "do not include",
         "construct filename" : {
           "method": "from tool argument",
@@ -59,7 +58,7 @@
           "modify extension" : "replace",
           "modify text" : [
             {
-              "add text" : ["_normalized"]
+              "add text" : ["_subset"]
             }
           ]
         }
@@ -68,10 +67,18 @@
   
     "Options" : [
       {
-        "description" : "Window size for local sorting of variants [10000].",
-        "long form argument" : "--window",
-        "short form argument" : "-w",
-        "command line argument" : "-w",
+        "description" : "Filter expression.",
+        "long form argument" : "--filter",
+        "short form argument" : "-f",
+        "command line argument" : "-f",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Intervals.",
+        "long form argument" : "--intervals",
+        "short form argument" : "-n",
+        "command line argument" : "-n",
         "data type" : "integer",
         "extensions" : ["no extension"]
       }
@@ -79,9 +86,10 @@
   },
 
   "argument order" : [
-    "--fasta-reference",
+    "--intervals",
     "--intervals-file",
-    "--window",
+    "--samples-file",
+    "--filter",
     "--out",
     "--in"
   ],
@@ -101,11 +109,6 @@
           "ID" : "vcf",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
-        },
-        {
-          "ID" : "fasta",
-          "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         }
       ]
     }

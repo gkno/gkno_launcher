@@ -36,7 +36,7 @@
       {
         "description" : "A file containing list of intervals.",
         "long form argument" : "--intervals-file",
-        "short form argument" : "-f",
+        "short form argument" : "-if",
         "command line argument" : "-I",
         "data type" : "string",
         "extensions" : ["no extension"]
