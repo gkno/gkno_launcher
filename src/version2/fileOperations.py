@@ -7,6 +7,10 @@ import json
 import os
 import sys
 
+# Check if a file exists.
+def checkIfFileExists(filename):
+  return os.path.isfile(filename)
+
 # Open a configuration file and return the contents.
 def readConfigurationFile(filename, allowTermination = True):
   try: jsonData = open(filename)
