@@ -2,10 +2,6 @@
 
 from __future__ import print_function
 import networkx as nx
-from copy import deepcopy
-
-import taskNodes
-from taskNodes import *
 
 import json
 import os
@@ -42,11 +38,8 @@ class pipelineGraph:
     # Define the graph.
     self.graph = nx.DiGraph()
 
-    # Create a task nodes class.
-    self.taskNodes = taskNodes()
-
   # Using a pipeline configuration file, build and connect the defined nodes.
-  def buildPipelineTasks(self, tools, pipeline, superPipeline):
+  def buildPipelineTasks(self, pipeline, superPipeline):
 
     # Define the address for all nodes for this pipeline.
     address = str(pipeline.address) + '.' if pipeline.address != None else ''
@@ -57,17 +50,17 @@ class pipelineGraph:
       if not pipeline.getTaskAttribute(task, 'pipeline'): self.addTaskNode(address + str(task), pipeline.getTaskAttribute(task, 'tool'))
 
     # Add unique nodes.
-    self.addUniqueNodes(tools, pipeline)
+    self.addUniqueNodes(superPipeline, pipeline)
 
     # Add shared nodes.
-    self.addSharedNodes(tools, pipeline, superPipeline)
+    self.addSharedNodes(superPipeline, pipeline)
 
     # Join tasks and nodes as instructed.
-    self.connectNodesToTasks(tools, pipeline, superPipeline)
+    self.connectNodesToTasks(superPipeline, pipeline)
 
   # Add unique graph nodes to the graph.
   # TODO ADD ATTRIBUTES TO NODE
-  def addUniqueNodes(self, tools, pipeline):
+  def addUniqueNodes(self, superPipeline, pipeline):
     for nodeID in pipeline.uniqueNodeAttributes:
 
       # Get the task this node points to and determine if it is a tool or a pipeline.
@@ -92,8 +85,8 @@ class pipelineGraph:
       else:
 
         # Determine if this is a file or an option.
-        isInput  = tools[tool].getArgumentAttribute(taskArgument, 'isInput')
-        isOutput = tools[tool].getArgumentAttribute(taskArgument, 'isOutput')
+        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isInput')
+        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isOutput')
 
         # TODO DEAL WITH ATTRIBUTES
         if isInput:
@@ -108,7 +101,7 @@ class pipelineGraph:
 
   # Add shared nodes to the graph.
   # TODO ADD ATTRIBUTES
-  def addSharedNodes(self, tools, pipeline, superPipeline):
+  def addSharedNodes(self, superPipeline, pipeline):
     for sharedNodeID in pipeline.getSharedNodeIDs():
 
       # Determine if this shared node connects to a task or a node in another pipeline.
@@ -118,17 +111,17 @@ class pipelineGraph:
       # If all the shared nodes are in this pipeline, create the node and add the edges.
       #if not containsTaskInAnotherPipeline: self.constructLocalSharedNode(tools, pipeline, sharedNodeID)
       if not containsNodeInAnotherPipeline:
-        self.constructLocalSharedNode(tools, pipeline, sharedNodeID)
+        self.constructLocalSharedNode(superPipeline, pipeline, sharedNodeID)
 
         # If the shared node connects to a task in another pipeline.
-        if containsTaskInAnotherPipeline: self.constructEdgesToPipelineTask(tools, pipeline, superPipeline, sharedNodeID)
+        if containsTaskInAnotherPipeline: self.constructEdgesToPipelineTask(superPipeline, pipeline, sharedNodeID)
 
       # If the shared node contains a node from another pipeline, then this node already exists.
       # Find the existing node and then generate the edges to the tasks in this pipeline.
-      elif containsNodeInAnotherPipeline: self.constructEdgesToExistingNode(tools, pipeline, superPipeline, sharedNodeID)
+      elif containsNodeInAnotherPipeline: self.constructEdgesToExistingNode(superPipeline, pipeline, sharedNodeID)
 
   # Create the shared node and add the edges for the case where all the shared tasks are in this pipeline.
-  def constructLocalSharedNode(self, tools, pipeline, sharedNodeID):
+  def constructLocalSharedNode(self, superPipeline, pipeline, sharedNodeID):
     for node in pipeline.getSharedNodeTasks(sharedNodeID):
 
       # Get the task and the task argument and whether it is external.
@@ -141,8 +134,8 @@ class pipelineGraph:
 
         # Check the taskArgument to identify if this node is a file or an option node.
         tool     = pipeline.getTaskAttribute(task, 'tool')
-        isInput  = tools[tool].getArgumentAttribute(taskArgument, 'isInput')
-        isOutput = tools[tool].getArgumentAttribute(taskArgument, 'isOutput')
+        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isInput')
+        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isOutput')
     
         # Define the pipeline relative address.
         address = str(pipeline.address + '.') if pipeline.address else str('')
@@ -151,7 +144,7 @@ class pipelineGraph:
         self.addNodeAndEdges(sharedNodeID, address, task, isInput, isOutput)
 
   # Construct edges to an existing node from another pipeline.
-  def constructEdgesToExistingNode(self, tools, pipeline, superPipeline, sharedNodeID):
+  def constructEdgesToExistingNode(self, superPipeline, pipeline, sharedNodeID):
 
     # Define the pipeline address.
     address = str(pipeline.address + '.') if pipeline.address else str('')
@@ -202,15 +195,15 @@ class pipelineGraph:
 
         # Check the taskArgument to identify if this node is a file or an option node.
         tool     = pipeline.getTaskAttribute(task, 'tool')
-        isInput  = tools[tool].getArgumentAttribute(taskArgument, 'isInput')
-        isOutput = tools[tool].getArgumentAttribute(taskArgument, 'isOutput')
+        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isInput')
+        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isOutput')
 
         # Add the node and edges.
         self.addNodeAndEdges(nodeAddress, address, task, isInput, isOutput)
 
   # If a shared node contains a link to a task in another pipeline, join the tasks in the current
   # pipeline to it.
-  def constructEdgesToPipelineTask(self, tools, pipeline, superPipeline, sharedNodeID):
+  def constructEdgesToPipelineTask(self, superPipeline, pipeline, sharedNodeID):
 
     # Determine the pipeline address and the node address.
     address = str(pipeline.address + '.') if pipeline.address else str('')
@@ -225,14 +218,14 @@ class pipelineGraph:
 
         # Check the taskArgument to identify if this node is a file or an option node.
         tool     = superPipeline.tasks[address + taskAddress]
-        isInput  = tools[tool].getArgumentAttribute(taskArgument, 'isInput')
-        isOutput = tools[tool].getArgumentAttribute(taskArgument, 'isOutput')
+        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isInput')
+        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isOutput')
 
         # Add the node and edges.
         self.addNodeAndEdges(sharedNodeID, address, taskAddress, isInput, isOutput)
 
   # Connect nodes and tasks as instructed in the pipeline configuration file.
-  def connectNodesToTasks(self, tools, pipeline, superPipeline):
+  def connectNodesToTasks(self, superPipeline, pipeline):
 
     # Determine the pipeline address and the node address.
     address = str(pipeline.address + '.') if pipeline.address else str('')

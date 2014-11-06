@@ -4,6 +4,7 @@ from __future__ import print_function
 from copy import deepcopy
 
 import version2.pipelineConfiguration as pipelineConfiguration
+import version2.toolConfiguration as toolConfiguration
 
 import json
 import os
@@ -21,6 +22,9 @@ class superPipelineClass:
     # file (e.g. the one defined on the command line).
     self.configurationData    = {}
     self.configurationData[1] = []
+
+    # Store information on all the constituent tools.
+    self.toolConfigurationData = {}
 
     # Store all the tasks in the superpipeline along with the tools,
     self.tools = []
@@ -91,3 +95,74 @@ class superPipelineClass:
         # Store the unique and shared node IDs for each pipeline.
         self.uniqueNodeIDs += [str(pipeline.address + '.' + nodeID) if pipeline.address else str(nodeID) for nodeID in pipeline.getUniqueNodeIDs()]
         self.sharedNodeIDs += [str(pipeline.address + '.' + nodeID) if pipeline.address else str(nodeID) for nodeID in pipeline.getSharedNodeIDs()]
+
+  # Check that all references to tasks in the pipeline configuration file are valid. The task may
+  # be a task in a contained pipeline and not within the pipeline being checked. The allTasks
+  # list contains all of the tasks in all of the pipelines.
+  def checkContainedTasks(self):
+
+    # Loop over all the tiers in the super pipeline.
+    for tier in self.configurationData.keys():
+      for pipelineObject in self.configurationData[tier]:
+
+        # Check the tasks that any unique nodes point to.
+        for nodeID in pipelineObject.uniqueNodeAttributes.keys():
+    
+          # Get the name of the pipeline (if exists) and the task that this node points to.
+          pipeline = pipelineObject.getUniqueNodeAttribute(nodeID, 'pipeline')
+          task     = pipelineObject.getUniqueNodeAttribute(nodeID, 'task')
+    
+          # This pipeline may itself be called by an enveloping pipeline. If so, any tasks
+          # will require prepending with the address of this pipeline.
+          if pipeline: task = pipeline + '.' + task
+          if pipelineObject.address: task = pipelineObject.address + '.' + task
+    
+          # If the task is not listed as one of the pipeline tasks. terminate.
+          #TODO ERROR
+          if task not in self.tasks: print('superPipeline.checkContainedTasks - 1', task); exit(0)
+    
+        # Check the tasks that shared nodes point to.
+        for sharedNodeID in pipelineObject.sharedNodeAttributes.keys():
+          for node in pipelineObject.sharedNodeAttributes[sharedNodeID].sharedNodeTasks:
+            task           = pipelineObject.getNodeTaskAttribute(node, 'task')
+            taskArgument   = pipelineObject.getNodeTaskAttribute(node, 'taskArgument')
+            pipeline       = pipelineObject.getNodeTaskAttribute(node, 'pipeline')
+            pipelineNodeID = pipelineObject.getNodeTaskAttribute(node, 'pipelineNodeID')
+    
+            # If the shared node is a defined node in another pipeline, ensure that no task or
+            # argument are supplied. If they are terminate, as there is more information than
+            # required, which suggests an error in the configuration file construction. The pipeline
+            # in which the node resides is required.
+            if pipelineNodeID:
+              #TODO ERROR
+              if task or taskArgument: print('superPipeline.checkContainedTasks - 2'); exit(0)
+              if not pipeline: print('superPipeline.checkContainedTasks - 3'); exit(0)
+              pipelineNodeID = pipeline + '.' + pipelineNodeID
+              if pipelineObject.address: pipelineNodeID = pipelineObject.address + '.' + pipelineNodeID
+    
+              # If the task is not listed as one of the pipeline tasks. terminate.
+              #TODO ERROR
+              if pipelineNodeID not in self.uniqueNodeIDs and pipelineNodeID not in self.sharedNodeIDs:
+                print('superPipeline.checkContainedTasks - 4'); exit(0)
+    
+            # If the shared node is a task in another pipeline, check that the task exists.
+            elif pipeline:
+              task = pipeline + '.' + task
+              if pipelineObject.address: task = pipelineObject.address + '.' + task
+              #TODO ERROR
+              if task not in self.tasks: print('superPipeline.checkContainedTasks - 5'); exit(0)
+    
+            # Finally, if the shared node points to a task from this pipeline.
+            else:
+              if pipelineObject.address: task = pipelineObject.address + '.' + task
+              #TODO ERROR
+              if task not in self.tasks: print('superPipeline.checkContainedTasks - 6'); exit(0)
+
+  # Loop over the list of required tools, open and process their configuration files and store.
+  def getToolData(self, path):
+
+    # Loop over the tools.
+    for tool in self.tools:
+      toolData = toolConfiguration.toolConfiguration()
+      toolData.getConfigurationData(path + str(tool) + '.json')
+      self.toolConfigurationData[tool] = toolData

@@ -2,13 +2,10 @@
 
 from __future__ import print_function
 
-from copy import deepcopy
 import os.path
 import getpass
 import subprocess
 import sys
-
-import networkx as nx
 
 import version2.adminUtils
 from version2.adminUtils import *
@@ -16,7 +13,8 @@ from version2.adminUtils import *
 import version2.commandLine
 from version2.commandLine import *
 
-import version2.fileOperations
+import version2.fileHandling
+from version2.fileHandling import *
 
 import version2.graph
 from version2.graph import *
@@ -58,6 +56,10 @@ def main():
   resourcesPath                  = sourcePath + '/resources/'
   toolsPath                      = sourcePath + '/tools/'
 
+  # Define a class for handling files. In the initialisation, determine the names of all available
+  # tools and pipelines.
+  files = fileHandling(toolConfigurationFilesPath, pipelineConfigurationFilesPath)
+
   # Define an admin utilities object. This handles all of the build/update steps
   # along with 'resource' management.
   admin = adminUtils(sourcePath)
@@ -66,24 +68,13 @@ def main():
   isAdminMode, adminMode = command.isAdmin(admin.allModes)
   mode                   = command.determineMode(isAdminMode)
 
-  # If not being run in pipeline mode, determine the name of the pipeline being run. Note that
+  # If not being run in admin mode, determine the name of the pipeline being run. Note that
   # for the code, a tool is considered a pipeline with a single task, so the terminology
   # 'pipeline' is used throughout for both cases.
   if not isAdminMode: pipeline = command.determinePipeline()
 
   # Get the path to the pipeline and configuration file.
-  filename = pipelineConfigurationFilesPath + pipeline + '.json'
-
-  # Check that the pipeline configuration file exists. If not, see if this is running a tool.
-  isTool = False
-  isFile = fileOperations.checkIfFileExists(filename)
-  if not isFile:
-    filename = toolConfigurationFilesPath + pipeline + '.json'
-    isFile   = fileOperations.checkIfFileExists(filename)
-    isTool   = True
-  
-  #TODO RROR
-  if not isFile: print('NO CONFIG'); sys.exit(0)
+  filename, isTool = files.checkPipeline(toolConfigurationFilesPath, pipelineConfigurationFilesPath, pipeline)
 
   # Generate a super pipeline class that holds information about the full collection of all nested
   # pipeline.
@@ -103,16 +94,10 @@ def main():
   # Now that all the tasks are known, check that each pipeline only contains valid tasks. If a 
   # task in the pipeline addresses a node in a contained pipeline, knowledge of all pipelines is
   # required to perform this check.
-  for tier in superPipeline.configurationData.keys():
-    for pipeline in superPipeline.configurationData[tier]: pipeline.checkContainedTasks(superPipeline)
+  superPipeline.checkContainedTasks()
   
   # Loop over the list of required tools, open and process their configuration files and store.
-  toolConfigurationData = {}
-  for toolName in superPipeline.tools:
-    filename = toolConfigurationFilesPath + str(toolName) + '.json'
-    tool     = toolConfiguration()
-    tool.getConfigurationData(filename)
-    toolConfigurationData[toolName] = tool
+  superPipeline.getToolData(toolConfigurationFilesPath)
 
   # Define the graph object that will contain the pipeline graph and necessary operations and methods
   # to build and modify it.
@@ -120,7 +105,7 @@ def main():
 
   # Loop backwards over the tiers of nested pipelines and build them into the graph.
   for tier in reversed(superPipeline.configurationData.keys()):
-    for pipeline in superPipeline.configurationData[tier]: graph.buildPipelineTasks(toolConfigurationData, pipeline, superPipeline)
+    for pipeline in superPipeline.configurationData[tier]: graph.buildPipelineTasks(pipeline, superPipeline)
 
   plot = plotGraph()
   plot.plot(graph.graph.copy(), 'test.dot')

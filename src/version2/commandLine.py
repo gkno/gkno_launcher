@@ -1,7 +1,6 @@
 #!/bin/bash/python
 
 from __future__ import print_function
-from copy import deepcopy
 
 import commandLineErrors
 from commandLineErrors import *

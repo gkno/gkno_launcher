@@ -4,7 +4,10 @@ from __future__ import print_function
 import networkx as nx
 from copy import deepcopy
 
-import fileOperations
+import fileHandling
+from fileHandling import *
+
+import parameterSets
 
 import json
 import os
@@ -140,7 +143,7 @@ class pipelineConfiguration:
   def getConfigurationData(self, filename):
 
     # Get the configuration file data.
-    data = fileOperations.readConfigurationFile(filename, True)
+    data = fileHandling.readConfigurationFile(filename, True)
 
     # Process the configuration file data.
     success = self.processConfigurationFile(data)
@@ -165,6 +168,10 @@ class pipelineConfiguration:
 
     # Check that any nodes and tasks to be joined are correctly defined.
     if self.success: self.checkDefinedEdges(data)
+
+    # Check the parameter set information and store.
+    #if self.success: parameterSets.parameterSets.checkConfiguration(data['parameter sets'])
+    if self.success: self.checkParameterSets(data['parameter sets'])
 
   # Process the top level pipeline configuration information.
   def checkTopLevelInformation(self, data):
@@ -391,6 +398,39 @@ class pipelineConfiguration:
       # Store the ID.
       self.connections[attributes.id] = attributes
 
+  # Check the parameter set information
+  def checkParameterSets(self, data):
+
+    # Define the allowed attributes.
+    allowedAttributes                = {}
+    allowedAttributes['id']          = (str, True, False, None)
+    allowedAttributes['description'] = (str, True, False, None)
+    allowedAttributes['data']        = (list, True, False, None)
+
+    # Define the allowed attributes in the data section of the parameter set.
+    allowedDataAttributes             = {}
+    allowedDataAttributes['argument'] = (str, True, False, None)
+    allowedDataAttributes['id']       = (str, True, False, None)
+    allowedDataAttributes['values']   = (list, True, False, None)
+
+    # Loop over all of the defined parameter sets.
+    for parameterSet in data:
+
+      # Check that the supplied structure is a dictionary.
+      if not self.checkIsDictionary(parameterSet): return
+
+      # Check the attributes.
+      self.checkAttributes(parameterSet, allowedAttributes, None)
+
+      # Loop over all of the data supplied with the parameter set and check the validity.
+      for dataSet in parameterSet['data']:
+
+        # Check that the supplied structure is a dictionary.
+        if not self.checkIsDictionary(dataSet): return
+
+        # Check the attributes.
+        self.checkAttributes(dataSet, allowedDataAttributes, None)
+
   # Check general attribute information.
   def checkAttributes(self, data, allowedAttributes, attributes):
 
@@ -464,64 +504,6 @@ class pipelineConfiguration:
     setattr(attributes, attribute, value)
 
     return attributes
-
-  # Check that all references to tasks in the pipeline configuration file are valid. The task may
-  # be a task in a contained pipeline and not within the pipeline being checked. The allTasks
-  # list contains all of the tasks in all of the pipelines.
-  def checkContainedTasks(self, superPipeline):
-
-    # Check the tasks that any unique nodes point to.
-    for nodeID in self.uniqueNodeAttributes.keys():
-
-      # Get the name of the pipeline (if exists) and the task that this node points to.
-      pipeline = self.getUniqueNodeAttribute(nodeID, 'pipeline')
-      task     = self.getUniqueNodeAttribute(nodeID, 'task')
-
-      # This pipeline may itself be called by an enveloping pipeline. If so, any tasks
-      # will require prepending with the address of this pipeline.
-      if pipeline: task = pipeline + '.' + task
-      if self.address: task = self.address + '.' + task
-
-      # If the task is not listed as one of the pipeline tasks. terminate.
-      #TODO ERROR
-      if task not in superPipeline.tasks: print('pipeline.checkContainedTasks - 1', task); exit(0)
-
-    # Check the tasks that shared nodes point to.
-    for sharedNodeID in self.sharedNodeAttributes.keys():
-      for node in self.sharedNodeAttributes[sharedNodeID].sharedNodeTasks:
-        task           = self.getNodeTaskAttribute(node, 'task')
-        taskArgument   = self.getNodeTaskAttribute(node, 'taskArgument')
-        pipeline       = self.getNodeTaskAttribute(node, 'pipeline')
-        pipelineNodeID = self.getNodeTaskAttribute(node, 'pipelineNodeID')
-
-        # If the shared node is a defined node in another pipeline, ensure that no task or
-        # argument are supplied. If they are terminate, as there is more information than
-        # required, which suggests an error in the configuration file construction. The pipeline
-        # in which the node resides is required.
-        if pipelineNodeID:
-          #TODO ERROR
-          if task or taskArgument: print('pipeline.checkContainedTasks - 2'); exit(0)
-          if not pipeline: print('pipeline.checkContainedTasks - 3'); exit(0)
-          pipelineNodeID = pipeline + '.' + pipelineNodeID
-          if self.address: pipelineNodeID = self.address + '.' + pipelineNodeID
-
-          # If the task is not listed as one of the pipeline tasks. terminate.
-          #TODO ERROR
-          if pipelineNodeID not in superPipeline.uniqueNodeIDs and pipelineNodeID not in superPipeline.sharedNodeIDs:
-            print('pipeline.checkContainedTasks - 4'); exit(0)
-
-        # If the shared node is a task in another pipeline, check that the task exists.
-        elif pipeline:
-          task = pipeline + '.' + task
-          if self.address: task = self.address + '.' + task
-          #TODO ERROR
-          if task not in superPipeline.tasks: print('pipeline.checkContainedTasks - 5'); exit(0)
-
-        # Finally, if the shared node points to a task from this pipeline.
-        else:
-          if self.address: task = self.address + '.' + task
-          #TODO ERROR
-          if task not in superPipeline.tasks: print('pipeline.checkContainedTasks - 6'); exit(0)
 
   # Return a list of all the tasks in the pipeline.
   def getAllTasks(self):

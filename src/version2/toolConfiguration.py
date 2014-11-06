@@ -3,7 +3,8 @@
 from __future__ import print_function
 from copy import deepcopy
 
-import fileOperations
+import fileHandling
+from fileHandling import *
 
 import json
 import os
@@ -195,7 +196,7 @@ class toolConfiguration:
   def getConfigurationData(self, filename):
 
     # Get the configuration file data.
-    data = fileOperations.readConfigurationFile(filename, True)
+    data = fileHandling.readConfigurationFile(filename, True)
 
     # Process the configuration file data.
     success = self.processConfigurationFile(data)
