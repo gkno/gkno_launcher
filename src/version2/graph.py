@@ -333,6 +333,9 @@ class pipelineGraph:
       if address + nodeID not in self.graph: self.addOptionNode(address + nodeID)
       self.addEdge(address + nodeID, address + task, attributes = attributes)
 
+  def addPipelineArguments(self):
+    print("TEST")
+
   # Get tool and argument attributes.
   def getAttributes(self, superPipeline, tool, argument):
 

@@ -112,6 +112,11 @@ def main():
   # Generate the workflow.
   workflow = graph.generateWorkflow()
 
+  # The top level pipeline configuration file defines pipeline arguments that can be applied on the
+  # command line. Identify the edges that these arguments point to and add additional attributes to
+  # these edges.
+  graph.addPipelineArguments()
+
   # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
   # the nodes with these task level default parameter sets, creating nodes where necessary.
   graph.addTaskParameterSets(superPipeline, toolConfigurationFilesPath)
