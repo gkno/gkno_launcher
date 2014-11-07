@@ -1,12 +1,9 @@
 #!/bin/bash/python
 
 from __future__ import print_function
-import networkx as nx
-from copy import deepcopy
 
 import fileHandling
-from fileHandling import *
-
+import generalConfigurationFileMethods as methods
 import parameterSets
 
 import json
@@ -103,7 +100,7 @@ class pipelineConfiguration:
     self.categories = []
 
     # The parameter set information for this pipeline.
-    self.parameterSets = []
+    self.parameterSets = parameterSets.parameterSets()
 
     # The tasks that the pipeline comprises. Also store all of the tasks and all of the tools
     # that are executed by the pipeline.
@@ -143,7 +140,7 @@ class pipelineConfiguration:
   def getConfigurationData(self, filename):
 
     # Get the configuration file data.
-    data = fileHandling.readConfigurationFile(filename, True)
+    data = fileHandling.fileHandling.readConfigurationFile(filename, True)
 
     # Process the configuration file data.
     success = self.processConfigurationFile(data)
@@ -152,7 +149,7 @@ class pipelineConfiguration:
   def processConfigurationFile(self, data):
 
     # Check the top level information, e.g. pipeline description.
-    success = self.checkTopLevelInformation(data)
+    self.checkTopLevelInformation(data)
 
     # Parse the tasks comprising the pipeline.
     if self.success: self.checkPipelineTasks(data['pipeline tasks'])
@@ -170,8 +167,7 @@ class pipelineConfiguration:
     if self.success: self.checkDefinedEdges(data)
 
     # Check the parameter set information and store.
-    #if self.success: parameterSets.parameterSets.checkConfiguration(data['parameter sets'])
-    if self.success: self.checkParameterSets(data['parameter sets'])
+    if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination)
 
   # Process the top level pipeline configuration information.
   def checkTopLevelInformation(self, data):
@@ -188,7 +184,7 @@ class pipelineConfiguration:
     allowedAttributes['unique graph nodes']      = (list, False, False, None)
 
     # Check the attributes against the allowed attributes and make sure everything is ok.
-    self = self.checkAttributes(data, allowedAttributes, self)
+    self = methods.checkAttributes(data, allowedAttributes, self, self.allowTermination)
 
   # Check the pipeline tasks. Ensure that all of the tasks are either available tools or other pipelines.
   def checkPipelineTasks(self, data):
@@ -205,7 +201,7 @@ class pipelineConfiguration:
       attributes = taskAttributes()
 
       # Check all the supplied attributes.
-      attributes = self.checkAttributes(taskInformation, allowedAttributes, attributes)
+      self.success, attributes = methods.checkAttributes(taskInformation, allowedAttributes, attributes, self.allowTermination)
 
       # Check that the task name is unique.
       if attributes.task in self.pipelineTasks:
@@ -259,13 +255,13 @@ class pipelineConfiguration:
     for uniqueNode in data['unique graph nodes']:
 
       # Check that the supplied structure is a dictionary.
-      if not self.checkIsDictionary(uniqueNode): return
+      if not methods.checkIsDictionary(uniqueNode, self.allowTermination): return
 
       # Define the attributes object.
       attributes = uniqueGraphNodes()
 
       # Check the attributes conform to expectations.
-      attributes = self.checkAttributes(uniqueNode, allowedAttributes, attributes)
+      self.success, attributes = methods.checkAttributes(uniqueNode, allowedAttributes, attributes, self.allowTermination)
 
       # If the nodeID already exists in the attributes, a node of this name has already been seen. All 
       #nodes must have a unique name.
@@ -295,13 +291,13 @@ class pipelineConfiguration:
     for sharedNode in data['shared graph nodes']:
 
       # Check that the supplied structure is a dictionary.
-      if not self.checkIsDictionary(sharedNode): return
+      if not methods.checkIsDictionary(sharedNode, self.allowTermination): return
 
       # Define the attributes object.
       attributes = sharedGraphNodes()
 
       # Check the attributes conform to expectations.
-      attributes = self.checkAttributes(sharedNode, allowedAttributes, attributes)
+      self.success, attributes = methods.checkAttributes(sharedNode, allowedAttributes, attributes, self.allowTermination)
 
       # If the nodeID already exists in the attributes, a node of this name has already been seen. All 
       #nodes must have a unique name.
@@ -329,13 +325,13 @@ class pipelineConfiguration:
       for node in self.sharedNodeAttributes[nodeID].nodes:
 
         # Check that the supplied structure is a dictionary.
-        if not self.checkIsDictionary(node): return
+        if not methods.checkIsDictionary(node, self.allowTermination): return
 
         # Define the attributes object.
         attributes = nodeTaskAttributes()
   
         # Check that the supplied attributes are valid.
-        attributes = self.checkAttributes(node, allowedAttributes, attributes)
+        self.success, attributes = methods.checkAttributes(node, allowedAttributes, attributes, self.allowTermination)
 
         #TODO INCLUDE A CHECK TO ENSURE THAT AN ALLOWED COMBINATION OF FIELDS IS PRESENT.
 
@@ -373,137 +369,30 @@ class pipelineConfiguration:
     for information in data['connect nodes to tasks']:
 
       # Check that the supplied structure is a dictionary.
-      if not self.checkIsDictionary(information): return
+      if not methods.checkIsDictionary(information, self.allowTermination): return
 
       # Define the attributes object.
       attributes = edgeDefinitions()
 
       # Check the attributes conform to expectations.
-      attributes = self.checkAttributes(information, allowedAttributes, attributes)
+      self.success, attributes = methods.checkAttributes(information, allowedAttributes, attributes, self.allowTermination)
 
       # Loop over all the listed sources and check the information.
       for source in information['sources']:
-        if not self.checkIsDictionary(source): return
+        if not methods.checkIsDictionary(source, self.allowTermination): return
         sourceAttributes = nodeTaskAttributes()
-        sourceAttributes = self.checkAttributes(source, allowedSourceAttributes, sourceAttributes)
+        self.success, sourceAttributes = methods.checkAttributes(source, allowedSourceAttributes, sourceAttributes, self.allowTermination)
         attributes.sourceInformation.append(sourceAttributes)
 
       # Loop over all the listed targets and check the information.
       for target in information['targets']:
-        if not self.checkIsDictionary(target): return
+        if not methods.checkIsDictionary(target, self.allowTermination): return
         targetAttributes = nodeTaskAttributes()
-        targetAttributes = self.checkAttributes(target, allowedTargetAttributes, targetAttributes)
+        self.success, targetAttributes = methods.checkAttributes(target, allowedTargetAttributes, targetAttributes, self.allowTermination)
         attributes.targetInformation.append(targetAttributes)
 
       # Store the ID.
       self.connections[attributes.id] = attributes
-
-  # Check the parameter set information
-  def checkParameterSets(self, data):
-
-    # Define the allowed attributes.
-    allowedAttributes                = {}
-    allowedAttributes['id']          = (str, True, False, None)
-    allowedAttributes['description'] = (str, True, False, None)
-    allowedAttributes['data']        = (list, True, False, None)
-
-    # Define the allowed attributes in the data section of the parameter set.
-    allowedDataAttributes             = {}
-    allowedDataAttributes['argument'] = (str, True, False, None)
-    allowedDataAttributes['id']       = (str, True, False, None)
-    allowedDataAttributes['values']   = (list, True, False, None)
-
-    # Loop over all of the defined parameter sets.
-    for parameterSet in data:
-
-      # Check that the supplied structure is a dictionary.
-      if not self.checkIsDictionary(parameterSet): return
-
-      # Check the attributes.
-      self.checkAttributes(parameterSet, allowedAttributes, None)
-
-      # Loop over all of the data supplied with the parameter set and check the validity.
-      for dataSet in parameterSet['data']:
-
-        # Check that the supplied structure is a dictionary.
-        if not self.checkIsDictionary(dataSet): return
-
-        # Check the attributes.
-        self.checkAttributes(dataSet, allowedDataAttributes, None)
-
-  # Check general attribute information.
-  def checkAttributes(self, data, allowedAttributes, attributes):
-
-    # Keep track of the observed required values.
-    observedAttributes = {}
-
-    # Loop over all of the attributes in the configuration file.
-    for attribute in data:
-
-      # If the value is not in the allowedAttributes, it is not an allowed value and execution
-      # should be terminate with an error.
-      if attribute not in allowedAttributes:
-        #TODO ERROR
-        if self.allowTermination: print('pipeline.checkAttributes - 1 - invalid', attribute); exit(0) # invalidGeneralAttributeInConfigurationFile
-        else:
-          self.success = False
-          return None
-
-      # Mark this values as having been observed,
-      observedAttributes[attribute] = True
-
-      # Check that the value given to the attribute is of the correct type. If the value is unicode,
-      # convert to a string first.
-      value = str(data[attribute]) if isinstance(data[attribute], unicode) else data[attribute]
-      if allowedAttributes[attribute][0] != type(value):
-        #TODO ERROR
-        if self.allowTermination: print('pipeline.checkAttributes - 2'); exit(0) # incorrectTypeInPipelineConfigurationFile
-        else:
-          self.success = False
-          return None
-
-      # At this point, the attribute in the configuration file is allowed and of valid type. Check that 
-      # the value itself is valid (if necessary) and store the value.
-      #if allowedAttributes[attribute][2]: setattr(self, attribute, value)
-      if allowedAttributes[attribute][2]: self.setAttribute(attributes, allowedAttributes[attribute][3], value)
-
-    # Having parsed all of the general attributes attributes, check that all those that are required
-    # are present.
-    for attribute in allowedAttributes:
-      if allowedAttributes[attribute][1] and attribute not in observedAttributes:
-        #TODO ERROR
-        if self.allowTermination: print('pipeline.checkAttributes - 3 - missing', attribute); exit(0) # missingGeneralAttributeInConfigurationFile
-        else:
-          self.success = False
-          return None
-
-    return attributes
-
-  # Check that the supplied value is a dictionary.
-  def checkIsDictionary(self, node):
-    if not isinstance(node, dict):
-      #TODO ERROR
-      if self.allowTermination: print('pipeline.checkIsDictionary - 1'); exit(0) # nodeIsNotADictionary
-      else: self.success = False
-
-    return True
-
-  # Set a value in the toolAttributes.
-  def setAttribute(self, attributes, attribute, value):
-    try: test = getattr(attributes, attribute)
-
-    # If the attribute can't be set, determine the source of the problem and provide an
-    # error message.
-    except:
-
-      # If the tool is not available.
-      #TODO ERROR
-      print('pipeline.setAttributes - 1 ', attribute); exit(0) # invalidAttributeInSetAttribute
-
-    # Set the attribute.
-    setattr(attributes, attribute, value)
-
-    return attributes
 
   # Return a list of all the tasks in the pipeline.
   def getAllTasks(self):

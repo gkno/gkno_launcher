@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import networkx as nx
+import parameterSets as ps
 
 import json
 import os
@@ -37,6 +38,12 @@ class pipelineGraph:
 
     # Define the graph.
     self.graph = nx.DiGraph()
+
+    # Store the workflow.
+    self.workflow = []
+
+    # Store parameter set information.
+    self.ps = ps.parameterSets()
 
   # Using a pipeline configuration file, build and connect the defined nodes.
   def buildPipelineTasks(self, pipeline, superPipeline):
@@ -84,23 +91,25 @@ class pipelineGraph:
 
       else:
 
-        # Determine if this is a file or an option.
-        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isInput')
-        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isOutput')
+        # Get the tool and it's attributes associated with this argument.
+        longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
 
-        # TODO DEAL WITH ATTRIBUTES
+        # Determine if this is a file or an option.
+        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
+        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
+
+        # Add the required nodes and edges.
         if isInput:
           self.addFileNode(address + nodeID)
-          self.graph.add_edge(address + nodeID, address + task, attributes = {})
+          self.addEdge(address + nodeID, address + task, argumentAttributes)
         elif isOutput:
           self.addFileNode(address + nodeID)
-          self.graph.add_edge(address + task, address + nodeID)
+          self.addEdge(address + task, address + nodeID, argumentAttributes)
         else:
           self.addOptionNode(address + nodeID)
-          self.graph.add_edge(address + nodeID, address + task)
+          self.addEdge(address + nodeID, address + task, argumentAttributes)
 
   # Add shared nodes to the graph.
-  # TODO ADD ATTRIBUTES
   def addSharedNodes(self, superPipeline, pipeline):
     for sharedNodeID in pipeline.getSharedNodeIDs():
 
@@ -132,16 +141,21 @@ class pipelineGraph:
       # From this point on, only consider internal tasks. External task links will be added later.
       if not externalPipeline:
 
+        # Get the tool for this task.
+        tool = pipeline.getTaskAttribute(task, 'tool')
+
+        # Get the tool and it's attributes associated with this argument.
+        longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
+
         # Check the taskArgument to identify if this node is a file or an option node.
-        tool     = pipeline.getTaskAttribute(task, 'tool')
-        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isInput')
-        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isOutput')
+        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
+        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
     
         # Define the pipeline relative address.
         address = str(pipeline.address + '.') if pipeline.address else str('')
   
         # Add the node and edges.
-        self.addNodeAndEdges(sharedNodeID, address, task, isInput, isOutput)
+        self.addNodeAndEdges(sharedNodeID, address, task, isInput, isOutput, argumentAttributes)
 
   # Construct edges to an existing node from another pipeline.
   def constructEdgesToExistingNode(self, superPipeline, pipeline, sharedNodeID):
@@ -193,13 +207,18 @@ class pipelineGraph:
         taskArgument = pipeline.getNodeTaskAttribute(node, 'taskArgument')
         task         = pipeline.getNodeTaskAttribute(node, 'task')
 
+        # Get the tool associated with this task.
+        tool = pipeline.getTaskAttribute(task, 'tool')
+
+        # Get the tool and it's attributes associated with this argument.
+        longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
+
         # Check the taskArgument to identify if this node is a file or an option node.
-        tool     = pipeline.getTaskAttribute(task, 'tool')
-        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isInput')
-        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isOutput')
+        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
+        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
 
         # Add the node and edges.
-        self.addNodeAndEdges(nodeAddress, address, task, isInput, isOutput)
+        self.addNodeAndEdges(nodeAddress, address, task, isInput, isOutput, argumentAttributes)
 
   # If a shared node contains a link to a task in another pipeline, join the tasks in the current
   # pipeline to it.
@@ -216,13 +235,18 @@ class pipelineGraph:
         taskArgument = pipeline.getNodeTaskAttribute(node, 'taskArgument')                         
         taskAddress  = str(externalPipeline + '.' + task)
 
+        # Get the tool associated with this task.
+        tool = superPipeline.tasks[address + taskAddress]
+
+        # Get the tool and it's attributes associated with this argument.
+        longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
+
         # Check the taskArgument to identify if this node is a file or an option node.
-        tool     = superPipeline.tasks[address + taskAddress]
-        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isInput')
-        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(taskArgument, 'isOutput')
+        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
+        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
 
         # Add the node and edges.
-        self.addNodeAndEdges(sharedNodeID, address, taskAddress, isInput, isOutput)
+        self.addNodeAndEdges(sharedNodeID, address, taskAddress, isInput, isOutput, argumentAttributes)
 
   # Connect nodes and tasks as instructed in the pipeline configuration file.
   def connectNodesToTasks(self, superPipeline, pipeline):
@@ -252,7 +276,7 @@ class pipelineGraph:
 
         # If the external node isn't specified, the node needs to be created. The source must be a
         # file node (not a task), otherwise this would create a situation with multiple tasks producing
-        # the same output file. In creatinf the node, this must therefore be the output of the defined
+        # the same output file. In creating the node, this must therefore be the output of the defined
         # task. 
         #TODO PUT IN A CHECK THAT IF CREATING NODES, THE ABOVE LOGIC IS VALID.
         else:
@@ -261,8 +285,14 @@ class pipelineGraph:
           # Generate the node address (e.g. the output file for a task in the external pipeline).
           nodeAddress = str(externalPipeline + '.' + nodeID) if externalPipeline else str(nodeID)
 
+          # Get the tool associated with this task.
+          tool = superPipeline.tasks[address + taskAddress]
+
+          # Get the tool and it's attributes associated with this argument.
+          longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
+
           # Create the file node and connect it to the task for which it is an output.
-          self.addNodeAndEdges(nodeAddress, address, taskAddress, False, True)
+          self.addNodeAndEdges(nodeAddress, address, taskAddress, False, True, argumentAttributes)
 
           # Store the node ID for connecting to the target task node.
           sourceNodeIDs.append(str(address + nodeAddress))
@@ -274,14 +304,20 @@ class pipelineGraph:
         task             = pipeline.getNodeTaskAttribute(target, 'task')
         taskArgument     = pipeline.getNodeTaskAttribute(target, 'taskArgument')
 
+        # Get the tool associated with this task.
+        tool = superPipeline.tasks[address + taskAddress]
+
+        # Get the tool and it's attributes associated with this argument.
+        longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
+
         # Determine the pipeline relative task address.
         taskAddress = str(externalPipeline + '.' + task) if externalPipeline else str(task)
 
         # Connect all the source nodes to the target node.
-        for sourceNodeID in sourceNodeIDs: self.graph.add_edge(sourceNodeID, taskAddress)
+        for sourceNodeID in sourceNodeIDs: self.addEdge(sourceNodeID, taskAddress, argumentAttributes)
 
   # Add a node if necessary and add edges.
-  def addNodeAndEdges(self, nodeID, address, task, isInput, isOutput):
+  def addNodeAndEdges(self, nodeID, address, task, isInput, isOutput, attributes):
   
     # Determine if this node is for a file or an option.
     isFile = True if (isInput or isOutput) else False
@@ -289,15 +325,23 @@ class pipelineGraph:
     # If the node is a file node. 
     if isFile:
       if address + nodeID not in self.graph: self.addFileNode(str(address + nodeID))
-      if isInput:
-        self.graph.add_edge(str(address + nodeID), str(address + task))
-      elif isOutput:
-        self.graph.add_edge(str(address + task), str(address + nodeID))
+      if isInput: self.addEdge(str(address + nodeID), str(address + task), attributes = attributes)
+      elif isOutput: self.addEdge(str(address + task), str(address + nodeID), attributes = attributes)
 
     # If the node is an option node.
     else:
       if address + nodeID not in self.graph: self.addOptionNode(address + nodeID)
-      self.graph.add_edge(address + nodeID, address + task)
+      self.addEdge(address + nodeID, address + task, attributes = attributes)
+
+  # Get tool and argument attributes.
+  def getAttributes(self, superPipeline, tool, argument):
+
+    # Get the data structure for this argument to add to the created edge.
+    toolAttributes     = superPipeline.getToolData(tool)
+    longFormArgument   = toolAttributes.getLongFormArgument(argument)
+    argumentAttributes = toolAttributes.getArgumentData(longFormArgument)
+
+    return longFormArgument, argumentAttributes
 
   # Add a task node to the graph.
   #TODO ADD TOOLS CLASS ATTRIBUTES TO TASK NODE.
@@ -321,14 +365,89 @@ class pipelineGraph:
     attributes.nodeType = 'option'
     self.graph.add_node(nodeID, attributes = attributes)
 
+  # Add an edge to the graph.
+  def addEdge(self, source, target, attributes):
+    self.graph.add_edge(source, target, attributes = attributes)
+
   # Generate a topologically sorted graph.
+  #TODO
   def generateWorkflow(self):
-    workflow = []
+
+    # Perform a topological sort of the graph.
     for nodeID in nx.topological_sort(self.graph):
       nodeType = getattr(self.graph.node[nodeID]['attributes'], 'nodeType')
-      if nodeType == 'task': workflow.append(nodeID)
+      if nodeType == 'task': self.workflow.append(nodeID)
 
-    return workflow
+    # The topological sort does not always generate the corret order. In this routine, check for
+    # cases where a task is outputting to the stream. It is possible that after this task, the
+    # topological sort could choose from multiple tasks to perform next. This routine exists to
+    # ensure that the task following is the one that expects the stream as its input.
+    #FIXME
+#    incomplete = True
+#    startCount = 0
+#    while incomplete:
+#      for counter in range(startCount, len(self.workflow)):
+#        task = self.workflow[counter]
+#        if counter == len(self.workflow) - 1: incomplete = False
+#        else:
+#          nextTask         = self.workflow[counter + 1]
+#          #FIXME
+#          isOutputToStream = False
+#          #isOutputToStream = self.nodeMethods.getGraphNodeAttribute(graph, task, 'outputStream')
+#
+#          # If this task outputs to the stream, determine what the next task should be.
+#          if isOutputToStream:
+#            for outputNodeID in self.graph.successors(task):
+#              successorTasks  = []
+#              for successorTask in self.graph.successors(outputNodeID): successorTasks.append(successorTask)
+#
+#            # If the next task is not in the list of tasks, modify the workflow to ensure that it is.
+#            successorIndex = self.workflow.index(successorTasks[0])
+#            if nextTask not in successorTasks:
+#
+#              # Store the tasks 
+#              workflowMiddle = []
+#              workflowMiddle = self.workflow[counter + 1: successorIndex]
+#
+#              # Find all the tasks after the successor task. Once tasks have been moved around, these
+#              # tasks will all be added to the end.
+#              workflowEnd = []
+#              workflowEnd = self.workflow[successorIndex + 1:]
+#
+#              # Reconstruct the workflow.
+#              updatedWorkflow = []
+#              for updateCount in range(0, counter + 1): updatedWorkflow.append(workflow[updateCount])
+#              updatedWorkflow.append(successorTasks[0])
+#              for updateTask in workflowMiddle: updatedWorkflow.append(updateTask)
+#              for updateTask in workflowEnd: updatedWorkflow.append(updateTask)
+#
+#              # Update the workflow.
+#              self.workflow = updatedWorkflow
+#
+#              # Reset the startCount. There is no need to loop over the entire workflow on the next
+#              # pass.
+#              startCount = counter
+#              break
+
+    return self.workflow
+
+  # Loop over the workflow adding default parameter set data for all of the tasks.
+  def addTaskParameterSets(self, superPipeline, path):
+
+    # Loop over the workflow.
+    for task in self.workflow:
+      tool = self.getGraphNodeAttribute(self.graph, task, 'tool')
+
+      # Loop over all of the arguments in the default parameter set.
+      parameterSet = superPipeline.getToolParameterSet(tool, 'default')
+      arguments    = ps.parameterSets.getArguments(parameterSet)
+      for argument in arguments:
+        values           = arguments[argument]
+        toolData         = superPipeline.getToolData(tool)
+        longFormArgument = toolData.getLongFormArgument(argument)
+
+        # Check if this edge exists.
+	print('\tTEST', task, tool, argument, longFormArgument, values)
 
   # Return an attribute from a graph node.
   @classmethod

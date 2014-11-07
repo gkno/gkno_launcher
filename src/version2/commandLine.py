@@ -28,19 +28,26 @@ class commandLine:
     for entry in sys.argv[1:]:
       isArgument = entry.startswith('-')
 
-      # 
-      if argument and entry.startswith('['):
-        isTaskArguments = True
-        taskArguments   = ''
-        taskArguments  += entry
-
       # If this is a continuation of arguments for a specific task, append the arguments to
       # the task arguments. If the entry terminates with ']', the task arguments are complete.
       if isTaskArguments:
-        taskArguments += entry
         if entry.endswith(']'):
+          taskArguments += ' ' + entry[:-1]
           isTaskArguments = False
           self.arguments[argument].append(taskArguments)
+
+          # Reses the argument and the taskArguments now the task arguments have been handled.
+          taskArguments = ''
+          argument      = ''
+        else: taskArguments += ' ' + entry
+
+      # If the entry starts with a '['. this is the start of a set of arguments to be applied to
+      # a task within in the pipeline. Find all the commands in the square brackets and associate
+      # with the task argument.
+      elif argument and entry.startswith('['):
+        isTaskArguments = True
+        taskArguments   = ''
+        taskArguments  += entry[1:]
 
       # Only process the entry if not part of task arguments contained in square brackets.
       else:
@@ -68,9 +75,9 @@ class commandLine:
           argument                 = entry
           if argument not in self.arguments: self.arguments[argument] = []
 
-    # If the end of the command line is reached and argument is still populatied, this is assumed
+    # If the end of the command line is reached and argument is still populated, this is assumed
     # to be a flag and should be added.
-    if argument: self.arguments[argument] = None
+    if argument and not self.arguments[argument]: self.arguments[argument] = [None]
 
   # Determine if gkno is being run in admin mode.
   def isAdmin(self, modes):

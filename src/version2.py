@@ -14,7 +14,6 @@ import version2.commandLine
 from version2.commandLine import *
 
 import version2.fileHandling
-from version2.fileHandling import *
 
 import version2.graph
 from version2.graph import *
@@ -23,7 +22,6 @@ import version2.plotGraph
 from version2.plotGraph import *
 
 import version2.toolConfiguration
-from version2.toolConfiguration import *
 
 import version2.pipelineConfiguration
 from version2.pipelineConfiguration import *
@@ -51,14 +49,15 @@ def main():
   toolConfigurationFilesPath     = sourcePath + '/config_files/tools/'
 
   # TODO REMOVE
-  pipelineConfigurationFilesPath = sourcePath + '/development/'
+  pipelineConfigurationFilesPath = sourcePath + '/development/pipelines/'
+  toolConfigurationFilesPath     = sourcePath + '/development/tools/'
 
   resourcesPath                  = sourcePath + '/resources/'
   toolsPath                      = sourcePath + '/tools/'
 
   # Define a class for handling files. In the initialisation, determine the names of all available
   # tools and pipelines.
-  files = fileHandling(toolConfigurationFilesPath, pipelineConfigurationFilesPath)
+  files = fileHandling.fileHandling(toolConfigurationFilesPath, pipelineConfigurationFilesPath)
 
   # Define an admin utilities object. This handles all of the build/update steps
   # along with 'resource' management.
@@ -89,7 +88,7 @@ def main():
   superPipeline.getNestedPipelineData(pipelineConfigurationFilesPath, filename)
 
   # Generate a list of all tasks, tools, unique and shared node IDs from all pipelines.
-  superPipeline.getTools()
+  superPipeline.setTools()
 
   # Now that all the tasks are known, check that each pipeline only contains valid tasks. If a 
   # task in the pipeline addresses a node in a contained pipeline, knowledge of all pipelines is
@@ -97,7 +96,10 @@ def main():
   superPipeline.checkContainedTasks()
   
   # Loop over the list of required tools, open and process their configuration files and store.
-  superPipeline.getToolData(toolConfigurationFilesPath)
+  for tool in superPipeline.getTools():
+    toolData = toolConfiguration.toolConfiguration()
+    toolData.getConfigurationData(toolConfigurationFilesPath + str(tool) + '.json')
+    superPipeline.addTool(tool, toolData)
 
   # Define the graph object that will contain the pipeline graph and necessary operations and methods
   # to build and modify it.
@@ -107,10 +109,16 @@ def main():
   for tier in reversed(superPipeline.configurationData.keys()):
     for pipeline in superPipeline.configurationData[tier]: graph.buildPipelineTasks(pipeline, superPipeline)
 
+  # Generate the workflow.
+  workflow = graph.generateWorkflow()
+
+  # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
+  # the nodes with these task level default parameter sets, creating nodes where necessary.
+  graph.addTaskParameterSets(superPipeline, toolConfigurationFilesPath)
+
   plot = plotGraph()
   plot.plot(graph.graph.copy(), 'test.dot')
 
-  #workflow = graph.generateWorkflow()
 
 if __name__ == "__main__":
   main()

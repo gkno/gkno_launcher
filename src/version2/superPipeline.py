@@ -73,7 +73,7 @@ class superPipelineClass:
         if not tierHasNestedPipeline: checkForNestedPipelines = False
 
   # Get all of the tools from each pipeline in the super pipeline and store them.
-  def getTools(self):
+  def setTools(self):
     for tier in self.configurationData.keys():
       for pipeline in self.configurationData[tier]:
 
@@ -158,11 +158,19 @@ class superPipelineClass:
               #TODO ERROR
               if task not in self.tasks: print('superPipeline.checkContainedTasks - 6'); exit(0)
 
-  # Loop over the list of required tools, open and process their configuration files and store.
-  def getToolData(self, path):
+  # Add tool configuration data to the super pipeline.
+  def addTool(self, tool, toolData):
+    self.toolConfigurationData[tool] = toolData
 
-    # Loop over the tools.
-    for tool in self.tools:
-      toolData = toolConfiguration.toolConfiguration()
-      toolData.getConfigurationData(path + str(tool) + '.json')
-      self.toolConfigurationData[tool] = toolData
+  # Return all the tools used in the superpipeline.
+  def getTools(self):
+    return self.tools
+
+  # Return data for a specified tool.
+  def getToolData(self, tool):
+    return self.toolConfigurationData[tool]
+
+  # Get a parameter set for a tool.
+  def getToolParameterSet(self, tool, parameterSet):
+    try: return self.toolConfigurationData[tool].parameterSets.sets[parameterSet]
+    except: return None
