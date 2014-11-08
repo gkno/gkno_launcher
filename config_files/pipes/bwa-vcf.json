@@ -267,6 +267,11 @@
           "values" : ["temp-header.sam"]
         },
         {
+          "ID" : "header-text",
+          "argument" : "--header-text",
+          "values" : ["$(RESOURCES)/tutorial/current/sort-order.sam"]
+        },
+        {
           "ID" : "threads-bwaheader",
           "argument" : "--threads-bwa",
           "values" : [8]
@@ -283,6 +288,16 @@
       "ID" : "test",
       "description" : "Test parameter set for the test harness.",
       "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "ID" : "reference-prefix",
+          "argument" : "--fasta-reference-prefix",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment"]
+        }
       ]
     }
   ]
