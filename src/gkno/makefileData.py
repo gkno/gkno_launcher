@@ -455,7 +455,9 @@ class makefileData:
           # Determine if this task outputs to the stream. If so, just write a pipe and move on to the
           # next command.
           if task == tasks[0]: print('\t@', end = '', file = fileHandle)
-          else: print('\t| ', end = '', file = fileHandle)
+          else:
+            print('\t2>> $(STDERR) \\', file = fileHandle)
+            print('\t| ', end = '', file = fileHandle)
 
           stdout = self.writeCommand(graph, config, fileHandle, task, counter, inputIsStream)
   

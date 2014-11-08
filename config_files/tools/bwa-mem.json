@@ -29,8 +29,8 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "FM-index files (prefix).",
-        "long form argument" : "--index",
+        "description" : "The reference prefix.",
+        "long form argument" : "--reference-prefix",
         "short form argument" : "-x",
         "command line argument" : "none",
         "required" : true,
@@ -214,7 +214,7 @@
       {
         "description" : "Read type. Setting -x changes multiple parameters unless overriden [null]. (pacbio: -k17 -W40 -r10 -A2 -B5 -O2 -E1 -L0; pbread: -k13 -W40 -c1000 -r10 -A2 -B5 -O2 -E1 -N25 -FeaD.001.",
         "long form argument" : "--read-type",
-        "short form argument" : "-x",
+        "short form argument" : "-rt",
         "command line argument" : "-x",
         "data type" : "string",
         "extensions" : ["no extension"]
@@ -326,10 +326,10 @@
     "--use-soft-clipping",
     "--mark-splits",
     "--insert-size-distribution",
-    "--index",
+    "--reference-prefix",
     "--fastq",
     "--fastq2",
-    "--sam"
+    "--out"
   ],
 
   "parameter sets" : [
@@ -445,8 +445,8 @@
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_2.fq"]
         },
         {
-          "ID" : "index",
-          "argument" : "--index",
+          "ID" : "reference",
+          "argument" : "--reference-prefix",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment"]
         }
       ]

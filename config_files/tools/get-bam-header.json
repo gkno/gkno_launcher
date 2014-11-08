@@ -1,11 +1,11 @@
 {
-  "id" : "samtools-reheader",
-  "description" : "Replace the header in a BAM file.",
+  "id" : "get-bam-header",
+  "description" : "Extract the header from a BAM file.",
   "categories" : ["BAM-processing"],
   "tools" : ["samtools"],
   "path" : "samtools",
   "executable" : "samtools",
-  "modifier" : "reheader",
+  "modifier" : "view",
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
@@ -17,41 +17,47 @@
         "required" : true,
         "data type" : "string",
         "extensions" : [".bam"],
-        "modify argument name on command line" : "hide"
-      },
-      {
-        "description" : "The header file to replace the existing header.",
-        "long form argument" : "--header",
-        "short form argument" : "-d",
-        "command line argument" : "none",
-        "required" : true,
-        "data type" : "string",
-        "extensions" : [".sam"],
-        "modify argument name on command line" : "hide"
+        "modify argument name on command line" : "hide",
+        "if input is stream" : "replace",
+        "replace argument with" : {
+          "argument" : "-",
+          "value" : ""
+        }
       }
     ],
 
     "outputs" : [
       {
-        "description" : "The output BAM file.",
+        "description" : "The output header file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam"],
+        "extensions" : [".sam"],
         "modify argument name on command line" : "stdout",
-        "if output to stream" : "do not include",
         "construct filename" : {
           "method" : "from tool argument",
           "use argument" : "--in",
           "modify extension" : "replace",
           "modify text" : [
             {
-              "add text" : ["_reheaded"]
+              "add text" : ["_header"]
             }
           ]
         }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Output the header.",
+        "long form argument" : "--header",
+        "short form argument" : "-s",
+        "command line argument" : "-H",
+        "data type" : "flag",
+        "extensions" : ["no extension"],
+        "hide in help" : true
       }
     ]
   },
@@ -61,6 +67,11 @@
       "ID" : "default",
       "description" : "Default parameter set requires the users input for all files.",
       "nodes" : [
+        {
+          "ID" : "output-header",
+          "argument" : "--header",
+          "values" : ["set"]
+        }
       ]
     },
 
@@ -72,11 +83,6 @@
           "ID" : "input",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
-        },
-        {
-          "ID" : "header",
-          "argument" : "--header",
-          "values" : ["$(RESOURCES)/tutorial/current/test-header.sam"]
         }
       ]
     }

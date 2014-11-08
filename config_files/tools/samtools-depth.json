@@ -1,11 +1,11 @@
 {
-  "id" : "samtools-reheader",
-  "description" : "Replace the header in a BAM file.",
+  "id" : "samtools-depth",
+  "description" : "Calculate BAM depth statistics.",
   "categories" : ["BAM-processing"],
   "tools" : ["samtools"],
   "path" : "samtools",
   "executable" : "samtools",
-  "modifier" : "reheader",
+  "modifier" : "depth",
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
@@ -20,41 +20,70 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "The header file to replace the existing header.",
-        "long form argument" : "--header",
-        "short form argument" : "-d",
-        "command line argument" : "none",
-        "required" : true,
+        "description" : "Bed file to identify intervals to analyse.",
+        "long form argument" : "--bed",
+        "short form argument" : "-b",
+        "command line argument" : "-b",
         "data type" : "string",
-        "extensions" : [".sam"],
-        "modify argument name on command line" : "hide"
+        "extensions" : [".bed"]
       }
     ],
 
     "outputs" : [
       {
-        "description" : "The output BAM file.",
+        "description" : "The output statistics file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam"],
+        "extensions" : [".depth"],
         "modify argument name on command line" : "stdout",
         "if output to stream" : "do not include",
         "construct filename" : {
           "method" : "from tool argument",
           "use argument" : "--in",
-          "modify extension" : "replace",
-          "modify text" : [
-            {
-              "add text" : ["_reheaded"]
-            }
-          ]
+          "modify extension" : "replace"
         }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Base quality threshold.",
+        "long form argument" : "--base-quality-threshold",
+        "short form argument" : "-q",
+        "command line argument" : "-q",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Mapping quality threshold.",
+        "long form argument" : "--mapping-quality-threshold",
+        "short form argument" : "-m",
+        "command line argument" : "-Q",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Genomic region to analyse.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "command line argument" : "-r",
+        "data type" : "string",
+        "extensions" : ["no extension"]
       }
     ]
   },
+
+  "argument order" : [
+    "--region",
+    "--base-quality-threshold",
+    "--mapping-quality-threshold",
+    "--in",
+    "--bed",
+    "--out"
+  ],
 
   "parameter sets" : [
     {
@@ -72,11 +101,6 @@
           "ID" : "input",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
-        },
-        {
-          "ID" : "header",
-          "argument" : "--header",
-          "values" : ["$(RESOURCES)/tutorial/current/test-header.sam"]
         }
       ]
     }

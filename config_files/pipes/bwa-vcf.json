@@ -1,0 +1,289 @@
+{
+  "description" : "Align paired-end fastq files using BWA and call variants with Wham and Freebayes.",
+  "categories" : ["Alignment", "Variant-discovery"],
+
+  "tasks" : {
+    "index-fasta" : {
+      "tool" : "samtools-index-fasta"
+    },
+    "align" : {
+      "tool" : "bwa-mem",
+      "output to stream" : true
+    },
+    "convert-to-bam" : {
+      "tool" : "sam-to-bam"
+    },
+    "get-header" : {
+      "tool" : "get-bam-header"
+    },
+    "add-to-header" : {
+      "tool" : "concatenate-files"
+    },
+    "reheader" : {
+      "tool" : "samtools-reheader"
+    },
+    "sort" : {
+      "tool" : "bamtools-sort"
+    },
+    "dedup" : {
+      "tool" : "samtools-rmdup"
+    },
+    "index" : {
+      "tool" : "bamtools-index"
+    },
+    "stats" : {
+      "tool" : "bamtools-stats"
+    },
+    "depth" : {
+      "tool" : "samtools-depth"
+    },
+    "freebayes" : {
+      "tool" : "freebayes",
+      "output to stream" : true
+    },
+    "compress-freebayes" : {
+      "tool" : "bgzip-stream"
+    },
+    "index-freebayes" : {
+      "tool" : "tabix-index-vcf"
+    },
+    "call-svs" : {
+      "tool" : "wham-bam",
+      "output to stream" : true
+    },
+    "compress-wham" : {
+      "tool" : "bgzip-stream"
+    },
+    "index-wham" : {
+      "tool" : "tabix-index-vcf"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "fasta-reference",
+      "description" : "The reference FASTA file.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "tasks" : {
+        "index-fasta" : "--fasta-reference",
+        "freebayes" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "reference stub",
+      "description" : "The reference FASTA file prefix.",
+      "long form argument" : "--fasta-reference-prefix",
+      "short form argument" : "-rp",
+      "tasks" : {
+        "align" : "--reference-prefix"
+      }
+    },
+    {
+      "ID" : "fastq",
+      "description" : "The input fastq file (first mate).",
+      "long form argument" : "--fastq",
+      "short form argument" : "-q",
+      "tasks" : {
+        "align" : "--fastq"
+      }
+    },
+    {
+      "ID" : "fastq2",
+      "description" : "The input fastq file (second mate).",
+      "long form argument" : "--fastq2",
+      "short form argument" : "-q2",
+      "required" : true,
+      "tasks" : {
+        "align" : "--fastq2"
+      }
+    },
+    {
+      "ID" : "bwa-threads",
+      "description" : "The number of threads for BWA-mem.",
+      "long form argument" : "--threads-bwa",
+      "short form argument" : "-tb",
+      "tasks" : {
+        "align" : "--threads"
+      }
+    },
+    {
+      "ID" : "convert",
+      "description" : "Convert the SAM file to BAM format.",
+      "tasks" : {
+        "align" : "--out",
+        "convert-to-bam" : "--in"
+      }
+    },
+    {
+      "ID" : "get-header",
+      "description" : "Get the BAM header.",
+      "tasks" : {
+        "convert-to-bam" : "--out",
+        "get-header" : "--in",
+        "reheader" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "header",
+      "description" : "Add the sort order to the BAM header.",
+      "tasks" : {
+        "get-header" : "--out",
+        "add-to-header" : "--file1"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "header-text",
+      "description" : "The text to add to the BAM header.",
+      "long form argument" : "--header-text",
+      "short form argument" : "-ht",
+      "required" : true,
+      "tasks" : {
+        "add-to-header" : "--initial-file"
+      }
+    },
+    {
+      "ID" : "new-header",
+      "description" : "The new header file for reheading the BAM file.",
+      "long form argument" : "--header-file",
+      "short form argument" : "-f",
+      "required" : true,
+      "tasks" : {
+        "add-to-header" : "--out",
+        "reheader" : "--header"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "sort",
+      "description" : "Sort the BAM file.",
+      "tasks" : {
+        "reheader" : "--out",
+        "sort" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "dedup",
+      "description" : "Mark duplicate reads.",
+      "tasks" : {
+        "sort" : "--out",
+        "dedup" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "index",
+      "description" : "Index the final BAM file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "tasks" : {
+        "dedup" : "--out",
+        "index" : "--in",
+        "stats" : "--in",
+        "depth" : "--in",
+        "freebayes" : "--in",
+        "call-svs" : "--in"
+      }
+    },
+    {
+      "ID" : "link-bam-index",
+      "description" : "Link the BAM index.",
+      "tasks" : {
+        "index" : "--out",
+        "freebayes" : "--index"
+      }
+    },
+    {
+      "ID" : "reference-index",
+      "description" : "Link the reference index.",
+      "tasks" : {
+        "index-fasta" : "--out",
+        "freebayes" : "--fasta-index"
+      }
+    },
+    {
+      "ID" : "compress-freebayes",
+      "description" : "Compress the Freebayes VCF file",
+      "tasks" : {
+        "freebayes" : "--out",
+        "compress-freebayes" : "--in"
+      }
+    },
+    {
+      "ID" : "index-freebayes",
+      "description" : "Index the Freebayes VCF file",
+      "tasks" : {
+        "compress-freebayes" : "--out",
+        "index-freebayes" : "--in"
+      }
+    },
+    {
+      "ID" : "background",
+      "description" : "Background BAM files for use with wham.",
+      "long form argument" : "--background-bams",
+      "short form argument" : "-b",
+      "tasks" : {
+        "call-svs" : "--background-bams"
+      }
+    },
+    {
+      "ID" : "wham-threads",
+      "description" : "The number of threads used by wham.",
+      "long form argument" : "--threads-wham",
+      "short form argument" : "-tw",
+      "tasks" : {
+        "call-svs" : "--threads"
+      }
+    },
+    {
+      "ID" : "compress-wham",
+      "description" : "Compress the wham VCF file.",
+      "tasks" : {
+        "call-svs" : "--out",
+        "compress-wham" : "--in"
+      }
+    },
+    {
+      "ID" : "index-wham",
+      "description" : "Index the wham VCF file.",
+      "tasks" : {
+        "compress-wham" : "--out",
+        "index-wham" : "--in"
+      }
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "nodes" : [
+        {
+          "ID" : "header",
+          "argument" : "--header-file",
+          "values" : ["temp-header.sam"]
+        },
+        {
+          "ID" : "threads-bwaheader",
+          "argument" : "--threads-bwa",
+          "values" : [8]
+        },
+        {
+          "ID" : "threads-wham",
+          "argument" : "--threads-wham",
+          "values" : [8]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "nodes" : [
+      ]
+    }
+  ]
+}
