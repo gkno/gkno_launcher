@@ -1,14 +1,16 @@
 #!/bin/bash/python
 
 from __future__ import print_function
+import generalConfigurationFileErrors as er
 
 import json
 import os
 import sys
 
 # Check general attribute information.
-def checkAttributes(data, allowedAttributes, attributes, allowTermination):
+def checkAttributes(data, allowedAttributes, attributes, allowTermination, helpInfo):
   success = True
+  errors  = er.generalConfigurationFileErrors()
 
   # Keep track of the observed required values.
   observedAttributes = {}
@@ -19,8 +21,7 @@ def checkAttributes(data, allowedAttributes, attributes, allowTermination):
     # If the value is not in the allowedAttributes, it is not an allowed value and execution
     # should be terminate with an error.
     if attribute not in allowedAttributes:
-      #TODO ERROR
-      if allowTermination: print('generalConfig.checkAttributes - 1 - invalid', attribute); exit(0) # invalidGeneralAttributeInConfigurationFile
+      if allowTermination: errors.invalidAttribute(attribute, allowedAttributes, helpInfo)
       else: return False, None
 
     # Mark this values as having been observed,

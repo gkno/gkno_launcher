@@ -98,7 +98,7 @@ def main():
   # Loop over the list of required tools, open and process their configuration files and store.
   for tool in superPipeline.getTools():
     toolData = toolConfiguration.toolConfiguration()
-    toolData.getConfigurationData(toolConfigurationFilesPath + str(tool) + '.json')
+    toolData.getConfigurationData(tool, toolConfigurationFilesPath + str(tool) + '.json')
     superPipeline.addTool(tool, toolData)
 
   # Define the graph object that will contain the pipeline graph and necessary operations and methods
@@ -111,11 +111,6 @@ def main():
 
   # Generate the workflow.
   workflow = graph.generateWorkflow()
-
-  # The top level pipeline configuration file defines pipeline arguments that can be applied on the
-  # command line. Identify the edges that these arguments point to and add additional attributes to
-  # these edges.
-  graph.addPipelineArguments()
 
   # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
   # the nodes with these task level default parameter sets, creating nodes where necessary.

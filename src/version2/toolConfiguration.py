@@ -5,6 +5,7 @@ from __future__ import print_function
 import fileHandling
 import generalConfigurationFileMethods as methods
 import parameterSets
+import toolConfigurationErrors as errors
 
 import json
 import os
@@ -36,11 +37,12 @@ class argumentAttributes:
     self.dataType = None
 
     # Keep track of required arguments.
-    self.isRequired          = False
+    self.isRequired = False
 
     # Record id the argument points to a filename stub and store the 
     # associated extensions.
-    self.isFilenameStub = False
+    self.isStub = False
+    self.stubExtensions = []
 
     # Record if this argument should be hidden in the help.
     self.hideInHelp = False
@@ -60,7 +62,13 @@ class argumentAttributes:
 class toolConfiguration:
   def __init__(self):
 
-     # Record the tool ID.
+    # Define error handling.
+    self.errors = errors.toolErrors()
+
+    # Record the name of the tool.
+    self.name = None
+
+    # Record the tool ID.
     self.id = None
 
     # Define the arguments associated with the tool.
@@ -114,7 +122,10 @@ class toolConfiguration:
     self.success = True
 
   # Open a configuration file, process the data and return.
-  def getConfigurationData(self, filename):
+  def getConfigurationData(self, tool, filename):
+
+    # Store the name of the tool.
+    self.name = tool
 
     # Get the configuration file data.
     data = fileHandling.fileHandling.readConfigurationFile(filename, True)
@@ -137,8 +148,11 @@ class toolConfiguration:
     # Validate all other arguments.
     if self.success: self.checkRemainingArguments(data['arguments'])
 
+    # Check that certain required combinations of attributes are adhered to.
+    if self.success: self.checkAttributeCombinations()
+
     # Check the parameter set information and store.
-    if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination)
+    if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination, self.name)
 
   # Process the top level pipeline configuration information.
   def checkTopLevelInformation(self, data):
@@ -161,8 +175,11 @@ class toolConfiguration:
     allowedAttributes['tools']              = (list, True, True, 'requiredCompiledTools')
     allowedAttributes['url']                = (str, False, True, 'url')
 
+    # Define a set of information to be used in help messages.
+    helpInfo = (self.name, None, None)
+
     # Check the attributes against the allowed attributes and make sure everything is ok.
-    self = methods.checkAttributes(data, allowedAttributes, self, self.allowTermination)
+    self = methods.checkAttributes(data, allowedAttributes, self, self.allowTermination, helpInfo)
 
   # Validate the contents of all input arguments.
   def checkInputArguments(self, arguments):
@@ -173,13 +190,14 @@ class toolConfiguration:
     allowedAttributes['command line argument'] = (str, True, True, 'commandLineArgument')
     allowedAttributes['data type']             = (str, True, True, 'dataType')
     allowedAttributes['description']           = (str, True, True, 'description')
-    allowedAttributes['extensions']            = (list, True, True, 'extensions')
+    allowedAttributes['extensions']            = (list, False, True, 'extensions')
+    allowedAttributes['stub extensions']       = (list, False, True, 'stubExtensions')
     allowedAttributes['hide in help']          = (bool, False, True, 'hideInHelp')
     allowedAttributes['long form argument']    = (str, True, True, 'longFormArgument')
     allowedAttributes['required']              = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']   = (str, False, True, 'shortFormArgument')
     allowedAttributes['construct filename']    = (dict, False, True, 'constructionInstructions')
-    allowedAttributes['is filename stub']      = (bool, False, True, 'isFilenameStub')
+    allowedAttributes['is filename stub']      = (bool, False, True, 'isStub')
     allowedAttributes['suggestible']           = (bool, False, True, 'isSuggestible')
 
     # Return if there are no input arguments.
@@ -197,13 +215,14 @@ class toolConfiguration:
     allowedAttributes['command line argument'] = (str, True, True, 'commandLineArgument')
     allowedAttributes['data type']             = (str, True, True, 'dataType')
     allowedAttributes['description']           = (str, True, True, 'description')
-    allowedAttributes['extensions']            = (list, True, True, 'extensions')
+    allowedAttributes['extensions']            = (list, False, True, 'extensions')
+    allowedAttributes['stub extensions']       = (list, False, True, 'stubExtensions')
     allowedAttributes['hide in help']          = (bool, False, True, 'hideInHelp')
     allowedAttributes['long form argument']    = (str, True, True, 'longFormArgument')
     allowedAttributes['required']              = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']   = (str, False, True, 'shortFormArgument')
     allowedAttributes['construct filename']    = (dict, False, True, 'constructionInstructions')
-    allowedAttributes['is filename stub']      = (bool, False, True, 'isFilenameStub')
+    allowedAttributes['is filename stub']      = (bool, False, True, 'isStub')
 
     # Return if there are no input arguments.
     if 'outputs' not in arguments: return
@@ -220,7 +239,7 @@ class toolConfiguration:
     allowedAttributes['command line argument'] = (str, True, True, 'commandLineArgument')
     allowedAttributes['data type']             = (str, True, True, 'dataType')
     allowedAttributes['description']           = (str, True, True, 'description')
-    allowedAttributes['extensions']            = (list, True, True, 'extensions')
+    allowedAttributes['extensions']            = (list, False, True, 'extensions')
     allowedAttributes['hide in help']          = (bool, False, True, 'hideInHelp')
     allowedAttributes['long form argument']    = (str, True, True, 'longFormArgument')
     allowedAttributes['required']              = (bool, False, True, 'isRequired')
@@ -239,11 +258,14 @@ class toolConfiguration:
     # Loop over all of the input arguments and check their validity.
     for argumentInformation in arguments:
 
+      # Define a set of information to be used in help messages.
+      helpInfo = (self.name, 'arguments', None)
+
       # Define a class to store task attribtues.
       attributes = argumentAttributes()
 
       # Check all the supplied attributes.
-      self.success, attributes = methods.checkAttributes(argumentInformation, allowedAttributes, attributes, self.allowTermination)
+      self.success, attributes = methods.checkAttributes(argumentInformation, allowedAttributes, attributes, self.allowTermination, helpInfo)
 
       # Check that the argument name is unique.
       if attributes.longFormArgument in self.arguments:
@@ -257,6 +279,20 @@ class toolConfiguration:
       if isInput: attributes.isInput = True
       elif isOutput: attributes.isOutput = True
       self.arguments[attributes.longFormArgument] = attributes
+
+  # Check that required attributes combinations are available. For example, if the 'is filename stub'
+  # attribute is set, the stub extensions field must also be present.
+  def checkAttributeCombinations(self):
+
+    # Loop over all the arguments.
+    for argument in self.arguments:
+
+      # If isStub is set, 
+      if self.getArgumentAttribute(argument, 'isStub') and not self.getArgumentAttribute(argument, 'stubExtensions'):
+        if self.allowTermination: self.errors.noExtensionsForStub(self.name, argument)
+        else:
+          self.success = False
+          return
 
   # Get an argument attribute.
   def getArgumentAttribute(self, argument, attribute):

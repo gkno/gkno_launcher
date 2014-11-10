@@ -34,7 +34,7 @@ class parameterSets:
     self.sets = {}
 
   # Check the parameter set information
-  def checkParameterSets(self, data, allowTermination):
+  def checkParameterSets(self, data, allowTermination, name):
     success = True
 
     # Define the allowed attributes.
@@ -52,6 +52,9 @@ class parameterSets:
     # Loop over all of the defined parameter sets.
     for parameterSet in data:
 
+      # Define a set of information to be used in help messages.
+      helpInfo = (name, 'parameter sets', parameterSet)
+
       # Check that the supplied structure is a dictionary.
       if not methods.checkIsDictionary(parameterSet, allowTermination): return
 
@@ -59,7 +62,7 @@ class parameterSets:
       attributes = parameterSetData()
 
       # Check the attributes.
-      success, attributes = methods.checkAttributes(parameterSet, allowedAttributes, attributes, allowTermination)
+      success, attributes = methods.checkAttributes(parameterSet, allowedAttributes, attributes, allowTermination, helpInfo)
 
       # Loop over all of the data supplied with the parameter set and check the validity.
       for dataSet in parameterSet['data']:
@@ -71,7 +74,7 @@ class parameterSets:
         dataAttributes = parameterSetArguments()
 
         # Check the attributes.
-        success, dataAttributes = methods.checkAttributes(dataSet, allowedDataAttributes, dataAttributes, allowTermination)
+        success, dataAttributes = methods.checkAttributes(dataSet, allowedDataAttributes, dataAttributes, allowTermination, helpInfo)
 
         # Append this argument to the main parameter set attributes.
         attributes.data.append(dataAttributes)

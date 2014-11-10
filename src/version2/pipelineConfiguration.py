@@ -5,6 +5,7 @@ from __future__ import print_function
 import fileHandling
 import generalConfigurationFileMethods as methods
 import parameterSets
+import pipelineConfigurationErrors as errors
 
 import json
 import os
@@ -90,8 +91,14 @@ class edgeDefinitions:
 class pipelineConfiguration:
   def __init__(self):
 
+    # Handle errors.
+    self.errors = errors.pipelineErrors()
+
+    # Store the name of the pipeline.
+    self.name = None
+
     # Store the id for this pipeline.
-    self.id = ''
+    self.id = None
 
     # The pipeline description.
     self.description = 'No description'
@@ -117,6 +124,9 @@ class pipelineConfiguration:
     # The connections that need to be made between nodes and tasks.
     self.connections = {}
 
+    # Store all of the defined arguments.
+    self.arguments = {}
+
     # If the pipeline contains tasks that are themselves pipelines. Store all of the pipelines
     # used in this pipeline.
     self.hasPipelineAsTask = False
@@ -139,11 +149,18 @@ class pipelineConfiguration:
   # Open a configuration file, process the data and return.
   def getConfigurationData(self, filename):
 
+    # Get the name of the pipeline.
+    self.name = self.getPipelineName(filename)
+
     # Get the configuration file data.
     data = fileHandling.fileHandling.readConfigurationFile(filename, True)
 
     # Process the configuration file data.
     success = self.processConfigurationFile(data)
+
+  # Get the pipeline name.
+  def getPipelineName(self, filename):
+    return (filename.rsplit('/')[-1]).rsplit('.json')[0]
 
   # Process the configuration file.
   def processConfigurationFile(self, data):
@@ -167,7 +184,10 @@ class pipelineConfiguration:
     if self.success: self.checkDefinedEdges(data)
 
     # Check the parameter set information and store.
-    if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination)
+    if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination, self.name)
+
+    # Parse all of the unique nodes and shared nodes and pull out all of the pipeline arguments and store them.
+    if self.success: self.success = self.storeArguments()
 
   # Process the top level pipeline configuration information.
   def checkTopLevelInformation(self, data):
@@ -183,8 +203,11 @@ class pipelineConfiguration:
     allowedAttributes['shared graph nodes']      = (list, False, False, None)
     allowedAttributes['unique graph nodes']      = (list, False, False, None)
 
+    # Define a set of information to be used in help messages.
+    helpInfo = (self.name, None, None)
+
     # Check the attributes against the allowed attributes and make sure everything is ok.
-    self = methods.checkAttributes(data, allowedAttributes, self, self.allowTermination)
+    self = methods.checkAttributes(data, allowedAttributes, self, self.allowTermination, helpInfo)
 
   # Check the pipeline tasks. Ensure that all of the tasks are either available tools or other pipelines.
   def checkPipelineTasks(self, data):
@@ -197,11 +220,14 @@ class pipelineConfiguration:
 
     for taskInformation in data:
 
+      # Define a set of information to be used in help messages.
+      helpInfo = (self.name, 'pipeline tasks', taskInformation)
+
       # Define a class to store task attribtues.
       attributes = taskAttributes()
 
       # Check all the supplied attributes.
-      self.success, attributes = methods.checkAttributes(taskInformation, allowedAttributes, attributes, self.allowTermination)
+      self.success, attributes = methods.checkAttributes(taskInformation, allowedAttributes, attributes, self.allowTermination, helpInfo)
 
       # Check that the task name is unique.
       if attributes.task in self.pipelineTasks:
@@ -254,6 +280,9 @@ class pipelineConfiguration:
     # Loop over all of the defined nodes.
     for uniqueNode in data['unique graph nodes']:
 
+      # Define a set of information to be used in help messages.
+      helpInfo = (self.name, 'unique graph nodes', uniqueNode)
+
       # Check that the supplied structure is a dictionary.
       if not methods.checkIsDictionary(uniqueNode, self.allowTermination): return
 
@@ -261,7 +290,7 @@ class pipelineConfiguration:
       attributes = uniqueGraphNodes()
 
       # Check the attributes conform to expectations.
-      self.success, attributes = methods.checkAttributes(uniqueNode, allowedAttributes, attributes, self.allowTermination)
+      self.success, attributes = methods.checkAttributes(uniqueNode, allowedAttributes, attributes, self.allowTermination, helpInfo)
 
       # If the nodeID already exists in the attributes, a node of this name has already been seen. All 
       #nodes must have a unique name.
@@ -293,11 +322,14 @@ class pipelineConfiguration:
       # Check that the supplied structure is a dictionary.
       if not methods.checkIsDictionary(sharedNode, self.allowTermination): return
 
+      # Define a set of information to be used in help messages.
+      helpInfo = (self.name, 'shared graph nodes', sharedNode)
+
       # Define the attributes object.
       attributes = sharedGraphNodes()
 
       # Check the attributes conform to expectations.
-      self.success, attributes = methods.checkAttributes(sharedNode, allowedAttributes, attributes, self.allowTermination)
+      self.success, attributes = methods.checkAttributes(sharedNode, allowedAttributes, attributes, self.allowTermination, helpInfo)
 
       # If the nodeID already exists in the attributes, a node of this name has already been seen. All 
       #nodes must have a unique name.
@@ -324,6 +356,9 @@ class pipelineConfiguration:
     for nodeID in self.sharedNodeAttributes:
       for node in self.sharedNodeAttributes[nodeID].nodes:
 
+        # Define a set of information to be used in help messages.
+        helpInfo = (self.name, 'shared nodes', nodeID)
+
         # Check that the supplied structure is a dictionary.
         if not methods.checkIsDictionary(node, self.allowTermination): return
 
@@ -331,7 +366,7 @@ class pipelineConfiguration:
         attributes = nodeTaskAttributes()
   
         # Check that the supplied attributes are valid.
-        self.success, attributes = methods.checkAttributes(node, allowedAttributes, attributes, self.allowTermination)
+        self.success, attributes = methods.checkAttributes(node, allowedAttributes, attributes, self.allowTermination, helpInfo)
 
         #TODO INCLUDE A CHECK TO ENSURE THAT AN ALLOWED COMBINATION OF FIELDS IS PRESENT.
 
@@ -368,6 +403,9 @@ class pipelineConfiguration:
     # Loop over all the defined definitions.
     for information in data['connect nodes to tasks']:
 
+      # Define a set of information to be used in help messages.
+      helpInfo = (self.name, 'connect nodes to tasks', information)
+
       # Check that the supplied structure is a dictionary.
       if not methods.checkIsDictionary(information, self.allowTermination): return
 
@@ -375,24 +413,66 @@ class pipelineConfiguration:
       attributes = edgeDefinitions()
 
       # Check the attributes conform to expectations.
-      self.success, attributes = methods.checkAttributes(information, allowedAttributes, attributes, self.allowTermination)
+      self.success, attributes = methods.checkAttributes(information, allowedAttributes, attributes, self.allowTermination, helpInfo)
 
       # Loop over all the listed sources and check the information.
       for source in information['sources']:
         if not methods.checkIsDictionary(source, self.allowTermination): return
         sourceAttributes = nodeTaskAttributes()
-        self.success, sourceAttributes = methods.checkAttributes(source, allowedSourceAttributes, sourceAttributes, self.allowTermination)
+        self.success, sourceAttributes = methods.checkAttributes(source, allowedSourceAttributes, sourceAttributes, self.allowTermination, helpInfo)
         attributes.sourceInformation.append(sourceAttributes)
 
       # Loop over all the listed targets and check the information.
       for target in information['targets']:
         if not methods.checkIsDictionary(target, self.allowTermination): return
         targetAttributes = nodeTaskAttributes()
-        self.success, targetAttributes = methods.checkAttributes(target, allowedTargetAttributes, targetAttributes, self.allowTermination)
+        self.success, targetAttributes = methods.checkAttributes(target, allowedTargetAttributes, targetAttributes, self.allowTermination, helpInfo)
         attributes.targetInformation.append(targetAttributes)
 
       # Store the ID.
       self.connections[attributes.id] = attributes
+
+  # Store all of the pipeline arguments.
+  def storeArguments(self):
+    observedShortFormArguments = []
+    observedLongFormArguments  = []
+
+    # Parse all of the unique nodes.
+    for nodeID in self.getUniqueNodeIDs():
+
+      # Get the long and short form arguments.
+      longFormArgument  = self.getUniqueNodeAttribute(nodeID, 'longFormArgument')
+      shortFormArgument = self.getUniqueNodeAttribute(nodeID, 'shortFormArgument')
+
+      # Check that the arguments are unique and store the values
+      if self.allowTermination:
+        self.callArgumentErrors(nodeID, longFormArgument, shortFormArgument, observedLongFormArguments, observedShortFormArguments)
+      if longFormArgument:
+        observedLongFormArguments.append(longFormArgument)
+        observedShortFormArguments.append(shortFormArgument)
+        self.arguments[longFormArgument] = shortFormArgument
+
+    # Parse all of the shared nodes.
+    for nodeID in self.getSharedNodeIDs():
+
+      # Get the long and short form arguments.
+      longFormArgument  = self.getSharedNodeAttribute(nodeID, 'longFormArgument')
+      shortFormArgument = self.getSharedNodeAttribute(nodeID, 'shortFormArgument')
+
+      # Check that the arguments are unique and store the values.
+      if self.allowTermination:
+        self.callArgumentErrors(nodeID, longFormArgument, shortFormArgument, observedLongFormArguments, observedShortFormArguments)
+      if longFormArgument:
+        observedLongFormArguments.append(longFormArgument)
+        observedShortFormArguments.append(shortFormArgument)
+        self.arguments[longFormArgument] = shortFormArgument
+
+  # If termination is allowed, call errors on the observed arguments.
+  def callArgumentErrors(self, nodeID, longFormArgument, shortFormArgument, observedLongFormArguments, observedShortFormArguments):
+    if longFormArgument in observedLongFormArguments: self.errors.repeatedLongFormArgument(nodeID, longFormArgument)
+    if shortFormArgument in observedShortFormArguments: self.errors.repeatedShortFormArgument(nodeID, longFormArgument, shortFormArgument)
+    if longFormArgument and not shortFormArgument: self.errors.noShortFormArgument(nodeID, longFormArgument)
+    if shortFormArgument and not longFormArgument: self.errors.noLongFormArgument(nodeID, shortFormArgument)
 
   # Return a list of all the tasks in the pipeline.
   def getAllTasks(self):

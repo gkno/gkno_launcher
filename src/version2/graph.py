@@ -66,9 +66,11 @@ class pipelineGraph:
     self.connectNodesToTasks(superPipeline, pipeline)
 
   # Add unique graph nodes to the graph.
-  # TODO ADD ATTRIBUTES TO NODE
   def addUniqueNodes(self, superPipeline, pipeline):
     for nodeID in pipeline.uniqueNodeAttributes:
+
+      # Define a set of information to be used in help messages.
+      information = (pipeline.name, 'unique graph nodes', nodeID)
 
       # Get the task this node points to and determine if it is a tool or a pipeline.
       pipelineContainingTask = pipeline.getUniqueNodeAttribute(nodeID, 'pipeline')
@@ -98,10 +100,20 @@ class pipelineGraph:
         isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
         isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
 
+        # Determine if this is a filename stub.
+        isStub = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
+        if isStub: stubExtensions = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'stubExtensions')
+
         # Add the required nodes and edges.
-        if isInput:
+        if isInput and isStub:
+          self.addStubNodes(address + nodeID, stubExtensions)
+          self.addStubEdges(address + nodeID, address + task, stubExtensions, argumentAttributes, isInput = True)
+        elif isInput:
           self.addFileNode(address + nodeID)
           self.addEdge(address + nodeID, address + task, argumentAttributes)
+        elif isOutput and isStub:
+          self.addStubNodes(address + nodeID, stubExtensions)
+          self.addStubEdges(address + task, address + nodeID, stubExtensions, argumentAttributes, isInput = False)
         elif isOutput:
           self.addFileNode(address + nodeID)
           self.addEdge(address + task, address + nodeID, argumentAttributes)
@@ -118,7 +130,6 @@ class pipelineGraph:
       containsNodeInAnotherPipeline = pipeline.getSharedNodeAttribute(sharedNodeID, 'containsNodeInAnotherPipeline')
 
       # If all the shared nodes are in this pipeline, create the node and add the edges.
-      #if not containsTaskInAnotherPipeline: self.constructLocalSharedNode(tools, pipeline, sharedNodeID)
       if not containsNodeInAnotherPipeline:
         self.constructLocalSharedNode(superPipeline, pipeline, sharedNodeID)
 
@@ -150,12 +161,17 @@ class pipelineGraph:
         # Check the taskArgument to identify if this node is a file or an option node.
         isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
         isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
+
+        # Determine if this is a filename stub.
+        isStub = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
+        if isStub: stubExtensions = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'stubExtensions')
     
         # Define the pipeline relative address.
         address = str(pipeline.address + '.') if pipeline.address else str('')
   
         # Add the node and edges.
-        self.addNodeAndEdges(sharedNodeID, address, task, isInput, isOutput, argumentAttributes)
+        if isStub: self.addStubNodesAndEdges(sharedNodeID, address, task, isInput, stubExtensions, argumentAttributes)
+        else: self.addNodeAndEdges(sharedNodeID, address, task, isInput, isOutput, argumentAttributes)
 
   # Construct edges to an existing node from another pipeline.
   def constructEdgesToExistingNode(self, superPipeline, pipeline, sharedNodeID):
@@ -166,10 +182,16 @@ class pipelineGraph:
     # Loop over the nodes and determine the existing node.
     nodes = []
     for node in pipeline.getSharedNodeTasks(sharedNodeID):
-      if pipeline.getNodeTaskAttribute(node, 'pipelineNodeID'): nodes.append(node)
+      if pipeline.getNodeTaskAttribute(node, 'pipelineNodeID'):
+
+        # Check if the node to which this is pointing is a stub.
+        print('TEST', sharedNodeID, node.task, node.taskArgument, node.pipeline, node.pipelineNodeID)
+        print('\t', pipeline.getNodeTaskAttribute(node, 'pipeline'), pipeline.getNodeTaskAttribute(node, 'pipelineNodeID'))
+        nodes.append(node)
+    exit(0)
 
     # If there are multiple nodes in another pipeline, then these need to be merged. An example of this
-    # situation could that two variant calling pipelines have been implemented as pipelines within a
+    # situation could be that two variant calling pipelines have been implemented as pipelines within a
     # pipeline. The input files to both these pipelines were generated when the pipelines were constructed.
     # One of these nodes should be kept and the others deleted. The edges should be replaced to the kept
     # node.
@@ -291,6 +313,10 @@ class pipelineGraph:
           # Get the tool and it's attributes associated with this argument.
           longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
 
+          # Determine if this is a filename stub.
+          isStub = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
+          if isStub: stubExtensions = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'stubExtensions')    
+
           # Create the file node and connect it to the task for which it is an output.
           self.addNodeAndEdges(nodeAddress, address, taskAddress, False, True, argumentAttributes)
 
@@ -333,8 +359,21 @@ class pipelineGraph:
       if address + nodeID not in self.graph: self.addOptionNode(address + nodeID)
       self.addEdge(address + nodeID, address + task, attributes = attributes)
 
-  def addPipelineArguments(self):
-    print("TEST")
+  # Add stub nodes if necessary and then add edges. Stubs are always in reference to a file, so no
+  # checks are required for whether this is a file node.
+  def addStubNodesAndEdges(self, nodeID, address, task, isInput, extensions, attributes):
+
+    # Loop over all of the extensions associated with this stub.
+    for extension in extensions:
+      if extension.startswith('_') or extension.startswith('.'): fullAddress = address + nodeID + str(extension)
+      else: fullAddress = address + nodeID + '.' + str(extension)
+
+      # Create the node if necessary.
+      if fullAddress not in self.graph: self.addFileNode(str(fullAddress))
+
+      # Add the edge from or to the task.
+      if isInput: self.addEdge(str(fullAddress), str(address + task), attributes = attributes)
+      else: self.addEdge(str(address + task), str(fullAddress), attributes = attributes)
 
   # Get tool and argument attributes.
   def getAttributes(self, superPipeline, tool, argument):
@@ -345,6 +384,14 @@ class pipelineGraph:
     argumentAttributes = toolAttributes.getArgumentData(longFormArgument)
 
     return longFormArgument, argumentAttributes
+
+  # If this is a filename stub, a node for each of the files needs to be created. The
+  # node ID should be the node ID with the file extension appended.
+  def addStubNodes(self, nodeID, extensions):
+    for extension in extensions:
+      attributes          = fileNodeAttributes()
+      attributes.nodeType = 'file'
+      self.graph.add_node(nodeID + '.' + str(extension), attributes = attributes)
 
   # Add a task node to the graph.
   #TODO ADD TOOLS CLASS ATTRIBUTES TO TASK NODE.
@@ -372,6 +419,13 @@ class pipelineGraph:
   def addEdge(self, source, target, attributes):
     self.graph.add_edge(source, target, attributes = attributes)
 
+  # Add edges to the graph for files created from a stub.
+  def addStubEdges(self, source, target, extensions, attributes, isInput):
+    for extension in extensions:
+      modifiedSource = source + '.' + str(extension) if isInput else source
+      modifiedTarget = target if isInput else target + '.' + str(extension)
+      self.graph.add_edge(modifiedSource, modifiedTarget, attributes = attributes)
+
   # Generate a topologically sorted graph.
   #TODO
   def generateWorkflow(self):
@@ -386,51 +440,51 @@ class pipelineGraph:
     # topological sort could choose from multiple tasks to perform next. This routine exists to
     # ensure that the task following is the one that expects the stream as its input.
     #FIXME
-#    incomplete = True
-#    startCount = 0
-#    while incomplete:
-#      for counter in range(startCount, len(self.workflow)):
-#        task = self.workflow[counter]
-#        if counter == len(self.workflow) - 1: incomplete = False
-#        else:
-#          nextTask         = self.workflow[counter + 1]
-#          #FIXME
-#          isOutputToStream = False
-#          #isOutputToStream = self.nodeMethods.getGraphNodeAttribute(graph, task, 'outputStream')
-#
-#          # If this task outputs to the stream, determine what the next task should be.
-#          if isOutputToStream:
-#            for outputNodeID in self.graph.successors(task):
-#              successorTasks  = []
-#              for successorTask in self.graph.successors(outputNodeID): successorTasks.append(successorTask)
-#
-#            # If the next task is not in the list of tasks, modify the workflow to ensure that it is.
-#            successorIndex = self.workflow.index(successorTasks[0])
-#            if nextTask not in successorTasks:
-#
-#              # Store the tasks 
-#              workflowMiddle = []
-#              workflowMiddle = self.workflow[counter + 1: successorIndex]
-#
-#              # Find all the tasks after the successor task. Once tasks have been moved around, these
-#              # tasks will all be added to the end.
-#              workflowEnd = []
-#              workflowEnd = self.workflow[successorIndex + 1:]
-#
-#              # Reconstruct the workflow.
-#              updatedWorkflow = []
-#              for updateCount in range(0, counter + 1): updatedWorkflow.append(workflow[updateCount])
-#              updatedWorkflow.append(successorTasks[0])
-#              for updateTask in workflowMiddle: updatedWorkflow.append(updateTask)
-#              for updateTask in workflowEnd: updatedWorkflow.append(updateTask)
-#
-#              # Update the workflow.
-#              self.workflow = updatedWorkflow
-#
-#              # Reset the startCount. There is no need to loop over the entire workflow on the next
-#              # pass.
-#              startCount = counter
-#              break
+    incomplete = True
+    startCount = 0
+    while incomplete:
+      for counter in range(startCount, len(self.workflow)):
+        task = self.workflow[counter]
+        if counter == len(self.workflow) - 1: incomplete = False
+        else:
+          nextTask         = self.workflow[counter + 1]
+          #FIXME
+          isOutputToStream = False
+          #isOutputToStream = self.nodeMethods.getGraphNodeAttribute(graph, task, 'outputStream')
+
+          # If this task outputs to the stream, determine what the next task should be.
+          if isOutputToStream:
+            for outputNodeID in self.graph.successors(task):
+              successorTasks  = []
+              for successorTask in self.graph.successors(outputNodeID): successorTasks.append(successorTask)
+
+            # If the next task is not in the list of tasks, modify the workflow to ensure that it is.
+            successorIndex = self.workflow.index(successorTasks[0])
+            if nextTask not in successorTasks:
+
+              # Store the tasks 
+              workflowMiddle = []
+              workflowMiddle = self.workflow[counter + 1: successorIndex]
+
+              # Find all the tasks after the successor task. Once tasks have been moved around, these
+              # tasks will all be added to the end.
+              workflowEnd = []
+              workflowEnd = self.workflow[successorIndex + 1:]
+
+              # Reconstruct the workflow.
+              updatedWorkflow = []
+              for updateCount in range(0, counter + 1): updatedWorkflow.append(workflow[updateCount])
+              updatedWorkflow.append(successorTasks[0])
+              for updateTask in workflowMiddle: updatedWorkflow.append(updateTask)
+              for updateTask in workflowEnd: updatedWorkflow.append(updateTask)
+
+              # Update the workflow.
+              self.workflow = updatedWorkflow
+
+              # Reset the startCount. There is no need to loop over the entire workflow on the next
+              # pass.
+              startCount = counter
+              break
 
     return self.workflow
 
