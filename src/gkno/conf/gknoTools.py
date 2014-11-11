@@ -305,6 +305,24 @@ class Glia(GknoTool):
       return False 
     return self.make()
 
+# Htslib  
+class Htslib(GknoTool):
+  def __init__(self):
+    super(Htslib, self).__init__()
+    self.name       = "htslib"
+    self.installDir = "htslib"
+ 
+  # $ make clean
+  # $ make -j N
+  def doBuild(self):
+    if not self.makeClean():
+      return False
+    return self.make()
+
+  # $ make -j N
+  def doUpdate(self):
+    return self.make()
+
 # Jellyfish
 class Jellyfish(GknoTool):
   def __init__(self):
@@ -545,9 +563,9 @@ class Rufus(GknoTool):
     return self.make()
 
 # samtools
-class SamTools(GknoTool):
+class Samtools(GknoTool):
   def __init__(self):
-    super(SamTools, self).__init__()
+    super(Samtools, self).__init__()
     self.name       = "samtools"
     self.installDir = "samtools"
  
@@ -751,6 +769,7 @@ List = [
         Bwa(),
         Freebayes(),
         Glia(),
+        Htslib(), Samtools(), Pindel(), # <-- Keep this order
         Jellyfish(),
         LibStatGen(), BamUtil(), FastQValidator(), Qplot(), VerifyBamID(), # <-- Keep this order
         Mosaik(),
@@ -760,7 +779,6 @@ List = [
         Picard(),
         Premo(),
         Rufus(),
-        SamTools(), Pindel(), # <-- Keep this order
         Scissors(),
         Seqan(),       
         SnpEff(),

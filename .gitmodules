@@ -13,9 +13,6 @@
 [submodule "tools/premo"]
 	path = tools/premo
         url = https://github.com/gkno/premo.git
-[submodule "tools/samtools"]
-	path = tools/samtools
-        url = https://github.com/gkno/samtools.git
 [submodule "resources/homo_sapiens"]
 	path = resources/homo_sapiens
         url = https://github.com/gkno/resources-homo_sapiens.git
@@ -97,3 +94,9 @@
 [submodule "tools/wham"]
 	path = tools/wham
 	url = https://github.com/gkno/wham.git
+[submodule "tools/htslib"]
+	path = tools/htslib
+	url = https://github.com/gkno/htslib.git
+[submodule "tools/samtools"]
+	path = tools/samtools
+	url = https://github.com/gkno/samtools.git
