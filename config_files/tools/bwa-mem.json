@@ -228,7 +228,8 @@
         "short form argument" : "-R",
         "command line argument" : "-R",
         "data type" : "string",
-        "extensions" : ["no extension"]
+        "extensions" : ["no extension"],
+        "include value in quotations" : true
       },
       {
         "description" : "Verbose level: 1=error, 2=warning, 3=message, 4+=debugging [3].",

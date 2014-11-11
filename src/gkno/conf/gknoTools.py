@@ -581,7 +581,10 @@ class Samtools(GknoTool):
     return self.make()
 
   # $ make -j N
-  def doUpdate(self): return self.make()
+  def doUpdate(self):
+    if not self.makeClean(): return False
+    if not self.checkoutGitVersion('48b4b70a480f9e79f623bea3ca4731ae7e511175'): return False
+    return self.make()
 
 # Scissors,
 class Scissors(GknoTool):

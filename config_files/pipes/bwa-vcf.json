@@ -13,17 +13,8 @@
     "convert-to-bam" : {
       "tool" : "sam-to-bam"
     },
-    "get-header" : {
-      "tool" : "get-bam-header"
-    },
-    "add-to-header" : {
-      "tool" : "concatenate-files"
-    },
-    "reheader" : {
-      "tool" : "samtools-reheader"
-    },
     "sort" : {
-      "tool" : "bamtools-sort"
+      "tool" : "samtools-sort"
     },
     "dedup" : {
       "tool" : "samtools-rmdup"
@@ -99,6 +90,15 @@
       }
     },
     {
+      "ID" : "rg",
+      "description" : "The read group header line for the sample.",
+      "long form argument" : "--read-group-header",
+      "short form argument" : "-g",
+      "tasks" : {
+        "align" : "--read-group-header"
+      }
+    },
+    {
       "ID" : "bwa-threads",
       "description" : "The number of threads for BWA-mem.",
       "long form argument" : "--threads-bwa",
@@ -113,46 +113,6 @@
       "tasks" : {
         "align" : "--out",
         "convert-to-bam" : "--in"
-      }
-    },
-    {
-      "ID" : "get-header",
-      "description" : "Get the BAM header.",
-      "tasks" : {
-        "convert-to-bam" : "--out",
-        "get-header" : "--in",
-        "reheader" : "--in"
-      },
-      "delete files" : true
-    },
-    {
-      "ID" : "header",
-      "description" : "Add the sort order to the BAM header.",
-      "tasks" : {
-        "get-header" : "--out",
-        "add-to-header" : "--file1"
-      },
-      "delete files" : true
-    },
-    {
-      "ID" : "header-text",
-      "description" : "The text to add to the BAM header.",
-      "long form argument" : "--header-text",
-      "short form argument" : "-ht",
-      "required" : true,
-      "tasks" : {
-        "add-to-header" : "--initial-file"
-      }
-    },
-    {
-      "ID" : "new-header",
-      "description" : "The new header file for reheading the BAM file.",
-      "long form argument" : "--header-file",
-      "short form argument" : "-f",
-      "required" : true,
-      "tasks" : {
-        "add-to-header" : "--out",
-        "reheader" : "--header"
       },
       "delete files" : true
     },
@@ -160,7 +120,7 @@
       "ID" : "sort",
       "description" : "Sort the BAM file.",
       "tasks" : {
-        "reheader" : "--out",
+        "convert-to-bam" : "--out",
         "sort" : "--in"
       },
       "delete files" : true
@@ -171,8 +131,7 @@
       "tasks" : {
         "sort" : "--out",
         "dedup" : "--in"
-      },
-      "delete files" : true
+      }
     },
     {
       "ID" : "index",
@@ -261,16 +220,6 @@
       "ID" : "default",
       "description" : "Default parameter set requires user to input all input filenames.",
       "nodes" : [
-        {
-          "ID" : "header",
-          "argument" : "--header-file",
-          "values" : ["temp-header.sam"]
-        },
-        {
-          "ID" : "header-text",
-          "argument" : "--header-text",
-          "values" : ["$(RESOURCES)/tutorial/current/sort-order.sam"]
-        },
         {
           "ID" : "threads-bwaheader",
           "argument" : "--threads-bwa",
