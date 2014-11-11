@@ -118,6 +118,10 @@ class GknoTool(object):
   # Build-system helper methods
   # --------------------------------------------
 
+  # Check out the requested commit or branch from the git repository.
+  def checkoutGitVersion(self, version):
+    return self.runCommand("git checkout " + version)
+
   def ant(self, optionString=""):
     return self.runCommand("ant " + optionString)
 
@@ -572,13 +576,12 @@ class Samtools(GknoTool):
   # $ make clean
   # $ make -j N
   def doBuild(self):
-    if not self.makeClean():
-      return False
+    if not self.makeClean(): return False
+    if not self.checkoutGitVersion('48b4b70a480f9e79f623bea3ca4731ae7e511175'): return False
     return self.make()
 
   # $ make -j N
-  def doUpdate(self):
-    return self.make()
+  def doUpdate(self): return self.make()
 
 # Scissors,
 class Scissors(GknoTool):
