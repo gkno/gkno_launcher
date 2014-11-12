@@ -1,0 +1,122 @@
+{
+  "description" : "Align paired-end fastq files using BWA and call variants with Wham and Freebayes.",
+  "categories" : ["Alignment", "Variant-discovery"],
+
+  "tasks" : {
+    "pileup" : {
+      "tool" : "mpileup",
+      "output to stream" : true
+    },
+    "call" : {
+      "tool" : "bcf-call"
+    },
+    "combine" : {
+      "tool" : "bcf-cat",
+      "output to stream" : true
+    },
+    "bcf-vcf" : {
+      "tool" : "bcf-vcf"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "fasta-reference",
+      "description" : "The reference FASTA file.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "tasks" : {
+        "pileup" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "bam",
+      "description" : "The input BAM file(s).",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "required" : true,
+      "tasks" : {
+        "pileup" : "--in"
+      }
+    },
+    {
+      "ID" : "region",
+      "description" : "The genomic region to consider.",
+      "long form argument" : "--region",
+      "short form argument" : "-rg",
+      "tasks" : {
+        "pileup" : "--region"
+      }
+    },
+    {
+      "ID" : "call",
+      "description" : "Call variants on the BCF file.",
+      "tasks" : {
+        "pileup" : "--out",
+        "call" : "--in"
+      }
+    },
+    {
+      "ID" : "cat",
+      "description" : "Combine the BCF file.",
+      "tasks" : {
+        "call" : "--out"
+      },
+      "greedy tasks" : {
+        "combine" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "filter",
+      "description" : "Filter the final BCF and convert to VCF.",
+      "tasks" : {
+        "combine" : "--out",
+        "bcf-vcf" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "output",
+      "description" : "The output VCF.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "tasks" : {
+        "bcf-vcf" : "--out"
+      }
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "human",
+      "description" : "Parameter set for the human genome.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        }
+      ]
+    }
+  ]
+}

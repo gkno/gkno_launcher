@@ -1,7 +1,7 @@
 {
   "id" : "samtools-index-fasta",
   "description" : "Generate an index for a reference fasta file.",
-  "categories" : ["FASTA-processing"],
+  "categories" : ["FASTA-processing", "Samtools"],
   "tools" : ["samtools"],
   "path" : "samtools",
   "executable" : "samtools",

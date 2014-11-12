@@ -31,6 +31,7 @@
         "extensions" : [".tbi"],
         "data type" : "string",
         "allow multiple values" : true,
+        "allow list of repeated arguments" : true,
         "modify argument name on command line" : "omit",
         "construct filename" : {
           "method": "from tool argument",

@@ -1,0 +1,114 @@
+{
+  "description" : "Extract a region of a BAM file and convert reads to FASTQ.",
+  "categories" : ["BAM-processing"],
+
+  "tasks" : {
+    "extract-region" : {
+      "tool" : "bamtools-merge",
+      "output to stream" : true
+    },
+    "generate-fastq" : {
+      "tool" : "bam-to-fastq"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "bam",
+      "description" : "The input BAM file.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "tasks" : {
+        "extract-region" : "--in"
+      }
+    },
+    {
+      "ID" : "region",
+      "description" : "The genomic region for consideration.",
+      "long form argument" : "--region",
+      "short form argument" : "-rg",
+      "required" : true,
+      "tasks" : {
+        "extract-region" : "--region"
+      }
+    },
+    {
+      "ID" : "fastq",
+      "description" : "Transfer BAM to bam2FastQ.",
+      "tasks" : {
+        "extract-region" : "--out",
+        "generate-fastq" : "--in"
+      }
+    },
+    {
+      "ID" : "ref",
+      "description" : "The fasta reference.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "tasks" : {
+        "generate-fastq" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "read-name",
+      "description" : "Add the read name to the FASTQ records.",
+      "long form argument" : "--add-read-name",
+      "short form argument" : "-a",
+      "tasks" : {
+        "generate-fastq" : "--add-read-name"
+      }
+    },
+    {
+      "ID" : "output",
+      "description" : "The output FASTQ prefix.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "tasks" : {
+        "generate-fastq" : "--out"
+      }
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "The default parameter set sets all the parameters for the pipeline to run.",
+      "nodes" : [
+        {
+          "ID" : "read-name",
+          "argument" : "--add-read-name",
+          "values" : ["set"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "bam",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "ID" : "ref",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "human",
+      "description" : "Parameter set for the human genome.",
+      "nodes" : [
+        {
+          "ID" : "ref",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        }
+      ]
+    }
+  ]
+}

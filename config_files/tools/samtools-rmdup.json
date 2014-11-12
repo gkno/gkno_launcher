@@ -1,7 +1,7 @@
 {
   "id" : "samtools-rmdup",
   "description" : "Mark duplicate reads.",
-  "categories" : ["BAM-processing"],
+  "categories" : ["BAM-processing", "Samtools"],
   "tools" : ["samtools"],
   "path" : "samtools",
   "executable" : "samtools",

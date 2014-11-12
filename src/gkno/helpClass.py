@@ -86,6 +86,7 @@ class helpClass:
     self.allowedToolCategories['Michigan-software']       = 'Tools developed at the University of Michigan.'
     self.allowedToolCategories['Mosaik']                  = 'Mosaik mapping and file processing.'
     self.allowedToolCategories['Rufus']                   = 'Rufus genome comparison and variant discovery.'
+    self.allowedToolCategories['Samtools']                = 'Tools in the samtools library.'
     self.allowedToolCategories['Scripts']                 = 'Scripts for a variety of tasks.'
     self.allowedToolCategories['Short-variant-discovery'] = 'Detection of short variants.'
     self.allowedToolCategories['Simulation']              = 'Generation and processing simulated data.'

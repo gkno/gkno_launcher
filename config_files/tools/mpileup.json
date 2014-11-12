@@ -1,0 +1,340 @@
+{
+  "id" : "mpileup",
+  "description" : "Generate pileup from BAM files, creating a BCF output.",
+  "categories" : ["BAM-processing", "Variant-discovery", "Samtools"],
+  "tools" : ["samtools"],
+  "path" : "samtools",
+  "executable" : "samtools",
+  "modifier" : "mpileup",
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "Input BAM file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bam"],
+        "modify argument name on command line" : "hide",
+        "allow multiple values" : true,
+        "allow list of repeated arguments" : true,
+        "if input is stream" : "replace",
+        "replace argument with" : {
+          "argument" : "-",
+          "value" : ""
+        }
+      },
+      {
+        "description" : "bam index file.",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
+        "command line argument" : "--bam-index",
+        "required" : true,
+        "required if stream" : false,
+        "extensions" : [".bai"],
+        "data type" : "string",
+        "hide in help" : true,
+        "allow multiple values" : true,
+        "modify argument name on command line" : "omit",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "append"
+        }
+      },
+      {
+        "description" : "Use FILE as the reference sequence for analysis.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "-f",
+        "required" : true,
+        "extensions" : [".fa", ".fasta"],
+        "data type" : "string"
+      },
+      {
+        "description" : "The FASTA reference index file.",
+        "long form argument" : "--fasta-index",
+        "short form argument" : "-fx",
+        "command line argument" : "none",
+        "required" : true,
+        "extensions" : [".fai"],
+        "hide in help" : true,
+        "modify argument name on command line" : "omit",
+        "data type" : "string",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "append"
+        }
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The output BCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bcf"],
+        "modify argument name on command line" : "stdout",
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_mpileup"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "Input options" : [
+      {
+        "description" : "Assume quality is in the Illumina-1.3+ encoding.",
+        "long form argument" : "--illumina-encoding",
+        "short form argument" : "-e",
+        "command line argument" : "-6",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Count anomalous read pairs.",
+        "long form argument" : "--anomolous-read-pairs",
+        "short form argument" : "-a",
+        "command line argument" : "-A",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Disable BAQ computation.",
+        "long form argument" : "--disable-baq",
+        "short form argument" : "-d",
+        "command line argument" : "-B",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Parameter for adjusting mapQ; 0 to disable [0].",
+        "long form argument" : "--mapQ",
+        "short form argument" : "-m",
+        "command line argument" : "-C",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Max per-BAM depth to avoid excessive memory usage [250].",
+        "long form argument" : "--maximum-bam-depth",
+        "short form argument" : "-b",
+        "command line argument" : "-d",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Recalculate extended BAQ on the fly thus ignoring existing BQs.",
+        "long form argument" : "--recalculate-baq",
+        "short form argument" : "-rb",
+        "command line argument" : "-E",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Cap mapping quality at INT [60].",
+        "long form argument" : "--mapping-quality-cap",
+        "short form argument" : "-q",
+        "command line argument" : "-M",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Region in which pileup is generated.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "command line argument" : "-r",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Ignore RG tags.",
+        "long form argument" : "--ignore-read-groups",
+        "short form argument" : "-g",
+        "command line argument" : "-R",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Skip alignments with mapQ smaller than INT [0].",
+        "long form argument" : "--minimum-mapping-quality",
+        "short form argument" : "-mmq",
+        "command line argument" : "-q",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Skip bases with baseQ/BAQ smaller than INT [13].",
+        "long form argument" : "--minimum-base-quality",
+        "short form argument" : "-mbq",
+        "command line argument" : "-Q",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      }
+    ],
+
+    "Output options" : [
+      {
+        "description" : "Output per-sample DP in BCF.",
+        "long form argument" : "--output-sample-depth",
+        "short form argument" : "-od",
+        "command line argument" : "-D",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Generate BCF output (genotype likelihoods).",
+        "long form argument" : "--output-bcf",
+        "short form argument" : "-ob",
+        "command line argument" : "-g",
+        "data type" : "flag",
+        "extensions" : ["no extension"],
+        "hide in help" : true
+      },
+      {
+        "description" : "Output per-sample strand bias P-value in BCF.",
+        "long form argument" : "--output-strand-bias",
+        "short form argument" : "-os",
+        "command line argument" : "-S",
+        "data type" : "flag",
+        "extensions" : ["no extension"],
+        "hide in help" : true
+      }
+    ],
+
+    "Genotype likelihood options" : [
+      {
+        "description" : "Phred-scaled gap extension seq error probability [20].",
+        "long form argument" : "--extension-error",
+        "short form argument" : "-ee",
+        "command line argument" : "-e",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Minimum fraction of gapped reads for candidates [0.002].",
+        "long form argument" : "--minimum-gapped",
+        "short form argument" : "-mg",
+        "command line argument" : "-F",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Coefficient for homopolymer errors [100].",
+        "long form argument" : "--homopolymer-errors",
+        "short form argument" : "-he",
+        "command line argument" : "-h",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Do not perform indel calling.",
+        "long form argument" : "--no-indels",
+        "short form argument" : "-n",
+        "command line argument" : "-I",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Max per-sample depth for INDEL calling [250].",
+        "long form argument" : "--max-indel-depth",
+        "short form argument" : "-md",
+        "command line argument" : "-L",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Minimum gapped reads for indel candidates [1].",
+        "long form argument" : "--min-indel-reads",
+        "short form argument" : "-mir",
+        "command line argument" : "-m",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Phred-scaled gap open sequencing error probability [40].",
+        "long form argument" : "--gap-open-error",
+        "short form argument" : "-go",
+        "command line argument" : "-o",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Comma separated list of platforms for indels [all].",
+        "long form argument" : "--indel-platforms",
+        "short form argument" : "-ipl",
+        "command line argument" : "-P",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--fasta-reference",
+    "--fasta-index",
+    "--illumina-encoding",
+    "--anomolous-read-pairs",
+    "--disable-baq",
+    "--mapQ",
+    "--maximum-bam-depth",
+    "--recalculate-baq",
+    "--mapping-quality-cap",
+    "--region",
+    "--ignore-read-groups",
+    "--minimum-mapping-quality",
+    "--minimum-base-quality",
+    "--output-sample-depth",
+    "--output-strand-bias",
+    "--output-bcf",
+    "--extension-error",
+    "--minimum-gapped",
+    "--homopolymer-errors",
+    "--no-indels",
+    "--max-indel-depth",
+    "--min-indel-reads",
+    "--gap-open-error",
+    "--indel-platforms",
+    "--in",
+    "--index",
+    "--out"
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "bcf",
+          "argument" : "--output-bcf",
+          "values" : ["set"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "input",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        }
+      ]
+    }
+  ]
+}

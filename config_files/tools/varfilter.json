@@ -1,0 +1,170 @@
+{
+  "id" : "varfilter",
+  "description" : "Filter VCF files.",
+  "categories" : ["VCF-processing", "Samtools"],
+  "tools" : ["samtools"],
+  "path" : "samtools/bcftools",
+  "executable" : "vcfutils.pl",
+  "modifier" : "varFilter",
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "Input BCF file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bcf"],
+        "modify argument name on command line" : "hide",
+        "if input is stream" : "omit"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The output VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".vcf"],
+        "modify argument name on command line" : "stdout",
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_sorted"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Minimum RMS mapping quality for SNPs [10].",
+        "long form argument" : "--minimum-quality",
+        "short form argument" : "-q",
+        "command line argument" : "-Q",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Minimum read depth [2].",
+        "long form argument" : "--minimum-depth",
+        "short form argument" : "-d",
+        "command line argument" : "-d",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Maximum read depth [10000000].",
+        "long form argument" : "--maximum-depth",
+        "short form argument" : "-D",
+        "command line argument" : "-D",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Minimum number of alternate bases [2].",
+        "long form argument" : "--minimum-alternate",
+        "short form argument" : "-m",
+        "command line argument" : "-a",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "SNP within INT bp around a gap to be filtered [3].",
+        "long form argument" : "--snp-window",
+        "short form argument" : "-s",
+        "command line argument" : "-w",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Window size for filtering adjacent gaps [10].",
+        "long form argument" : "--gap-window",
+        "short form argument" : "-g",
+        "command line argument" : "-W",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Minimum P-value for strand bias (given PV4) [0.0001].",
+        "long form argument" : "--strand-bias-p-value",
+        "short form argument" : "-b",
+        "command line argument" : "-1",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Minimum P-value for base quality bias [1e-100].",
+        "long form argument" : "--base-quality-bias-p-value",
+        "short form argument" : "-bq",
+        "command line argument" : "-2",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Minimum P-value for mapping quality bias [0].",
+        "long form argument" : "--mapping-quality-bias-p-value",
+        "short form argument" : "-mq",
+        "command line argument" : "-3",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Minimum P-value for end distance bias [0.0001].",
+        "long form argument" : "--end-distance-bias-p-value",
+        "short form argument" : "-ed",
+        "command line argument" : "-4",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Minimum P-value for HWE (plus F<0) [0.0001].",
+        "long form argument" : "--hwe-p-value",
+        "short form argument" : "-hwe",
+        "command line argument" : "-e",
+        "data type" : "float",
+        "extensions" : ["no extension"]
+      }
+    ]
+
+  },
+
+  "argument order" : [
+    "--minimum-quality",
+    "--minimum-depth",
+    "--maximum-depth",
+    "--minimum-alternate",
+    "--snp-window",
+    "--gap-window",
+    "--strand-bias-p-value",
+    "--base-quality-bias-p-value",
+    "--mapping-quality-bias-p-value",
+    "--end-distance-bias-p-value",
+    "--hwe-p-value",
+    "--in",
+    "--out"
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "nodes" : [
+        {
+          "ID" : "depth",
+          "argument" : "--maximum-depth",
+          "values" : [100]
+        }
+      ]
+    }
+  ]
+}

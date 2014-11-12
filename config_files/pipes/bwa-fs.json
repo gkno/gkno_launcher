@@ -1,0 +1,731 @@
+{
+  "description" : "Align paired-end fastq files using BWA and call variants with Wham and Freebayes.",
+  "categories" : ["Alignment", "Variant-discovery"],
+
+  "tasks" : {
+    "index-fasta" : {
+      "tool" : "samtools-index-fasta"
+    },
+    "align" : {
+      "tool" : "bwa-mem",
+      "output to stream" : true
+    },
+    "convert-to-bam" : {
+      "tool" : "sam-to-bam"
+    },
+    "sort" : {
+      "tool" : "samtools-sort"
+    },
+    "dedup" : {
+      "tool" : "samtools-rmdup"
+    },
+    "index" : {
+      "tool" : "bamtools-index"
+    },
+
+
+    "stats" : {
+      "tool" : "bamtools-stats"
+    },
+    "depth" : {
+      "tool" : "samtools-depth"
+    },
+
+
+    "merge-bams-freebayes" : {
+      "tool" : "bamtools-merge",
+      "output to stream" : true
+    },
+    "freebayes" : {
+      "tool" : "freebayes"
+    },
+    "combine-freebayes" : {
+      "tool" : "vcf-combine-uncompressed",
+      "output to stream" : true
+    },
+    "compress-freebayes" : {
+      "tool" : "bgzip-stream"
+    },
+    "index-freebayes" : {
+      "tool" : "tabix-index-vcf"
+    },
+
+
+    "merge-bams-pileup" : {
+      "tool" : "bamtools-merge",
+      "output to stream" : true
+    },
+    "pileup" : {
+      "tool" : "mpileup",
+      "output to stream" : true
+    },
+    "call-samtools" : {
+      "tool" : "bcf-call"
+    },
+    "combine-samtools" : {
+      "tool" : "bcf-cat",
+      "output to stream" : true
+    },
+    "bcf-vcf" : {
+      "tool" : "bcf-vcf",
+      "output to stream" : true
+    },
+    "compress-samtools" : {
+      "tool" : "bgzip-stream"
+    },
+    "index-samtools" : {
+      "tool" : "tabix-index-vcf"
+    },
+
+
+    "freebayes-sites" : {
+      "tool" : "compressed-vcf-sites-stream",
+      "output to stream" : true
+    },
+    "compress-freebayes-sites" : {
+      "tool" : "bgzip-stream"
+    },
+    "index-freebayes-sites" : {
+      "tool" : "tabix-index-vcf"
+    },
+    "samtools-sites" : {
+      "tool" : "compressed-vcf-sites-stream",
+      "output to stream" : true
+    },
+    "compress-samtools-sites" : {
+      "tool" : "bgzip-stream"
+    },
+    "index-samtools-sites" : {
+      "tool" : "tabix-index-vcf"
+    },
+    "union-vcf" : {
+      "tool" : "vcf-combine",
+      "output to stream" : true
+    },
+    "compress-union" : {
+      "tool" : "bgzip-stream"
+    },
+    "index-union" : {
+      "tool" : "tabix-index-vcf"
+    },
+
+
+    "merge-bams-graph" : {
+      "tool" : "bamtools-merge",
+      "output to stream" : true
+    },
+    "variant-graph-align" : {
+      "tool" : "glia",
+      "output to stream" : true
+    },
+    "call-final-variants" : {
+      "tool" : "freebayes"
+    },
+    "combine-graph" : {
+      "tool" : "vcf-combine-uncompressed",
+      "output to stream" : true
+    },
+    "compress-graph" : {
+      "tool" : "bgzip-stream"
+    },
+    "index-graph" : {
+      "tool" : "tabix-index-vcf"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "fasta-reference",
+      "description" : "The reference FASTA file.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "tasks" : {
+        "index-fasta" : "--fasta-reference",
+        "freebayes" : "--fasta-reference",
+        "pileup" : "--fasta-reference",
+        "variant-graph-align" : "--fasta-reference",
+        "call-final-variants" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "reference-index",
+      "description" : "Link the reference index.",
+      "tasks" : {
+        "index-fasta" : "--out",
+        "freebayes" : "--fasta-index"
+      }
+    },
+    {
+      "ID" : "reference stub",
+      "description" : "The reference FASTA file prefix.",
+      "long form argument" : "--fasta-reference-prefix",
+      "short form argument" : "-rp",
+      "tasks" : {
+        "align" : "--reference-prefix"
+      }
+    },
+    {
+      "ID" : "fastq",
+      "description" : "The input fastq file (first mate).",
+      "long form argument" : "--fastq",
+      "short form argument" : "-q",
+      "tasks" : {
+        "align" : "--fastq"
+      }
+    },
+    {
+      "ID" : "fastq2",
+      "description" : "The input fastq file (second mate).",
+      "long form argument" : "--fastq2",
+      "short form argument" : "-q2",
+      "required" : true,
+      "tasks" : {
+        "align" : "--fastq2"
+      }
+    },
+    {
+      "ID" : "rg",
+      "description" : "The read group header line for the sample.",
+      "long form argument" : "--read-group-header",
+      "short form argument" : "-g",
+      "tasks" : {
+        "align" : "--read-group-header"
+      }
+    },
+    {
+      "ID" : "bwa-threads",
+      "description" : "The number of threads for BWA-mem.",
+      "long form argument" : "--threads-bwa",
+      "short form argument" : "-tb",
+      "tasks" : {
+        "align" : "--threads"
+      }
+    },
+    {
+      "ID" : "convert",
+      "description" : "Convert the SAM file to BAM format.",
+      "tasks" : {
+        "align" : "--out",
+        "convert-to-bam" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "sort",
+      "description" : "Sort the BAM file.",
+      "tasks" : {
+        "convert-to-bam" : "--out",
+        "sort" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "dedup",
+      "description" : "Mark duplicate reads.",
+      "tasks" : {
+        "sort" : "--out",
+        "dedup" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "pass-bams",
+      "description" : "The output BAM file.",
+      "long form argument" : "--out-bam",
+      "short form argument" : "-b",
+      "tasks" : {
+        "dedup" : "--out",
+        "index" : "--in",
+        "stats" : "--in",
+        "depth" : "--in"
+      },
+      "greedy tasks" : {
+        "merge-bams-freebayes" : "--in",
+        "merge-bams-pileup" : "--in",
+        "merge-bams-graph" : "--in"
+      }
+    },
+    {
+      "ID" : "merge-bams-freebayes",
+      "description" : "Merge BAM files for freebayes.",
+      "tasks" : {
+        "merge-bams-freebayes" : "--out",
+        "freebayes" : "--in"
+      }
+    },
+    {
+      "ID" : "region",
+      "description" : "The genomic region to consider.",
+      "long form argument" : "--region",
+      "short form argument" : "-rg",
+      "tasks" : {
+        "merge-bams-freebayes" : "--region",
+        "merge-bams-pileup" : "--region",
+        "merge-bams-graph" : "--region"
+      }
+    },
+    {
+      "ID" : "duplicates",
+      "long form argument" : "--use-duplicate-reads",
+      "short form argument" : "-ud",
+      "description" : "Use duplicate reads when calling short variants.",
+      "tasks" : {
+        "freebayes" : "--use-duplicate-reads"
+      }
+    },
+    {
+      "ID" : "combine-freebayes",
+      "description" : "Combine the Freebayes VCF files.",
+      "tasks" : {
+        "freebayes" : "--out"
+      },
+      "greedy tasks" : {
+        "combine-freebayes" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "compress-freebayes",
+      "description" : "Compress the Freebayes VCF file.",
+      "long form argument" : "--freebayes-out",
+      "short form argument" : "-f",
+      "tasks" : {
+        "combine-freebayes" : "--out",
+        "compress-freebayes" : "--in"
+      }
+    },
+    {
+      "ID" : "index-freebayes",
+      "description" : "Index the Freebayes VCF file",
+      "tasks" : {
+        "compress-freebayes" : "--out",
+        "index-freebayes" : "--in"
+      }
+    },
+
+
+    {
+      "ID" : "merge-bams-samtools",
+      "description" : "Merge BAM files for samtools.",
+      "tasks" : {
+        "merge-bams-pileup" : "--out",
+        "pileup" : "--in"
+      }
+    },
+    {
+      "ID" : "call-samtools",
+      "description" : "Call variants on the BCF file.",
+      "tasks" : {
+        "pileup" : "--out",
+        "call-samtools" : "--in"
+      }
+    },
+    {
+      "ID" : "cat",
+      "description" : "Combine the BCF file.",
+      "tasks" : {
+        "call-samtools" : "--out"
+      },
+      "greedy tasks" : {
+        "combine-samtools" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "filter",
+      "description" : "Filter the final BCF and convert to VCF.",
+      "tasks" : {
+        "combine-samtools" : "--out",
+        "bcf-vcf" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "output",
+      "description" : "The output VCF.",
+      "long form argument" : "--samtools-out",
+      "short form argument" : "-s",
+      "tasks" : {
+        "bcf-vcf" : "--out",
+        "compress-samtools" : "--in"
+      }
+    },
+    {
+      "ID" : "index-samtools",
+      "description" : "The output VCF.",
+      "tasks" : {
+        "compress-samtools" : "--out",
+        "index-samtools" : "--in"
+      }
+    },
+
+
+
+    {
+      "ID" : "freebayes-sites",
+      "description" : "Generate a sites VCF of the freebayes calls.",
+      "tasks" : {
+        "freebayes-sites" : "--in"
+      },
+      "originating edges" : {
+        "compress-freebayes" : "--out"
+      }
+    },
+    {
+      "ID" : "compress-freebayes-sites",
+      "description" : "Compress the freebayes sites VCF.",
+      "tasks" : {
+        "freebayes-sites" : "--out",
+        "compress-freebayes-sites" : "--in"
+      }
+    },
+    {
+      "ID" : "index-freebayes-sites",
+      "description" : "Index the compressed freebayes sites VCF.",
+      "tasks" : {
+        "compress-freebayes-sites" : "--out",
+        "index-freebayes-sites" : "--in"
+      }
+    },
+    {
+      "ID" : "samtools-sites",
+      "description" : "Generate a sites VCF of the samtools calls.",
+      "tasks" : {
+        "samtools-sites" : "--in"
+      },
+      "originating edges" : {
+        "compress-samtools" : "--out"
+      }
+    },
+    {
+      "ID" : "compress-samtools-sites",
+      "description" : "Compress the samtools sites VCF.",
+      "tasks" : {
+        "samtools-sites" : "--out",
+        "compress-samtools-sites" : "--in"
+      }
+    },
+    {
+      "ID" : "index-samtools-sites",
+      "description" : "Index the compressed samtools sites VCF.",
+      "tasks" : {
+        "compress-samtools-sites" : "--out",
+        "index-samtools-sites" : "--in"
+      }
+    },
+    {
+      "ID" : "union-vcf",
+      "description" : "Generate a union of all the calls.",
+      "tasks" : {
+        "union-vcf" : "--in"
+      },
+      "originating edges" : {
+        "compress-freebayes-sites" : "--out",
+        "compress-samtools-sites" : "--out"
+      }
+    },
+    {
+      "ID" : "union-vcf-index-links",
+      "description" : "Link vcf indexes.",
+      "tasks" : {
+        "union-vcf" : "--index"
+      },
+      "originating edges" : {
+        "index-freebayes-sites" : "--out",
+        "index-samtools-sites" : "--out"
+      }
+    },
+    {
+      "ID" : "compress-union",
+      "long form argument" : "--union-vcf",
+      "short form argument" : "-u",
+      "description" : "Compress the union VCF.",
+      "tasks" : {
+        "union-vcf" : "--out",
+        "compress-union" : "--in"
+      }
+    },
+    {
+      "ID" : "index-union",
+      "description" : "Index the compressed union VCF.",
+      "tasks" : {
+        "compress-union" : "--out",
+        "index-union" : "--in"
+      }
+    },
+
+
+    {
+      "ID" : "merge-bams-graph",
+      "description" : "Merge BAM files for variant graph,",
+      "tasks" : {
+        "merge-bams-graph" : "--out",
+        "variant-graph-align" : "--in"
+      }
+    },
+    {
+      "ID" : "realign",
+      "description" : "Realign the BAM stream on stdin to the VCF file, adjusting position and flattening alignments back into the reference space where realignment to the graph provides better quality.",
+      "long form argument" : "--realign-bam",
+      "short form argument" : "-rb",
+      "tasks" : {
+        "variant-graph-align" : "--realign-bam"
+      }
+    },
+    {
+      "ID" : "reverse",
+      "description" : "Report the reverse complement if it provides a better alignment.",
+      "long form argument" : "--reverse-complement",
+      "short form argument" : "-rc",
+      "tasks" : {
+        "variant-graph-align" : "--reverse-complement"
+      }
+    },
+    {
+      "ID" : "unsorted",
+      "description" : "Do not attempt streaming sort of alignments.  This can save memory in high coverage areas, but will require sort of BAM file before it can be used for variant calling.",
+      "long form argument" : "--unsorted-output",
+      "short form argument" : "-uo",
+      "tasks" : {
+        "variant-graph-align" : "--unsorted-output"
+      }
+    },
+    {
+      "ID" : "window",
+      "description" : "Number of bp of window to assemble from VCF for realignment.",
+      "long form argument" : "--realignment-window",
+      "short form argument" : "-rw",
+      "tasks" : {
+        "variant-graph-align" : "--realignment-window"
+      }
+    },
+    {
+      "ID" : "softclip threshold",
+      "description" : "If sum of qualities of soft clipped bases is >= N, realign (default ~inf).",
+      "long form argument" : "--soft-clip-qsum-threshold",
+      "short form argument" : "-sq",
+      "tasks" : {
+        "variant-graph-align" : "--soft-clip-qsum-threshold"
+      }
+    },
+    {
+      "ID" : "mismatch threshold",
+      "description" : "If sum of qualities of mismatched bases is >= N, realign (default ~inf).",
+      "long form argument" : "--mismatch-qsum-threshold",
+      "short form argument" : "-mqt",
+      "tasks" : {
+        "variant-graph-align" : "--mismatch-qsum-threshold"
+      }
+    },
+    {
+      "ID" : "gap count",
+      "description" : "Accept realignment if number of gaps is < N.",
+      "long form argument" : "--gap-count-max",
+      "short form argument" : "-gcm",
+      "tasks" : {
+        "variant-graph-align" : "--gap-count-max"
+      }
+    },
+    {
+      "ID" : "graph-vcf",
+      "description" : "The genome DAG, BGZIP'ed (.vcf.gz) and tabix-indexed (.tbi).",
+      "long form argument" : "--dag-vcf",
+      "short form argument" : "-dv",
+      "tasks" : {
+        "variant-graph-align" : "--vcf"
+      },
+      "originating edges" : {
+        "compress-union" : "--out"
+      }
+    },
+    {
+      "ID" : "union-vcf-index",
+      "description" : "The genome DAG index.",
+      "tasks" : {
+        "variant-graph-align" : "--index"
+      },
+      "originating edges" : {
+        "index-union" : "--out"
+      }
+    },
+    {
+      "ID" : "call final",
+      "description" : "Call variants from the realigned BAM file.",
+      "tasks" : {
+        "variant-graph-align" : "--out",
+        "call-final-variants" : "--in"
+      }
+    },
+    {
+      "ID" : "combine-final",
+      "description" : "Combine the adjudicated VCF files.",
+      "tasks" : {
+        "call-final-variants" : "--out"
+      },
+      "greedy tasks" : {
+        "combine-graph" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "compress-graph",
+      "description" : "The adjudicated variants.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "tasks" : {
+        "combine-graph" : "--out",
+        "compress-graph" : "--in"
+      }
+    },
+    {
+      "ID" : "index-graph",
+      "description" : "Index the graph VCF file",
+      "tasks" : {
+        "compress-graph" : "--out",
+        "index-graph" : "--in"
+      }
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "nodes" : [
+        {
+          "ID" : "threads-bwaheader",
+          "argument" : "--threads-bwa",
+          "values" : [8]
+        },
+        {
+          "ID" : "realign",
+          "argument" : "--realign-bam",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "reverse complement",
+          "argument" : "--reverse-complement",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "unsorted output",
+          "argument" : "--unsorted-output",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "window",
+          "argument" : "--realignment-window",
+          "values" : [1500]
+        },
+        {
+          "ID" : "soft-clip threshold",
+          "argument" : "--soft-clip-qsum-threshold",
+          "values" : [200]
+        },
+        {
+          "ID" : "mismatch threshold",
+          "argument" : "--mismatch-qsum-threshold",
+          "values" : [200]
+        },
+        {
+          "ID" : "gap count",
+          "argument" : "--gap-count-max",
+          "values" : [4]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "ID" : "reference-prefix",
+          "argument" : "--fasta-reference-prefix",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "tutorial",
+      "description" : "Test parameter set for the test harness.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "ID" : "reference-prefix",
+          "argument" : "--fasta-reference-prefix",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment"]
+        },
+        {
+          "ID" : "loop",
+          "argument" : "--internal-loop",
+          "values" : ["$(RESOURCES)/tutorial/current/bwa-fs-tutorial.json"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "human",
+      "description" : "Parameter set for the human genome.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "ID" : "reference-prefix",
+          "argument" : "--fasta-reference-prefix",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "cshl14",
+      "description" : "Parameter set for the CSHL sequencing course, 2014.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(PWD)/reference/human_reference_v37_chr20.fa"]
+        },
+        {
+          "ID" : "reference-prefix",
+          "argument" : "--fasta-reference-prefix",
+          "values" : ["$(PWD)/reference/human_reference_v37_chr20"]
+        },
+        {
+          "ID" : "freebayes",
+          "argument" : "--freebayes-out",
+          "values" : ["freebayes.vcf"]
+        },
+        {
+          "ID" : "samtools",
+          "argument" : "--samtools-out",
+          "values" : ["samtools.vcf"]
+        },
+        {
+          "ID" : "union",
+          "argument" : "--union-vcf",
+          "values" : ["union.vcf"]
+        },
+        {
+          "ID" : "final",
+          "argument" : "--out",
+          "values" : ["final.vcf"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "id" : "bam-to-fastq",
   "description" : "Convert a fastq file back to a pair of fastq files.",
-  "categories" : ["BAM-processing"],
+  "categories" : ["BAM-processing", "Michigan-software"],
   "tools" : ["bamUtil", "libStatGen"],
   "path" : "bamUtil/bin",
   "executable" : "bam",
@@ -16,7 +16,12 @@
         "command line argument" : "--in",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam"]
+        "extensions" : [".bam"],
+        "if input is stream" : "replace",
+        "replace argument with" : {
+          "argument" : "--in",
+          "value" : "-.bam"
+        }
       },
       {
         "description" : "Reference file for converting '=' in the sequence to the actual base if '=' are found and the refFile is not specified, 'N' is written to the FASTQ.",
