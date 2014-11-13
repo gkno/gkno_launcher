@@ -139,6 +139,18 @@
           "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
         }
       ]
+    },
+
+    {
+      "ID" : "cshl14",
+      "description" : "Parameter set for the CSHL 2014 sequencing course.",
+      "nodes" : [
+        {
+          "ID" : "ref",
+          "argument" : "--fasta-reference",
+          "values" : ["$(PWD)/reference/human_reference_v37_chr20.fa"]
+        }
+      ]
     }
   ]
 }
