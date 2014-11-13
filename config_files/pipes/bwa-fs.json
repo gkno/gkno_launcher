@@ -695,6 +695,43 @@
     },
 
     {
+      "ID" : "cshl14",
+      "description" : "Parameter set for the CSHL 2014 sequencing course.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(PWD)/reference/human_reference_v37_chr20.fa"]
+        },
+        {
+          "ID" : "reference-prefix",
+          "argument" : "--fasta-reference-prefix",
+          "values" : ["$(PWD)/reference/human_reference_v37_chr20"]
+        },
+        {
+          "ID" : "freebayes",
+          "argument" : "--freebayes-out",
+          "values" : ["freebayes.vcf"]
+        },
+        {
+          "ID" : "samtools",
+          "argument" : "--samtools-out",
+          "values" : ["samtools.vcf"]
+        },
+        {
+          "ID" : "union",
+          "argument" : "--union-vcf",
+          "values" : ["union.vcf"]
+        },
+        {
+          "ID" : "final",
+          "argument" : "--out",
+          "values" : ["final.vcf"]
+        }
+      ]
+    },
+
+    {
       "ID" : "human",
       "description" : "Parameter set for the human genome.",
       "nodes" : [
