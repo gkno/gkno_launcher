@@ -2,5 +2,9 @@
 
 VCF=$1
 
-zcat $VCF \
-| cut -f -8
+if [[ "$(uname)" == "Darwin" ]]
+then
+  gzcat $VCF | cut -f -8
+else
+  zcat $VCF | cut -f -8
+fi

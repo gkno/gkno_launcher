@@ -42,8 +42,8 @@ class makefileData:
     self.valueMethods = argumentValues()
 
     # Check the platform. If 'Darwin', do not use the '-e' modifier in echo commands.
-    if platform.system() == 'Darwin': self.echoModifier = ''
-    else: self.echoModifier = '-e '
+    #if platform.system() == 'Darwin': self.echoModifier = ''
+    self.echoModifier = '-e '
 
   # Generate the makefile for a tool/pipeline with a single set of data or an internal loop.
   # Only one makefile is required in this case.

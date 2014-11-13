@@ -3,6 +3,9 @@
 VCF=$1
 SITES=$2
 
-zcat $VCF \
-| cut -f -8 \
-| gzip > $SITES
+if [[ "$(uname)" == "Darwin" ]]
+then
+  gzcat $VCF | cut -f -8 | gzip > $SITES
+else
+  zcat $VCF | cut -f -8 | gzip > $SITES
+fi
