@@ -60,8 +60,8 @@
 
   "argument order" : [
     "--bwt-algorithm",
-    "--fasta-reference",
-    "--index"
+    "--index",
+    "--fasta-reference"
   ],
 
   "parameter sets" : [
