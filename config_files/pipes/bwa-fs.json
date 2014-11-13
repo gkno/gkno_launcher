@@ -670,40 +670,6 @@
           "ID" : "loop",
           "argument" : "--internal-loop",
           "values" : ["$(RESOURCES)/tutorial/current/bwa-fs-tutorial.json"]
-        }
-      ]
-    },
-
-    {
-      "ID" : "human",
-      "description" : "Parameter set for the human genome.",
-      "nodes" : [
-        {
-          "ID" : "reference",
-          "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
-        },
-        {
-          "ID" : "reference-prefix",
-          "argument" : "--fasta-reference-prefix",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys"]
-        }
-      ]
-    },
-
-    {
-      "ID" : "cshl14",
-      "description" : "Parameter set for the CSHL sequencing course, 2014.",
-      "nodes" : [
-        {
-          "ID" : "reference",
-          "argument" : "--fasta-reference",
-          "values" : ["$(PWD)/reference/human_reference_v37_chr20.fa"]
-        },
-        {
-          "ID" : "reference-prefix",
-          "argument" : "--fasta-reference-prefix",
-          "values" : ["$(PWD)/reference/human_reference_v37_chr20"]
         },
         {
           "ID" : "freebayes",
@@ -724,6 +690,23 @@
           "ID" : "final",
           "argument" : "--out",
           "values" : ["final.vcf"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "human",
+      "description" : "Parameter set for the human genome.",
+      "nodes" : [
+        {
+          "ID" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "ID" : "reference-prefix",
+          "argument" : "--fasta-reference-prefix",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys"]
         }
       ]
     }
