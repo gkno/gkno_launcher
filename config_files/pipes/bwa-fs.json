@@ -709,6 +709,11 @@
           "values" : ["$(PWD)/reference/human_reference_v37_chr20"]
         },
         {
+          "ID" : "region",
+          "argument" : "--region",
+          "values" : ["20:920000-930000"]
+        },
+        {
           "ID" : "freebayes",
           "argument" : "--freebayes-out",
           "values" : ["freebayes.vcf"]
