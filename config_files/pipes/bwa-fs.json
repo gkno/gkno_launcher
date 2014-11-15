@@ -711,7 +711,7 @@
         {
           "ID" : "region",
           "argument" : "--region",
-          "values" : ["20:920000-930000"]
+          "values" : ["20:900000-950000"]
         },
         {
           "ID" : "freebayes",
