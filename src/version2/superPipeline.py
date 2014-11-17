@@ -18,10 +18,8 @@ class superPipelineClass:
     self.numberOfTiers = 1
 
     # Store all of the pipeline configuration files comprising the superpipeline in a
-    # dictionary, indexed by the tier. The first tier contains the top level configuration
-    # file (e.g. the one defined on the command line).
-    self.configurationData    = {}
-    self.configurationData[1] = []
+    # dictionary, indexed by the name of the pipeline.
+    self.pipelineConfigurationData = {}
 
     # Store information on all the constituent tools.
     self.toolConfigurationData = {}
@@ -34,6 +32,11 @@ class superPipelineClass:
     self.uniqueNodeIDs = []
     self.sharedNodeIDs = []
 
+    # Store all of the constituent pipeline with their tier and also all the pipelines indexed
+    # by tier.
+    self.pipelinesByTier = {}
+    self.tiersByPipeline = {}
+
   # Starting from the defined pipeline, process and validate the configuration file contents,
   # then dig down through all the nested pipelines and validate their configuration files.
   def getNestedPipelineData(self, path, filename):
@@ -41,14 +44,19 @@ class superPipelineClass:
     # Get the top level pipeline configuration file data.
     pipeline = pipelineConfiguration.pipelineConfiguration()
     pipeline.getConfigurationData(filename)
-    self.configurationData[1].append(pipeline)
+    self.pipelineConfigurationData[pipeline.name] = pipeline
+
+    # Store the name of the tier 1 pipeline (e.g. the pipeline selected on the command line).
+    self.tiersByPipeline[pipeline.name] = 1
+    self.pipelinesByTier[1]             = [pipeline.name]
 
     # Now dig into the nested pipeline and build up the super pipeline structure.
     tier = 2
     checkForNestedPipelines = True
     while checkForNestedPipelines:
       tierHasNestedPipeline = False
-      for currentPipeline in self.configurationData[tier - 1]:
+      for currentPipelineName in self.pipelinesByTier[tier - 1]:
+        currentPipeline = self.pipelineConfigurationData[currentPipelineName]
   
         # If the pipeline contains a pipeline as a task, process the configuration file for that
         # pipeline and add to the pipelines in the current tier.
@@ -59,23 +67,26 @@ class superPipelineClass:
             pipeline = pipelineConfiguration.pipelineConfiguration()
             pipeline.getConfigurationData(filename)
   
-            # If this is the first pipeline in this tier, generate the entry in the dictionary.
-            if tier not in self.configurationData: self.configurationData[tier] = []
-  
             # Construct the address of the task.
             pipeline.address = '' if currentPipeline.address == None else str(currentPipeline.address) + '.'
             pipeline.address += str(taskPointingToNestedPipeline)
-            self.configurationData[tier].append(pipeline)
-  
+            self.pipelineConfigurationData[pipeline.address] = pipeline
+
+            # Store the pipeline name with the tier it's on.
+            if tier not in self.pipelinesByTier: self.pipelinesByTier[tier] = []
+            self.pipelinesByTier[tier].append(pipeline.address)
+            self.tiersByPipeline[pipeline.address] = tier
+
         # Increment the tier. If no pipelines in the just processed tier had a nested pipeline, the
         # loop can end.
         tier += 1
         if not tierHasNestedPipeline: checkForNestedPipelines = False
-
+  
   # Get all of the tools from each pipeline in the super pipeline and store them.
   def setTools(self):
-    for tier in self.configurationData.keys():
-      for pipeline in self.configurationData[tier]:
+    for tier in self.pipelinesByTier:
+      for pipelineName in self.pipelinesByTier[tier]:
+        pipeline = self.pipelineConfigurationData[pipelineName]
 
         # Loop over all of the pipeline tasks.
         for task in pipeline.getAllTasks():
@@ -102,8 +113,9 @@ class superPipelineClass:
   def checkContainedTasks(self):
 
     # Loop over all the tiers in the super pipeline.
-    for tier in self.configurationData.keys():
-      for pipelineObject in self.configurationData[tier]:
+    for tier in self.pipelinesByTier:
+      for pipelineName in self.pipelinesByTier[tier]:
+        pipelineObject = self.pipelineConfigurationData[pipelineName]
 
         # Check the tasks that any unique nodes point to.
         for nodeID in pipelineObject.uniqueNodeAttributes.keys():
@@ -157,6 +169,15 @@ class superPipelineClass:
               if pipelineObject.address: task = pipelineObject.address + '.' + task
               #TODO ERROR
               if task not in self.tasks: print('superPipeline.checkContainedTasks - 6'); exit(0)
+
+  # Given a pipeline name and a node ID, return the node type (i.e. unique or shared).
+  def getNodeType(self, pipeline, nodeID):
+
+    # Define the node address.
+    address = pipeline + '.' + nodeID if pipeline else nodeID
+    if address in self.uniqueNodeIDs: return 'unique'
+    elif address in self.sharedNodeIDs: return 'shared'
+    else: return None
 
   # Add tool configuration data to the super pipeline.
   def addTool(self, tool, toolData):

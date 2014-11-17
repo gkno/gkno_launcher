@@ -106,8 +106,8 @@ def main():
   graph = pipelineGraph()
 
   # Loop backwards over the tiers of nested pipelines and build them into the graph.
-  for tier in reversed(superPipeline.configurationData.keys()):
-    for pipeline in superPipeline.configurationData[tier]: graph.buildPipelineTasks(pipeline, superPipeline)
+  for tier in reversed(superPipeline.pipelinesByTier.keys()):
+    for pipelineName in superPipeline.pipelinesByTier[tier]: graph.buildPipelineTasks(superPipeline.pipelineConfigurationData[pipelineName], superPipeline)
 
   # Generate the workflow.
   workflow = graph.generateWorkflow()

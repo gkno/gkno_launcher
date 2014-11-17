@@ -21,8 +21,14 @@ class taskAttributes:
 # Define a class to hold information for shared nodes.
 class nodeTaskAttributes:
   def __init__(self):
-    self.pipeline       = None
+
+    # The pipeline the node points to (optional).
+    self.pipeline = None
+
+    # The node ID in the pipeline (optional).
     self.pipelineNodeID = None
+
+    # The task and argument the node points to.
     self.task           = None
     self.taskArgument   = None
 

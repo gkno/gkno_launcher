@@ -184,9 +184,21 @@ class pipelineGraph:
     for node in pipeline.getSharedNodeTasks(sharedNodeID):
       if pipeline.getNodeTaskAttribute(node, 'pipelineNodeID'):
 
-        # Check if the node to which this is pointing is a stub.
-        print('TEST', sharedNodeID, node.task, node.taskArgument, node.pipeline, node.pipelineNodeID)
-        print('\t', pipeline.getNodeTaskAttribute(node, 'pipeline'), pipeline.getNodeTaskAttribute(node, 'pipelineNodeID'))
+        # Get the name of the pipeline that is used.
+        pipelineName = pipeline.getTaskAttribute(node.pipeline, 'pipeline')
+
+        # If the node points to a unique node in another pipeline, determine whether this node is a stub.
+        nodeType = superPipeline.getNodeType(node.pipeline, node.pipelineNodeID)
+        if nodeType == 'unique':
+          print('TESTA', pipeline.name, sharedNodeID, node.task, node.taskArgument, node.pipeline, node.pipelineNodeID, pipelineName, nodeType)
+          #print('\t', superPipeline.isUniqueNodeAStub(pipelineName, node.pipelineNodeID))
+ 
+        # If the pipeline node being pointed to is a shared node, this isn't handled. #FIXME
+        elif nodeType == 'shared': print('constructEdgesToExistingNode - NOT HANDLED SHARED NODES'); exit(0)
+
+        # If the node type is unknown, terminate.#FIXME
+        elif not nodeType: print('constructEdgesToExistingNode - NOT HANDLED NON NODES'); exit(0)
+
         nodes.append(node)
     exit(0)
 
