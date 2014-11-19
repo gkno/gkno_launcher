@@ -28,6 +28,10 @@ class nodeTaskAttributes:
     # The node ID in the pipeline (optional).
     self.pipelineNodeID = None
 
+    # If a non stub node is connecting to a stub node, the extension from the stub node
+    # needs to be specified.
+    self.stubExtension = None
+
     # The task and argument the node points to.
     self.task           = None
     self.taskArgument   = None
@@ -355,6 +359,7 @@ class pipelineConfiguration:
     allowedAttributes                        = {}
     allowedAttributes['pipeline']            = (str, False, True, 'pipeline')
     allowedAttributes['pipeline graph node'] = (str, False, True, 'pipelineNodeID')
+    allowedAttributes['stub extension']      = (str, False, True, 'stubExtension')
     allowedAttributes['task']                = (str, False, True, 'task')
     allowedAttributes['task argument']       = (str, False, True, 'taskArgument')
 

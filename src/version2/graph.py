@@ -1,6 +1,8 @@
 #!/bin/bash/python
 
 from __future__ import print_function
+from collections import deque
+import graphErrors
 import networkx as nx
 import parameterSets as ps
 
@@ -35,6 +37,9 @@ class optionNodeAttributes:
 # Define a class to store and manipulate the pipeline graph.
 class pipelineGraph:
   def __init__(self):
+
+    # Handle errors associated with graph construction.
+    self.errors = graphErrors.graphErrors()
 
     # Define the graph.
     self.graph = nx.DiGraph()
@@ -175,12 +180,15 @@ class pipelineGraph:
 
   # Construct edges to an existing node from another pipeline.
   def constructEdgesToExistingNode(self, superPipeline, pipeline, sharedNodeID):
+    externalPipeline = None
+    externalNode     = None
+    keptNodeIsStub   = False
 
     # Define the pipeline address.
     address = str(pipeline.address + '.') if pipeline.address else str('')
 
     # Loop over the nodes and determine the existing node.
-    nodes = []
+    nodes = deque()
     for node in pipeline.getSharedNodeTasks(sharedNodeID):
       if pipeline.getNodeTaskAttribute(node, 'pipelineNodeID'):
 
@@ -190,8 +198,13 @@ class pipelineGraph:
         # If the node points to a unique node in another pipeline, determine whether this node is a stub.
         nodeType = superPipeline.getNodeType(node.pipeline, node.pipelineNodeID)
         if nodeType == 'unique':
-          print('TESTA', pipeline.name, sharedNodeID, node.task, node.taskArgument, node.pipeline, node.pipelineNodeID, pipelineName, nodeType)
-          #print('\t', superPipeline.isUniqueNodeAStub(pipelineName, node.pipelineNodeID))
+          task         = superPipeline.pipelineConfigurationData[node.pipeline].getUniqueNodeAttribute(node.pipelineNodeID, 'task')
+          tool         = superPipeline.pipelineConfigurationData[node.pipeline].getTaskAttribute(task, 'tool')
+          taskArgument = superPipeline.pipelineConfigurationData[node.pipeline].getUniqueNodeAttribute(node.pipelineNodeID, 'taskArgument')
+
+          # Determine if the task argument is a stub.
+          longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
+          isStub                               = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
  
         # If the pipeline node being pointed to is a shared node, this isn't handled. #FIXME
         elif nodeType == 'shared': print('constructEdgesToExistingNode - NOT HANDLED SHARED NODES'); exit(0)
@@ -199,43 +212,68 @@ class pipelineGraph:
         # If the node type is unknown, terminate.#FIXME
         elif not nodeType: print('constructEdgesToExistingNode - NOT HANDLED NON NODES'); exit(0)
 
-        nodes.append(node)
-    exit(0)
+        # If this node points to a stub, mark this as the node to keep in the next step. If there are multiple
+        # stub nodes, both nodes require edges to all the files, so which one is kept is arbitrary.
+        if isStub:
+          externalPipeline = node.pipeline
+          externalNode     = node.pipelineNodeID
+          nodes.appendleft((node, isStub))
+          keptNodeIsStub   = True
+        else: nodes.append((node, isStub))
+
+    # If there were no stub nodes, define the first node as the node to keep.
+    if not externalPipeline:
+      externalPipeline = pipeline.getNodeTaskAttribute(nodes[0][0], 'pipeline')
+      externalNode     = pipeline.getNodeTaskAttribute(nodes[0][0], 'pipelineNodeID')
 
     # If there are multiple nodes in another pipeline, then these need to be merged. An example of this
     # situation could be that two variant calling pipelines have been implemented as pipelines within a
     # pipeline. The input files to both these pipelines were generated when the pipelines were constructed.
-    # One of these nodes should be kept and the others deleted. The edges should be replaced to the kept
-    # node.
-    #
-    # Define the node being kept.
-    externalPipeline = pipeline.getNodeTaskAttribute(nodes[0], 'pipeline')
-    externalNode     = pipeline.getNodeTaskAttribute(nodes[0], 'pipelineNodeID')
+    # Only one of these nodes should be kept and the others deleted. The deleted nodes then require edges
+    # creating to the node that was kept.
 
     # Determine the full address of the node being kept..
     nodeAddress  = str(externalPipeline + '.' + externalNode)
 
+    # Pop off the leftmost element. This is the element that is being kept.
+    nodes.popleft()
+
     # Loop over the nodes to be removed.
-    for node in nodes[1:]:
+    while True:
+      try: nodeTuple = nodes.popleft()
+      except: break
+
+      # Extract the information from the tuple.
+      node   = nodeTuple[0]
+      isStub = nodeTuple[1]
 
       # Get the address of the node to delete.
       externalPipeline  = pipeline.getNodeTaskAttribute(node, 'pipeline')
       externalNode      = pipeline.getNodeTaskAttribute(node, 'pipelineNodeID')
+      stubExtension     = pipeline.getNodeTaskAttribute(node, 'stubExtension')
       deleteNodeAddress = str(address + externalPipeline + '.' + externalNode)
 
-      # Get all the predecessors and successors and recreate the edges to the node being kept.
-      for predecessorID in self.graph.predecessors(deleteNodeAddress): self.graph.add_edge(predecessorID, nodeAddress)
-      for successorID in self.graph.successors(deleteNodeAddress): self.graph.add_edge(nodeAddress, successorID)
+      # Get the task, tool and argument and argument attributes.
+      task         = superPipeline.pipelineConfigurationData[node.pipeline].getUniqueNodeAttribute(node.pipelineNodeID, 'task')
+      tool         = superPipeline.pipelineConfigurationData[node.pipeline].getTaskAttribute(task, 'tool')
+      taskArgument = superPipeline.pipelineConfigurationData[node.pipeline].getUniqueNodeAttribute(node.pipelineNodeID, 'taskArgument')
 
-      # Remove the node.
-      self.graph.remove_node(deleteNodeAddress)
+      # Determine if the task argument is a stub.
+      longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
 
-    # Check that the node exists.
-    #TODO ERROR
-    if address + nodeAddress not in superPipeline.uniqueNodeIDs and nodeAddress not in superPipeline.sharedNodeIDs:
-      print('graph.constructEdgesToExistingNode - 2'); exit(0)
+      # If both the kept node and the node who's edges we are replacing are stubs, join each
+      # of the stubs nodes to this node.
+      if keptNodeIsStub and isStub: print('NOT HANDLED BOTH STUBS'); exit(0)
 
-    # Loop over the nodes and add edges to the existing node (ignoring the node in the other pipeline).
+      # If the kept node is a stub, but the current node is not, determine which node to connect to
+      # and connect.
+      elif keptNodeIsStub and not isStub: self.attachNonStubToStub(nodeAddress, deleteNodeAddress, stubExtension, argumentAttributes)
+
+      # If none of the nodes are stubs, connect the nodes together.
+      elif not keptNodeIsStub and not isStub: print('NOT HANDLED NON TO NON STUB'); exit(0)
+
+    # Loop over the nodes that point to tasks in this pipeline (e.g. nodes in the shared graph nodes section that
+    # do not include a reference to an internal pipeline), and add edges to the node being kept.
     for node in pipeline.getSharedNodeTasks(sharedNodeID):
       if not pipeline.getNodeTaskAttribute(node, 'pipeline'):
         taskArgument = pipeline.getNodeTaskAttribute(node, 'taskArgument')
@@ -251,8 +289,32 @@ class pipelineGraph:
         isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
         isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
 
-        # Add the node and edges.
-        self.addNodeAndEdges(nodeAddress, address, task, isInput, isOutput, argumentAttributes)
+        # Check if the node is a stub.
+        isStub        = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
+        stubExtension = pipeline.getNodeTaskAttribute(node, 'stubExtension')
+        print('TEST', task, tool, taskArgument, longFormArgument, isInput, isOutput, keptNodeIsStub, isStub)
+
+        # Add the node and edges (accounting for whether the node that was kept is a stub node or not).
+        if not keptNodeIsStub and not isStub: self.addNodeAndEdges(nodeAddress, address, task, isInput, isOutput, argumentAttributes)
+        elif not keptNodeIsStub and isStub: print('NOT HANDLED STUB TO NON STUB'); exit(0)
+        elif keptNodeIsStub and not isStub:
+          if not stubExtension: self.errors.missingStubExtensionForSharedNode(task, longFormArgument)
+          self.addNodeAndEdges(nodeAddress + '.' + stubExtension, address, task, isInput, isOutput, argumentAttributes)
+        elif keptNodeIsStub and isStub: print('NOT HANDLED INTERNAL STUB TO STUB'); exit(0)
+
+  def attachNonStubToStub(self, nodeAddress, deleteNodeAddress, stubExtension, attributes):
+
+    # If no stub extension is supplied, this step cannot be completed.
+    if not stubExtension: print('ERROR - attachNonStubToStub - 1'); exit(0)
+
+    # Get all the predecessors and successors and recreate the edges to the node being kept.
+    for predecessorID in self.graph.predecessors(deleteNodeAddress): 
+      self.addEdge(predecessorID, nodeAddress + '.' + stubExtension, attributes = attributes)
+    for successorID in self.graph.successors(deleteNodeAddress):
+      self.addEdge(nodeAddress + '.' + stubExtension, successorID, attributes = attributes)
+
+    # Remove the node.
+    self.graph.remove_node(deleteNodeAddress)
 
   # If a shared node contains a link to a task in another pipeline, join the tasks in the current
   # pipeline to it.

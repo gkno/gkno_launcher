@@ -12,7 +12,15 @@ class adminErrors:
 
   # Initialise.
   def __init__(self):
-    pass
+
+    # Admin errors generate an error code of '2'.
+    # Command line errors generate an error code of '3'.
+    # File handling errors generate an error code of '4'.
+    # General configuration file errors generate an error code of '5'.
+    # Tool configuration file errors generate an error code of '6'.
+    # Pipeline configuration file errors generate an error code of '7'.
+    # Errors associated with the graph construction generate an error code of '8'.
+    self.errorCode = '2'
 
   #####################
   # Admin mode errors

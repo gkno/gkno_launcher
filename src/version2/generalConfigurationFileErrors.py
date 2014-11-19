@@ -22,8 +22,14 @@ class generalConfigurationFileErrors:
     # The error messages are stored in the following list.
     self.text = []
 
-    # Command line errors generate an error code of '2'.
-    self.errorCode = '4'
+    # Admin errors generate an error code of '2'.
+    # Command line errors generate an error code of '3'.
+    # File handling errors generate an error code of '4'.
+    # General configuration file errors generate an error code of '5'.
+    # Tool configuration file errors generate an error code of '6'.
+    # Pipeline configuration file errors generate an error code of '7'.
+    # Errors associated with the graph construction generate an error code of '8'.
+    self.errorCode = '5'
 
  # A general entry in the configuration file is invalid.
   def invalidAttribute(self, attribute, allowedAttributes, helpInfo):

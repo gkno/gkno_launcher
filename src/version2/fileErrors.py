@@ -22,8 +22,14 @@ class fileErrors:
     # The error messages are stored in the following list.
     self.text = []
 
-    # File handling errors generate an error code of '3'.
-    self.errorCode = '3'
+    # Admin errors generate an error code of '2'.
+    # Command line errors generate an error code of '3'.
+    # File handling errors generate an error code of '4'.
+    # General configuration file errors generate an error code of '5'.
+    # Tool configuration file errors generate an error code of '6'.
+    # Pipeline configuration file errors generate an error code of '7'.
+    # Errors associated with the graph construction generate an error code of '8'.
+    self.errorCode = '4'
 
   # If a tool is added, but the tool is already available.
   def invalidPipelineName(self, tools, pipelines, pipeline):

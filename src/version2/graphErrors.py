@@ -11,7 +11,7 @@ from errors import *
 import os
 import sys
 
-class toolErrors:
+class graphErrors:
 
   # Initialise.
   def __init__(self):
@@ -29,13 +29,13 @@ class toolErrors:
     # Tool configuration file errors generate an error code of '6'.
     # Pipeline configuration file errors generate an error code of '7'.
     # Errors associated with the graph construction generate an error code of '8'.
-    self.errorCode = '6'
+    self.errorCode = '8'
 
-  # If a tool argument is listed as a stub, it must be accompanied by a list of extensions.
-  def noExtensionsForStub(self, name, argument):
-    self.text.append('Missing data for argument.')
-    self.text.append('The configuration file for tool \'' + name + '\' contains information for the argument \'' + argument + '\'. This ' + \
-    'is listed as being a stub, but no extensions are provided. For file stubs, the extensions of all the files that will be created/are ' + \
-    'required must be listed.')
+  # A general entry in the configuration file is invalid.
+  def missingStubExtensionForSharedNode(self, task, argument):
+    self.text.append('Cannot construct shared graph nodes.')
+    self.text.append('The task \'' + task + '\', argument \'' + argument + '\' is defined as being shared with other nodes in the pipeline. ' + \
+    'At least one of the nodes that this is being shared with is a stub, and since this argument is not a stub, the extension associated with ' + \
+    'the stub must be included in the pipeline configuration file.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)

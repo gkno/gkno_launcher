@@ -53,7 +53,7 @@ class parameterSets:
     for parameterSet in data:
 
       # Define a set of information to be used in help messages.
-      helpInfo = (name, 'parameter sets', parameterSet)
+      helpInfo = (name, 'parameter sets', None)
 
       # Check that the supplied structure is a dictionary.
       if not methods.checkIsDictionary(parameterSet, allowTermination): return
