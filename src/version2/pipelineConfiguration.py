@@ -18,24 +18,6 @@ class taskAttributes:
     self.task            = None
     self.tool            = None
 
-# Define a class to hold information for shared nodes.
-class nodeTaskAttributes:
-  def __init__(self):
-
-    # The pipeline the node points to (optional).
-    self.pipeline = None
-
-    # The node ID in the pipeline (optional).
-    self.pipelineNodeID = None
-
-    # If a non stub node is connecting to a stub node, the extension from the stub node
-    # needs to be specified.
-    self.stubExtension = None
-
-    # The task and argument the node points to.
-    self.task           = None
-    self.taskArgument   = None
-
 # Define a class to store information on shared pipeline nodes.
 class sharedGraphNodes:
   def __init__(self):
@@ -58,9 +40,23 @@ class sharedGraphNodes:
     # to.
     self.sharedNodeTasks = []
 
-    # If the shared node contains any task that points to another pipeline, mark it.
-    self.containsTaskInAnotherPipeline = False
-    self.containsNodeInAnotherPipeline = False
+# Define a class to hold information for shared nodes.
+class nodeTaskAttributes:
+  def __init__(self):
+
+    # The task the node points to.
+    self.task = None
+
+    # If the task uses a tool, the argument associated with the tool needs to be defined.
+    self.taskArgument   = None
+
+    # If, however, the task uses another pipeline, the node within the pipeline needs to be
+    # specified.
+    self.externalNodeID = None
+
+    # If a non stub node is connecting to a stub node, the extension from the stub node
+    # needs to be specified.
+    self.stubExtension = None
 
 # Define a class to store information on unique pipeline nodes.
 class uniqueGraphNodes:
@@ -76,10 +72,6 @@ class uniqueGraphNodes:
     # Define arguments.
     self.longFormArgument  = None
     self.shortFormArgument = None
-
-    # Define the pipeline that the task and argument to which this node points resides. If None,
-    # the task resides in the pipeline defined by the current pipeline configuration file.
-    self.pipeline = None
 
     # Define the task and argument to which this node applies.
     self.task         = None
@@ -278,23 +270,26 @@ class pipelineConfiguration:
     if 'unique graph nodes' not in data: return
 
     # Define the allowed nodes attributes.
-    allowedAttributes                        = {}
-    allowedAttributes['id']                  = (str, True, True, 'id')
-    allowedAttributes['description']         = (str, True, True, 'description')
-    allowedAttributes['long form argument']  = (str, False, True, 'longFormArgument')
-    allowedAttributes['pipeline']            = (str, False, True, 'pipeline')
-    allowedAttributes['short form argument'] = (str, False, True, 'shortFormArgument')
-    allowedAttributes['task']                = (str, True, True, 'task')
-    allowedAttributes['task argument']       = (str, False, True, 'taskArgument')
+    allowedAttributes                           = {}
+    allowedAttributes['id']                     = (str, True, True, 'id')
+    allowedAttributes['description']            = (str, True, True, 'description')
+    allowedAttributes['long form argument']     = (str, False, True, 'longFormArgument')
+    allowedAttributes['short form argument']    = (str, False, True, 'shortFormArgument')
+    allowedAttributes['task']                   = (str, True, True, 'task')
+    allowedAttributes['task argument']          = (str, False, True, 'taskArgument')
 
     # Loop over all of the defined nodes.
     for uniqueNode in data['unique graph nodes']:
 
-      # Define a set of information to be used in help messages.
-      helpInfo = (self.name, 'unique graph nodes', uniqueNode)
-
       # Check that the supplied structure is a dictionary.
       if not methods.checkIsDictionary(uniqueNode, self.allowTermination): return
+
+      # Check that the node has a valid ID. This is required for help messages.
+      id = methods.checkForId(uniqueNode, self.allowTermination)
+      if not id: return
+
+      # Define a set of information to be used in help messages.
+      helpInfo = (self.name, 'unique graph nodes', id)
 
       # Define the attributes object.
       attributes = uniqueGraphNodes()
@@ -332,8 +327,12 @@ class pipelineConfiguration:
       # Check that the supplied structure is a dictionary.
       if not methods.checkIsDictionary(sharedNode, self.allowTermination): return
 
+      # Check that the node has a valid ID. This is required for help messages.
+      id = methods.checkForId(sharedNode, self.allowTermination)
+      if not id: return
+
       # Define a set of information to be used in help messages.
-      helpInfo = (self.name, 'shared graph nodes', sharedNode)
+      helpInfo = (self.name, 'shared graph nodes', id)
 
       # Define the attributes object.
       attributes = sharedGraphNodes()
@@ -357,10 +356,9 @@ class pipelineConfiguration:
 
     # Define the allowed nodes attributes.
     allowedAttributes                        = {}
-    allowedAttributes['pipeline']            = (str, False, True, 'pipeline')
-    allowedAttributes['pipeline graph node'] = (str, False, True, 'pipelineNodeID')
+    allowedAttributes['external node']       = (str, False, True, 'externalNodeID')
     allowedAttributes['stub extension']      = (str, False, True, 'stubExtension')
-    allowedAttributes['task']                = (str, False, True, 'task')
+    allowedAttributes['task']                = (str, True, True, 'task')
     allowedAttributes['task argument']       = (str, False, True, 'taskArgument')
 
     # Loop over all of the defined nodes.
@@ -381,10 +379,6 @@ class pipelineConfiguration:
 
         #TODO INCLUDE A CHECK TO ENSURE THAT AN ALLOWED COMBINATION OF FIELDS IS PRESENT.
 
-        # If this node contains a link to a task or a node in another pipeline, record this.
-        if attributes.pipelineNodeID: self.sharedNodeAttributes[nodeID].containsNodeInAnotherPipeline = True
-        if attributes.pipeline: self.sharedNodeAttributes[nodeID].containsTaskInAnotherPipeline = True
-
         # Store the attributes.
         self.sharedNodeAttributes[nodeID].sharedNodeTasks.append(attributes)
 
@@ -401,13 +395,11 @@ class pipelineConfiguration:
 
     # Define the allowed source attributes.
     allowedSourceAttributes                  = {}
-    allowedSourceAttributes['pipeline']      = (str, False, True, 'pipeline')
     allowedSourceAttributes['task']          = (str, True, True, 'task')
     allowedSourceAttributes['task argument'] = (str, True, True, 'taskArgument')
 
     # Define the allowed target attributes.
     allowedTargetAttributes                  = {}
-    allowedTargetAttributes['pipeline']      = (str, False, True, 'pipeline')
     allowedTargetAttributes['task']          = (str, True, True, 'task')
     allowedTargetAttributes['task argument'] = (str, True, True, 'taskArgument')
 
@@ -504,6 +496,27 @@ class pipelineConfiguration:
   def getUniqueNodeAttribute(self, nodeID, attribute):
     try: return getattr(self.uniqueNodeAttributes[nodeID], attribute)
     except: return None
+
+  # Determine if any of the shared nodes point to a task in an external pipeline.
+  def sharedNodeHasExternalTask(self, nodeID):
+    for node in self.getSharedNodeTasks(nodeID):
+
+      # If the task contains a '.', this task is a task in another pipeline. If an external
+      # task is present, then all tasks aren't local, so return False.
+      if '.' in node.task: return True
+
+    # If no external tasks or nodes were encountered, return True.
+    return False
+
+  # Determine if any of the shared nodes point to a node in an external pipeline.
+  def sharedNodeHasExternalNode(self, nodeID):
+    for node in self.getSharedNodeTasks(nodeID):
+
+      # If an external node is set, also return False.
+      if node.externalNodeID: return True
+
+    # If no external tasks or nodes were encountered, return True.
+    return False
 
   # Get a list of all shared node IDs.
   def getSharedNodeIDs(self):

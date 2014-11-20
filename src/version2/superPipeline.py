@@ -120,13 +120,12 @@ class superPipelineClass:
         # Check the tasks that any unique nodes point to.
         for nodeID in pipelineObject.uniqueNodeAttributes.keys():
     
-          # Get the name of the pipeline (if exists) and the task that this node points to.
-          pipeline = pipelineObject.getUniqueNodeAttribute(nodeID, 'pipeline')
-          task     = pipelineObject.getUniqueNodeAttribute(nodeID, 'task')
+          # Get the name of the task that this node points to. This is the full address of the
+          # task and so may live in a nested pipeline.
+          task = pipelineObject.getUniqueNodeAttribute(nodeID, 'task')
     
           # This pipeline may itself be called by an enveloping pipeline. If so, any tasks
           # will require prepending with the address of this pipeline.
-          if pipeline: task = pipeline + '.' + task
           if pipelineObject.address: task = pipelineObject.address + '.' + task
     
           # If the task is not listed as one of the pipeline tasks. terminate.
@@ -138,37 +137,23 @@ class superPipelineClass:
           for node in pipelineObject.sharedNodeAttributes[sharedNodeID].sharedNodeTasks:
             task           = pipelineObject.getNodeTaskAttribute(node, 'task')
             taskArgument   = pipelineObject.getNodeTaskAttribute(node, 'taskArgument')
-            pipeline       = pipelineObject.getNodeTaskAttribute(node, 'pipeline')
-            pipelineNodeID = pipelineObject.getNodeTaskAttribute(node, 'pipelineNodeID')
-    
-            # If the shared node is a defined node in another pipeline, ensure that no task or
-            # argument are supplied. If they are terminate, as there is more information than
-            # required, which suggests an error in the configuration file construction. The pipeline
-            # in which the node resides is required.
-            if pipelineNodeID:
-              #TODO ERROR
-              if task or taskArgument: print('superPipeline.checkContainedTasks - 2'); exit(0)
-              if not pipeline: print('superPipeline.checkContainedTasks - 3'); exit(0)
-              pipelineNodeID = pipeline + '.' + pipelineNodeID
-              if pipelineObject.address: pipelineNodeID = pipelineObject.address + '.' + pipelineNodeID
-    
-              # If the task is not listed as one of the pipeline tasks. terminate.
-              #TODO ERROR
-              if pipelineNodeID not in self.uniqueNodeIDs and pipelineNodeID not in self.sharedNodeIDs:
-                print('superPipeline.checkContainedTasks - 4'); exit(0)
-    
-            # If the shared node is a task in another pipeline, check that the task exists.
-            elif pipeline:
-              task = pipeline + '.' + task
-              if pipelineObject.address: task = pipelineObject.address + '.' + task
-              #TODO ERROR
-              if task not in self.tasks: print('superPipeline.checkContainedTasks - 5'); exit(0)
-    
-            # Finally, if the shared node points to a task from this pipeline.
+            externalNodeID = pipelineObject.getNodeTaskAttribute(node, 'externalNodeID')
+
+            # Add he address of the current pipeline if this is not the top tier pipeline.
+            if pipelineObject.address: task = pipelineObject.address + '.' + task
+
+            # If the externalNode is set, the node is in an external pipeline and is being pointed
+            # to directly. Ensure that the task argument is not also defined and then construct the
+            # name of the graph node to test for existence.
+            if externalNodeID:
+              if taskArgument: print('superPipeline.checkContainedTasks - 2'); exit(0)
+              task = task + '.' + externalNodeID
+              if task not in self.uniqueNodeIDs and task not in self.sharedNodeIDs: print('superPipeline.checkContainedTasks - 3'); exit(0)
+
+            # If the node defines a task and a task argument (not a node, as above), check that the task
+            # exists. This task could be in another pipeline.
             else:
-              if pipelineObject.address: task = pipelineObject.address + '.' + task
-              #TODO ERROR
-              if task not in self.tasks: print('superPipeline.checkContainedTasks - 6'); exit(0)
+              if task not in self.tasks: print('superPipeline.checkContainedTasks - 4'); exit(0)
 
   # Given a pipeline name and a node ID, return the node type (i.e. unique or shared).
   def getNodeType(self, pipeline, nodeID):
@@ -182,6 +167,28 @@ class superPipelineClass:
   # Add tool configuration data to the super pipeline.
   def addTool(self, tool, toolData):
     self.toolConfigurationData[tool] = toolData
+
+  # Return the tool used for a task. The task is the full address, so may well be a task
+  # buried within enclosed pipelines.
+  def getTool(self, taskAddress):
+
+    # The number of '.' symbols in the task address determine the tier in the superpipeline.
+    tier = taskAddress.count('.') + 1
+
+    # Consider a task from a tier two pipeline. This would have an address of the form,
+    # 'pipeline.task'. The tier one pipeline would just have the name of the task in the pipeline.
+    # This means that to identify the name of the pipeline in the second tier, split the address
+    # in '.' and the pipeline name is the tier - 1 (in this case, the first) part of the address.
+    # In the zero-based coordinates of the list, this means that the name of the pipeline is the
+    # tier - 2 element in the list.
+    pipelineName = taskAddress.rsplit('.')[tier - 2]
+    task         = taskAddress.rsplit('.', 1)[-1]
+
+    # If this is the top tier pipeline, get the name of the top tier pipeline.
+    if tier == 1: pipelineName = self.pipelinesByTier[1][0]
+
+    # Get the pipeline configuration data for this pipeline.
+    return self.pipelineConfigurationData[pipelineName].getTaskAttribute(task, 'tool')
 
   # Return all the tools used in the superpipeline.
   def getTools(self):

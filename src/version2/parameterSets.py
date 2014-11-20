@@ -52,11 +52,15 @@ class parameterSets:
     # Loop over all of the defined parameter sets.
     for parameterSet in data:
 
-      # Define a set of information to be used in help messages.
-      helpInfo = (name, 'parameter sets', None)
-
       # Check that the supplied structure is a dictionary.
       if not methods.checkIsDictionary(parameterSet, allowTermination): return
+
+      # Check that the node has a valid ID. This is required for help messages.
+      id = methods.checkForId(parameterSet, allowTermination)
+      if not id: return
+
+      # Define a set of information to be used in help messages.
+      helpInfo = (name, 'parameter sets', id)
 
       # Define a structure to hold the data.
       attributes = parameterSetData()

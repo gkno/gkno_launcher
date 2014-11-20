@@ -58,6 +58,11 @@ class argumentAttributes:
     # pipeline builder.
     self.isSuggestible = False
 
+# Define a class to hold information about the tool.
+class toolAttributes:
+  def __init_(self):
+    pass
+
 # Define a class to store general pipeline attributes,
 class toolConfiguration:
   def __init__(self):

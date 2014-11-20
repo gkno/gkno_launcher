@@ -7,6 +7,23 @@ import json
 import os
 import sys
 
+# Check that the supplied value is a dictionary.
+def checkIsDictionary(node, allowTermination):
+  success = True
+  if not isinstance(node, dict):
+    #TODO ERROR
+    if allowTermination: print('generalConfig.checkIsDictionary - 1'); exit(0) # nodeIsNotADictionary
+    else: success = False
+
+  return success
+
+# Check that the supplied dictionary has an id field.
+def checkForId(node, allowTermination):
+  try: return node['id']
+  except:
+    if allowTermination: print('generalConfig.checkForId - 1'); exit(0)
+    return False
+
 # Check general attribute information.
 def checkAttributes(data, allowedAttributes, attributes, allowTermination, helpInfo):
   success = True
@@ -63,13 +80,3 @@ def setAttribute(attributes, attribute, value):
   setattr(attributes, attribute, value)
 
   return attributes
-
-# Check that the supplied value is a dictionary.
-def checkIsDictionary(node, allowTermination):
-  success = True
-  if not isinstance(node, dict):
-    #TODO ERROR
-    if allowTermination: print('generalConfig.checkIsDictionary - 1'); exit(0) # nodeIsNotADictionary
-    else: success = False
-
-  return success
