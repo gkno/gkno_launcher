@@ -37,6 +37,9 @@ class superPipelineClass:
     self.pipelinesByTier = {}
     self.tiersByPipeline = {}
 
+    # Keep track of the configuration nodes that have been added to the graph.
+    self.nodesInGraph = []
+
   # Starting from the defined pipeline, process and validate the configuration file contents,
   # then dig down through all the nested pipelines and validate their configuration files.
   def getNestedPipelineData(self, path, filename):
