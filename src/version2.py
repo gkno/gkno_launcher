@@ -105,8 +105,8 @@ def main():
   # to build and modify it.
   graph = pipelineGraph()
 
-  # Loop backwards over the tiers of nested pipelines and build them into the graph.
-  for tier in reversed(superPipeline.pipelinesByTier.keys()):
+  # Loop over the tiers of nested pipelines and build them into the graph.
+  for tier in superPipeline.pipelinesByTier.keys():
     for pipelineName in superPipeline.pipelinesByTier[tier]: graph.buildPipelineTasks(superPipeline.pipelineConfigurationData[pipelineName], superPipeline)
 
   # Generate the workflow.
@@ -114,10 +114,10 @@ def main():
 
   # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
   # the nodes with these task level default parameter sets, creating nodes where necessary.
-  graph.addTaskParameterSets(superPipeline, 'default')
+  #graph.addTaskParameterSets(superPipeline, 'default')
 
   # Now add the default parameter set for the pipelines.
-  graph.addPipelineParameterSets(superPipeline, 'default')
+  #graph.addPipelineParameterSets(superPipeline, 'default')
 
   plot = plotGraph()
   plot.plot(graph.graph.copy(), 'test.dot')

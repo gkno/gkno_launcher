@@ -389,9 +389,9 @@ class pipelineConfiguration:
 
     # Define the allowed attributes.
     allowedAttributes            = {}
-    allowedAttributes['targets'] = (list, True, False, None)
     allowedAttributes['id']      = (str, True, True, 'id')
     allowedAttributes['sources'] = (list, True, False, None)
+    allowedAttributes['targets'] = (list, True, False, None)
 
     # Define the allowed source attributes.
     allowedSourceAttributes                  = {}
@@ -496,27 +496,6 @@ class pipelineConfiguration:
   def getUniqueNodeAttribute(self, nodeID, attribute):
     try: return getattr(self.uniqueNodeAttributes[nodeID], attribute)
     except: return None
-
-  # Determine if any of the shared nodes point to a task in an external pipeline.
-  def sharedNodeHasExternalTask(self, nodeID):
-    for node in self.getSharedNodeTasks(nodeID):
-
-      # If the task contains a '.', this task is a task in another pipeline. If an external
-      # task is present, then all tasks aren't local, so return False.
-      if '.' in node.task: return True
-
-    # If no external tasks or nodes were encountered, return True.
-    return False
-
-  # Determine if any of the shared nodes point to a node in an external pipeline.
-  def sharedNodeHasExternalNode(self, nodeID):
-    for node in self.getSharedNodeTasks(nodeID):
-
-      # If an external node is set, also return False.
-      if node.externalNodeID: return True
-
-    # If no external tasks or nodes were encountered, return True.
-    return False
 
   # Get a list of all shared node IDs.
   def getSharedNodeIDs(self):

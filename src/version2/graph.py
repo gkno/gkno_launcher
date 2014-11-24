@@ -121,237 +121,265 @@ class pipelineGraph:
           self.addEdge(nodeAddress, taskAddress, argumentAttributes)
 
         # Mark this node as having been added to the graph.
-        superPipeline.nodesInGraph[nodeAddress] = True
+        superPipeline.nodesInGraph.append(nodeAddress)
 
   # Add shared nodes to the graph.
   def addSharedNodes(self, superPipeline, pipeline):
+    sharedNodes      = []
+    tasksSharingNode = []
+
+    # Define the pipeline relative address.
+    address = str(pipeline.address + '.') if pipeline.address else str('')
+
+    # Set the pipeline name. This is just the address above unless this is the top tier pipeline. In this case,
+    # the name is defined as pipeline.name.
+    pipelineName = pipeline.address if pipeline.address else pipeline.name
 
     # Loop over all the sets of shared nodes in this pipeline.
     for sharedNodeID in pipeline.getSharedNodeIDs():
 
-      # Determine if any of the shared nodes are from another pipeline.
-      hasExternalNode = pipeline.sharedNodeHasExternalNode(sharedNodeID)
-      hasExternalTask = pipeline.sharedNodeHasExternalTask(sharedNodeID)
+      # First check that this node has not already been added to  the graph. Only proceed if it hasn't.
+      if not pipelineName + '.' + sharedNodeID in superPipeline.nodesInGraph:
 
-      # If the shared node does not contain reference to any external nodes, the graph node needs to be created. This
-      # is also the case if there are pointers to task/arguments in external pipelines. If these graph nodes existed,
-      # it would be necessary to point to the node. In this case, begin by constructing a node and adding edges for local
-      # tasks,
-      if not hasExternalNode:
-        self.constructLocalSharedNode(superPipeline, pipeline, sharedNodeID)
- 
-        # Then add edges to tasks in other pipelines.
-        if hasExternalTask: self.constructEdgesToPipelineTask(superPipeline, pipeline, sharedNodeID)
+        # Create a list containing all shared nodes. Each node in the configuration is one of three types: 1) a task
+        # and argument defined in this pipeline, 2) a task and argument from an external pipeline, or 3) a node
+        # defined in an external pipeline. For 1) and 2), the nodes can be processed immediately, but those in category
+        # 3) cannot. Configuration nodes in category 3) are either unique nodes (which can also be processed immediately),
+        # or are themselves shared nodes, which may contain links to configuration nodes in pipelines external to that.
+        #
+        # The process followed here is to march through all the configuration file nodes listed in the current pipeline,
+        # and store the task address, argument and any stub extensions of the contained nodes. If the configuration file
+        # is itself a shared node, this is added to a separate list. Once the configuration files in this node have been
+        # processed, the list of shared nodes are then processed. This will continue until all the shared nodes have been
+        # fully explored and all configuration file nodes sharing this graph node have been accounted for. At this point,
+        # the tasksSharingNode list will contain information on all of the tasks and the graph node can be created.
+        sharedNodes      = [(pipelineName, sharedNodeID)]
+        tasksSharingNode = []
 
-      # If the shared node contains a node from another pipeline, then this node already exists.
-      # Find the existing node and then generate the edges to the tasks in this pipeline.
-      else: self.constructEdgesToExistingNode(superPipeline, pipeline, sharedNodeID)
+      # Keep track of the number of stub arguments in the shared node.
+      numberOfStubs          = 0
+      numberOfStubExtensions = 0
+      numberOfInputFiles     = 0
+      numberOfOutputFiles    = 0
 
-  # Create the shared node and add the edges for all of the tasks in the local pipeline.
-  def constructLocalSharedNode(self, superPipeline, pipeline, sharedNodeID):
+      # Loop over the sharedNodes until it is empty.
+      while sharedNodes:
+        pipelineName, sharedNodeID = sharedNodes.pop()
 
-    # Loop over all tasks that connect to the node.
-    for node in pipeline.getSharedNodeTasks(sharedNodeID):
+        # Loop over all the tasks sharing this node.
+        for taskInformation in superPipeline.pipelineConfigurationData[pipelineName].getSharedNodeTasks(sharedNodeID):
 
-      # Get the task and the task argument and whether it is external.
-      task = pipeline.getNodeTaskAttribute(node, 'task')
+          # Get the address of this pipeline.
+          pipelineAddress = superPipeline.pipelineConfigurationData[pipelineName].address
 
-      # Only connect local tasks for now. External tasks will be handled later.
-      if '.' not in task:
-        taskArgument = pipeline.getNodeTaskAttribute(node, 'taskArgument')
-  
-        # Get the tool for this task.
-        tool = pipeline.getTaskAttribute(task, 'tool')
-  
-        # Get the tool and it's attributes associated with this argument.
-        longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
-  
-        # Check the taskArgument to identify if this node is a file or an option node.
-        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
-        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
-  
-        # Determine if this is a filename stub.
-        isStub = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
-        if isStub: stubExtensions = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'stubExtensions')
-    
-        # Define the pipeline relative address.
-        address = str(pipeline.address + '.') if pipeline.address else str('')
-  
-        # Add the node and edges.
-        nodeAttributes = dataNodeAttributes('file')
-        if isStub: self.addStubNodesAndEdges(sharedNodeID, address, task, isInput, stubExtensions, nodeAttributes, argumentAttributes)
-        else: self.addNodeAndEdges(sharedNodeID, address, task, isInput, isOutput, nodeAttributes, argumentAttributes)
+          # Get the task information
+          externalNodeID = taskInformation.externalNodeID
+          stubExtension  = taskInformation.stubExtension
+          task           = taskInformation.task
+          taskAddress    = pipelineAddress + '.' + task if pipelineAddress else task
+          taskArgument   = taskInformation.taskArgument
 
-  # Construct edges to an existing node from another pipeline.
-  def constructEdgesToExistingNode(self, superPipeline, pipeline, sharedNodeID):
-    externalPipeline = None
-    externalNode     = None
-    keptNodeIsStub   = False
+          # For tasks pointing to arguments (e.g. types 1) and 2) in the message above), add the information to tasksSharingNode
+          # list.
+          if not externalNodeID:
 
-    # Define the pipeline address.
-    address = str(pipeline.address + '.') if pipeline.address else str('')
+            # Get the tool used for the task and determine if the argument is a stub.
+            argumentInformation = self.getArgumentInformation(superPipeline, taskAddress, taskArgument)
+            tool, longFormArgument, isStub, stubExtensions, isInput, isOutput = argumentInformation
+            argumentInformation = (taskAddress, tool, longFormArgument, isStub, stubExtension, stubExtensions, isInput, isOutput)
 
-    # Loop over the nodes and determine the existing node.
-    nodes = deque()
-    for node in pipeline.getSharedNodeTasks(sharedNodeID):
-      task           = address + pipeline.getNodeTaskAttribute(node, 'task')
-      externalNodeID = pipeline.getNodeTaskAttribute(node, 'externalNodeID')
-      if externalNodeID:
+            # Store the information.
+            tasksSharingNode.append(argumentInformation)
 
-        # If the node points to a unique node in another pipeline, determine whether this node is a stub.
-        nodeType = superPipeline.getNodeType(task, externalNodeID)
-        if nodeType == 'unique':
-          externalTask = superPipeline.pipelineConfigurationData[task].getUniqueNodeAttribute(externalNodeID, 'task')
-          tool         = superPipeline.pipelineConfigurationData[task].getTaskAttribute(externalTask, 'tool')
-          taskArgument = superPipeline.pipelineConfigurationData[task].getUniqueNodeAttribute(externalNodeID, 'taskArgument')
+            # Update counters on the number of stubs and input/output files.
+            if stubExtension: numberOfStubExtensions += 1
+            numberOfStubs       += isStub
+            numberOfOutputFiles += isOutput
+            numberOfInputFiles  += isInput
 
-          # Determine if the task argument is a stub.
-          longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
-          isStub                               = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
- 
-        # If the pipeline node being pointed to is a shared node, this isn't handled. #FIXME
-        elif nodeType == 'shared': print('constructEdgesToExistingNode - NOT HANDLED SHARED NODES'); exit(0)
+          # If the task points to an external node, determine if this node is a unique node or a shared node.
+          else:
+            nodeType = superPipeline.getNodeType(taskAddress, externalNodeID)
 
-        # If the node type is unknown, terminate.#FIXME
-        elif not nodeType: print('constructEdgesToExistingNode - NOT HANDLED NON NODES'); exit(0)
+            # Unique nodes can be added to tasksSharingNode and marked as added to the graph.
+            if nodeType == 'unique':
+              externalTask         = superPipeline.pipelineConfigurationData[taskAddress].getUniqueNodeAttribute(externalNodeID, 'task')
+              externalTaskArgument = superPipeline.pipelineConfigurationData[taskAddress].getUniqueNodeAttribute(externalNodeID, 'taskArgument')
 
-        # If this node points to a stub, mark this as the node to keep in the next step. If there are multiple
-        # stub nodes, both nodes require edges to all the files, so which one is kept is arbitrary.
-        if isStub:
-          externalPipeline = task
-          externalNode     = externalNodeID
-          keptNodeIsStub   = True
-          nodes.appendleft((node, isStub))
-        else: nodes.append((node, isStub))
+              # Get the tool used for the task and determine if the argument is a stub.
+              externalTaskAddress = taskAddress + '.' + externalTask
+              argumentInformation = self.getArgumentInformation(superPipeline, externalTaskAddress, externalTaskArgument)
+              tool, longFormArgument, isStub, stubExtensions, isInput, isOutput = argumentInformation
+              argumentInformation = (externalTaskAddress, tool, longFormArgument, isStub, stubExtension, stubExtensions, isInput, isOutput)
 
-    # If there were no stub nodes, define the first node as the node to keep.
-    if not externalPipeline:
-      externalPipeline = pipeline.getNodeTaskAttribute(nodes[0][0], 'pipeline')
-      externalNode     = pipeline.getNodeTaskAttribute(nodes[0][0], 'pipelineNodeID')
+              # Store the information.
+              tasksSharingNode.append(argumentInformation)
 
-    # If there are multiple nodes in another pipeline, then these need to be merged. An example of this
-    # situation could be that two variant calling pipelines have been implemented as pipelines within a
-    # pipeline. The input files to both these pipelines were generated when the pipelines were constructed.
-    # Only one of these nodes should be kept and the others deleted. The deleted nodes then require edges
-    # creating to the node that was kept.
+              # Update counters on the number of stubs and input/output files.
+              if stubExtension: numberOfStubExtensions += 1
+              numberOfStubs       += isStub
+              numberOfOutputFiles += isOutput
+              numberOfInputFiles  += isInput
 
-    # Determine the full address of the node being kept..
-    nodeAddress = str(externalPipeline + '.' + externalNode)
+            # If this is a shared node in another pipeline, add the node to the sharedNodes list and this will be processed
+            # in this loop.
+            elif nodeType == 'shared': sharedNodes.append((taskAddress, externalNodeID))
 
-    # Pop off the leftmost element. This is the element that is being kept.
-    nodes.popleft()
+            # Mark this node as having been added to the graph.
+            superPipeline.nodesInGraph.append(taskAddress + '.' + externalNodeID)
 
-    # Loop over the nodes to be removed.
-    while True:
-      try: nodeTuple = nodes.popleft()
-      except: break
+      # Having parsed through all the pipelines and identified all the tasks sharing the node, construct the graph
+      # node and link all necessary tasks.
+      if tasksSharingNode:
 
-      # Extract the information from the tuple.
-      node   = nodeTuple[0]
-      isStub = nodeTuple[1]
+        # Ensure that either all the arguments point to files (inputs or outputs) or that none of them do
+        # (options).
+        numberOfFiles = numberOfInputFiles + numberOfOutputFiles
+        if (numberOfFiles > 0) and (numberOfFiles < len(tasksSharingNode)): print('graph.addSharedNodes - files 1'); exit(0)
+        elif numberOfFiles == 0: isFile = False
+        else: isFile = True
 
-      # Get the address of the node to delete.
-      externalPipeline  = pipeline.getNodeTaskAttribute(node, 'task')
-      externalNodeID    = pipeline.getNodeTaskAttribute(node, 'externalNodeID')
-      stubExtension     = pipeline.getNodeTaskAttribute(node, 'stubExtension')
-      deleteNodeAddress = str(address + externalPipeline + '.' + externalNodeID)
+        # Check that there are no problems with stubs. Firstly, if some, but not all of the arguments
+        # sharing a node are stubs, then the subr arguments must have the extension of the file being shared
+        # defined. In other words, if 0 < numberOfStubs < number of arguments, then it must be true that
+        # numberOfStubs = numberOfStubExtensions.
+        if (numberOfStubs > 0) and (numberOfStubs < len(tasksSharingNode)):
+          #TODO ERROR
+          if numberOfStubs != numberOfStubExtensions: print('graph.addSharedNodes - stubs 1'); exit(0)
 
-      # Get the task, tool and argument and argument attributes.
-      task         = superPipeline.pipelineConfigurationData[node.task].getUniqueNodeAttribute(node.externalNodeID, 'task')
-      tool         = superPipeline.pipelineConfigurationData[node.task].getTaskAttribute(task, 'tool')
-      taskArgument = superPipeline.pipelineConfigurationData[node.task].getUniqueNodeAttribute(node.externalNodeID, 'taskArgument')
+          # If all of the stub arguments have the stub extension provided, create all of the required nodes and
+          # join the tasks to the required nodes.
+          else: self.someStubArguments(superPipeline, address + sharedNodeID, tasksSharingNode)
 
-      # Determine if the task argument is a stub.
-      longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
+        # If none of the arguments are stubs, but stub arguments have been provided, there is an error in the
+        # configuration file.
+        elif (numberOfStubs == 0) and (numberOfStubExtensions > 0): print('graph.addSharedNodes - stub 2'); exit(0)
 
-      # If both the kept node and the node who's edges we are replacing are stubs, join each
-      # of the stubs nodes to this node.
-      if keptNodeIsStub and isStub: print('NOT HANDLED BOTH STUBS'); exit(0)
+        # If no stub extensions are defined, either all of the arguments are stubs, or none of them are.
+        elif numberOfStubExtensions == 0:
 
-      # If the kept node is a stub, but the current node is not, determine which node to connect to
-      # and connect.
-      elif keptNodeIsStub and not isStub: self.attachNonStubToStub(nodeAddress, deleteNodeAddress, stubExtension, argumentAttributes)
+          # If all of the arguments are stubs, create all the necessary nodes and join all the tasks with all of the
+          # nodes.
+          if numberOfStubs == len(tasksSharingNode): self.allStubArguments(superPipeline, address + sharedNodeID, tasksSharingNode)
 
-      # If none of the nodes are stubs, connect the nodes together.
-      elif not keptNodeIsStub and not isStub: print('NOT HANDLED NON TO NON STUB'); exit(0)
+          # If none of the arguments are stubs, create the single node and join to all the tasks.
+          elif numberOfStubs == 0: self.noStubArguments(superPipeline, address + sharedNodeID, tasksSharingNode, isFile)
 
-    # Loop over the nodes that point to tasks in this pipeline (e.g. nodes in the shared graph nodes section that
-    # do not include a reference to an internal pipeline), and add edges to the node being kept.
-    for node in pipeline.getSharedNodeTasks(sharedNodeID):
-      task         = pipeline.getNodeTaskAttribute(node, 'task')
-      taskArgument = pipeline.getNodeTaskAttribute(node, 'taskArgument')
-      if '.' not in task and taskArgument:
+        # If the set of tasks is not capture by the above clauses, the situation is not understood.
+        else: print('graph.addSharedNodes - UKNOWN SITUATION'); exit(0)
 
-        # Get the tool associated with this task.
-        tool = pipeline.getTaskAttribute(task, 'tool')
+  # Get information on a tool argument and return information on whether the argument is an input, output
+  # or a stub.
+  def getArgumentInformation(self, superPipeline, task, argument):
 
-        # Get the tool and it's attributes associated with this argument.
-        longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
+    # Get the tool used for this task and retrieve data on this tool from the super pipeline.
+    tool             = superPipeline.getTool(task)
+    toolData         = superPipeline.getToolData(tool)
 
-        # Check the taskArgument to identify if this node is a file or an option node.
-        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
-        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
+    # Ensure the supplied argument is in the long form and check if the argument is a stub.
+    longFormArgument = toolData.getLongFormArgument(argument)
+    isStub           = toolData.getArgumentAttribute(longFormArgument, 'isStub')
 
-        # Check if the node is a stub.
-        isStub        = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
-        stubExtension = pipeline.getNodeTaskAttribute(node, 'stubExtension')
+    # If this is a stub, get the allowed extensions.
+    stubExtensions = toolData.getArgumentAttribute(longFormArgument, 'stubExtensions')
 
-        # Define the node attributes.
-        if isInput or isOutput: nodeAttributes = dataNodeAttributes('file')
-        else: nodeAttributes = dataNodeAttributes('option')
+    # Determine if the task node is an input or an output file.
+    isInput  = toolData.getArgumentAttribute(longFormArgument, 'isInput')
+    isOutput = toolData.getArgumentAttribute(longFormArgument, 'isOutput')
 
-        # Add the node and edges (accounting for whether the node that was kept is a stub node or not).
-        if not keptNodeIsStub and not isStub: self.addNodeAndEdges(nodeAddress, address, task, isInput, isOutput, nodeAttributes, argumentAttributes)
-        elif not keptNodeIsStub and isStub: print('NOT HANDLED STUB TO NON STUB'); exit(0)
-        elif keptNodeIsStub and not isStub:
-          if not stubExtension: self.errors.missingStubExtensionForSharedNode(task, longFormArgument)
-          self.addNodeAndEdges(nodeAddress + '.' + stubExtension, address, task, isInput, isOutput, nodeAttributes, argumentAttributes)
-        elif keptNodeIsStub and isStub: print('NOT HANDLED INTERNAL STUB TO STUB'); exit(0)
+    # Return all information.
+    information = (tool, longFormArgument, isStub, stubExtensions, isInput, isOutput)
+    return information
 
-  # Attach non stub graph nodes to other non stub graph nodes.
-  def attachNonStubToStub(self, nodeAddress, deleteNodeAddress, stubExtension, attributes):
+  # If a set of shared configuration file nodes are all stub arguments, ensure that each of the arguments
+  # expects the same set of stub extensions, then create all of the nodes and join them to all the tasks.
+  def allStubArguments(self, superPipeline, nodeAddress, tasks):
+    allowedExtensions = []
 
-    # If no stub extension is supplied, this step cannot be completed.
-    if not stubExtension: print('ERROR - attachNonStubToStub - 1'); exit(0)
+    # All of the stub arguments need to share the same set of extensions. Take the first task in the
+    # list and create a file node for each of the extensions. Each subsequent task will be checked to 
+    # ensure it shares the same extensions before being linked.
+    task, tool, argument, isStub, stubExtension, stubExtensions, isInput, isOutput = tasks[0]
+    for extension in stubExtensions:
+      self.graph.add_node(str(nodeAddress + '.' + extension), attributes = dataNodeAttributes('file'))
+      allowedExtensions.append(extension)
 
-    # Get all the predecessors and successors and recreate the edges to the node being kept.
-    for predecessorID in self.graph.predecessors(deleteNodeAddress): 
-      self.addEdge(predecessorID, nodeAddress + '.' + stubExtension, attributes = attributes)
-    for successorID in self.graph.successors(deleteNodeAddress):
-      self.addEdge(nodeAddress + '.' + stubExtension, successorID, attributes = attributes)
+    # Loop over all the tasks sharing the node.
+    for task, tool, argument, isStub, stubExtension, stubExtensions, isInput, isOutput in tasks:
 
-    # Remove the node.
-    self.graph.remove_node(deleteNodeAddress)
+      # Get the argument attributes associated with this argument and add the edge.
+      longFormArgument, attributes = self.getAttributes(superPipeline, tool, argument)
 
-  # If a shared node contains a link to a task in another pipeline, join the tasks in the current
-  # pipeline to it.
-  def constructEdgesToPipelineTask(self, superPipeline, pipeline, sharedNodeID):
+      for extension in stubExtensions:
+        #TODO ERROR
+        if extension not in allowedExtensions: print('graph.allStubArguments'); exit(0)
 
-    # Determine the pipeline address and the node address.
-    address = str(pipeline.address + '.') if pipeline.address else str('')
+        # Add the edges.
+        source = str(nodeAddress + '.' + extension) if isInput else task
+        target = task if isInput else str(nodeAddress + '.' + extension)
+        self.graph.add_edge(source, target, attributes = attributes)
 
-    # Loop over the nodes and connect the tasks from external pipelines to the existing node.
-    for node in pipeline.getSharedNodeTasks(sharedNodeID):
-      task = pipeline.getNodeTaskAttribute(node, 'task')
-      if '.' in task:
-        taskArgument = pipeline.getNodeTaskAttribute(node, 'taskArgument')                         
+  # If a set of shared configuration file nodes have no stubs, create the node and join to all of the tasks.
+  def noStubArguments(self, superPipeline, nodeAddress, tasks, isFile):
 
-        # Get the tool associated with this task.
-        tool = superPipeline.tasks[address + task]
+    # Add the new node to the graph.
+    if isFile: nodeAttributes = dataNodeAttributes('file')
+    else: nodeAttributes = dataNodeAttributes('option')
+    self.graph.add_node(str(nodeAddress), attributes = nodeAttributes) 
 
-        # Get the tool and it's attributes associated with this argument.
-        longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, taskArgument)
+    # Loop over the tasks, adding the necessary edges.
+    for task, tool, argument, isStub, stubExtension, stubExtensions, isInput, isOutput in tasks:
 
-        # Check the taskArgument to identify if this node is a file or an option node.
-        isInput  = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
-        isOutput = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
+      # Get the argument attributes associated with this argument and add the edge.
+      longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, argument)
+      if isOutput: self.addEdge(task, nodeAddress, attributes = argumentAttributes)
+      else: self.addEdge(nodeAddress, task, attributes = argumentAttributes)
 
-        # Define the node attributes.
-        if isInput or isOutput: nodeAttributes = dataNodeAttributes('file')
-        else: nodeAttributes = dataNodeAttributes('option')
+  # If a set of shared configuration file nodes include some stubs with defined extensions to be shared, create
+  # all the necessary nodes and join the correct nodes to the correct tasks.
+  def someStubArguments(self, superPipeline, nodeAddress, tasks):
 
-        # Add the node and edges.
-        self.addNodeAndEdges(sharedNodeID, address, task, isInput, isOutput, nodeAttributes, argumentAttributes)
+    # Loop over the tasks to find the stub extension associated with a stub node. All stub nodes sharing
+    # this graph node must have the same stub extension.
+    for task, tool, argument, isStub, stubExtension, stubExtensions, isInput, isOutput in tasks:
+      if isStub:
+        usedExtension = stubExtension
+        break
+
+    # Create the node to which all of the tasks link (stub nodes will have additional nodes added as they are
+    # encountered).
+    modifiedNodeAddress = str(nodeAddress + '.' + usedExtension)
+    self.graph.add_node(str(modifiedNodeAddress), attributes = dataNodeAttributes('file'))
+
+    # Loop over the tasks, adding the necessary edges.
+    for task, tool, argument, isStub, stubExtension, stubExtensions, isInput, isOutput in tasks:
+
+      # All of the arguments must be input or output files (since at least one of the arguments is a stub).
+      # If an argument is not, there is a problem.
+      if not isInput and not isOutput: print('graph.someStubsArguments'); exit(0)
+
+      # Get the argument attributes associated with this argument and add the edge.
+      longFormArgument, argumentAttributes = self.getAttributes(superPipeline, tool, argument)
+
+      # If the argument is a stub, ensure that the extension matches the stub extension.
+      if isStub:
+        if stubExtension != usedExtension: print('graph.someStubsArguments'); exit(0)
+
+        # Loop over the extensions associated with the stub, add nodes for the non-linked nodes and connect
+        # all the nodes.
+        for extension in stubExtensions:
+
+          # Add the nodes associated with the stub that are not being linked to the other tasks,
+          if extension != stubExtension: self.graph.add_node(str(nodeAddress + '.' + extension), attributes = dataNodeAttributes('file'))
+
+          # Add the edge.
+          if isInput: self.addEdge(str(nodeAddress + '.' + extension), task, attributes = argumentAttributes)
+          elif isOutput: self.addEdge(task, str(nodeAddress + '.' + extension), attributes = argumentAttributes)
+
+      # If this is not a stub, add the edge.
+      else:
+        if isInput: self.addEdge(modifiedNodeAddress, task, attributes = argumentAttributes)
+        elif isOutput: self.addEdge(task, modifiedNodeAddress, attributes = argumentAttributes)
 
   # Connect nodes and tasks as instructed in the pipeline configuration file.
   def connectNodesToTasks(self, superPipeline, pipeline):
@@ -401,8 +429,8 @@ class pipelineGraph:
           if isStub: stubExtensions = superPipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'stubExtensions')    
 
           # Create the file node and connect it to the task for which it is an output.
-          nodeAttributes = dataNodeAttributes('file')
-          self.addNodeAndEdges(nodeAddress, address, taskAddress, False, True, nodeAttributes, argumentAttributes)
+          if (address + nodeAddress) not in self.graph: self.graph.add_node(address + nodeAddress, attributes = dataNodeAttributes('file'))
+          self.graph.add_edge(address + taskAddress, address + nodeAddress, attributes = argumentAttributes)
 
           # Store the node ID for connecting to the target task node.
           sourceNodeIDs.append(str(address + nodeAddress))
@@ -424,40 +452,7 @@ class pipelineGraph:
         taskAddress = str(externalPipeline + '.' + task) if externalPipeline else str(task)
 
         # Connect all the source nodes to the target node.
-        for sourceNodeID in sourceNodeIDs: self.addEdge(sourceNodeID, taskAddress, argumentAttributes)
-
-  # Add a node if necessary and add edges.
-  def addNodeAndEdges(self, nodeID, address, task, isInput, isOutput, nodeAttributes, edgeAttributes):
-  
-    # Determine if this node is for a file or an option.
-    isFile = True if (isInput or isOutput) else False
-
-    # If the node is a file node. 
-    if isFile:
-      if address + nodeID not in self.graph: self.graph.add_node(str(address + nodeID), attributes = nodeAttributes)
-      if isInput: self.addEdge(str(address + nodeID), str(address + task), edgeAttributes)
-      elif isOutput: self.addEdge(str(address + task), str(address + nodeID), edgeAttributes)
-
-    # If the node is an option node.
-    else:
-      if address + nodeID not in self.graph: self.graph.add_node(str(address + nodeID), attributes = nodeAttributes)
-      self.addEdge(address + nodeID, address + task, edgeAttributes)
-
-  # Add stub nodes if necessary and then add edges. Stubs are always in reference to a file, so no
-  # checks are required for whether this is a file node.
-  def addStubNodesAndEdges(self, nodeID, address, task, isInput, extensions, nodeAttributes, argumentAttributes):
-
-    # Loop over all of the extensions associated with this stub.
-    for extension in extensions:
-      if extension.startswith('_') or extension.startswith('.'): fullAddress = address + nodeID + str(extension)
-      else: fullAddress = address + nodeID + '.' + str(extension)
-
-      # Create the node if necessary.
-      if fullAddress not in self.graph: self.graph.add_node(str(fullAddress), attributes = nodeAttributes)
-
-      # Add the edge from or to the task.
-      if isInput: self.addEdge(str(fullAddress), str(address + task), attributes = argumentAttributes)
-      else: self.addEdge(str(address + task), str(fullAddress), attributes = argumentAttributes)
+        for sourceNodeID in sourceNodeIDs: self.graph.add_edge(sourceNodeID, address + taskAddress, attributes = argumentAttributes)
 
   # Get tool and argument attributes.
   def getAttributes(self, superPipeline, tool, argument):

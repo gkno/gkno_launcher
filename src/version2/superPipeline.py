@@ -175,20 +175,11 @@ class superPipelineClass:
   # buried within enclosed pipelines.
   def getTool(self, taskAddress):
 
-    # The number of '.' symbols in the task address determine the tier in the superpipeline.
-    tier = taskAddress.count('.') + 1
-
     # Consider a task from a tier two pipeline. This would have an address of the form,
     # 'pipeline.task'. The tier one pipeline would just have the name of the task in the pipeline.
-    # This means that to identify the name of the pipeline in the second tier, split the address
-    # in '.' and the pipeline name is the tier - 1 (in this case, the first) part of the address.
-    # In the zero-based coordinates of the list, this means that the name of the pipeline is the
-    # tier - 2 element in the list.
-    pipelineName = taskAddress.rsplit('.')[tier - 2]
-    task         = taskAddress.rsplit('.', 1)[-1]
-
-    # If this is the top tier pipeline, get the name of the top tier pipeline.
-    if tier == 1: pipelineName = self.pipelinesByTier[1][0]
+    namesList    = taskAddress.split('.')
+    task         = namesList.pop()
+    pipelineName = '.'.join(namesList) if namesList else task
 
     # Get the pipeline configuration data for this pipeline.
     return self.pipelineConfigurationData[pipelineName].getTaskAttribute(task, 'tool')
