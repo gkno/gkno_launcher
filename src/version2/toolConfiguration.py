@@ -280,7 +280,7 @@ class toolConfiguration:
           self.success = False
           return
 
-      # Store the attributes for the task.
+      # Store the attributes for the argument.
       if isInput: attributes.isInput = True
       elif isOutput: attributes.isOutput = True
       self.arguments[attributes.longFormArgument] = attributes

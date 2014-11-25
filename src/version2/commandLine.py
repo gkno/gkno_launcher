@@ -16,8 +16,13 @@ class commandLine:
     # Define errors.
     self.errors = commandLineErrors()
 
-    # Store all of the arguments with their values.
-    self.arguments = {}
+    # Store all of the arguments with their values. These will be broken up into arguments that
+    # are for individual tasks within the main pipeline, gkno specific arguments and pipeline
+    # arguments.
+    self.arguments         = {}
+    self.gknoArguments     = {}
+    self.pipelineArguments = {}
+    self.tasksAsArguments  = {}
 
     # Store commands. These could be instructions on the mode of usage etc.
     self.commands = []
@@ -116,3 +121,62 @@ class commandLine:
 
     # Return the pipeline name.
     return self.commands[0]
+
+  # Process the command line arguments.
+  def processArguments(self, superpipeline, gknoLongForms, gknoShortForms):
+
+    # Loop over all of the supplied command line arguments, ensure that they are in their long form
+    # versions and consolidate. Check that all of the arguments are valid for the pipeline being run
+    # or are gkno specific arguments.
+    for argument in self.arguments:
+      values = self.arguments[argument]
+
+      # First check if the argument is the name of a task in the superpipeline.
+      if argument.strip('-') in superpipeline.tasks:
+        if argument.strip('-') in self.tasksAsArguments: 
+          for value in values: self.tasksAsArguments[argument.strip('-')].append(value)
+        else: self.tasksAsArguments[argument.strip('-')] = values
+
+      # If this is a long form argument, check to see if it is a gkno specific argument or a valid pipeline
+      # argument.
+      elif argument in gknoLongForms:
+        if argument in self.gknoArguments:
+          for value in values: self.gknoArguments[argument].append(value)
+        else: self.gknoArguments[argument] = values
+
+      # Check if this is a valid gkno short form argument.
+      elif argument in gknoShortForms:
+        if gknoShortForms[argument] in self.gknoArguments:
+          for value in values: self.gknoArguments[gknoShortForms[argument]].append(value)
+        else: self.gknoArguments[gknoShortForms[argument]] = values
+
+      # Check if this is a valid long form pipeline argument.
+      elif argument in superpipeline.longFormArguments:
+        if argument in self.pipelineArguments:
+          for value in values: self.pipelineArguments[argument].append(value)
+        else: self.pipelineArguments[argument] = values
+
+      # Check if this is a valid short form pipeline argument.
+      elif argument in superpipeline.shortFormArguments:
+        if superpipeline.shortFormArguments[argument] in self.pipelineArguments:
+          for value in values: self.pipelineArguments[superpipeline.shortFormArguments[argument]].append(value)
+        else: self.pipelineArguments[superpipeline.shortFormArguments[argument]] = values
+
+      # If the argument is invalid.
+      else:  self.errors.invalidArgument(argument)
+
+  # Determine the name (if any) of the requested parameter set.
+  def getParameterSetName(self, arguments):
+
+    # Loop over the gkno specific arguments looking for the --parameter-set argument,
+    for argument in arguments:
+      if argument == '--parameter-set':
+
+        # Only one parameter set can be defined.
+        if len(arguments[argument]) != 1: self.errors.multipleParameterSets()
+
+        # Return the name of the parameter set.
+        return arguments[argument][0]
+
+    # If no parameter set was defined, return None.
+    return None

@@ -61,8 +61,7 @@ def checkAttributes(data, allowedAttributes, attributes, allowTermination, helpI
   # are present.
   for attribute in allowedAttributes:
     if allowedAttributes[attribute][1] and attribute not in observedAttributes:
-      #TODO ERROR
-      if allowTermination: print('generalConfig.checkAttributes - 3 - missing', attribute); exit(0) # missingGeneralAttributeInConfigurationFile
+      if allowTermination: errors.missingAttribute(attribute, helpInfo)
       else: return False, None
 
   return True, attributes

@@ -1,1 +1,1 @@
-all = ['pipelineConfiguration']
+all = ['gknoConfiguration', 'pipelineConfiguration']

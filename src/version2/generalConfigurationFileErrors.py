@@ -67,3 +67,16 @@ class generalConfigurationFileErrors:
     self.text.append('Please remove or correct the invalid attribute in the configuration file.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  # If a required attribute is missing.
+  def missingAttribute(self, attribute, helpInfo):
+
+    # Get the information from the helpInfo.
+    name, section, id = helpInfo
+    print(name, section, id)
+    self.text.append('Missing attribute in the configuration file: ' + name)
+    self.text.append('The configuration file section \'' + section + '\' requires a number of different attributes to be set. The section for ' + \
+    'id \'' + id + '\' is missing the attribute \'' + attribute + '\'. Please ensure that all required attributes in the configuration file ' + \
+    'are defined.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
