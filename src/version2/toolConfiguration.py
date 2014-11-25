@@ -157,7 +157,7 @@ class toolConfiguration:
     if self.success: self.checkAttributeCombinations()
 
     # Check the parameter set information and store.
-    if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination, self.name)
+    if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination, self.name, isTool = True)
 
   # Process the top level pipeline configuration information.
   def checkTopLevelInformation(self, data):

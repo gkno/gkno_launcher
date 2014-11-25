@@ -114,10 +114,10 @@ def main():
 
   # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
   # the nodes with these task level default parameter sets, creating nodes where necessary.
-  #graph.addTaskParameterSets(superPipeline, 'default')
+  graph.addTaskParameterSets(superPipeline, 'default')
 
   # Now add the default parameter set for the pipelines.
-  #graph.addPipelineParameterSets(superPipeline, 'default')
+  graph.addPipelineParameterSets(superPipeline, 'default')
 
   plot = plotGraph()
   plot.plot(graph.graph.copy(), 'test.dot')

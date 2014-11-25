@@ -40,6 +40,9 @@ class superPipelineClass:
     # Keep track of the configuration nodes that have been added to the graph.
     self.nodesInGraph = []
 
+    # Keep track of the graph node that each pipeline configuration file node points to.
+    self.configurationNodes = {}
+
   # Starting from the defined pipeline, process and validate the configuration file contents,
   # then dig down through all the nested pipelines and validate their configuration files.
   def getNestedPipelineData(self, path, filename):
@@ -190,9 +193,20 @@ class superPipelineClass:
 
   # Return data for a specified tool.
   def getToolData(self, tool):
-    return self.toolConfigurationData[tool]
+    try: return self.toolConfigurationData[tool]
+    except: return False
 
   # Get a parameter set for a tool.
   def getToolParameterSet(self, tool, parameterSet):
     try: return self.toolConfigurationData[tool].parameterSets.sets[parameterSet]
+    except: return None
+
+  # Return pipeline data.
+  def getPipelineData(self, pipeline):
+    try: return self.pipelineConfigurationData[pipeline]
+    except: return False
+
+  # Get a parameter set for a pipeline.
+  def getPipelineParameterSet(self, pipeline, parameterSet):
+    try: return self.pipelineConfigurationData[pipeline].parameterSets.sets[parameterSet]
     except: return None

@@ -186,7 +186,7 @@ class pipelineConfiguration:
     if self.success: self.checkDefinedEdges(data)
 
     # Check the parameter set information and store.
-    if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination, self.name)
+    if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination, self.name, isTool = False)
 
     # Parse all of the unique nodes and shared nodes and pull out all of the pipeline arguments and store them.
     if self.success: self.success = self.storeArguments()
@@ -526,3 +526,29 @@ class pipelineConfiguration:
   def getTargets(self, node):
     try: return self.connections[node].targetInformation
     except: return None
+
+  # Return the long form version of an argument.
+  def getLongFormArgument(self, argument):
+
+    # Check if this argument is from a unique node.
+    for nodeID in self.getUniqueNodeIDs():
+      shortFormArgument = self.getUniqueNodeAttribute(nodeID, 'shortFormArgument')
+      longFormArgument  = self.getUniqueNodeAttribute(nodeID, 'longFormArgument')
+
+      # If the long form argument matches the given argument, return the long form. If the argument
+      # matches the short from, return the associated long form.
+      if argument == longFormArgument: return longFormArgument
+      elif argument == shortFormArgument: return longFormArgument
+
+    # If the argument was not an argument for a unique node, check the shared nodes.
+    for nodeID in self.getSharedNodeIDs():
+      shortFormArgument = self.getSharedNodeAttribute(nodeID, 'shortFormArgument')
+      longFormArgument  = self.getSharedNodeAttribute(nodeID, 'longFormArgument')
+
+      # If the long form argument matches the given argument, return the long form. If the argument
+      # matches the short from, return the associated long form.
+      if argument == longFormArgument: return longFormArgument
+      elif argument == shortFormArgument: return longFormArgument
+
+    # If not match was found, return False,
+    return False

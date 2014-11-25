@@ -21,10 +21,15 @@ class parameterSetData:
 class parameterSetArguments:
   def __init__(self):
 
-    # The paramter set data should consist of an id, an argument and a list of values.
-    self.argument = None
+    # The paramter set data should consist of an id and a list of values.
     self.id       = None
     self.values   = []
+
+    # Tool data sets also require an argument.
+    self.argument = None
+
+    # Pipeline data sets also require a pipeline node ID.
+    self.nodeID = None
 
 # Define a class to handle parameter sets.
 class parameterSets:
@@ -34,7 +39,7 @@ class parameterSets:
     self.sets = {}
 
   # Check the parameter set information
-  def checkParameterSets(self, data, allowTermination, name):
+  def checkParameterSets(self, data, allowTermination, name, isTool):
     success = True
 
     # Define the allowed attributes.
@@ -44,10 +49,15 @@ class parameterSets:
     allowedAttributes['data']        = (list, True, False, None)
 
     # Define the allowed attributes in the data section of the parameter set.
-    allowedDataAttributes             = {}
-    allowedDataAttributes['argument'] = (str, True, True, 'argument')
-    allowedDataAttributes['id']       = (str, True, True, 'id')
-    allowedDataAttributes['values']   = (list, True, True, 'values')
+    allowedDataAttributes           = {}
+    allowedDataAttributes['id']     = (str, True, True, 'id')
+    allowedDataAttributes['values'] = (list, True, True, 'values')
+
+    # The parameter set definitions differ slightly between tools and pipelines. For tools, the argument is
+    # provided as the means of identifying the node for which the supplied values apply. For pipelines, it is
+    # the node within the pipeline that is supplied.
+    if isTool: allowedDataAttributes['argument'] = (str, True, True, 'argument')
+    else: allowedDataAttributes['node']          = (str, True, True, 'nodeID')
 
     # Loop over all of the defined parameter sets.
     for parameterSet in data:
@@ -90,7 +100,11 @@ class parameterSets:
 
     return success
 
-  # Get a parameter set from a configuration file.
+  ######################
+  ### Static methods ###
+  ######################
+
+  # Get a parameter set from a tool configuration file.
   @staticmethod
   def getArguments(parameterSet):
     arguments = {}
@@ -102,3 +116,16 @@ class parameterSets:
       arguments[argument] = values
 
     return arguments
+
+  # Get a parameter set from a pipeline configuration file.
+  @staticmethod
+  def getNodeIDs(parameterSet):
+    nodeIDs = {}
+
+    # Loop over all of the defined node IDs for this parameter set.
+    for dataSet in parameterSet.data:
+      nodeID          = dataSet.nodeID
+      values          = dataSet.values
+      nodeIDs[nodeID] = values
+
+    return nodeIDs
