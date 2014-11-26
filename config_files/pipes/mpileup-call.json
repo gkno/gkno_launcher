@@ -1,6 +1,6 @@
 {
-  "description" : "Align paired-end fastq files using BWA and call variants with Wham and Freebayes.",
-  "categories" : ["Alignment", "Variant-discovery"],
+  "description" : "Call variants with samtools.",
+  "categories" : ["Variant-discovery"],
 
   "tasks" : {
     "pileup" : {
