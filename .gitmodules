@@ -100,3 +100,6 @@
 [submodule "tools/samtools"]
 	path = tools/samtools
 	url = https://github.com/gkno/samtools.git
+[submodule "tools/bedtools"]
+	path = tools/bedtools
+	url = https://github.com/gkno/bedtools2.git

@@ -182,6 +182,21 @@ class BamUtil(GknoTool):
   def doUpdate(self):
     return self.make(cpus = 1)
 
+# bedtools
+class BedTools(GknoTool):
+  def __init__(self):
+    super(BedTools, self).__init__()
+    self.name       = "bedtools"
+    self.installDir = "bedtools"
+
+  # Initial tool build.
+  def doBuild(self): return self.make()
+
+  # Update the tool.
+  def doUpdate(self):
+    if not self.makeClean(): return False
+    return self.make()
+
 # NCBI BLAST
 class Blast(GknoTool):
   def __init__(self):
@@ -771,6 +786,7 @@ class Wham(GknoTool):
 
 List = [ 
         BamTools(),
+        BedTools(),
         Blast(),
         Bwa(),
         Freebayes(),

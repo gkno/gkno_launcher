@@ -1,0 +1,168 @@
+{
+  "id" : "genome-coverage",
+  "description" : "Generate genome coverage using bedtools genomecov.",
+  "categories" : ["BAM-processing", "Bedtools"],
+  "tools" : ["bedtools"],
+  "path" : "bedtools/bin",
+  "executable" : "bedtools",
+  "modifier" : "genomecov",
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The input sorted BAM file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "-ibam",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bam"]
+      },
+      {
+        "description" : "The input genome file. This is a tab delimited file, with structure: <chromName><TAB><chromSize>.",
+        "long form argument" : "--genome-file",
+        "short form argument" : "-g",
+        "command line argument" : "-g",
+        "data type" : "string",
+        "extensions" : [".txt"]
+      }
+    ],
+  
+    "outputs" : [
+      {
+        "description" : "The output coverage file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".cov"],
+        "modify argument name on command line" : "stdout",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace"
+        }
+      }
+    ],
+  
+    "options" : [
+      {
+        "description" : "Report the depth at each genome position (with one-based coordinates). Default behavior is to report a histogram.",
+        "long form argument" : "--depth-one-based",
+        "short form argument" : "-d1",
+        "command line argument" : "-d",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Report the depth at each genome position (with zero-based coordinates). Reports only non-zero positions. Default behavior is to report a histogram.",
+        "long form argument" : "--depth-zero-based",
+        "short form argument" : "-d0",
+        "command line argument" : "-dz",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Report depth in BedGraph format. For details, see: genome.ucsc.edu/goldenPath/help/bedgraph.html.",
+        "long form argument" : "--bed-graph",
+        "short form argument" : "-bg",
+        "command line argument" : "-bg",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Report depth in BedGraph format, as with --bed-graph. However with this option, regions with zero coverage are also reported. This allows one to quickly extract all regions of a genome with 0 coverage by applying: \"grep -w 0$\" to the output.",
+        "long form argument" : "--bed-graph-with-zero",
+        "short form argument" : "-bg0",
+        "command line argument" : "-bga",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Treat \"split\" BAM or BED12 entries as distinct BED intervals. when computing coverage. For BAM files, this uses the CIGAR \"N\" and \"D\" operations  to infer the blocks for computing coverage. For BED12 files, this uses the BlockCount, BlockStarts, and BlockEnds fields (i.e., columns 10,11,12).",
+        "long form argument" : "--split",
+        "short form argument" : "-s",
+        "command line argument" : "-split",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Calculate coverage of intervals from a specific strand. With BED files, requires at least 6 columns (strand is column 6). Can take the values + or -.",
+        "long form argument" : "--strand",
+        "short form argument" : "-t",
+        "command line argument" : "-strand",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Calculate coverage of 5\" positions (instead of entire interval).",
+        "long form argument" : "--five-prime",
+        "short form argument" : "-5",
+        "command line argument" : "-5",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Calculate coverage of 3\" positions (instead of entire interval).",
+        "long form argument" : "--three-prime",
+        "short form argument" : "-3",
+        "command line argument" : "-3",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Combine all positions with a depth >= max into a single bin in the histogram. Irrelevant for --depth-one-based and --bed-graph.",
+        "long form argument" : "--combine-max-depth",
+        "short form argument" : "-m",
+        "command line argument" : "-max",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Scale the coverage by a constant factor. Each coverage value is multiplied by this factor before being reported. Useful for normalizing coverage by, e.g., reads per million (RPM). Default is 1.0; i.e., unscaled.",
+        "long form argument" : "--scale",
+        "short form argument" : "-c",
+        "command line argument" : "-scale",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Adds a UCSC/Genome-Browser track line definition in the first line of the output. See here for more details about track line definition: http://genome.ucsc.edu/goldenPath/help/bedgraph.html. NOTE: When adding a trackline definition, the output BedGraph can be easily uploaded to the Genome Browser as a custom track, BUT CAN NOT be converted into a BigWig file (w/o removing the first line).",
+        "long form argument" : "--track-line",
+        "short form argument" : "-l",
+        "command line argument" : "-trackline",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Writes additional track line definition parameters in the first line. Example: --track-options 'name=\"My Track\" visibility=2 color=255,30,30'. Note the use of single-quotes if you have spaces in your parameters.",
+        "long form argument" : "--track-options",
+        "short form argument" : "-to",
+        "command line argument" : "-trackopts",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "nodes" : []
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "Input BAM file",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        }
+      ]
+    }
+  ]
+}
