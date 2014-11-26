@@ -33,7 +33,7 @@ class plotGraph():
   def plot(self, graphToDraw, filename):
 
     # Loop over the nodes and change task nodes to rectangles.
-    for taskNodeID in pipelineGraph.getNodes(graphToDraw, 'task'):
+    for taskNodeID in pipelineGraph.CM_getNodes(graphToDraw, 'task'):
       predecessorNodeIDs = []
       successorNodeIDs   = []
       for predecessor in graphToDraw.predecessors(taskNodeID): predecessorNodeIDs.append(predecessor)

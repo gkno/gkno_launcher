@@ -22,15 +22,6 @@ class fileHandling:
     self.pipelines = self.getValidJsonFiles(os.listdir(pipelinesPath))
     self.tools     = self.getValidJsonFiles(os.listdir(toolsPath))
 
-  # Return a list of json files excluding parameterSet json files.
-  @staticmethod
-  def getValidJsonFiles(files):
-    validFiles = []
-    for filename in files:
-      if filename.endswith('json') and not filename.endswith('_parameterSets.json'): validFiles.append(filename.rstrip('json')[:-1])
-
-    return validFiles
-
   # Given the name of the pipeline, determine if the configuration file exists and if the
   # pipeline is a tool.
   def checkPipeline(self, toolsPath, pipelinesPath, pipeline):
@@ -52,7 +43,26 @@ class fileHandling:
   # Check if the requested pipeline is a valid tool.
   def checkIfTool(self, pipeline):
     return pipeline in self.tools
+
+  ######################
+  ### Static methods ###
+  ######################
   
+  # Return a list of json files excluding parameterSet json files.
+  @staticmethod
+  def getValidJsonFiles(files):
+    validFiles = []
+    for filename in files:
+      if filename.endswith('json') and not filename.endswith('_parameterSets.json'): validFiles.append(filename.rstrip('json')[:-1])
+
+    return validFiles
+
+  # Open a file and return the contents.
+  @staticmethod
+  def openFile(filename):
+    try: return open(filename)
+    except: return False
+
   # Open a configuration file and return the contents.
   @staticmethod
   def readConfigurationFile(filename, allowTermination = True):

@@ -323,3 +323,13 @@ class toolConfiguration:
   def getArgumentData(self, argument):
     try: return self.arguments[argument]
     except: return None
+
+  ######################
+  ### Static methods ###
+  ######################
+
+  # Get an argument attribute from supplied attributes
+  def getArgumentAttributeFromSupplied(attributes, attribute):
+    try: return getattr(attributes.arguments[argument], attribute)
+    except: return False
+

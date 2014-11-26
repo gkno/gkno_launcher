@@ -9,6 +9,7 @@ import sys
 
 import version2.adminUtils as au
 import version2.commandLine as cl
+import version2.dataConsistency as dc
 import version2.fileHandling as fh
 import version2.gknoConfiguration as gc
 import version2.graph as gr
@@ -123,7 +124,23 @@ def main():
   if parameterSet: graph.addParameterSet(superpipeline, executedPipeline, parameterSet)
 
   # Parse the command line arguments and associate the argument values with the graph node.
-  command.associateArgumentsWithGraphNodes(superpipeline)
+  command.parseTasksAsArguments(superpipeline)
+  associatedNodes = command.associateArgumentsWithGraphNodes(graph.graph, superpipeline)
+
+  # Create nodes for all of the defined arguments for which a node does not already exist and add the
+  # argument values to the node.
+  graph.attachArgumentValuesToNodes(superpipeline, associatedNodes)
+
+  # Loop over all nodes and expand lists of arguments. This is only valid for arguments that are either options,
+  # or inputs to a task that are not simulateously outputs of another task.
+  graph.expandLists()
+
+  # Check that all of the values associated with all of the nodes are of the correct type (e.g. integer, flag etc)
+  # and also that any files also have the correct extension. This implicitly checks that tools that are linked
+  # together in the configuration file can be validly linked. If a tool outputs a file format 'bam' and it feeds
+  # into the next tool expecting files with the extension 'vcf', then the node will be flagged as invalid for one
+  # of the tools.
+  dc.checkValues(graph, superpipeline)
 
   plot = pg.plotGraph()
   plot.plot(graph.graph.copy(), 'test.dot')

@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 from collections import deque
+import fileHandling as fh
 import graphErrors
 import networkx as nx
 import parameterSets as ps
@@ -599,11 +600,11 @@ class pipelineGraph:
 
     # Loop over the workflow.
     for task in self.workflow:
-      tool = self.getGraphNodeAttribute(self.graph, task, 'tool')
+      tool = self.getGraphNodeAttribute(task, 'tool')
 
       # Loop over all of the arguments in the default parameter set.
       parameterSet = superpipeline.getToolParameterSet(tool, setName)
-      arguments    = ps.parameterSets.getArguments(parameterSet)
+      arguments    = ps.parameterSets.SM_getArguments(parameterSet)
       for argument in arguments:
         values           = arguments[argument]
         toolData         = superpipeline.getToolData(tool)
@@ -614,7 +615,7 @@ class pipelineGraph:
         isOutput = toolData.getArgumentAttribute(longFormArgument, 'isOutput')
 
         # Check if this edge exists.
-        edges = self.checkIfEdgeExists(self.graph, task, longFormArgument, not isOutput)
+        edges = self.checkIfEdgeExists(task, longFormArgument, not isOutput)
 
         # Define the node attributes.
         if isInput or isOutput: nodeAttributes = dataNodeAttributes('file')
@@ -657,36 +658,134 @@ class pipelineGraph:
     if not parameterSet: print('addPipelineParameterSets - no set:', setName); exit(0)
 
     # Loop over the nodes in the parameter set.
-    nodeIDs = ps.parameterSets.getNodeIDs(parameterSet)
+    nodeIDs = ps.parameterSets.SM_getNodeIDs(parameterSet)
     for nodeID in nodeIDs:
       values       = nodeIDs[nodeID]
       pipelineData = superpipeline.getPipelineData(pipelineName)
       nodeAddress  = pipelineData.address + '.' + nodeID if pipelineData.address else nodeID
 
       # Set the values for the graph node.
-      self.setGraphNodeAttribute(self.graph, superpipeline.configurationNodes[nodeAddress], 'values', values)
+      self.setGraphNodeAttribute(superpipeline.configurationNodes[nodeAddress], 'values', values)
 
-  ######################
-  ### Static methods ###
-  ######################
+  # Loop over all of the nodes for which arguments are defined on the command line and create the nodes
+  # that are missing.
+  def attachArgumentValuesToNodes(self, superpipeline, nodeList):
+
+    # Loop over the list of nodes and extract those for which a node requires creating.
+    for taskAddress, nodeAddress, tool, argument, values, isCreate in nodeList:
+
+      # Get the tool data.
+      toolData = superpipeline.toolConfigurationData[tool]
+
+      # If the node required creating, create it and add the edges.
+      if isCreate:
+
+        # Get the attributes associated with the argument. These will be added to the graph edge.
+        argumentAttributes = toolData.getArgumentData(argument)
+
+        # Determine if this argument is an input or an output.
+        isInput  = toolData.getArgumentAttribute(argument, 'isInput')
+        isOutput = toolData.getArgumentAttribute(argument, 'isOutput')
+
+        # Determine if the argument is a stub.
+        isStub         = toolData.getArgumentAttribute(argument, 'isStub')
+        stubExtensions = toolData.getArgumentAttribute(argument, 'stubExtensions')
+
+        # Define the node attributes.
+        if isInput or isOutput: nodeAttributes = dataNodeAttributes('file')
+        else: nodeAttributes = dataNodeAttributes('option')
+
+        # Attach the values to the node attributes.
+        nodeAttributes.values = values
+
+        # Add the node (or nodes if this is a stub).
+        if isStub:
+          for extension in stubExtensions:
+            modifiedNodeAddress = str(nodeAddress + '.' + extension)
+            self.graph.add_node(modifiedNodeAddress, attributes = nodeAttributes)
+
+            # Add the edge.
+            if isOutput: self.graph.add_edge(taskAddress, modifiedNodeAddress, attributes = argumentAttributes)
+            else: self.graph.add_edge(modifiedNodeAddress, taskAddress, attributes = argumentAttributes)
+
+        # If this is not a stub, add a single node.
+        else:
+          self.graph.add_node(nodeAddress, attributes = nodeAttributes)
+
+          # Add the edge.
+          if isOutput: self.graph.add_edge(taskAddress, nodeAddress, attributes = argumentAttributes)
+          else: self.graph.add_edge(nodeAddress, taskAddress, attributes = argumentAttributes)
+
+      # If the node already exists, just add the values to the node.
+      else: self.setGraphNodeAttribute(nodeAddress, 'values', values)
+
+  # Expand lists of arguments attached to nodes.
+  def expandLists(self):
+    nodeIDs = []
+
+    # First, check all of the option nods.
+    for nodeID in self.getNodes('file'): nodeIDs.append((nodeID, 'file'))
+    for nodeID in self.getNodes('option'): nodeIDs.append((nodeID, 'option'))
+
+    # Loop over all the option and file nodes.
+    for nodeID, nodeType in nodeIDs:
+
+      # Only look at option nodes or file nodes that are predecessors to a task, but are not simultaneously
+      # successors of other tasks.
+      isSuccessor = True if self.graph.predecessors(nodeID) else False
+      if (nodeType == 'option') or (nodeType == 'file' and not isSuccessor):
+        values = self.getGraphNodeAttribute(nodeID, 'values')
+  
+        # Loop over the values and check if any of them end in '.list'. If so, this is a list of values which should be
+        # opened and all the values added to the node.
+        modifiedValues = []
+        for value in values:
+  
+          # If this is a list.
+          if str(value).endswith('.list'):
+  
+            # Open the file and terminate if it doesn't exist.
+            data = fh.fileHandling.openFile(value)
+            #TODO ERROR
+            if not data: print('graph.expandLists - FILE DOESN\'T EXIST', value); exit(0)
+  
+            # Loop over the values in the file, stripping off whitespace.
+            for dataValue in [name.strip() for name in data]: modifiedValues.append(dataValue)
+  
+          # If the value does not end with '.list', add it to the modifiedValues list.
+          else: modifiedValues.append(value)
+  
+        # Replace the values with the modifiedValues.
+        self.setGraphNodeAttribute(nodeID, 'values', modifiedValues)
+
+  # Return an attribute from a graph node.
+  def getGraphNodeAttribute(self, nodeID, attribute):
+    try: return getattr(self.graph.node[nodeID]['attributes'], attribute)
+    except: return None
+
+  # Set an attribute for a graph node.
+  def setGraphNodeAttribute(self, nodeID, attribute, values):
+    try: setattr(self.graph.node[nodeID]['attributes'], attribute, values)
+    except: return False
+
+    return True
 
   # Check if an edge exists with the requested argument, either coming from or pointing into a given
   # task.
-  @staticmethod
-  def checkIfEdgeExists(graph, task, argument, isPredecessor):
+  def checkIfEdgeExists(self, task, argument, isPredecessor):
     edges = []
 
     # If the argument is an input file or an option, isPredecessor is set to true. In this case, loop over
     # all precessor nodes and check if any predecessor nodes connect to the task node with an edge with
     # the defined argument. If this is an output file, isPredecessor is false and the successoe nodes should
     # be looped over.
-    if isPredecessor: nodeIDs = graph.predecessors(task)
-    else: nodeIDs = graph.successors(task)
+    if isPredecessor: nodeIDs = self.graph.predecessors(task)
+    else: nodeIDs = self.graph.successors(task)
 
     # Loop over the nodes.
     for nodeID in nodeIDs:
-      if isPredecessor: attributes = graph[nodeID][task]['attributes']
-      else: attributes = graph[task][nodeID]['attributes']
+      if isPredecessor: attributes = self.graph[nodeID][task]['attributes']
+      else: attributes = self.graph[task][nodeID]['attributes']
 
       # Check if this edge has the same argument as requested.
       if attributes.longFormArgument == argument: edges.append(nodeID)
@@ -694,29 +793,72 @@ class pipelineGraph:
     # Return a list of edges with the requested argument.
     return edges
 
+  # Return a list of all nodes of the a requested type.
+  def getNodes(self, nodeType):
+
+    # If a single node type is supplied, turn nodeType into a list.
+    if not isinstance(nodeType, list): nodeType = [nodeType]
+
+    nodeIDs = []
+    for nodeID in self.graph.nodes():
+      if nodeType == 'all': nodeIDs.append(nodeID)
+      elif self.getGraphNodeAttribute(nodeID, 'nodeType') in nodeType: nodeIDs.append(nodeID)
+
+    return nodeIDs
+
+  # Get all predecessor nodes.
+  def getPredecessors(self, nodeID):
+    try: return self.graph.predecessors(nodeID)
+    except: return False
+
+  # Get all successor nodes.
+  def getSuccessors(self, nodeID):
+    try: return self.graph.successors(nodeID)
+    except: return False
+
   #####################
   ### Class methods ###
   #####################
 
   # Return an attribute from a graph node.
   @classmethod
-  def getGraphNodeAttribute(cls, graph, nodeID, attribute):
+  def CM_getGraphNodeAttribute(cls, graph, nodeID, attribute):
     try: return getattr(graph.node[nodeID]['attributes'], attribute)
     except: return None
 
-  # Set an attribute for a graph node.
-  @classmethod
-  def setGraphNodeAttribute(cls, graph, nodeID, attribute, values):
-    try: setattr(graph.node[nodeID]['attributes'], attribute, values)
-    except: return False
-
-    return True
-
   # Return a list of all nodes of the a requested type.
   @classmethod
-  def getNodes(cls, graph, nodeType):
+  def CM_getNodes(cls, graph, nodeType):
     nodeIDs = []
     for nodeID in graph.nodes():
-      if cls.getGraphNodeAttribute(graph, nodeID, 'nodeType') == nodeType: nodeIDs.append(nodeID)
+      if cls.CM_getGraphNodeAttribute(graph, nodeID, 'nodeType') == nodeType: nodeIDs.append(nodeID)
 
     return nodeIDs
+
+  # Get all of the input nodes for a task.
+  @classmethod
+  def CM_getInputNodes(cls, graph, task):
+
+    # Check that the supplied node (e.g. task), is a task and not another type of node.
+    if cls.CM_getGraphNodeAttribute(graph, task, 'nodeType') != 'task': print('ERROR - getInputNodes - 1'); exit(0)
+
+    # Get the predecessor nodes.
+    return graph.predecessors(task)
+
+  # Get all of the output nodes for a task.
+  @classmethod
+  def CM_getOutputNodes(cls, graph, task):
+
+    # Check that the supplied node (e.g. task), is a task and not another type of node.
+    if cls.CM_getGraphNodeAttribute(graph, task, 'nodeType') != 'task': print('ERROR - getOutputNodes - 1'); exit(0)
+
+    # Get the successor nodes.
+    return graph.successors(task)
+
+  # Get the an argument attribute from graph edge.
+  @classmethod
+  def CM_getArgumentAttribute(cls, graph, source, target, attribute):
+
+    # Get the argument attributes from the edge.
+    try: return getattr(graph[source][target]['attributes'], attribute)
+    except: return False

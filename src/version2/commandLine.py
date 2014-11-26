@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import commandLineErrors
 from commandLineErrors import *
+import graph as gr
 
 import json
 import os
@@ -22,7 +23,11 @@ class commandLine:
     self.arguments         = {}
     self.gknoArguments     = {}
     self.pipelineArguments = {}
-    self.tasksAsArguments  = {}
+
+    # For tasks supplied on the command line, store the task and the list of arguments. Also, store
+    # the broken out arguments (e.g. after the string associated with the task is parsed).
+    self.tasksAsArguments = {}
+    self.taskArguments    = {}
 
     # Store commands. These could be instructions on the mode of usage etc.
     self.commands = []
@@ -182,8 +187,8 @@ class commandLine:
     # If no parameter set was defined, return None.
     return None
 
-  # Associate the command line arguments with the graph nodes.
-  def associateArgumentsWithGraphNodes(self, superpipeline):
+  # For all tasks inputted on the command line, extract all the arguments supplied to the tasks.
+  def parseTasksAsArguments(self, superpipeline):
 
     # Parse tasksAsNodes. Each entry is a task in the pipeline and has associated with it a list of
     # arguments to apply to that task. Parse all of these arguments and identify the graph node that
@@ -191,6 +196,9 @@ class commandLine:
     # creating.
     for task in self.tasksAsArguments:
       arguments = {}
+
+      # Get the tool associated with this task.
+      tool = superpipeline.tasks[task]
 
       # Loop over all arguments supplied to this task (it is allowed that the same task is supplied
       # on the command line multiple times.
@@ -208,13 +216,25 @@ class commandLine:
             # with a '-'. This implies that the previous entry was a flag argument.
             if argument:
               arguments[argument] = ['set']
-              argument            = entry
+
+              # Check that the argument is a valid argument for this tool and convert to the long form
+              # version if necessary.
+              argument = superpipeline.toolConfigurationData[tool].getLongFormArgument(entry)
+              #TODO ERROR
+              if argument not in superpipeline.toolConfigurationData[tool].arguments.keys():
+                print('ERROR - parseTasksAsArguments - 1', tool, entry); exit(0)
               arguments[argument] = []
   
             # If isArgument is false, then this is a new argument (either it is the first argument in the
             # list, or the previous entry was a value associated with a different argument).
             else:
-              argument = entry
+
+              # Check that the argument is a valid argument for this tool and convert to the long form
+              # version if necessary.
+              #TODO ERROR
+              argument = superpipeline.toolConfigurationData[tool].getLongFormArgument(entry)
+              if argument not in superpipeline.toolConfigurationData[tool].arguments.keys():
+                print('ERROR - parseTasksAsArguments - 2', tool, entry); exit(0)
               if argument not in arguments: arguments[argument] = []
   
           # If this entry does not begin with a dash and there is no defined argument, then the previous
@@ -228,6 +248,46 @@ class commandLine:
             argument = None
 
         # If the previous list ended on a flag, the value will not have been set. Set it here.
-        if entry == argument: arguments[argument] = ['set']
+        if argument: arguments[argument] = ['set']
 
-      print(task, arguments)
+      # Store the list of arguments for each task.
+      self.taskArguments[task] = arguments
+
+  # Associate the command line arguments with the graph nodes.
+  def associateArgumentsWithGraphNodes(self, graph, superpipeline):
+    associatedNodes = []
+
+    # Loop over all the arguments supplied to individual tasks.
+    for taskAddress in self.taskArguments:
+      for argument in self.taskArguments[taskAddress]:
+        values = self.taskArguments[taskAddress][argument]
+
+        # Get the tool associated with this task.
+        tool     = superpipeline.tasks[taskAddress]
+        toolData = superpipeline.toolConfigurationData[tool]
+
+        # Search the successor and predecessor nodes for this task for the argument supplied.
+        foundArgument    = False
+        associatedNodeID = None
+        for nodeID in gr.pipelineGraph.CM_getInputNodes(graph, taskAddress):
+          longFormArgument = gr.pipelineGraph.CM_getArgumentAttribute(graph, nodeID, taskAddress, 'longFormArgument')
+          if longFormArgument == argument:
+            foundArgument    = True
+            associatedNodeID = nodeID
+            break
+
+        # Only check if the output nodes if the argument has not already been associated with an input node.
+        if not foundArgument:
+          for nodeID in gr.pipelineGraph.CM_getOutputNodes(graph, taskAddress):
+            longFormArgument = gr.pipelineGraph.CM_getArgumentAttribute(graph.graph, nodeID, taskAddress, 'longFormArgument')
+            if longFormArgument == argument:
+              foundArgument    = True
+              associatedNodeID = nodeID
+              break
+
+        # Add the node to the list.
+        if associatedNodeID: associatedNodes.append((taskAddress, associatedNodeID, tool, argument, values, False))
+        else: associatedNodes.append((taskAddress, str(taskAddress + '.' + argument.strip('-')), tool, argument, values, True))
+
+    # Return the list with information on the nodes to create.
+    return associatedNodes

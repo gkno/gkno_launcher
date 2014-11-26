@@ -106,7 +106,7 @@ class parameterSets:
 
   # Get a parameter set from a tool configuration file.
   @staticmethod
-  def getArguments(parameterSet):
+  def SM_getArguments(parameterSet):
     arguments = {}
 
     # Loop over all of the defined arguments for this parameter set.
@@ -119,7 +119,7 @@ class parameterSets:
 
   # Get a parameter set from a pipeline configuration file.
   @staticmethod
-  def getNodeIDs(parameterSet):
+  def SM_getNodeIDs(parameterSet):
     nodeIDs = {}
 
     # Loop over all of the defined node IDs for this parameter set.
