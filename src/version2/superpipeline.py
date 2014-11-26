@@ -43,10 +43,6 @@ class superpipelineClass:
     # Keep track of the graph node that each pipeline configuration file node points to.
     self.configurationNodes = {}
 
-    # Store all of the valid top level pipeline arguments.
-    self.longFormArguments  = {}
-    self.shortFormArguments = {}
-
   # Starting from the defined pipeline, process and validate the configuration file contents,
   # then dig down through all the nested pipelines and validate their configuration files.
   def getNestedPipelineData(self, path, filename):
@@ -190,27 +186,6 @@ class superpipelineClass:
 
     # Get the pipeline configuration data for this pipeline.
     return self.pipelineConfigurationData[pipelineName].getTaskAttribute(task, 'tool')
-
-  # Collate all the arguments for this pipeline.
-  def getArguments(self, pipeline):
-
-    # Get all of the arguments for the unique nodes.
-    for nodeID in self.pipelineConfigurationData[pipeline].getUniqueNodeIDs():
-      longFormArgument  = self.pipelineConfigurationData[pipeline].getUniqueNodeAttribute(nodeID, 'longFormArgument')
-      shortFormArgument = self.pipelineConfigurationData[pipeline].getUniqueNodeAttribute(nodeID, 'shortFormArgument')
-
-      # Store the arguments.
-      self.longFormArguments[longFormArgument]   = shortFormArgument
-      self.shortFormArguments[shortFormArgument] = longFormArgument
-
-    # Now get all of the arguments for the unique nodes.
-    for nodeID in self.pipelineConfigurationData[pipeline].getSharedNodeIDs():
-      longFormArgument  = self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeID, 'longFormArgument')
-      shortFormArgument = self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeID, 'shortFormArgument')
-
-      # Store the arguments.
-      self.longFormArguments[longFormArgument]   = shortFormArgument
-      self.shortFormArguments[shortFormArgument] = longFormArgument
 
   # Return all the tools used in the superpipeline.
   def getTools(self):

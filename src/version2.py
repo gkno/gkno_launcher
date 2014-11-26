@@ -7,28 +7,15 @@ import getpass
 import subprocess
 import sys
 
-import version2.adminUtils
-from version2.adminUtils import *
-
-import version2.commandLine
-from version2.commandLine import *
-
-import version2.fileHandling
-import version2.gknoConfiguration as gknoConfiguration
-
-import version2.graph
-from version2.graph import *
-
-import version2.plotGraph
-from version2.plotGraph import *
-
-import version2.toolConfiguration
-
-import version2.pipelineConfiguration
-from version2.pipelineConfiguration import *
-
-import version2.superpipeline
-from version2.superpipeline import *
+import version2.adminUtils as au
+import version2.commandLine as cl
+import version2.fileHandling as fh
+import version2.gknoConfiguration as gc
+import version2.graph as gr
+import version2.plotGraph as pg
+import version2.toolConfiguration as tc
+import version2.pipelineConfiguration as pc
+import version2.superpipeline as sp
 
 __author__ = "Alistair Ward"
 __version__ = "2.0.0"
@@ -37,7 +24,7 @@ __date__ = "October 2014"
 def main():
 
   # Define a class for processing the command line.
-  command = commandLine()
+  command = cl.commandLine()
 
    # Define the source path of all the gkno machinery.
   sourcePath                     = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno.py')]
@@ -59,11 +46,11 @@ def main():
 
   # Define a class for handling files. In the initialisation, determine the names of all available
   # tools and pipelines.
-  files = fileHandling.fileHandling(toolConfigurationFilesPath, pipelineConfigurationFilesPath)
+  files = fh.fileHandling(toolConfigurationFilesPath, pipelineConfigurationFilesPath)
 
   # Define an admin utilities object. This handles all of the build/update steps
   # along with 'resource' management.
-  admin = adminUtils(sourcePath)
+  admin = au.adminUtils(sourcePath)
 
   # Determine if gkno is being run in admin mode and then determine the mode.
   isAdminMode, adminMode = command.isAdmin(admin.allModes)
@@ -78,11 +65,11 @@ def main():
   filename, isTool = files.checkPipeline(toolConfigurationFilesPath, pipelineConfigurationFilesPath, pipeline)
 
   # Initialise the gkno specific configuration file.
-  gc = gknoConfiguration.gknoConfiguration(configurationFilesPath)
+  gknoConfiguration = gc.gknoConfiguration(configurationFilesPath)
 
   # Generate a super pipeline class that holds information about the full collection of all nested
   # pipeline.
-  superpipeline = superpipelineClass(filename)
+  superpipeline = sp.superpipelineClass(filename)
 
   # If the pipeline is really a single tool, set up the super pipeline.
   # TODO HANDLE TOOLS
@@ -103,24 +90,23 @@ def main():
   
   # Loop over the list of required tools, open and process their configuration files and store.
   for tool in superpipeline.getTools():
-    toolData = toolConfiguration.toolConfiguration()
+    toolData = tc.toolConfiguration()
     toolData.getConfigurationData(tool, toolConfigurationFilesPath + str(tool) + '.json')
     superpipeline.addTool(tool, toolData)
 
   # Define the graph object that will contain the pipeline graph and necessary operations and methods
   # to build and modify it.
-  graph = pipelineGraph()
+  graph = gr.pipelineGraph()
 
-  # Collate a list of all arguments associated with each pipeline, gkno arguments or pipeline tasks.
-  superpipeline.getArguments(executedPipeline)
-
-  # Process the command line arguments.
-  command.processArguments(superpipeline, gc.arguments, gc.shortForms)
-
-  # Loop over the tiers of nested pipelines and build them into the graph.
+  # Loop over the tiers of nested pipelines and build them into the graph and collate a list of all
+  # arguments associated with each pipeline, gkno arguments or pipeline tasks.
   for tier in superpipeline.pipelinesByTier.keys():
     for pipelineName in superpipeline.pipelinesByTier[tier]:
       graph.buildPipelineTasks(superpipeline.pipelineConfigurationData[pipelineName], superpipeline)
+      superpipeline.pipelineConfigurationData[pipelineName].getArguments()
+
+  # Process the command line arguments.
+  command.processArguments(superpipeline, executedPipeline, gknoConfiguration.arguments, gknoConfiguration.shortForms)
 
   # Generate the workflow.
   workflow = graph.generateWorkflow()
@@ -136,7 +122,10 @@ def main():
   parameterSet = command.getParameterSetName(command.gknoArguments)
   if parameterSet: graph.addParameterSet(superpipeline, executedPipeline, parameterSet)
 
-  plot = plotGraph()
+  # Parse the command line arguments and associate the argument values with the graph node.
+  command.associateArgumentsWithGraphNodes(superpipeline)
+
+  plot = pg.plotGraph()
   plot.plot(graph.graph.copy(), 'test.dot')
 
 if __name__ == "__main__":

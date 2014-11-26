@@ -41,7 +41,7 @@ class commandLine:
           isTaskArguments = False
           self.arguments[argument].append(taskArguments)
 
-          # Reses the argument and the taskArguments now the task arguments have been handled.
+          # Reset the argument and the taskArguments now the task arguments have been handled.
           taskArguments = ''
           argument      = ''
         else: taskArguments += ' ' + entry
@@ -123,13 +123,14 @@ class commandLine:
     return self.commands[0]
 
   # Process the command line arguments.
-  def processArguments(self, superpipeline, gknoLongForms, gknoShortForms):
+  def processArguments(self, superpipeline, pipeline, gknoLongForms, gknoShortForms):
 
     # Loop over all of the supplied command line arguments, ensure that they are in their long form
     # versions and consolidate. Check that all of the arguments are valid for the pipeline being run
     # or are gkno specific arguments.
     for argument in self.arguments:
-      values = self.arguments[argument]
+      values                     = self.arguments[argument]
+      pipelineShortFormArguments = superpipeline.pipelineConfigurationData[pipeline].shortFormArguments
 
       # First check if the argument is the name of a task in the superpipeline.
       if argument.strip('-') in superpipeline.tasks:
@@ -151,16 +152,16 @@ class commandLine:
         else: self.gknoArguments[gknoShortForms[argument]] = values
 
       # Check if this is a valid long form pipeline argument.
-      elif argument in superpipeline.longFormArguments:
+      elif argument in superpipeline.pipelineConfigurationData[pipeline].longFormArguments:
         if argument in self.pipelineArguments:
           for value in values: self.pipelineArguments[argument].append(value)
         else: self.pipelineArguments[argument] = values
 
       # Check if this is a valid short form pipeline argument.
-      elif argument in superpipeline.shortFormArguments:
-        if superpipeline.shortFormArguments[argument] in self.pipelineArguments:
-          for value in values: self.pipelineArguments[superpipeline.shortFormArguments[argument]].append(value)
-        else: self.pipelineArguments[superpipeline.shortFormArguments[argument]] = values
+      elif argument in superpipeline.pipelineConfigurationData[pipeline].shortFormArguments:
+        if pipelineShortFormArguments[argument] in self.pipelineArguments:
+          for value in values: self.pipelineArguments[pipelineShortFormArguments[argument]].append(value)
+        else: self.pipelineArguments[pipelineShortFormArguments[argument]] = values
 
       # If the argument is invalid.
       else:  self.errors.invalidArgument(argument)
@@ -180,3 +181,53 @@ class commandLine:
 
     # If no parameter set was defined, return None.
     return None
+
+  # Associate the command line arguments with the graph nodes.
+  def associateArgumentsWithGraphNodes(self, superpipeline):
+
+    # Parse tasksAsNodes. Each entry is a task in the pipeline and has associated with it a list of
+    # arguments to apply to that task. Parse all of these arguments and identify the graph node that
+    # they point to. If there is no associated node, add the argument to a list of nodes that require
+    # creating.
+    for task in self.tasksAsArguments:
+      arguments = {}
+
+      # Loop over all arguments supplied to this task (it is allowed that the same task is supplied
+      # on the command line multiple times.
+      for string in self.tasksAsArguments[task]:
+
+        # Break the string associated with the task into a list.
+        argumentList = string.split(' ')
+
+        # Parse all the commands supplied for this task.
+        argument = None
+        for counter, entry in enumerate(argumentList):
+          if entry.startswith('-'):
+  
+            # If this entry starts with a '-' and isArgument is true, then the previous entry also started
+            # with a '-'. This implies that the previous entry was a flag argument.
+            if argument:
+              arguments[argument] = ['set']
+              argument            = entry
+              arguments[argument] = []
+  
+            # If isArgument is false, then this is a new argument (either it is the first argument in the
+            # list, or the previous entry was a value associated with a different argument).
+            else:
+              argument = entry
+              if argument not in arguments: arguments[argument] = []
+  
+          # If this entry does not begin with a dash and there is no defined argument, then the previous
+          # entry also did not start with a '-' and so there is a problem with the supplied arguments.
+          elif not argument: print('ERROR - command.associateArgumentsWithGraphNodes - 1'); exit(0)
+  
+          # If this entry does not begin with a '-'. but the argument is set, this is a value for the argument,
+          # so associate the value with the argument.
+          elif argument:
+            arguments[argument].append(entry)
+            argument = None
+
+        # If the previous list ended on a flag, the value will not have been set. Set it here.
+        if entry == argument: arguments[argument] = ['set']
+
+      print(task, arguments)

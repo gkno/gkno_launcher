@@ -129,6 +129,11 @@ class pipelineConfiguration:
     # Store all of the defined arguments.
     self.arguments = {}
 
+    # Store all of the valid top level pipeline arguments.
+    self.longFormArguments  = {}
+    self.shortFormArguments = {}
+    self.argumentToNode     = {}
+
     # If the pipeline contains tasks that are themselves pipelines. Store all of the pipelines
     # used in this pipeline.
     self.hasPipelineAsTask = False
@@ -476,6 +481,29 @@ class pipelineConfiguration:
     if shortFormArgument in observedShortFormArguments: self.errors.repeatedShortFormArgument(nodeID, longFormArgument, shortFormArgument)
     if longFormArgument and not shortFormArgument: self.errors.noShortFormArgument(nodeID, longFormArgument)
     if shortFormArgument and not longFormArgument: self.errors.noLongFormArgument(nodeID, shortFormArgument)
+
+    # Collate all the arguments for the top level (executed) pipeline.
+  def getArguments(self):
+
+    # Get all of the arguments for the unique nodes.
+    for nodeID in self.getUniqueNodeIDs():
+      longFormArgument  = self.getUniqueNodeAttribute(nodeID, 'longFormArgument')
+      shortFormArgument = self.getUniqueNodeAttribute(nodeID, 'shortFormArgument')
+
+      # Store the arguments.
+      self.longFormArguments[longFormArgument]   = shortFormArgument
+      self.shortFormArguments[shortFormArgument] = longFormArgument
+      self.argumentToNode[longFormArgument]      = nodeID
+
+    # Now get all of the arguments for the unique nodes.
+    for nodeID in self.getSharedNodeIDs():
+      longFormArgument  = self.getSharedNodeAttribute(nodeID, 'longFormArgument')
+      shortFormArgument = self.getSharedNodeAttribute(nodeID, 'shortFormArgument')
+
+      # Store the arguments.
+      self.longFormArguments[longFormArgument]   = shortFormArgument
+      self.shortFormArguments[shortFormArgument] = longFormArgument
+      self.argumentToNode[longFormArgument]      = nodeID
 
   # Return a list of all the tasks in the pipeline.
   def getAllTasks(self):
