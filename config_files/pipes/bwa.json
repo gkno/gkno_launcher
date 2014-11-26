@@ -23,9 +23,6 @@
 
     "stats" : {
       "tool" : "bamtools-stats"
-    },
-    "depth" : {
-      "tool" : "samtools-depth"
     }
   },
 
@@ -112,8 +109,7 @@
       "tasks" : {
         "dedup" : "--out",
         "index" : "--in",
-        "stats" : "--in",
-        "depth" : "--in"
+        "stats" : "--in"
       }
     }
   ],
