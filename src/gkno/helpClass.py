@@ -73,6 +73,7 @@ class helpClass:
     self.allowedToolCategories['Aligners']                = 'Read aligners/mappers.'
     self.allowedToolCategories['Annotation']              = 'Functional annotation of genetic variants.'
     self.allowedToolCategories['Bamtools']                = 'Tools included in the Bamtools library.'
+    self.allowedToolCategories['Bedtools']                = 'Tools included in the Bedtools library.'
     self.allowedToolCategories['BAM-processing']          = 'Tools for manipulating BAM files.'
     self.allowedToolCategories['BWA']                     = 'BWA mapping and file processing.'
     self.allowedToolCategories['FASTA-processing']        = 'Tools for processing FASTA files.'
