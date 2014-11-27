@@ -647,6 +647,9 @@ class adminUtils:
     # Make a symlink-ed directory "current" that points to release's directory
     currentDir = self.resourcesPath + resourceName + "/current"
     releaseDir = self.resourcesPath + resourceName + "/" + currentReleaseName
+
+    # If the symlink already exists, delete it first.
+    if os.path.islink(currentDir): os.unlink(currentDir)
     os.symlink(releaseDir, currentDir)
     
     # Update settings & return success
