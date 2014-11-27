@@ -1,58 +1,60 @@
 {
-  "id" : "r-plot",
-  "description" : "Run an R script to plot.",
-  "categories" : ["Visualisation"],
+  "id" : "covert-bedtools-coverage",
+  "description" : "Convert a bedtools coverage file into a form plottable with R.",
+  "categories" : ["Scripts"],
   "tools" : [],
-  "path" : "no path",
-  "executable" : "Rscript",
+  "path" : "scripts",
+  "executable" : "convert-bedtools-coverage.sh",
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
       {
-        "description" : "Input data file.",
+        "description" : "The bedtools coverage file.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".txt"],
-        "modify argument name on command line" : "hide",
-        "allow multiple values" : true
-      },
-      {
-        "description" : "R script to process.",
-        "long form argument" : "--script",
-        "short form argument" : "-s",
-        "command line argument" : "none",
-        "required" : true,
-        "data type" : "string",
-        "extensions" : [".r"],
+        "extensions" : [".cov"],
         "modify argument name on command line" : "hide"
       }
     ],
 
     "outputs" : [
       {
-        "description" : "The output tab delimited file.",
+        "description" : "The converted coverage file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".pdf"],
-        "modify argument name on command line" : "hide",
+        "extensions" : [".txt"],
+        "modify argument name on command line" : "stdout",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
           "modify extension" : "replace"
         }
       }
+    ],
+
+    "options" : [
+      {
+        "description" : "The maximum coverage. The histogram will include bins from 1, ..., MAX.",
+        "long form argument" : "--maximum-coverage-bin",
+        "short form argument" : "-m",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "integer",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      }
     ]
   },
 
   "argument order" : [
-    "--script",
     "--in",
+    "--maximum-coverage-bin",
     "--out"
   ],
 

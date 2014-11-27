@@ -176,7 +176,7 @@
       },
       {
         "description" : "Number of threads [1].",
-        "long form argument" : "--threadss",
+        "long form argument" : "--threads",
         "short form argument" : "-t",
         "command line argument" : "-p",
         "data type" : "integer",

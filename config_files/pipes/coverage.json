@@ -1,0 +1,102 @@
+{
+  "description" : "Generate histogram of Tangram fragment length distribution.",
+  "categories" : ["Visualisation"],
+
+  "tasks" : {
+    "calculate-coverage" : {
+      "tool" : "genome-coverage"
+    },
+    "convert-to-txt" : {
+      "tool" : "convert-bedtools-coverage"
+    },
+    "plot" : {
+      "tool" : "r-plot"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "input",
+      "description" : "The input sorted BAM file.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "tasks" : {
+        "calculate-coverage" : "--in"
+      }
+    },
+    {
+      "ID" : "max-depth",
+      "long form argument" : "--combine-max-depth",
+      "short form argument" : "-c",
+      "description" : "Combine all positions with a depth >= max into a single bin in the histogram.",
+      "tasks" : {
+        "calculate-coverage" : "--combine-max-depth"
+      }
+    },
+    {
+      "ID" : "max-bin",
+      "description" : "Only create bins for depth 1 to MAX.",
+      "long form argument" : "--maximum-coverage-bin",
+      "short form argument" : "-m",
+      "tasks" : {
+        "convert-to-txt" : "--maximum-coverage-bin"
+      }
+    },
+    {
+      "ID" : "convert",
+      "description" : "Convert the genome coverage into a text file.",
+      "tasks" : {
+        "calculate-coverage" : "--out",
+        "convert-to-txt" : "--in"
+      }
+    },
+    {
+      "ID" : "pass-to-r",
+      "description" : "Pass the coverage text file to R.",
+      "tasks" : {
+        "convert-to-txt" : "--out",
+        "plot" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "plot",
+      "description" : "Plot the tab delimited file with R.",
+      "long form argument" : "--r-script",
+      "short form argument" : "-r",
+      "tasks" : {
+        "plot" : "--script"
+      }
+    },
+    {
+      "ID" : "output",
+      "description" : "The output pdf coverage plot file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "tasks" : {
+        "plot" : "--out"
+      }
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "The default parameter set sets all the parameters for the pipeline to run.",
+      "nodes" : [
+        {
+          "ID" : "r-script",
+          "argument" : "--r-script",
+          "values" : ["$(TOOL_BIN)/R/plot-histogram.r"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

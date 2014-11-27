@@ -39,7 +39,7 @@
       "long form argument" : "--tangram-reference",
       "short form argument" : "-tr",
       "tasks" : {
-        "build-tangram-reference" : "--tangram-reference",
+        "build-tangram-reference" : "--out",
         "detect-mei" : "--tangram-reference"
       }
     },
