@@ -4,7 +4,8 @@
   "categories" : ["Scripts"],
   "tools" : [],
   "path" : "scripts",
-  "executable" : "convert-bedtools-coverage.sh",
+  "precommand" : "python",
+  "executable" : "convert-bedtools-coverage.py",
   "help" : "--help|-h",
   "arguments" : {
     "inputs" : [
@@ -16,6 +17,16 @@
         "required" : true,
         "data type" : "string",
         "extensions" : [".cov"],
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "A file containing an ordered list of the reference sequences to include in the histogram.",
+        "long form argument" : "--reference-sequences",
+        "short form argument" : "-s",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".txt"],
         "modify argument name on command line" : "hide"
       }
     ],
@@ -48,14 +59,33 @@
         "data type" : "integer",
         "extensions" : ["no extension"],
         "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "Normalise the read counts by the reference sequence size. For example, in a histogram, the coverage on chr1 and chr22 may be identical, however, the count of reads in each bin will be much larger for chr1, since there are far more bases with that coverage.",
+        "long form argument" : "--normalise",
+        "short form argument" : "-n",
+        "command line argument" : "normalise",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Include the bin of bases with zero coverage in the histogram.",
+        "long form argument" : "--include-zero",
+        "short form argument" : "-z",
+        "command line argument" : "useZero",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
       }
     ]
   },
 
   "argument order" : [
+    "--reference-sequences",
     "--in",
     "--maximum-coverage-bin",
-    "--out"
+    "--out",
+    "--normalise",
+    "--include-zero"
   ],
 
   "parameter sets" : [

@@ -47,13 +47,36 @@
           "modify extension" : "replace"
         }
       }
+    ],
+
+    "options" : [
+      {
+        "description" : "The x axis label [bin].",
+        "long form argument" : "--x-label",
+        "short form argument" : "-x",
+        "command line argument" : "none",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "The y axis label [value].",
+        "long form argument" : "--y-label",
+        "short form argument" : "-y",
+        "command line argument" : "none",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      }
     ]
   },
 
   "argument order" : [
     "--script",
     "--in",
-    "--out"
+    "--out",
+    "--x-label",
+    "--y-label"
   ],
 
   "parameter sets" : [
@@ -61,6 +84,16 @@
       "ID" : "default",
       "description" : "Default parameter set requires the users input for all files.",
       "nodes" : [
+        {
+          "ID" : "x",
+          "argument" : "--x-label",
+          "values" : ["bin"]
+        },
+        {
+          "ID" : "y",
+          "argument" : "--y-label",
+          "values" : ["value"]
+        }
       ]
     },
 

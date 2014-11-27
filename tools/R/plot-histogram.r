@@ -20,4 +20,4 @@ for (i in names(hist)[-1]) {
 if (min < 0) {min <- 0}
                     
 pdf(args[2])
-ggplot() + geom_line(data=hist.melted, aes(x=bin, y=value, group=variable, colour=variable)) + xlim(min, max)
+ggplot() + geom_line(data=hist.melted, aes(x=bin, y=value, group=variable, colour=variable)) + xlim(min, max) + xlab(args[3]) + ylab(args[4])

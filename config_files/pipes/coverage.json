@@ -34,20 +34,47 @@
       }
     },
     {
+      "ID" : "convert",
+      "description" : "Convert the genome coverage into a text file.",
+      "tasks" : {
+        "calculate-coverage" : "--out",
+        "convert-to-txt" : "--in"
+      }
+    },
+    {
+      "ID" : "refs",
+      "description" : "A sorted list of reference sequences to use when plotting the histogram.",
+      "long form argument" : "--reference-sequences",
+      "short form argument" : "-s",
+      "tasks" : {
+        "convert-to-txt" : "--reference-sequences"
+      }
+    },
+    {
+      "ID" : "normalise",
+      "description" : "Normalise the read counts based on the reference sequence length.",
+      "long form argument" : "--normalise",
+      "short form argument" : "-n",
+      "tasks" : {
+        "convert-to-txt" : "--normalise"
+      }
+    },
+    {
+      "ID" : "zero",
+      "description" : "Plot the bin of reads with zero coverage.",
+      "long form argument" : "--include-zero",
+      "short form argument" : "-z",
+      "tasks" : {
+        "convert-to-txt" : "--include-zero"
+      }
+    },
+    {
       "ID" : "max-bin",
       "description" : "Only create bins for depth 1 to MAX.",
       "long form argument" : "--maximum-coverage-bin",
       "short form argument" : "-m",
       "tasks" : {
         "convert-to-txt" : "--maximum-coverage-bin"
-      }
-    },
-    {
-      "ID" : "convert",
-      "description" : "Convert the genome coverage into a text file.",
-      "tasks" : {
-        "calculate-coverage" : "--out",
-        "convert-to-txt" : "--in"
       }
     },
     {
@@ -76,6 +103,24 @@
       "tasks" : {
         "plot" : "--out"
       }
+    },
+    {
+      "ID" : "x",
+      "description" : "The x axis label [bin].",
+      "long form argument" : "--x-label",
+      "short form argument" : "-x",
+      "tasks" : {
+        "plot" : "--x-label"
+      }
+    },
+    {
+      "ID" : "y",
+      "description" : "The y axis label [value].",
+      "long form argument" : "--y-label",
+      "short form argument" : "-y",
+      "tasks" : {
+        "plot" : "--y-label"
+      }
     }
   ],
 
@@ -84,6 +129,31 @@
       "ID" : "default",
       "description" : "The default parameter set sets all the parameters for the pipeline to run.",
       "nodes" : [
+        {
+          "ID" : "xlab",
+          "argument" : "--x-label",
+          "values" : ["coverage"]
+        },
+        {
+          "ID" : "ylab",
+          "argument" : "--y-label",
+          "values" : ["read_count"]
+        },
+        {
+          "ID" : "maxbin",
+          "argument" : "--maximum-coverage-bin",
+          "values" : [100]
+        },
+        {
+          "ID" : "depth",
+          "argument" : "--combine-max-depth",
+          "values" : [100]
+        },
+        {
+          "ID" : "seqs",
+          "argument" : "--reference-sequences",
+          "values" : ["$(RESOURCES)/tutorial/current/autosome_sex.txt"]
+        },
         {
           "ID" : "r-script",
           "argument" : "--r-script",
