@@ -18,6 +18,17 @@ class taskAttributes:
     self.task            = None
     self.tool            = None
 
+# Define a class to hold the pipeline arguments.
+class pipelineArguments:
+  def __init__(self):
+
+    # Define the long and short form of the argument.
+    self.longFormArgument  = None
+    self.shortFormArgument = None
+
+    # Define the node that the argument points to.
+    self.nodeID = None
+
 # Define a class to store information on shared pipeline nodes.
 class sharedGraphNodes:
   def __init__(self):
@@ -126,13 +137,9 @@ class pipelineConfiguration:
     # The connections that need to be made between nodes and tasks.
     self.connections = {}
 
-    # Store all of the defined arguments.
-    self.arguments = {}
-
     # Store all of the valid top level pipeline arguments.
     self.longFormArguments  = {}
     self.shortFormArguments = {}
-    self.argumentToNode     = {}
 
     # If the pipeline contains tasks that are themselves pipelines. Store all of the pipelines
     # used in this pipeline.
@@ -184,6 +191,9 @@ class pipelineConfiguration:
     # Parse the shared node information.
     if self.success: self.checkSharedNodes(data)
 
+    # Parse all of the arguments for the pipeline.
+    if self.success: self.checkArguments(data)
+
     # Now check that the contents of each 'node' within the shared node information is valid.
     if self.success: self.checkSharedNodeTasks()
 
@@ -202,6 +212,7 @@ class pipelineConfiguration:
     # Define the allowed general attributes.
     allowedAttributes                            = {}
     allowedAttributes['id']                      = (str, True, True, 'id')
+    allowedAttributes['arguments']               = (list, True, False, None)
     allowedAttributes['description']             = (str, True, True, 'description')
     allowedAttributes['categories']              = (list, True, True, 'categories')
     allowedAttributes['connect nodes to tasks' ] = (list, False, False, None)
@@ -278,8 +289,6 @@ class pipelineConfiguration:
     allowedAttributes                           = {}
     allowedAttributes['id']                     = (str, True, True, 'id')
     allowedAttributes['description']            = (str, True, True, 'description')
-    allowedAttributes['long form argument']     = (str, False, True, 'longFormArgument')
-    allowedAttributes['short form argument']    = (str, False, True, 'shortFormArgument')
     allowedAttributes['task']                   = (str, True, True, 'task')
     allowedAttributes['task argument']          = (str, False, True, 'taskArgument')
 
@@ -323,8 +332,6 @@ class pipelineConfiguration:
     allowedAttributes['arguments sharing node'] = (list, True, True, 'nodes')
     allowedAttributes['id']                     = (str, True, True, 'id')
     allowedAttributes['description']            = (str, True, True, 'description')
-    allowedAttributes['long form argument']     = (str, False, True, 'longFormArgument')
-    allowedAttributes['short form argument']    = (str, False, True, 'shortFormArgument')
 
     # Loop over all of the defined nodes.
     for sharedNode in data['shared graph nodes']:
@@ -386,6 +393,47 @@ class pipelineConfiguration:
 
         # Store the attributes.
         self.sharedNodeAttributes[nodeID].sharedNodeTasks.append(attributes)
+
+  # Check all of the defined arguments for the pipeline.
+  def checkArguments(self, data):
+
+    # If there is not information on unique graph nodes, return.
+    if 'arguments' not in data: return
+
+    # Define the allowed nodes attributes.
+    allowedAttributes                        = {}
+    allowedAttributes['long form argument']  = (str, True, True, 'longFormArgument')
+    allowedAttributes['node id']             = (str, True, True, 'nodeID')
+    allowedAttributes['short form argument'] = (str, True, True, 'shortFormArgument')
+
+    # Loop over all of the defined nodes.
+    for argumentInformation in data['arguments']:
+
+      # Check that the supplied structure is a dictionary.
+      if not methods.checkIsDictionary(argumentInformation, self.allowTermination): return
+
+      # Check that the node has a long form argument. This is required for help messages.
+      longFormArgument = methods.checkForLongFormArgument(argumentInformation, self.allowTermination)
+      if not longFormArgument: return
+
+      # Define a set of information to be used in help messages.
+      helpInfo = (self.name, 'arguments', longFormArgument)
+
+      # Define the attributes object.
+      attributes = pipelineArguments()
+
+      # Check the attributes conform to expectations.
+      self.success, attributes = methods.checkAttributes(argumentInformation, allowedAttributes, attributes, self.allowTermination, helpInfo)
+
+      # If the long form argument already exists, there is a problem. All arguments must be unique.
+      if longFormArgument in self.longFormArguments: print('pipeline.checkArguments - 6'); exit(0)
+
+      # Also check that the node id is not the name of a task.
+      if attributes.shortFormArgument in self.shortFormArguments: print('pipeline.checkArguments - 7'); exit(0)
+
+      # Store the attributes.
+      self.longFormArguments[longFormArgument]              = attributes
+      self.shortFormArguments[attributes.shortFormArgument] = longFormArgument
 
   # Check that defined edges are correctly included.
   def checkDefinedEdges(self, data):
@@ -482,29 +530,6 @@ class pipelineConfiguration:
     if longFormArgument and not shortFormArgument: self.errors.noShortFormArgument(nodeID, longFormArgument)
     if shortFormArgument and not longFormArgument: self.errors.noLongFormArgument(nodeID, shortFormArgument)
 
-    # Collate all the arguments for the top level (executed) pipeline.
-  def getArguments(self):
-
-    # Get all of the arguments for the unique nodes.
-    for nodeID in self.getUniqueNodeIDs():
-      longFormArgument  = self.getUniqueNodeAttribute(nodeID, 'longFormArgument')
-      shortFormArgument = self.getUniqueNodeAttribute(nodeID, 'shortFormArgument')
-
-      # Store the arguments.
-      self.longFormArguments[longFormArgument]   = shortFormArgument
-      self.shortFormArguments[shortFormArgument] = longFormArgument
-      self.argumentToNode[longFormArgument]      = nodeID
-
-    # Now get all of the arguments for the unique nodes.
-    for nodeID in self.getSharedNodeIDs():
-      longFormArgument  = self.getSharedNodeAttribute(nodeID, 'longFormArgument')
-      shortFormArgument = self.getSharedNodeAttribute(nodeID, 'shortFormArgument')
-
-      # Store the arguments.
-      self.longFormArguments[longFormArgument]   = shortFormArgument
-      self.shortFormArguments[shortFormArgument] = longFormArgument
-      self.argumentToNode[longFormArgument]      = nodeID
-
   # Return a list of all the tasks in the pipeline.
   def getAllTasks(self):
     try: return self.allTasks
@@ -544,6 +569,21 @@ class pipelineConfiguration:
   def getNodeTaskAttribute(self, node, attribute):
     try: return getattr(node, attribute)
     except: return None
+
+  # Get an attribute for an argument.
+  def getArgumentAttribute(self, argument, attribute):
+
+    # Ensure that the argument exists.
+    try: longFormArgument = self.longFormArguments[argument].longFormArgument
+
+    # If the supplied argument was in the short form.
+    except:
+      try: longFormArgument = self.shortFormArguments[argument]
+      except: return False
+
+    # Return the value.
+    try: return getattr(self.longFormArguments[longFormArgument], attribute)
+    except: return False
 
   # Get source information for edges defined in the configuration file.
   def getSources(self, node):

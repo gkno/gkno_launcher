@@ -14,6 +14,9 @@ import sys
 class superpipelineClass:
   def __init__(self, pipeline):
 
+    # Record the name of the top level pipeline, e.g. that defined on the command line.
+    self.pipeline = None
+
     # The number of tiers in the super pipeline.
     self.numberOfTiers = 1
 
@@ -43,6 +46,10 @@ class superpipelineClass:
     # Keep track of the graph node that each pipeline configuration file node points to.
     self.configurationNodes = {}
 
+    # Link the arguments in the top level pipeline to the graph nodes and vice versa.
+    self.nodeToArgument = {}
+    self.argumentToNode = {}
+
   # Starting from the defined pipeline, process and validate the configuration file contents,
   # then dig down through all the nested pipelines and validate their configuration files.
   def getNestedPipelineData(self, path, filename):
@@ -55,6 +62,7 @@ class superpipelineClass:
     # Store the name of the tier 1 pipeline (e.g. the pipeline selected on the command line).
     self.tiersByPipeline[pipeline.name] = 1
     self.pipelinesByTier[1]             = [pipeline.name]
+    self.pipeline                       = pipeline.name
 
     # Now dig into the nested pipeline and build up the super pipeline structure.
     tier = 2
@@ -161,6 +169,35 @@ class superpipelineClass:
             else:
               if task not in self.tasks: print('superpipeline.checkContainedTasks - 4'); exit(0)
 
+  # Now that the graph is built, parse all of the arguments in the pipelines and associate them with
+  # the graph nodes and vice versa.
+  def assignNodesToArguments(self):
+    for tier in self.pipelinesByTier:
+
+      # If this is the top level pipeline, arguments associated with this pipeline can be set directly
+      # on the command line. Arguments for all nested pipelines require the address of the pipeline.
+      isTopLevel = True if tier == 1 else False
+
+      # Loop over the pipelines.
+      for pipeline in self.pipelinesByTier[tier]:
+
+        # Get the pipeline configuration data.
+        pipelineData = self.pipelineConfigurationData[pipeline]
+        for argument in pipelineData.longFormArguments:
+
+          # Get the pipeline address.
+          address = pipelineData.address
+
+          # Get the node that this argument is associated with and the graph node associated with
+          # the configuration node.
+          configurationNodeID = pipelineData.longFormArguments[argument].nodeID
+          nodeAddress         = address + '.' + configurationNodeID if address else configurationNodeID
+          graphNodeID         = self.configurationNodes[nodeAddress]
+
+          # Store the argument associated with the node along with the pipeline.
+          if graphNodeID not in self.nodeToArgument: self.nodeToArgument[str(graphNodeID)] = (str(pipeline), str(argument), isTopLevel)
+          if isTopLevel: self.argumentToNode[str(argument)] = str(graphNodeID)
+
   # Given a pipeline name and a node ID, return the node type (i.e. unique or shared).
   def getNodeType(self, pipeline, nodeID):
 
@@ -182,10 +219,11 @@ class superpipelineClass:
     # 'pipeline.task'. The tier one pipeline would just have the name of the task in the pipeline.
     namesList    = taskAddress.split('.')
     task         = namesList.pop()
-    pipelineName = '.'.join(namesList) if namesList else task
+    pipelineName = '.'.join(namesList) if namesList else self.pipeline
 
     # Get the pipeline configuration data for this pipeline.
-    return self.pipelineConfigurationData[pipelineName].getTaskAttribute(task, 'tool')
+    try: return self.pipelineConfigurationData[pipelineName].getTaskAttribute(task, 'tool')
+    except: return False
 
   # Return all the tools used in the superpipeline.
   def getTools(self):
@@ -210,3 +248,23 @@ class superpipelineClass:
   def getPipelineParameterSet(self, pipeline, parameterSet):
     try: return self.pipelineConfigurationData[pipeline].parameterSets.sets[parameterSet]
     except: return None
+
+  # Get a node attribute.
+  def getNodeAttribute(self, nodeID, attribute):
+
+    # Consider a task from a tier two pipeline. This would have an address of the form,
+    # 'pipeline.task'. The tier one pipeline would just have the name of the task in the pipeline.
+    namesList    = nodeID.split('.')
+    nestedNodeID = namesList.pop()
+    pipelineName = '.'.join(namesList) if namesList else self.pipeline
+    nodeType     = self.getNodeType(pipelineName, nestedNodeID)
+
+    # If this is a unique node, get the attribute.
+    if nodeType == 'unique':
+      try: return self.pipelineConfigurationData[pipelineName].getUniqueNodeAttribute(nestedNodeID, 'description')
+      except: return False
+
+    # If this is a shared node, get the attribute.
+    if nodeType == 'shared':
+      try: return self.pipelineConfigurationData[pipelineName].getSharedNodeAttribute(nestedNodeID, 'description')
+      except: return False

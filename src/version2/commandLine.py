@@ -128,7 +128,10 @@ class commandLine:
     return self.commands[0]
 
   # Process the command line arguments.
-  def processArguments(self, superpipeline, pipeline, gknoLongForms, gknoShortForms):
+  def processArguments(self, superpipeline, gknoLongForms, gknoShortForms):
+
+    # Get the name of the top level pipeline.
+    pipeline = superpipeline.pipeline
 
     # Loop over all of the supplied command line arguments, ensure that they are in their long form
     # versions and consolidate. Check that all of the arguments are valid for the pipeline being run
@@ -276,7 +279,7 @@ class commandLine:
             associatedNodeID = nodeID
             break
 
-        # Only check if the output nodes if the argument has not already been associated with an input node.
+        # Only check the output nodes if the argument has not already been associated with an input node.
         if not foundArgument:
           for nodeID in gr.pipelineGraph.CM_getOutputNodes(graph, taskAddress):
             longFormArgument = gr.pipelineGraph.CM_getArgumentAttribute(graph.graph, nodeID, taskAddress, 'longFormArgument')

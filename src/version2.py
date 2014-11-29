@@ -79,7 +79,6 @@ def main():
   # Dig down into the pipeline configuration files, validate the contents of the configuration files
   # and build the super pipeline tiered structure.
   superpipeline.getNestedPipelineData(pipelineConfigurationFilesPath, filename)
-  executedPipeline = superpipeline.pipelinesByTier[1][0]
 
   # Generate a list of all tasks, tools, unique and shared node IDs from all pipelines.
   superpipeline.setTools()
@@ -99,15 +98,17 @@ def main():
   # to build and modify it.
   graph = gr.pipelineGraph()
 
-  # Loop over the tiers of nested pipelines and build them into the graph and collate a list of all
-  # arguments associated with each pipeline, gkno arguments or pipeline tasks.
+  # Loop over the tiers of nested pipelines and build them into the graph.
   for tier in superpipeline.pipelinesByTier.keys():
     for pipelineName in superpipeline.pipelinesByTier[tier]:
       graph.buildPipelineTasks(superpipeline.pipelineConfigurationData[pipelineName], superpipeline)
-      superpipeline.pipelineConfigurationData[pipelineName].getArguments()
+
+  # Now that the graph is built, parse all of the arguments in the pipelines and associate them with the
+  # graph nodes and vice versa.
+  superpipeline.assignNodesToArguments()
 
   # Process the command line arguments.
-  command.processArguments(superpipeline, executedPipeline, gknoConfiguration.arguments, gknoConfiguration.shortForms)
+  command.processArguments(superpipeline, gknoConfiguration.arguments, gknoConfiguration.shortForms)
 
   # Generate the workflow.
   workflow = graph.generateWorkflow()
@@ -121,15 +122,15 @@ def main():
 
   # Determine the requested parameter set and add the parameters to the graph.
   parameterSet = command.getParameterSetName(command.gknoArguments)
-  if parameterSet: graph.addParameterSet(superpipeline, executedPipeline, parameterSet)
+  if parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, parameterSet)
 
-  # Parse the command line arguments and associate the argument values with the graph node.
+  # Parse the command line arguments and associate the supplied command line argument values with the graph node.
   command.parseTasksAsArguments(superpipeline)
   associatedNodes = command.associateArgumentsWithGraphNodes(graph.graph, superpipeline)
 
   # Create nodes for all of the defined arguments for which a node does not already exist and add the
   # argument values to the node.
-  graph.attachArgumentValuesToNodes(superpipeline, associatedNodes)
+  graph.attachArgumentValuesToNodes(superpipeline, command.pipelineArguments, associatedNodes)
 
   # Loop over all nodes and expand lists of arguments. This is only valid for arguments that are either options,
   # or inputs to a task that are not simulateously outputs of another task.
@@ -141,6 +142,10 @@ def main():
   # into the next tool expecting files with the extension 'vcf', then the node will be flagged as invalid for one
   # of the tools.
   dc.checkValues(graph, superpipeline)
+
+  # Loop over all of the nodes in the graph and ensure that all required arguments have been set. Any output files
+  # for which construction instructions are provided can be omitted from this check.
+  dc.checkRequiredArguments(graph, superpipeline)
 
   plot = pg.plotGraph()
   plot.plot(graph.graph.copy(), 'test.dot')

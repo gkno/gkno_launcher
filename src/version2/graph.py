@@ -669,7 +669,13 @@ class pipelineGraph:
 
   # Loop over all of the nodes for which arguments are defined on the command line and create the nodes
   # that are missing.
-  def attachArgumentValuesToNodes(self, superpipeline, nodeList):
+  def attachArgumentValuesToNodes(self, superpipeline, arguments, nodeList):
+
+    # Loop over all of the set pipeline arguments.
+    for argument in arguments:
+      values      = arguments[argument]
+      nodeAddress = superpipeline.argumentToNode[argument]
+      self.setGraphNodeAttribute(nodeAddress, 'values', values)
 
     # Loop over the list of nodes and extract those for which a node requires creating.
     for taskAddress, nodeAddress, tool, argument, values, isCreate in nodeList:
@@ -769,6 +775,13 @@ class pipelineGraph:
     except: return False
 
     return True
+
+  # Get the an argument attribute from graph edge.
+  def getArgumentAttribute(self, source, target, attribute):
+
+    # Get the argument attributes from the edge.
+    try: return getattr(self.graph[source][target]['attributes'], attribute)
+    except: return False
 
   # Check if an edge exists with the requested argument, either coming from or pointing into a given
   # task.

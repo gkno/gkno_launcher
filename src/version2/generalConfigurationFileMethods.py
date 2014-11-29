@@ -24,6 +24,13 @@ def checkForId(node, allowTermination):
     if allowTermination: print('generalConfig.checkForId - 1'); exit(0)
     return False
 
+# Check that the supplied dictionary has an id field.
+def checkForLongFormArgument(node, allowTermination):
+  try: return node['long form argument']
+  except:
+    if allowTermination: print('generalConfig.checkForLongFormArgument - 1'); exit(0)
+    return False
+
 # Check general attribute information.
 def checkAttributes(data, allowedAttributes, attributes, allowTermination, helpInfo):
   success = True
