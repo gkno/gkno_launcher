@@ -10,7 +10,7 @@ import json
 import os
 import sys
 
-# Define a class to store task attribtues.
+# Define a class to store task attributes.
 class superpipelineClass:
   def __init__(self, pipeline):
 

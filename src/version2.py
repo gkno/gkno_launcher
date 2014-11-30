@@ -9,6 +9,7 @@ import sys
 
 import version2.adminUtils as au
 import version2.commandLine as cl
+import version2.constructFilenames as construct
 import version2.dataConsistency as dc
 import version2.fileHandling as fh
 import version2.gknoConfiguration as gc
@@ -146,6 +147,17 @@ def main():
   # Loop over all of the nodes in the graph and ensure that all required arguments have been set. Any output files
   # for which construction instructions are provided can be omitted from this check.
   dc.checkRequiredArguments(graph, superpipeline)
+
+  # With the graph built, all arguments attached and checked, the final task prior to converting the graph to
+  # an executable is to construct filenames that have not been provided.
+  construct.constructFilenames(graph, superpipeline)
+
+  for task in graph.workflow:
+    print(task)
+    print('\tINPUTS')
+    for nodeID in graph.getPredecessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+    print('\tOUTPUTS')
+    for nodeID in graph.getSuccessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
 
   plot = pg.plotGraph()
   plot.plot(graph.graph.copy(), 'test.dot')

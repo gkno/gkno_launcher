@@ -3,7 +3,7 @@
 from __future__ import print_function
 import dataConsistencyErrors as er
 import superpipeline
-import graph
+import graph as gr
 
 import json
 import os
@@ -202,5 +202,14 @@ def checkRequiredArguments(graph, superpipeline):
               if not hasInstructions and not graph.getGraphNodeAttribute(nodeID, 'values'):
                 print('dataConsistency - checkRequiredArguments - output error', argument); exit(1)
 
-          # If no node exists for this argument, terminate.
-          if not foundNode and not hasInstructions: print('dataConsistency.checkRequiredArguments - no output node', task, argument); exit(1)
+          # If no node exists for this argument, determine the course of action.
+          if not foundNode:
+
+            # If there are no instructions for constructing the filename, terminate.
+            if not hasInstructions: print('dataConsistency.checkRequiredArguments - no output node', task, argument); exit(1)
+
+            # If there are instructions, but no node, construct the node.
+            nodeAddress        = str(task + '.' + argument.strip('-'))
+            argumentAttributes = toolData.getArgumentData(argument)
+            graph.graph.add_node(nodeAddress, attributes = gr.dataNodeAttributes('file'))
+            graph.graph.add_edge(task, nodeAddress, attributes = argumentAttributes)
