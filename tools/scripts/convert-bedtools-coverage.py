@@ -45,8 +45,6 @@ minRefSize = 0
 
 # Parse the file.
 refs       = {}
-bins       = []
-isFirstRef = True
 lastRef    = None
 for line in coverage:
 
@@ -58,36 +56,37 @@ for line in coverage:
     if lastRef and ref != lastRef: isFirstRef = False
     lastRef = ref
 
+    # Initialise the array.
+    if ref not in refs: refs[ref] = {}
+
     if int(valueBin) <= int(maxCoverage):
-  
-      # Store the name of the reference sequence.
-      if ref not in refs: refs[ref] = [ref]
 
       # Keep track of the minimum and maximum reference size.
       if int(length) > int(maxRefSize): maxRefSize = length
       if int(minRefSize) == 0 or int(length) < int(minRefSize): minRefSize = length
       if ref not in refLengths: refLengths[ref] = int(length)
 
-      # Store the bin values.
-      if isFirstRef: bins.append(valueBin)
-
       # Store the count.
-      refs[ref].append(count)
+      refs[ref][valueBin] = count
 
-# Check that all of the reference seqeunce lists have the same number of values.
-length = len(refs[refs.keys()[0]])
-for ref in refs:
-  if len(refs[ref]) != length: print('ERROR: Not all reference sequences have the same number of bins.'); exit(0)
+# Loop over each reference sequence and fill in missing values with zeros.
+fullRefs = {}
+for ref in requiredSequences:
+  fullRefs[ref] = [ref]
+  for counter in range(0, int(maxCoverage) + 1, 1):
+    try: readCount = refs[ref][str(counter)]
+    except: readCount = 0
+    fullRefs[ref].append(readCount)
 
 # Include the 'bin' reference sequence to provide the first column in the output.
 requiredSequences = ['bin'] + requiredSequences
-bins              = ['bin'] + bins
-refs['bin']       = bins
+bins              = ['bin'] + [valueBin for valueBin in range(0, int(maxCoverage) + 1, 1)]
+fullRefs['bin']   = bins
 
 # Write the ouptut, normalising if necessary.
-for counter in range(0, length, 1):
+for counter in range(0, int(maxCoverage) + 1, 1):
   for ref in requiredSequences:
-    value = refs[ref][counter]
+    value = fullRefs[ref][counter]
 
     # Normalise the values if required.
     if isNormalise and ref != 'bin' and counter != 0:
