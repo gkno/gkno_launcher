@@ -106,7 +106,7 @@
     },
     {
       "ID" : "x",
-      "description" : "The x axis label [bin].",
+      "description" : "The x axis label [coverage].",
       "long form argument" : "--x-label",
       "short form argument" : "-x",
       "tasks" : {
@@ -115,11 +115,20 @@
     },
     {
       "ID" : "y",
-      "description" : "The y axis label [value].",
+      "description" : "The y axis label [read count].",
       "long form argument" : "--y-label",
       "short form argument" : "-y",
       "tasks" : {
         "plot" : "--y-label"
+      }
+    },
+    {
+      "ID" : "legend",
+      "description" : "The legend title [reference sequence].",
+      "long form argument" : "--legend",
+      "short form argument" : "-l",
+      "tasks" : {
+        "plot" : "--legend"
       }
     }
   ],
@@ -137,7 +146,12 @@
         {
           "ID" : "ylab",
           "argument" : "--y-label",
-          "values" : ["read_count"]
+          "values" : ["'read count'"]
+        },
+        {
+          "ID" : "legend",
+          "argument" : "--legend",
+          "values" : ["'reference sequence'"]
         },
         {
           "ID" : "maxbin",

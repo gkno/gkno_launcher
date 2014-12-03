@@ -67,6 +67,15 @@
         "data type" : "string",
         "extensions" : ["no extension"],
         "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "The legend title [legend].",
+        "long form argument" : "--legend",
+        "short form argument" : "-l",
+        "command line argument" : "none",
+        "data type" : "string",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
       }
     ]
   },
@@ -76,7 +85,8 @@
     "--in",
     "--out",
     "--x-label",
-    "--y-label"
+    "--y-label",
+    "--legend"
   ],
 
   "parameter sets" : [
@@ -93,6 +103,11 @@
           "ID" : "y",
           "argument" : "--y-label",
           "values" : ["value"]
+        },
+        {
+          "ID" : "legend",
+          "argument" : "--legend",
+          "values" : ["legend"]
         }
       ]
     },
