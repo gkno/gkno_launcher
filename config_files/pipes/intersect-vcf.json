@@ -1,0 +1,176 @@
+{
+  "description" : "Call variants and combine into a single vcf file.",
+  "categories" : ["Variant-discovery"],
+
+  "tasks" : {
+    "intersect" : {
+      "tool" : "vcf-intersect",
+      "output to stream" : true
+    },
+    "compress" : {
+      "tool" : "bgzip-stream"
+    },
+    "index" : {
+      "tool" : "tabix-index-vcf"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "vcf",
+      "description" : "The input VCF file.",
+      "long form argument" : "--in",
+      "short form argument" : "-i",
+      "tasks" : {
+        "intersect" : "--in"
+      }
+    },
+    {
+      "ID" : "bed",
+      "description" : "Use intervals provided by this BED file.",
+      "long form argument" : "--bed",
+      "short form argument" : "-b",
+      "tasks" : {
+        "intersect" : "--bed"
+      }
+    },
+    {
+      "ID" : "intersect-vcf",
+      "description" : "Use this VCF for set intersection generation.",
+      "long form argument" : "--intersect-vcf",
+      "short form argument" : "-iv",
+      "tasks" : {
+        "intersect" : "--intersect-vcf"
+      }
+    },
+    {
+      "ID" : "union-vcf",
+      "description" : "Use this VCF for set union generation.",
+      "long form argument" : "--union-vcf",
+      "short form argument" : "-u",
+      "tasks" : {
+        "intersect" : "--union-vcf"
+      }
+    },
+    {
+      "ID" : "ref",
+      "description" : "The fasta reference.",
+      "long form argument" : "--fasta-reference",
+      "short form argument" : "-r",
+      "tasks" : {
+        "intersect" : "--fasta-reference"
+      }
+    },
+    {
+      "ID" : "invert",
+      "description" : "invert the selection, printing only records which would not have been printed out.",
+      "long form argument" : "--invert",
+      "short form argument" : "-v",
+      "tasks" : {
+        "intersect" : "--invert"
+      }
+    },
+    {
+      "ID" : "window",
+      "description" : "Compare records up to this many bp away (default 30).",
+      "long form argument" : "--window-size",
+      "short form argument" : "-w",
+      "tasks" : {
+        "intersect" : "--window-size"
+      }
+    },
+    {
+      "ID" : "loci",
+      "description" : "Output whole loci when one alternate allele matches.",
+      "long form argument" : "--loci",
+      "short form argument" : "-l",
+      "tasks" : {
+        "intersect" : "--loci"
+      }
+    },
+    {
+      "ID" : "ref-match",
+      "description" : "Intersect on the basis of record REF string.",
+      "long form argument" : "--reference-match",
+      "short form argument" : "-rm",
+      "tasks" : {
+        "intersect" : "--reference-match"
+      }
+    },
+    {
+      "ID" : "tag",
+      "description" : "Attach TAG to each record's info field if it would intersect.",
+      "long form argument" : "--tag",
+      "short form argument" : "-t",
+      "tasks" : {
+        "intersect" : "--tag"
+      }
+    },
+    {
+      "ID" : "tag-value",
+      "description" : "Use this value to indicate that the allele passes; '.' will be used otherwise.  default: 'PASS'",
+      "long form argument" : "--tag-value",
+      "short form argument" : "-tv",
+      "tasks" : {
+        "intersect" : "--tag-value"
+      }
+    },
+    {
+      "ID" : "compress",
+      "description" : "Compress the VCF file.",
+      "long form argument" : "--out",
+      "short form argument" : "-o",
+      "tasks" : {
+        "intersect" : "--out",
+        "compress" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "index",
+      "description" : "Index the VCF file.",
+      "tasks" : {
+        "compress" : "--out",
+        "index" : "--in"
+      }
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "The default parameter set sets all the parameters for the pipeline to run.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "bam",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "ID" : "ref",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
+        }
+      ]
+    },
+
+    {
+      "ID" : "human",
+      "description" : "Parameter set for the human genome.",
+      "nodes" : [
+        {
+          "ID" : "ref",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        }
+      ]
+    }
+  ]
+}
