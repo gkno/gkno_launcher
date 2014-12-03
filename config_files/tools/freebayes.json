@@ -68,6 +68,14 @@
         }
       },
       {
+        "description" : "Use variants reported in VCF file as input to the algorithm. Variants in this file will be treated as putative variants even if there is not enough support in the data to pass input filters.",
+        "long form argument" : "--variant-input",
+        "short form argument" : "-vi",
+        "command line argument" : "--variant-input",
+        "extensions" : [".vcf.gz"],
+        "data type" : "string"
+      },
+      {
         "description" : "Limit analysis to targets listed in the BED-format FILE.",
         "long form argument" : "--targets",
         "short form argument" : "-t",

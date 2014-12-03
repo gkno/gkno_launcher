@@ -569,7 +569,7 @@ class makefileData:
             self.errors.noFilesForToolStream(task, streamArguments[0], shortFormArgument)
 
         # Ensure that there is only a single value for this argument.
-        filenames = values[iteration] if iteration in values else values[0]
+        filenames = values[iteration] if iteration in values else values[1]
 
         #TODO ERROR
         if len(filenames) == 0:

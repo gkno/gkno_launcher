@@ -1,5 +1,5 @@
 {
-  "description" : "Realign a BAM file against the variant graph with glia.",
+  "description" : "Realign a BAM file against the variant graph with glia and call variants from the realigned BAM.",
   "hide in help" : true,
   "developmental" : true,
   "categories" : ["Alignment", "Variant-graph"],
@@ -10,10 +10,25 @@
       "output to stream" : true
     },
     "graph-align" : {
-      "tool" : "glia"
+      "tool" : "glia",
+      "output to stream" : true
     },
-    "merge" : {
-      "tool" : "bamtools-merge"
+    "sort" : {
+      "tool" : "samtools-sort",
+      "output to stream" : true
+    },
+    "call" : {
+      "tool" : "freebayes"
+    },
+    "combine" : {
+      "tool" : "vcf-combine-uncompressed",
+      "output to stream" : true
+    },
+    "compress" : {
+      "tool" : "bgzip-stream"
+    },
+    "index" : {
+      "tool" : "tabix-index-vcf"
     }
   },
 
@@ -51,7 +66,8 @@
       "long form argument" : "--fasta-reference",
       "short form argument" : "-r",
       "tasks" : {
-        "graph-align" : "--fasta-reference"
+        "graph-align" : "--fasta-reference",
+        "call" : "--fasta-reference"
       }
     },
     {
@@ -130,19 +146,54 @@
       "ID" : "sort",
       "description" : "Pass realigned reads to Freebayes",
       "tasks" : {
-        "graph-align" : "--out"
-      },
-      "greedy tasks" : {
-        "merge" : "--in"
+        "graph-align" : "--out",
+        "sort" : "--in"
       }
     },
     {
-      "ID" : "output",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
-      "description" : "The realigned BAM file.",
+      "ID" : "stdout",
+      "long form argument" : "--sort-to-stdout",
+      "short form argument" : "-ss",
+      "description" : "Output sorted file to stdout.",
       "tasks" : {
-        "merge" : "--out"
+        "sort" : "--output-to-stdout"
+      }
+    },
+    {
+      "ID" : "pass-to-call",
+      "description" : "Pass realigned reads to Freebayes",
+      "tasks" : {
+        "sort" : "--out",
+        "call" : "--in"
+      }
+    },
+    {
+      "ID" : "combine-freebayes",
+      "description" : "Combine the Freebayes VCF files.",
+      "tasks" : {
+        "call" : "--out"
+      },
+      "greedy tasks" : {
+        "combine" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "compress",
+      "description" : "Compress the Freebayes VCF file.",
+      "long form argument" : "--freebayes-out",
+      "short form argument" : "-f",
+      "tasks" : {
+        "combine" : "--out",
+        "compress" : "--in"
+      }
+    },
+    {
+      "ID" : "index",
+      "description" : "Index the Freebayes VCF file",
+      "tasks" : {
+        "compress" : "--out",
+        "index" : "--in"
       }
     }
   ],
@@ -186,6 +237,11 @@
           "ID" : "gap",
           "argument" : "--gap-count-max",
           "values" : [4]
+        },
+        {
+          "ID" : "sort",
+          "argument" : "--sort-to-stdout",
+          "values" : ["set"]
         }
       ]
     },

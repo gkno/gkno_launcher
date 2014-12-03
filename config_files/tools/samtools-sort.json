@@ -17,7 +17,12 @@
         "required" : true,
         "data type" : "string",
         "extensions" : [".bam"],
-        "modify argument name on command line" : "hide"
+        "modify argument name on command line" : "hide",
+        "if input is stream" : "replace",
+        "replace argument with" : {
+          "argument" : "-",
+          "value" : ""
+        }
       }
     ],
 
@@ -55,6 +60,14 @@
         "extensions" : ["no extension"]
       },
       {
+        "description" : "Send the final output to stdout.",
+        "long form argument" : "--output-to-stdout",
+        "short form argument" : "-s",
+        "command line argument" : "-o",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
         "description" : "Number of threads.",
         "long form argument" : "--threads",
         "short form argument" : "-t",
@@ -67,6 +80,7 @@
 
   "argument order" : [
     "--no-prefix",
+    "--output-to-stdout",
     "--threads",
     "--in",
     "--out"

@@ -308,9 +308,51 @@
       "description" : "Default parameter set requires the users input for all files.",
       "nodes" : [
         {
-          "ID" : "bam",
+          "ID" : "realign",
           "argument" : "--realign-bam",
           "values" : ["set"]
+        },
+        {
+          "ID" : "reverse complement",
+          "argument" : "--reverse-complement",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "unsorted output",
+          "argument" : "--unsorted-output",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "window",
+          "argument" : "--realignment-window",
+          "values" : [1500]
+        },
+        {
+          "ID" : "soft-clip",
+          "argument" : "--soft-clip-qsum-threshold",
+          "values" : [200]
+        },
+        {
+          "ID" : "mismatch",
+          "argument" : "--mismatch-qsum-threshold",
+          "values" : [200]
+        },
+        {
+          "ID" : "gap",
+          "argument" : "--gap-count-max",
+          "values" : [4]
+        }
+      ]
+    },
+
+    {
+      "ID" : "human",
+      "description" : "Parameter set for the human genome.",
+      "nodes" : [
+        {
+          "ID" : "ref",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
         }
       ]
     },
