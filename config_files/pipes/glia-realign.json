@@ -134,7 +134,8 @@
       },
       "greedy tasks" : {
         "merge" : "--in"
-      }
+      },
+      "delete files" : true
     },
     {
       "ID" : "output",

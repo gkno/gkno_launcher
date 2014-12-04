@@ -36,6 +36,9 @@
           "modify extension" : "replace",
           "modify text" : [
             {
+              "add text" : ["_"]
+            },
+            {
               "add argument values" : [
                 "--lower-count",
                 "--upper-count"
@@ -95,7 +98,18 @@
     {
       "ID" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : []
+      "nodes" : [
+        {
+          "ID" : "column",
+          "argument" : "--column",
+          "values" : ["set"]
+        },
+        {
+          "ID" : "tab",
+          "argument" : "--tab",
+          "values" : ["set"]
+        }
+      ]
     },
 
     {
