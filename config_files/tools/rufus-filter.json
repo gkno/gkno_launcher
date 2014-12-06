@@ -27,7 +27,12 @@
         "required" : true,
         "data type" : "string",
         "extensions" : [".fq", ".fq.gz", ".fastq", ".fastq.gz"],
-        "modify argument name on command line" : "hide"
+        "modify argument name on command line" : "hide",
+        "if input is stream" : "replace",
+        "replace argument with" : {
+          "argument" : "stdin",
+          "value" : ""
+        }
       }
     ],
 
@@ -78,7 +83,7 @@
       {
         "description" : "Hash count threshold.",
         "long form argument" : "--hash-threshold",
-        "short form argument" : "-t",
+        "short form argument" : "-ht",
         "command line argument" : "--hash-threshold",
         "required" : true,
         "data type" : "integer",
@@ -129,13 +134,6 @@
           "argument" : "--threads",
           "values" : [1]
         }
-      ]
-    },
-
-    {
-      "ID" : "test",
-      "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
       ]
     }
   ]

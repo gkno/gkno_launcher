@@ -1,0 +1,123 @@
+{
+  "description" : "Filter a fastq file based on a Rufus hash table.",
+  "developmental" : true,
+  "categories" : ["Reference-free"],
+
+  "tasks" : {
+    "stream" : {
+      "tool" : "zcat",
+      "output to stream" : true
+    },
+    "filter" : {
+      "tool" : "rufus-filter"
+    }
+  },
+
+  "nodes" : [
+    {
+      "ID" : "fastq",
+      "description" : "The input fastq file.",
+      "long form argument" : "--fastq",
+      "short form argument" : "-q",
+      "tasks" : {
+        "stream" : "--in"
+      }
+    },
+    {
+      "ID" : "rfastq",
+      "description" : "Pass the stream to Rufus.",
+      "tasks" : {
+        "stream" : "--out",
+        "filter" : "--fastq"
+      }
+    },
+    {
+      "ID" : "k-mer length",
+      "description" : "The k-mer length.",
+      "long form argument" : "--k-mer",
+      "short form argument" : "-k",
+      "tasks" : {
+        "filter" : "--k-mer"
+      }
+    },
+    {
+      "ID" : "hash-list",
+      "description" : "The Rufus build hash list.",
+      "long form argument" : "--hash-list",
+      "short form argument" : "-hl",
+      "tasks" : {
+        "filter" : "--in"
+      }
+    },
+    {
+      "ID" : "min bq",
+      "description" : "The minimum base quality for the Rufus filter step.",
+      "long form argument" : "--min-base-quality",
+      "short form argument" : "-mq",
+      "tasks" : {
+        "filter" : "--min-base-quality"
+      }
+    },
+    {
+      "ID" : "hash threshold",
+      "description" : "The hash count threshold.",
+      "long form argument" : "--hash-threshold",
+      "short form argument" : "-ht",
+      "tasks" : {
+        "filter" : "--hash-threshold"
+      }
+    },
+    {
+      "ID" : "window",
+      "description" : "The Rufus filter window size.",
+      "long form argument" : "--window",
+      "short form argument" : "-w",
+      "tasks" : {
+        "filter" : "--window"
+      }
+    },
+    {
+      "ID" : "processors rufus filter",
+      "description" : "The number of threads for the Rufus filter step.",
+      "long form argument" : "--threads",
+      "short form argument" : "-t",
+      "tasks" : {
+        "filter" : "--threads"
+      }
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "nodes" : [
+        {
+          "ID" : "k-mer",
+          "argument" : "--k-mer",
+          "values" : [23]
+        },
+        {
+          "ID" : "threads",
+          "argument" : "--threads",
+          "values" : [8]
+        },
+        {
+          "ID" : "min bq",
+          "argument" : "--min-base-quality",
+          "values" : [0]
+        },
+        {
+          "ID" : "hash threshold",
+          "argument" : "--hash-threshold",
+          "values" : [5]
+        },
+        {
+          "ID" : "window",
+          "argument" : "--window",
+          "values" : [10]
+        }
+      ]
+    }
+  ]
+}
