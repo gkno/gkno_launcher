@@ -41,27 +41,6 @@
           "use argument" : "--fastq",
           "modify extension" : "replace"
         }
-      },
-      {
-        "description" : "The output fastq and fastqd files.",
-        "long form argument" : "--stub",
-        "short form argument" : "-b",
-        "command line argument" : "none",
-        "required" : true,
-        "data type" : "string",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide",
-        "hide in help" : true,
-        "is filename stub" : true,
-        "filename extensions" : [
-          ".fastq",
-          ".fastqd"
-        ],
-        "construct filename" : {
-          "method": "from tool argument",
-          "use argument" : "--fastq",
-          "modify extension" : "replace"
-        }
       }
     ],
 
@@ -144,12 +123,11 @@
     "--minimum-percent-match",
     "--minimum-overlap",
     "--minimum-coverage",
-    "--out",
     "--hash-seed",
     "--number-shared-k-mers",
-    "--stub",
     "--trim-depth",
-    "--threads"
+    "--threads",
+    "--out"
   ],
 
   "parameter sets" : [
