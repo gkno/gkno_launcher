@@ -1,0 +1,68 @@
+{
+  "id" : "rufus-fastqd",
+  "description" : "Replace Q with D in FASTQD files produced by rufus-overlap-hash.",
+  "experimental" : true,
+  "categories" : ["FASTQ-processing", "Rufus", "Marthlab-software"],
+  "tools" : ["Rufus"],
+  "path" : "Rufus/bin",
+  "executable" : "ReplaceQwithDinFASTQD",
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "Input fastqd file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fastqd"],
+        "modify argument name on command line" : "hide"
+      }
+    ],
+
+    "outputs" : [
+      {
+        "description" : "The output fastqd file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fastqd"],
+        "modify argument name on command line" : "stdout",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_overlap"]
+            }
+          ]
+        }
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--in",
+    "--out"
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "nodes" : [
+      ]
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+      ]
+    }
+  ]
+}

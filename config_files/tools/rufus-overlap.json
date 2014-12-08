@@ -10,13 +10,13 @@
   "arguments" : {
     "inputs" : [
       {
-        "description" : "Input fastq file.",
-        "long form argument" : "--fastq",
-        "short form argument" : "-q",
+        "description" : "Input fastqd file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fq", ".fastq"],
+        "extensions" : [".fastqd"],
         "modify argument name on command line" : "hide"
       }
     ],
@@ -29,7 +29,7 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["rov"],
+        "extensions" : ["no extension"],
         "modify argument name on command line" : "hide",
         "is filename stub" : true,
         "filename extensions" : [
@@ -38,15 +38,20 @@
         ],
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--fastq",
-          "modify extension" : "replace"
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_overlap-region"]
+            }
+          ]
         }
       }
     ],
 
     "Options" : [
       {
-        "description" : "This string is prepended to all contigs in the output fastq file.",
+        "description" : "This string is prepended to all contigs in the output FASTQD file.",
         "long form argument" : "--stub",
         "short form argument" : "-s",
         "command line argument" : "none",
@@ -56,7 +61,7 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "This percentage of the overlapped bases must match.",
+        "description" : "The minimum percentage identity between the overlapped portion of two reads required to consider two reads similar and possible candidates for assembly. For example, a value of 0.98 will mean that no more than 2 mismatches out of 100 bases are allowed between the two reads.",
         "long form argument" : "--minimum-percent-match",
         "short form argument" : "-m",
         "command line argument" : "none",
@@ -66,7 +71,7 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "This number of bases must overlap between two reads.",
+        "description" : "The minimum overlap length between two reads in order to consider them a possible candidate for assembly.",
         "long form argument" : "--minimum-overlap",
         "short form argument" : "-mo",
         "command line argument" : "none",
@@ -76,7 +81,7 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "Only report contigs that have at least this coverage at one base in the contig.",
+        "description" : "Only report contigs that have at least this coverage at a minimum of one base in the contig.",
         "long form argument" : "--minimum-coverage",
         "short form argument" : "-mc",
         "command line argument" : "none",
@@ -86,9 +91,9 @@
         "modify argument name on command line" : "hide"
       },
       {
-        "description" : "LCendTrimEpth.",
-        "long form argument" : "--lc",
-        "short form argument" : "-l",
+        "description" : "When reading in a fastqd file, any previously overlapped contig will have any hanging ends less than this depth trimmed off (this reduces the effect of high quality singleton errors that can block extension of contigs).",
+        "long form argument" : "--trim-depth",
+        "short form argument" : "-d",
         "command line argument" : "--lc",
         "required" : true,
         "data type" : "integer",
@@ -109,13 +114,13 @@
   },
 
   "argument order" : [
-    "--fastq",
-    "--minimum-percent",
+    "--in",
+    "--minimum-percent-match",
     "--minimum-overlap",
     "--minimum-coverage",
-    "--stub",
     "--out",
-    "--lc",
+    "--stub",
+    "--trim-depth",
     "--threads"
   ],
 
@@ -125,9 +130,24 @@
       "description" : "Default parameter set requires the users input for all files.",
       "nodes" : [
         {
+          "ID" : "match",
+          "argument" : "--minimum-percent-match",
+          "values" : [0.95]
+        },
+        {
+          "ID" : "overlap",
+          "argument" : "--minimum-overlap",
+          "values" : [30]
+        },
+        {
+          "ID" : "trim",
+          "argument" : "--trim-depth",
+          "values" : [1]
+        },
+        {
           "ID" : "threads",
           "argument" : "--threads",
-          "values" : [1]
+          "values" : [8]
         }
       ]
     },

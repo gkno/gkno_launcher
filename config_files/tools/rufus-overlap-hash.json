@@ -16,7 +16,7 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fq", ".fastq"],
+        "extensions" : [".fq", ".fastq", ".fastqd"],
         "modify argument name on command line" : "hide"
       }
     ],
