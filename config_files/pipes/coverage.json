@@ -9,7 +9,10 @@
     "convert-to-txt" : {
       "tool" : "convert-bedtools-coverage"
     },
-    "plot" : {
+    "plot-absolute" : {
+      "tool" : "r-plot"
+    },
+    "plot-proportional" : {
       "tool" : "r-plot"
     }
   },
@@ -30,7 +33,8 @@
       "short form argument" : "-c",
       "description" : "Combine all positions with a depth >= max into a single bin in the histogram.",
       "tasks" : {
-        "calculate-coverage" : "--combine-max-depth"
+        "calculate-coverage" : "--combine-max-depth",
+        "convert-to-txt" : "--maximum-coverage-bin"
       }
     },
     {
@@ -51,12 +55,21 @@
       }
     },
     {
-      "ID" : "normalise",
+      "ID" : "raw",
+      "description" : "Plot the raw read counts, rather than the percentage of the reads with each coverage.",
+      "long form argument" : "--read-counts",
+      "short form argument" : "-r",
+      "tasks" : {
+        "convert-to-txt" : "--read-counts"
+      }
+    },
+    {
+      "ID" : "normalize",
       "description" : "Normalise the read counts based on the reference sequence length.",
-      "long form argument" : "--normalise",
+      "long form argument" : "--normalize",
       "short form argument" : "-n",
       "tasks" : {
-        "convert-to-txt" : "--normalise"
+        "convert-to-txt" : "--normalize"
       }
     },
     {
@@ -69,20 +82,20 @@
       }
     },
     {
-      "ID" : "max-bin",
-      "description" : "Only create bins for depth 1 to MAX.",
-      "long form argument" : "--maximum-coverage-bin",
-      "short form argument" : "-m",
-      "tasks" : {
-        "convert-to-txt" : "--maximum-coverage-bin"
-      }
-    },
-    {
       "ID" : "pass-to-r",
       "description" : "Pass the coverage text file to R.",
       "tasks" : {
-        "convert-to-txt" : "--out",
-        "plot" : "--in"
+        "convert-to-txt" : "--out-absolute",
+        "plot-absolute" : "--in"
+      },
+      "delete files" : true
+    },
+    {
+      "ID" : "pass-to-r2",
+      "description" : "Pass the coverage text file to R.",
+      "tasks" : {
+        "convert-to-txt" : "--out-proportional",
+        "plot-proportional" : "--in"
       },
       "delete files" : true
     },
@@ -90,36 +103,100 @@
       "ID" : "plot",
       "description" : "Plot the tab delimited file with R.",
       "long form argument" : "--r-script",
-      "short form argument" : "-r",
+      "short form argument" : "-rs",
       "tasks" : {
-        "plot" : "--script"
+        "plot-absolute" : "--script",
+        "plot-proportional" : "--script"
       }
     },
     {
       "ID" : "output",
-      "description" : "The output pdf coverage plot file.",
-      "long form argument" : "--out",
-      "short form argument" : "-o",
+      "description" : "The output pdf absolute coverage plot file.",
+      "long form argument" : "--out-absolute",
+      "short form argument" : "-oc",
       "tasks" : {
-        "plot" : "--out"
+        "plot-absolute" : "--out"
       }
     },
     {
-      "ID" : "x",
-      "description" : "The x axis label [coverage].",
-      "long form argument" : "--x-label",
-      "short form argument" : "-x",
+      "ID" : "output",
+      "description" : "The output pdf proportional coverage plot file.",
+      "long form argument" : "--out-proportional",
+      "short form argument" : "-op",
       "tasks" : {
-        "plot" : "--x-label"
+        "plot-proportional" : "--out"
       }
     },
     {
-      "ID" : "y",
-      "description" : "The y axis label [read count].",
-      "long form argument" : "--y-label",
-      "short form argument" : "-y",
+      "ID" : "min-x",
+      "description" : "The minimum value for the x axis for the absolute coverage plot [determined by data].",
+      "long form argument" : "--x-axis-minimum-absolute",
+      "short form argument" : "-xia",
       "tasks" : {
-        "plot" : "--y-label"
+        "plot-absolute" : "--x-axis-minimum"
+      }
+    },
+    {
+      "ID" : "max-x",
+      "description" : "The maximum value for the x axis for the absolute coverage plot [determined by data, or --combine-max-depth].",
+      "long form argument" : "--x-axis-maximum-absolute",
+      "short form argument" : "-xaa",
+      "tasks" : {
+        "plot-absolute" : "--x-axis-maximum"
+      }
+    },
+    {
+      "ID" : "min-x2",
+      "description" : "The minimum value for the x axis for the proportional coverage plot [determined by data].",
+      "long form argument" : "--x-axis-minimum-proportional",
+      "short form argument" : "-xip",
+      "tasks" : {
+        "plot-proportional" : "--x-axis-minimum"
+      }
+    },
+    {
+      "ID" : "max-x2",
+      "description" : "The maximum value for the x axis for the absolute coverage plot [determined by data, or --combine-max-depth].",
+      "long form argument" : "--x-axis-maximum-proportional",
+      "short form argument" : "-xap",
+      "tasks" : {
+        "plot-proportional" : "--x-axis-maximum"
+      }
+    },
+    {
+      "ID" : "xa",
+      "description" : "The x axis label for the absolute coverage plot [coverage].",
+      "long form argument" : "--x-label-absolute",
+      "short form argument" : "-xa",
+      "tasks" : {
+        "plot-absolute" : "--x-label"
+      }
+    },
+    {
+      "ID" : "ya",
+      "description" : "The y axis label for the absolute coverage plot [read count].",
+      "long form argument" : "--y-label-absolute",
+      "short form argument" : "-ya",
+      "tasks" : {
+        "plot-absolute" : "--y-label"
+      }
+    },
+    {
+      "ID" : "xp",
+      "description" : "The x axis label for the proportional coverage plot [coverage].",
+      "long form argument" : "--x-label-proportional",
+      "short form argument" : "-xp",
+      "tasks" : {
+        "plot-proportional" : "--x-label"
+      }
+    },
+    {
+      "ID" : "yp",
+      "description" : "The y axis label for the proportional coverage plot [read count].",
+      "long form argument" : "--y-label-proportional",
+      "short form argument" : "-yp",
+      "tasks" : {
+        "plot-proportional" : "--y-label"
       }
     },
     {
@@ -128,7 +205,8 @@
       "long form argument" : "--legend",
       "short form argument" : "-l",
       "tasks" : {
-        "plot" : "--legend"
+        "plot-absolute" : "--legend",
+        "plot-proportional" : "--legend"
       }
     }
   ],
@@ -139,14 +217,24 @@
       "description" : "The default parameter set sets all the parameters for the pipeline to run.",
       "nodes" : [
         {
-          "ID" : "xlab",
-          "argument" : "--x-label",
-          "values" : ["coverage"]
+          "ID" : "xlaba",
+          "argument" : "--x-label-absolute",
+          "values" : ["'coverage'"]
         },
         {
-          "ID" : "ylab",
-          "argument" : "--y-label",
+          "ID" : "ylaba",
+          "argument" : "--y-label-absolute",
           "values" : ["'read count'"]
+        },
+        {
+          "ID" : "xlabp",
+          "argument" : "--x-label-proportional",
+          "values" : ["'coverage'"]
+        },
+        {
+          "ID" : "ylabp",
+          "argument" : "--y-label-proportional",
+          "values" : ["'percentage of bases with coverage'"]
         },
         {
           "ID" : "legend",
@@ -154,8 +242,13 @@
           "values" : ["'reference sequence'"]
         },
         {
-          "ID" : "maxbin",
-          "argument" : "--maximum-coverage-bin",
+          "ID" : "xa",
+          "argument" : "--x-axis-maximum-absolute",
+          "values" : [100]
+        },
+        {
+          "ID" : "xp",
+          "argument" : "--x-axis-maximum-proportional",
           "values" : [100]
         },
         {

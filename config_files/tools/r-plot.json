@@ -51,6 +51,24 @@
 
     "options" : [
       {
+        "description" : "The minimum value for the x axis [determined by the data].",
+        "long form argument" : "--x-axis-minimum",
+        "short form argument" : "-xi",
+        "command line argument" : "none",
+        "data type" : "integer",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      },
+      {
+        "description" : "The maximum value for the x axis [determined by the data].",
+        "long form argument" : "--x-axis-maximum",
+        "short form argument" : "-xa",
+        "command line argument" : "none",
+        "data type" : "integer",
+        "extensions" : ["no extension"],
+        "modify argument name on command line" : "hide"
+      },
+      {
         "description" : "The x axis label [bin].",
         "long form argument" : "--x-label",
         "short form argument" : "-x",
@@ -86,7 +104,9 @@
     "--out",
     "--x-label",
     "--y-label",
-    "--legend"
+    "--legend",
+    "--x-axis-minimum",
+    "--x-axis-maximum"
   ],
 
   "parameter sets" : [
@@ -94,6 +114,16 @@
       "ID" : "default",
       "description" : "Default parameter set requires the users input for all files.",
       "nodes" : [
+        {
+          "ID" : "xmin",
+          "argument" : "--x-axis-minimum",
+          "values" : [-1]
+        },
+        {
+          "ID" : "xmax",
+          "argument" : "--x-axis-maximum",
+          "values" : [-1]
+        },
         {
           "ID" : "x",
           "argument" : "--x-label",

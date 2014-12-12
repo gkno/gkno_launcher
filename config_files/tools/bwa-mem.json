@@ -223,7 +223,7 @@
 
     "Input/output options" : [
       {
-        "description" : "Read group header line such as '@RG\tID:foo\tSM:bar' [null].",
+        "description" : "Read group header line such as '@RG\\tID:foo\\tSM:bar' [null]. The '\\t' in the example will be replaced with tabs in the BAM header.",
         "long form argument" : "--read-group-header",
         "short form argument" : "-R",
         "command line argument" : "-R",

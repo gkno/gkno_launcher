@@ -51,7 +51,7 @@
 
     "options" : [
       {
-        "description" : "Column format (default: false).",
+        "description" : "Column format (default: true).",
         "long form argument" : "--column",
         "short form argument" : "-c",
         "command line argument" : "--column",
@@ -59,7 +59,7 @@
         "extensions" : ["no extension"]
       },
       {
-        "description" : "Tab separator (default:false).",
+        "description" : "Tab separator (default: true).",
         "long form argument" : "--tab",
         "short form argument" : "-t",
         "command line argument" : "--tab",

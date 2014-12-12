@@ -33,14 +33,29 @@
 
     "outputs" : [
       {
-        "description" : "The converted coverage file.",
-        "long form argument" : "--out",
-        "short form argument" : "-o",
+        "description" : "The converted coverage file for the number of bases covered by a certain coverage.",
+        "long form argument" : "--out-absolute",
+        "short form argument" : "-oa",
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".txt"],
-        "modify argument name on command line" : "stdout",
+        "extensions" : [".coverage.txt"],
+        "modify argument name on command line" : "omit",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace"
+        }
+      },
+      {
+        "description" : "The converted coverage file showing the percentage of bases covered by at least a certain coverage.",
+        "long form argument" : "--out-proportional",
+        "short form argument" : "-ot",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".coverage.proportional.txt"],
+        "modify argument name on command line" : "omit",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -61,10 +76,18 @@
         "modify argument name on command line" : "hide"
       },
       {
+        "description" : "Plot the raw read count at each coverage value, rather than the percentage of reads with a particular coverage.",
+        "long form argument" : "--read-counts",
+        "short form argument" : "-r",
+        "command line argument" : "read-counts",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
         "description" : "Normalise the read counts by the reference sequence size. For example, in a histogram, the coverage on chr1 and chr22 may be identical, however, the count of reads in each bin will be much larger for chr1, since there are far more bases with that coverage.",
-        "long form argument" : "--normalise",
+        "long form argument" : "--normalize",
         "short form argument" : "-n",
-        "command line argument" : "normalise",
+        "command line argument" : "normalize",
         "data type" : "flag",
         "extensions" : ["no extension"]
       },
@@ -83,8 +106,10 @@
     "--reference-sequences",
     "--in",
     "--maximum-coverage-bin",
-    "--out",
-    "--normalise",
+    "--out-absolute",
+    "--out-proportional",
+    "--read-counts",
+    "--normalize",
     "--include-zero"
   ],
 
