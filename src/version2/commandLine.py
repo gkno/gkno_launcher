@@ -102,11 +102,14 @@ class commandLine:
   def determineMode(self, isAdmin):
     if isAdmin: return 'admin'
 
+    # Check if help for gkno specific arguments was requested.
+    if '--gkno-arguments' in self.arguments or '-gh' in self.arguments: return 'gkno help'
+
     # If help is requested, return the mode 'help'.
-    if '-h' in self.arguments or '--help' in self.arguments: return 'help'
+    if '--help' in self.arguments or '-h' in self.arguments: return 'help'
 
     # If no information is provided (e.g. no admin, tool or pipeline), return 'help' as the mode.
-    if len(self.commands) <= 1 and len(self.arguments) == 0: return 'help'
+    if len(self.commands) == 0 and len(self.arguments) == 0: return 'help'
 
     # If none of the above, return 'run',
     return 'run'
@@ -126,6 +129,10 @@ class commandLine:
 
     # Return the pipeline name.
     return self.commands[0]
+
+  # Check if information on help categories is provided. If so, return the help category.
+  def getHelpCategory(self):
+    print('NOT HANDLED HELP CATEGORIES')
 
   # Process the command line arguments.
   def processArguments(self, superpipeline, gknoLongForms, gknoShortForms):

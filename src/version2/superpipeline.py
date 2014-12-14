@@ -169,35 +169,6 @@ class superpipelineClass:
             else:
               if task not in self.tasks: print('superpipeline.checkContainedTasks - 4'); exit(0)
 
-  # Now that the graph is built, parse all of the arguments in the pipelines and associate them with
-  # the graph nodes and vice versa.
-  def assignNodesToArguments(self):
-    for tier in self.pipelinesByTier:
-
-      # If this is the top level pipeline, arguments associated with this pipeline can be set directly
-      # on the command line. Arguments for all nested pipelines require the address of the pipeline.
-      isTopLevel = True if tier == 1 else False
-
-      # Loop over the pipelines.
-      for pipeline in self.pipelinesByTier[tier]:
-
-        # Get the pipeline configuration data.
-        pipelineData = self.pipelineConfigurationData[pipeline]
-        for argument in pipelineData.longFormArguments:
-
-          # Get the pipeline address.
-          address = pipelineData.address
-
-          # Get the node that this argument is associated with and the graph node associated with
-          # the configuration node.
-          configurationNodeID = pipelineData.longFormArguments[argument].nodeID
-          nodeAddress         = address + '.' + configurationNodeID if address else configurationNodeID
-          graphNodeID         = self.configurationNodes[nodeAddress]
-
-          # Store the argument associated with the node along with the pipeline.
-          if graphNodeID not in self.nodeToArgument: self.nodeToArgument[str(graphNodeID)] = (str(pipeline), str(argument), isTopLevel)
-          if isTopLevel: self.argumentToNode[str(argument)] = str(graphNodeID)
-
   # Given a pipeline name and a node ID, return the node type (i.e. unique or shared).
   def getNodeType(self, pipeline, nodeID):
 

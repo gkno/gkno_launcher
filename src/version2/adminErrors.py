@@ -13,6 +13,9 @@ class adminErrors:
   # Initialise.
   def __init__(self):
 
+    # Errors encountered with the admin portion of gkno generate an error code of '2'.
+    # The error codes associated with other aspects of the code are as follows:
+    #
     # Admin errors generate an error code of '2'.
     # Command line errors generate an error code of '3'.
     # File handling errors generate an error code of '4'.
@@ -20,6 +23,9 @@ class adminErrors:
     # Tool configuration file errors generate an error code of '6'.
     # Pipeline configuration file errors generate an error code of '7'.
     # Errors associated with the graph construction generate an error code of '8'.
+    # Errors associated with handling arguments generate an error code of '9'.
+    # Data consistency errors generate an error code of '10'.
+    # Error coming from help requests generate an error code of '11'.
     self.errorCode = '2'
 
   #####################

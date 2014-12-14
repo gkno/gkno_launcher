@@ -8,12 +8,14 @@ import subprocess
 import sys
 
 import version2.adminUtils as au
+import version2.arguments as ag
 import version2.commandLine as cl
 import version2.constructFilenames as construct
 import version2.dataConsistency as dc
 import version2.fileHandling as fh
 import version2.gknoConfiguration as gc
 import version2.graph as gr
+import version2.helpInformation as hp
 import version2.plotGraph as pg
 import version2.toolConfiguration as tc
 import version2.pipelineConfiguration as pc
@@ -27,6 +29,9 @@ def main():
 
   # Define a class for processing the command line.
   command = cl.commandLine()
+
+  # Define a help class.
+  gknoHelp = hp.helpInformation()
 
    # Define the source path of all the gkno machinery.
   sourcePath                     = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno.py')]
@@ -63,8 +68,14 @@ def main():
   # 'pipeline' is used throughout for both cases.
   if not isAdminMode: pipeline = command.determinePipeline()
 
+  # Otherwise, handle the admin functions.
+  else: print('NOT HANDLED ADMIN'); exit(0)
+
+  # If the pipeline name has not been supplied, general help must be required.
+  if not pipeline: gknoHelp.generalHelp(admin)
+
   # Get the path to the pipeline and configuration file.
-  filename, isTool = files.checkPipeline(toolConfigurationFilesPath, pipelineConfigurationFilesPath, pipeline)
+  filename = files.checkPipeline(toolConfigurationFilesPath, pipelineConfigurationFilesPath, pipeline)
 
   # Initialise the gkno specific configuration file.
   gknoConfiguration = gc.gknoConfiguration(configurationFilesPath)
@@ -72,10 +83,6 @@ def main():
   # Generate a super pipeline class that holds information about the full collection of all nested
   # pipeline.
   superpipeline = sp.superpipelineClass(filename)
-
-  # If the pipeline is really a single tool, set up the super pipeline.
-  # TODO HANDLE TOOLS
-  if isTool: print('NOT HANDLED TOOLS'); exit(0)
 
   # Dig down into the pipeline configuration files, validate the contents of the configuration files
   # and build the super pipeline tiered structure.
@@ -104,9 +111,37 @@ def main():
     for pipelineName in superpipeline.pipelinesByTier[tier]:
       graph.buildPipelineTasks(superpipeline.pipelineConfigurationData[pipelineName], superpipeline)
 
+  # Create an arguments object. This will be populated with all of the arguments available for this
+  # pipeline along with associated functions. Add all of the top level pipeline arguments to this
+  # object.
+  args = ag.arguments()
+  args.addPipelineArguments(superpipeline.pipelineConfigurationData[superpipeline.pipeline].longFormArguments)
+
   # Now that the graph is built, parse all of the arguments in the pipelines and associate them with the
   # graph nodes and vice versa.
-  superpipeline.assignNodesToArguments()
+  args.assignNodesToArguments(superpipeline)
+
+  # If the main pipeline lists a tool whose arguments should be imported, check that the listed tool is
+  # valid, that none of the arguments conflict with the pipeline and then add the arguments to the
+  # allowed arguments.
+  args.importArguments(superpipeline)
+
+  # If help was requested, print out the relevent help information.
+  # TODO ADMIN HELP
+  if mode == 'help' or mode == 'gkno help':
+
+    # Write out help categories.
+    if command.getHelpCategory(): gknoHelp.categoryHelp()
+
+    # Write out help on gkno specific (e.g. not associated with a specific pipeline) arguments.
+    elif mode == 'gkno help': gknoHelp.gknoArgumentHelp()
+
+    # Otherwise, write out help for the pipeline being run.
+    else: gknoHelp.pipelineHelp(args)
+  
+  for argument in args.arguments:
+    print('TEST', argument, args.arguments[argument].description, args.arguments[argument].graphNodeID)
+  exit(0)
 
   # Process the command line arguments.
   command.processArguments(superpipeline, gknoConfiguration.arguments, gknoConfiguration.shortForms)

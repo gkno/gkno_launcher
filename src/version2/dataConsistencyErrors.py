@@ -22,15 +22,8 @@ class consistencyErrors:
     # The error messages are stored in the following list.
     self.text = []
 
-    # Admin errors generate an error code of '2'.
-    # Command line errors generate an error code of '3'.
-    # File handling errors generate an error code of '4'.
-    # General configuration file errors generate an error code of '5'.
-    # Tool configuration file errors generate an error code of '6'.
-    # Pipeline configuration file errors generate an error code of '7'.
-    # Errors associated with the graph construction generate an error code of '8'.
-    # Data consistency errors generate an error code of '9'.
-    self.errorCode = '9'
+    # For a list of all error code values, see adminErrors.py.
+    self.errorCode = '10'
 
   # If a command line argument is given a value with an incorrect extension.
   def invalidExtension(self, longFormArgument, value, extensions):

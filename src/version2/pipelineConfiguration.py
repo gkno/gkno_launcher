@@ -22,6 +22,9 @@ class taskAttributes:
 class pipelineArguments:
   def __init__(self):
 
+    # Store the description for the argument.
+    self.description = 'No description'
+
     # Define the long and short form of the argument.
     self.longFormArgument  = None
     self.shortFormArgument = None
@@ -35,10 +38,6 @@ class sharedGraphNodes:
 
     # An id for the node.
     self.id = None
-
-    # A description for the node. If the node is associated with an argument, this description
-    # will appear as the help message.
-    self.description = 'No description'
 
     # Define arguments.
     self.longFormArgument  = None
@@ -75,10 +74,6 @@ class uniqueGraphNodes:
 
     # An id for the node.
     self.id = None
-
-    # A description for the node. If the node is associated with an argument, this description
-    # will appear as the help message.
-    self.description = 'No description'
 
     # Define arguments.
     self.longFormArgument  = None
@@ -145,6 +140,10 @@ class pipelineConfiguration:
     # used in this pipeline.
     self.hasPipelineAsTask = False
     self.requiredPipelines = []
+
+    # If there is a request to import argument from a tool, store the name of the tool. This tool
+    # will not be checked for validity, that is left to the methods that use the tool.
+    self.importArgumentsFromTool = None
 
     # If the pipeline is nested within other pipelines, the nodes associated with this pipeline
     # have an address to locate them within the graph structure. For example, if the main pipeline
@@ -216,6 +215,7 @@ class pipelineConfiguration:
     allowedAttributes['description']             = (str, True, True, 'description')
     allowedAttributes['categories']              = (list, True, True, 'categories')
     allowedAttributes['connect nodes to tasks' ] = (list, False, False, None)
+    allowedAttributes['import arguments']        = (str, False, True, 'importArgumentsFromTool')
     allowedAttributes['parameter sets']          = (list, True, False, None)
     allowedAttributes['pipeline tasks']          = (list, True, False, None)
     allowedAttributes['shared graph nodes']      = (list, False, False, None)
@@ -286,11 +286,10 @@ class pipelineConfiguration:
     if 'unique graph nodes' not in data: return
 
     # Define the allowed nodes attributes.
-    allowedAttributes                           = {}
-    allowedAttributes['id']                     = (str, True, True, 'id')
-    allowedAttributes['description']            = (str, True, True, 'description')
-    allowedAttributes['task']                   = (str, True, True, 'task')
-    allowedAttributes['task argument']          = (str, False, True, 'taskArgument')
+    allowedAttributes                  = {}
+    allowedAttributes['id']            = (str, True, True, 'id')
+    allowedAttributes['task']          = (str, True, True, 'task')
+    allowedAttributes['task argument'] = (str, False, True, 'taskArgument')
 
     # Loop over all of the defined nodes.
     for uniqueNode in data['unique graph nodes']:
@@ -331,7 +330,6 @@ class pipelineConfiguration:
     allowedAttributes                           = {}
     allowedAttributes['arguments sharing node'] = (list, True, True, 'nodes')
     allowedAttributes['id']                     = (str, True, True, 'id')
-    allowedAttributes['description']            = (str, True, True, 'description')
 
     # Loop over all of the defined nodes.
     for sharedNode in data['shared graph nodes']:
@@ -402,6 +400,7 @@ class pipelineConfiguration:
 
     # Define the allowed nodes attributes.
     allowedAttributes                        = {}
+    allowedAttributes['description']         = (str, True, True, 'description')
     allowedAttributes['long form argument']  = (str, True, True, 'longFormArgument')
     allowedAttributes['node id']             = (str, True, True, 'nodeID')
     allowedAttributes['short form argument'] = (str, True, True, 'shortFormArgument')

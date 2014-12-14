@@ -26,24 +26,14 @@ class fileHandling:
   # pipeline is a tool.
   def checkPipeline(self, toolsPath, pipelinesPath, pipeline):
                                                                              
-    # If the requested pipeline is valid, return the path to the configuration file and False.
-    # The returned Boolean defines if the pipeline is a tool.
-    if self.checkIfPipeline(pipeline): return pipelinesPath + pipeline + '.json', False
-    elif self.checkIfTool(pipeline): return toolsPath + pipeline + '.json', True
+    # If the requested pipeline is valid, return the path to the configuration file.
+    if pipeline in  self.pipelines: return pipelinesPath + pipeline + '.json'
 
     # If the requested pipeline is invalid, terminate.
     else:
-      closestTools, closestPipelines = stringComparisons.findClosestPipelines(self.tools, self.pipelines, pipeline)
-      self.errors.invalidPipelineName(closestTools, closestPipelines, pipeline)
+      closestPipelines = stringComparisons.findClosestPipelines(self.pipelines, pipeline)
+      self.errors.invalidPipelineName(closestPipelines, pipeline)
   
-  # Check if the requested pipeline is a valid pipeline.
-  def checkIfPipeline(self, pipeline):
-    return pipeline in self.pipelines
-  
-  # Check if the requested pipeline is a valid tool.
-  def checkIfTool(self, pipeline):
-    return pipeline in self.tools
-
   ######################
   ### Static methods ###
   ######################
