@@ -47,8 +47,8 @@ class argumentAttributes:
     # Record if this argument should be hidden in the help.
     self.hideInHelp = False
 
-    # Record the argument group to which the argument belongs.
-    self.argumentGroup = None
+    # Record the category to which the argument belongs.
+    self.category = None
 
     # Record if the argument is for an input or output file.
     self.isInput  = False
@@ -206,10 +206,10 @@ class toolConfiguration:
     allowedAttributes['suggestible']           = (bool, False, True, 'isSuggestible')
 
     # Return if there are no input arguments.
-    if 'inputs' not in arguments: return
+    if 'Inputs' not in arguments: return
 
     # Check the arguments.
-    self.checkArguments(arguments['inputs'], allowedAttributes, isInput = True, isOutput = False)
+    self.checkArguments('Inputs', arguments['Inputs'], allowedAttributes, isInput = True, isOutput = False)
 
   # Validate the contents of all input arguments.
   def checkOutputArguments(self, arguments):
@@ -230,10 +230,10 @@ class toolConfiguration:
     allowedAttributes['is filename stub']      = (bool, False, True, 'isStub')
 
     # Return if there are no input arguments.
-    if 'outputs' not in arguments: return
+    if 'Outputs' not in arguments: return
 
     # Check the arguments.
-    self.checkArguments(arguments['outputs'], allowedAttributes, isInput = False, isOutput = True)
+    self.checkArguments('Outputs', arguments['Outputs'], allowedAttributes, isInput = False, isOutput = True)
 
   # Validate the contents of all input arguments.
   def checkRemainingArguments(self, arguments):
@@ -252,13 +252,13 @@ class toolConfiguration:
 
     # Loop over all the other categories of arguments.
     for category in arguments:
-      if category != 'inputs' and category != 'outputs':
+      if category != 'Inputs' and category != 'Outputs':
 
         # Check the arguments.
-        self.checkArguments(arguments[category], allowedAttributes, isInput = False, isOutput = False)
+        self.checkArguments(category, arguments[category], allowedAttributes, isInput = False, isOutput = False)
 
   # Check the contents of the arguments.
-  def checkArguments(self, arguments, allowedAttributes, isInput, isOutput):
+  def checkArguments(self, category, arguments, allowedAttributes, isInput, isOutput):
 
     # Loop over all of the input arguments and check their validity.
     for argumentInformation in arguments:
@@ -279,6 +279,9 @@ class toolConfiguration:
         else:
           self.success = False
           return
+
+      # Define the argument category.
+      attributes.category = category
 
       # Store the attributes for the argument.
       if isInput: attributes.isInput = True

@@ -210,6 +210,15 @@ class superpipelineClass:
     try: return self.toolConfigurationData[tool].parameterSets.sets[parameterSet]
     except: return None
 
+  # Get a tool argument attribute.
+  def getToolArgumentAttribute(self, tool, argument, attribute):
+    try: return self.toolConfigurationData[tool].getArgumentAttribute(argument, attribute)
+    except: return False
+
+  # Return all the arguments for a tool.
+  def getToolArguments(self, tool):
+    return self.toolConfigurationData[tool].arguments
+
   # Return pipeline data.
   def getPipelineData(self, pipeline):
     try: return self.pipelineConfigurationData[pipeline]

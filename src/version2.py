@@ -124,7 +124,10 @@ def main():
   # If the main pipeline lists a tool whose arguments should be imported, check that the listed tool is
   # valid, that none of the arguments conflict with the pipeline and then add the arguments to the
   # allowed arguments.
-  args.importArguments(superpipeline)
+  args.importArguments(graph, superpipeline)
+
+  # Generate the workflow.
+  workflow = graph.generateWorkflow()
 
   # If help was requested, print out the relevent help information.
   # TODO ADMIN HELP
@@ -134,20 +137,13 @@ def main():
     if command.getHelpCategory(): gknoHelp.categoryHelp()
 
     # Write out help on gkno specific (e.g. not associated with a specific pipeline) arguments.
-    elif mode == 'gkno help': gknoHelp.gknoArgumentHelp()
+    elif mode == 'gkno help': gknoHelp.gknoArgumentHelp(gknoConfiguration.arguments)
 
     # Otherwise, write out help for the pipeline being run.
-    else: gknoHelp.pipelineHelp(args)
+    else: gknoHelp.pipelineHelp(superpipeline, graph, args.arguments)
   
-  for argument in args.arguments:
-    print('TEST', argument, args.arguments[argument].description, args.arguments[argument].graphNodeID)
-  exit(0)
-
   # Process the command line arguments.
   command.processArguments(superpipeline, gknoConfiguration.arguments, gknoConfiguration.shortForms)
-
-  # Generate the workflow.
-  workflow = graph.generateWorkflow()
 
   # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
   # the nodes with these task level default parameter sets, creating nodes where necessary.
@@ -157,8 +153,8 @@ def main():
   graph.addPipelineParameterSets(superpipeline, 'default')
 
   # Determine the requested parameter set and add the parameters to the graph.
-  parameterSet = command.getParameterSetName(command.gknoArguments)
-  if parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, parameterSet)
+  #parameterSet = command.getParameterSetName(command.gknoArguments)
+  #if parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, parameterSet)
 
   # Parse the command line arguments and associate the supplied command line argument values with the graph node.
   command.parseTasksAsArguments(superpipeline)
@@ -181,7 +177,7 @@ def main():
 
   # Loop over all of the nodes in the graph and ensure that all required arguments have been set. Any output files
   # for which construction instructions are provided can be omitted from this check.
-  dc.checkRequiredArguments(graph, superpipeline)
+  #dc.checkRequiredArguments(graph, superpipeline)
 
   # With the graph built, all arguments attached and checked, the final task prior to converting the graph to
   # an executable is to construct filenames that have not been provided.

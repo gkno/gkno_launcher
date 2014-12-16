@@ -38,3 +38,45 @@ class argumentErrors:
     'replace the tool name with a tool available in the pipeline.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  # If the long and short form version of a tool argument conflict with arguments for the pipeline,
+  # this is likely because the tool whose arguments are being imported has a standard argument that 
+  # is also defined at the pipeline level (e.g. an  argument such as --region, -rg is standardised
+  # across all tools using a region). The resolution to this is to either link the pipeline argument
+  # to the relevant node in the graph, or create a unique node in the pipeline that can be addressed
+  # with a new argument.
+  def importedArgumentIsDefined(self, task, tool, pipeline, longFormArgument, shortFormArgument):
+    self.text.append('Imported tool argument conflicts with a pipeline argument.')
+    self.text.append('Arguments for the task \'' + task + '\' using tool \'' + tool + '\' are being imported to be available on the command ' + \
+    'line for the pipeline \'' + pipeline + '\'. The tool and pipeline share the argument \'' + longFormArgument + ' (' + shortFormArgument + \
+    ')\'. It is likely that if these arguments are shared, they perform the same function. In order to operate, this conflict must be resolved ' + \
+    'by one of the following steps')
+    self.text.append('\t')
+    self.text.append('1. Identify the graph node that the pipeline argument points to with the tool, so that the tool shares the value supplied ' + \
+    'by the pipeline argument.')
+    self.text.append('\t')
+    self.text.append('2. If the value for the tool is not shared with other tasks in the pipeline, create a unique node in the pipeline ' + \
+    'configuration file and identify a new (unique) argument for this node. This node can then be identified with the tool argument.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # The long form of an argument being imported from a tool conflicts with a pipeline argument.
+  def importedArgumentLongFormConflict(self, task, tool, pipeline, argument):
+    self.text.append('Imported tool argument conflicts with a pipeline argument.')
+    self.text.append('Arguments for the task \'' + task + '\' using tool \'' + tool + '\' are being imported to be available on the command ' + \
+    'line for the pipeline \'' + pipeline + '\'. Both the pipeline and the tool have an argument with the long form \'' + argument + '\'. In ' + \
+    'order to avoid ambiguity, all arguments (both long and short form versions) must be unique. Please modify the argument in the pipeline ' + \
+    'configuration, to ensure that there are no conflicts with the imported tool arguments.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # The short form of an argument being imported from a tool conflicts with a pipeline argument.
+  def importedArgumentShortFormConflict(self, task, tool, pipeline, argument, shortFormArgument, pipelineArgument):
+    self.text.append('Imported tool argument conflicts with a pipeline argument.')
+    self.text.append('Arguments for the task \'' + task + '\' using tool \'' + tool + '\' are being imported to be available on the command ' + \
+    'line for the pipeline \'' + pipeline + '\'. The tool has an argument \'' + argument + '\' with the short form \'' + shortFormArgument + \
+    '\'. The pipeline argument \'' + pipelineArgument + '\' shares this short form. In order to avoid ambiguity, all arguments (both long ' + \
+    'and short form versions) must be unique. Please modify the argument in the pipeline configuration, to ensure that there are no conflicts ' + \
+    'with the imported tool arguments.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

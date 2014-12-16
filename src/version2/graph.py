@@ -51,6 +51,9 @@ class dataNodeAttributes:
     # Define the node type.
     self.nodeType = nodeType
 
+    # Record if values for this node are required.
+    self.isRequired = False
+
     # Store values for this node.
     self.values = []
 
@@ -191,13 +194,13 @@ class pipelineGraph:
 
       # Loop over the sharedNodes until it is empty.
       while sharedNodes:
-        pipelineName, sharedNodeID = sharedNodes.pop()
+        name, sharedNodeID = sharedNodes.pop()
 
         # Loop over all the tasks sharing this node.
-        for taskInformation in superpipeline.pipelineConfigurationData[pipelineName].getSharedNodeTasks(sharedNodeID):
+        for taskInformation in superpipeline.pipelineConfigurationData[name].getSharedNodeTasks(sharedNodeID):
 
           # Get the address of this pipeline.
-          pipelineAddress = superpipeline.pipelineConfigurationData[pipelineName].address
+          pipelineAddress = superpipeline.pipelineConfigurationData[name].address
 
           # Get the task information
           externalNodeID = taskInformation.externalNodeID

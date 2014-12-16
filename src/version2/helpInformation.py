@@ -7,6 +7,7 @@ import helpErrors as err
 
 import os
 import sys
+import textwrap
 
 class helpInformation:
   def __init__(self):
@@ -28,65 +29,20 @@ class helpInformation:
     self.helpCategories['VCF-processing']    = 'Process VCF files.'
     self.helpCategories['Visualisation']     = 'Visualisation and plotting pipelines.'
 
-#    # Record whether help is required.
-#    self.writeHelp = False
-#
-#    # Suppress writing out header.
-#    self.suppressHeader = False
-#
-#    # Store if all tools/pipelines are to be written to screen.
-#    self.allTools     = False
-#    self.allPipelines = False
-#
-#    # Decide if help is required for tools/pipelines or all.
-#    self.toolHelp     = False
-#    self.pipelineHelp = False
-#
-#    # Keep track of whether help on a specific pipeline was requested.
-#    self.specificPipelineHelp = False
-#
-#    # Determine if the help is sorted at the category or tool level.
-#    self.helpCategories = False
-#
-#    # Store if help on admin features was requested.
-#    self.adminHelp = False
-#
-#    # Store information on available categories and groups.
-#    self.availableToolCategories     = {}
-#    self.availableToolGroups         = {}
-#    self.availablePipelineCategories = {}
-#
-#    # Store the category for which constituent tools/pipelines should be printed.
-#    self.requestedCategory = None
-#
-#    # Store information on the available tools and pipelines.
-#    self.availablePipelines   = {}
-#    self.availableTools       = {}
-#    self.invalidPipeline      = False
-#    self.invalidTool          = False
-#    self.pipelineLength       = 0
-#    self.toolLength           = 0
-#
-#    # Keep track of tools with malformed configuration files.
-#    self.failedTools     = {}
-#    self.failedPipelines = {}
-#
-#    # Keep track of experimental tools and pipelines.
-#    self.experimentalTools      = {}
-#    self.developmentalPipelines = {}
-#
-#    # Define the allowed tool/pipeline categories and groups.
-#    self.defineToolCategories()
-#    self.definePipelineCategories()
+    # Create a text wrapper object to handle writing strings to a fixed width screen.
+    self.wrap = textwrap.TextWrapper(initial_indent = '   ')
+
+    # Define the maximum width of a line. THis will be modified by including tabs.
+    self.width = 100
 
   # Provide general help.
   def generalHelp(self, admin):
     print(file = sys.stdout)
-    print('The gkno package can be run in the following modes:', file = sys.stdout)
-    print('     ADMIN mode:    allows management of gkno and it\'s resources,', file = sys.stdout)
-    print('     PIPELINE mode: executes a predetermined pipeline', file = sys.stdout)
+    self.writeSimpleLine('The gkno package can be run in the following modes:', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('ADMIN mode:    allows management of gkno and it\'s resources,', isIndent = False, noLeadingTabs = 1)
+    self.writeSimpleLine('PIPELINE mode: executes a predetermined pipeline', isIndent = False, noLeadingTabs = 1)
     print(file = sys.stdout)
-    print('See below for usage instructions for each mode.', file = sys.stdout)
+    self.writeSimpleLine('See below for usage instructions for each mode.', isIndent = False, noLeadingTabs = 0)
     print(file = sys.stdout)
 
     # Write out admin help.
@@ -100,63 +56,242 @@ class helpInformation:
 
   # Print usage information on the admin mode of operation.
   def adminModeUsage(self, admin):
-    print('  ==================', file = sys.stdout)
-    print('  =   admin mode   =', file = sys.stdout)
-    print('  ==================', file = sys.stdout)
+    self.writeSimpleLine('================', isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('=  admin mode  =', isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('================', isIndent = True, noLeadingTabs = 0)
     print(file = sys.stdout)
-    print('  Usage: gkno <admin operation> [options]', file = sys.stdout)
+    self.writeSimpleLine('Usage: gkno <admin operation> [options]', isIndent = True, noLeadingTabs = 0)
     print(file = sys.stdout)
-    print('     <admin operation>:', file = sys.stdout)
+    self.writeSimpleLine('<admin operation>:', isIndent = True, noLeadingTabs = 1)
 
     # For the purposes of formatting the screen output, find the longest admin
     # operation name and use this to define the format length.
-    length = 0
-    for mode in admin.allModes:
-      if len(mode) > length: length = len(mode)
-    length += 5
+    length = len(max(admin.allModes, key = len)) + 3
 
-    for mode in admin.allModes:
+    # Loop over all modes, build each line to print and then print to screen..
+    for mode in admin.allModes: self.writeComplexLine([mode + ':', admin.modeDescriptions[mode]], [length, -1], noLeadingTabs = 3)
+    print(file = sys.stdout)
 
-      # Get the tool description.
-      description = admin.modeDescriptions[mode]
-      printTool   = mode + ":"
-      self.writeFormattedText(printTool, description, length, 2, '')
+  # Print out how to use pipelines.
+  def pipelineUsage(self):
+    self.writeSimpleLine('=======================', isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('= gkno pipeline usage =', isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('=======================', isIndent = True, noLeadingTabs = 0)
+    print(file = sys.stdout)
+    self.writeSimpleLine('Usage: gkno [pipeline] [options]', isIndent = True, noLeadingTabs = 0)
+    print(file = sys.stdout)
+
+    self.writeSimpleLine('All pipelines are classified into help categories. To see these categories, type:', isIndent = True, noLeadingTabs = 1)
+    self.writeSimpleLine('gkno --pipeline-categories (-pcat)', isIndent = False, noLeadingTabs = 4)
+    print(file = sys.stdout)
+    self.writeSimpleLine('To see a list of all pipelines in a category, type:', isIndent = False, noLeadingTabs = 2)
+    self.writeSimpleLine('gkno --tool-categories (-pcat) [category]', isIndent = False, noLeadingTabs = 4)
+    print(file = sys.stdout)
+    self.writeSimpleLine('To see all available pipeliness, type:', isIndent = False, noLeadingTabs = 2)
+    self.writeSimpleLine('gkno --all-pipelines (-apo)', isIndent = False, noLeadingTabs = 4)
     print(file = sys.stdout)
 
   # Print out help on gkno arguments.
-  def gknoArgumentHelp(self):
+  def gknoArgumentHelp(self, arguments):
     print(file = sys.stdout)
-    print('  ==================', file = sys.stdout)
-    print('  = gkno arguments =', file = sys.stdout)
-    print('  ==================', file = sys.stdout)
+    self.writeSimpleLine('==================', isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('= gkno arguments =', isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('==================', isIndent = True, noLeadingTabs = 0)
     print(file = sys.stdout)
-    text = 'There is a set of arguments that can be applied to all gkno pipelines. The operation of these arguments is explained below:'
-    self.writeFormattedText('', text, 0, 1, '')
+    text = 'There is a set of arguments that can be applied to all gkno pipelines. The operation of these arguments are explained below:'
+    self.writeSimpleLine(text, isIndent = True, noLeadingTabs = 1)
+    print(file = sys.stdout)
+
+    # Loop over the arguments.
+    argumentStrings = []
+    dataTypes       = []
+    descriptions    = []
+    for argument in arguments:
+      argumentStrings.append(argument + ' (' + arguments[argument].shortFormArgument + '):')
+      dataTypes.append(arguments[argument].dataType)
+      descriptions.append(arguments[argument].description)
+
+    # Find the maximum length of an argument string.
+    argumentStringLength = len(max(argumentStrings, key = len)) + 3
+    dataTypeLength       = len(max(dataTypes, key = len)) + 3
+    lengths              = [argumentStringLength, dataTypeLength, 0]
+
+    # Print out the arguments.
+    zipped = zip(argumentStrings, dataTypes, descriptions)
+    zipped.sort()
+    for argument, dataType, description in zipped: self.writeComplexLine([argument, dataType, description], lengths, noLeadingTabs = 3)
 
     # Terminate gkno.
     exit(0)
 
-  # Print out how to use pipelines.
-  def pipelineUsage(self):
-    print('  =======================', file = sys.stdout)
-    print('  = gkno pipeline usage =', file = sys.stdout)
-    print('  =======================', file = sys.stdout)
+  # If help with a specific pipeline was requested, write out all of the commands available
+  # for the requested pipeline.
+  def pipelineHelp(self, superpipeline, graph, arguments):
+
+    # Write out general header information.
     print(file = sys.stdout)
-    print('  Usage: gkno [pipeline] [options]', sep = '', file = sys.stdout)
+    self.writeSimpleLine((len(superpipeline.pipeline) + 26) * '=', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('gkno pipeline usage - ' + superpipeline.pipeline, isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine((len(superpipeline.pipeline) + 26) * '=', isIndent = False, noLeadingTabs = 0)
+    print(file = sys.stdout)
+    self.writeSimpleLine('Usage: gkno ' + superpipeline.pipeline + ' [options]', isIndent = False, noLeadingTabs = 0)
     print(file = sys.stdout)
 
-    self.writeFormattedText('', 'All pipelines in gkno are classified according to a category. To see a list of these categories, use the command', 0, 1, '')
-    self.writeFormattedText('', '\t', 0, 1, '')
-    self.writeFormattedText('', 'gkno --pipeline-categories (-pcat)', 0, 2, '')
-    self.writeFormattedText('', '\t', 0, 1, '')
-    self.writeFormattedText('', 'To see a list of all pipelines in a category, type:', 0, 1, '')
-    self.writeFormattedText('', '\t', 0, 1, '')
-    self.writeFormattedText('', 'gkno --tool-categories (-pcat) [category]', 0, 2, '')
-    self.writeFormattedText('', '\t', 0, 1, '')
-    self.writeFormattedText('', 'To see all available pipeliness, type:', 0, 1, '')
-    self.writeFormattedText('', '\t', 0, 1, '')
-    self.writeFormattedText('', 'gkno --all-pipelines (-apo)', 0, 2, '')
-    self.writeFormattedText('', '\t', 0, 1, '')
+    # Print out the decription of the pipeline.
+    self.writeSimpleLine('Description:', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine(superpipeline.pipelineConfigurationData[superpipeline.pipeline].description, isIndent = False, noLeadingTabs = 1)
+    print(file = sys.stdout)
+
+    # Write out the pipeline workflow.
+    self.writeSimpleLine('Workflow:', isIndent = False, noLeadingTabs = 0)
+    length = len(max(graph.workflow, key = len)) + 3
+    for task in graph.workflow:
+      tool        = superpipeline.tasks[task]
+      description = superpipeline.toolConfigurationData[tool].description
+      self.writeComplexLine([task + ':', description + ' [Tool: ' + tool + ']'], [length, 0], noLeadingTabs = 1)
+    print(file = sys.stdout)
+
+    # List all the available parameter sets.
+    parameterSets = superpipeline.pipelineConfigurationData[superpipeline.pipeline].getParameterSetNames()
+    if parameterSets:
+      self.writeSimpleLine('Parameter sets:', isIndent = False, noLeadingTabs = 0)
+
+      # Loop over the parameter sets and get their descriptions.
+      length = len(max(parameterSets, key = len)) + 3
+      for parameterSet in parameterSets:
+        description = superpipeline.pipelineConfigurationData[superpipeline.pipeline].getParameterSetDescription(parameterSet)
+        self.writeComplexLine([parameterSet + ':', description], [length, 0], noLeadingTabs = 1)
+      print(file = sys.stdout)
+
+    # Loop over all of the available arguments.
+    argumentHelp    = {}
+    argumentLengths = {}
+    for argument in arguments:
+
+      # Only process arguments for the top level pipeline (e.g. not for arguments that include
+      # the address of the tool/pipeline that they point to.
+      if '.' not in argument:
+        graphNodeID       = arguments[argument].graphNodeID
+        category          = arguments[argument].category
+        # FIXME SORT DATATYPE
+        dataType          = 'string'#arguments[argument].dataType
+        description       = arguments[argument].description
+        isRequired        = graph.getGraphNodeAttribute(graphNodeID, 'isRequired')
+        shortFormArgument = arguments[argument].shortFormArgument
+
+        # if the argument is required, add [REQUIRED] to the end of the description.
+        if isRequired: description = description + ' [REQUIRED]'
+
+        # Build the argument string to write to the screen.
+        argumentString = str(argument + ' (' + shortFormArgument + '):')
+
+        # Add the information to a list.
+        if category not in argumentHelp: argumentHelp[category] = []
+        if category not in argumentLengths: argumentLengths[category] = [0, 0, 0]
+        argumentHelp[category].append([argumentString, dataType, description])
+
+        # Update the lengths of the longest argument string and data type.
+        if len(argumentString) + 3 > argumentLengths[category][0]: argumentLengths[category][0] = len(argumentString) + 3
+        if dataType:
+          if len(dataType) + 3 > argumentLengths[category][1]: argumentLengths[category][1] = len(dataType) + 3
+
+    # Print the arguments to screen, starting with the inputs.
+    if 'Inputs' in argumentHelp:
+      self.writeSimpleLine('Inputs', isIndent = False, noLeadingTabs = 0)
+      for argumentInformation in sorted(argumentHelp['Inputs']):
+        self.writeComplexLine(argumentInformation, argumentLengths['Inputs'], noLeadingTabs = 1)
+      print(file = sys.stdout)
+
+    # Then the outputs.
+    if 'Outputs' in argumentHelp:
+      self.writeSimpleLine('Outputs', isIndent = False, noLeadingTabs = 0)
+      for argumentInformation in sorted(argumentHelp['Outputs']):
+        self.writeComplexLine(argumentInformation, argumentLengths['Outputs'], noLeadingTabs = 1)
+      print(file = sys.stdout)
+
+    # Then all other categories.
+    for category in argumentHelp:
+      if category != 'Inputs' and category != 'Outputs':
+        self.writeSimpleLine(category, isIndent = False, noLeadingTabs = 0)
+        for argumentInformation in sorted(argumentHelp[category]):
+          self.writeComplexLine(argumentInformation, argumentLengths[category], noLeadingTabs = 1)
+        print(file = sys.stdout)
+
+#    # Write out all of the values included in the selected parameter set, if there are any.
+#    if config.parameterSets.getArguments(name, parameterSetName, isPipeline = True): self.writeParameterSets(config, name, parameterSetName)
+
+    # Terminate.
+    exit(0)
+
+  ###############################################
+  ##  Routines to write information to screen  ##
+  ###############################################
+
+  # Write a simple line of text.
+  def writeSimpleLine(self, text, isIndent = True, noLeadingTabs = 0):
+
+    # Set the indent for all lines of text.
+    indent = ''.ljust(noLeadingTabs * 3)
+    self.wrap.initial_indent    = indent
+    self.wrap.subsequent_indent = indent
+    if isIndent: self.wrap.initial_indent = indent + '   '
+
+    # Set the width of the line. This depends of the number of tabs being prepended to each
+    # line.
+    self.wrap.width = self.width - ( noLeadingTabs * 3 )
+    lines           = self.wrap.wrap(text)
+
+    # Loop over the lines to print and print them.
+    for line in lines: print(line, file = sys.stdout)
+
+  # Given a list of strings and a corresponding list of lengths, construct a line to be
+  # printed to screen.
+  def writeComplexLine(self, strings, lengths, noLeadingTabs):
+    lines = []
+
+    # Check that each string is given a corresponding length.
+    if len(strings) != len(lengths): self.errors.listsHaveDifferentLengths()
+
+    # Construct the line by joining all the strings in the list according to their lengths.
+    # The last element is not included, but returned as a separate string. Only this last
+    # string can be be wrapped due to the maximum width of the screen.
+    line = ''
+    for counter in range(0, len(strings) - 1): line = line + strings[counter].ljust(lengths[counter])
+
+    # Detemine the remaining width for the last column.
+    lineWidth = len(line) + ( noLeadingTabs * 3 )
+    width     = self.width - ( noLeadingTabs * 3 ) - len(line)
+
+    # If the line is already longer than the width, just add the remaining string to the line.
+    if width < 0: line = line + strings[-1]
+
+    # Otherwise, split the last line.
+    else:
+
+      # Break the last line into pieces consistent with the remaining width.
+      text = strings[-1]
+
+      # If the final string can fit on the same line, add the string.
+      if len(text) <= width: line = line + text
+
+      # Otherwise, break the line into pieces.
+      else:
+        self.wrap.width             = self.width - ( noLeadingTabs * 3 ) - len(line)
+        self.wrap.initial_indent    = ''
+        self.wrap.subsequent_indent = ''
+        lines                       = self.wrap.wrap(text)
+
+    # If the lines list contains values, add the first value to the line.
+    if lines: line = line + lines.pop(0)
+
+    # Add leading spaces based on the number of requested tabs and write the first line.
+    for count in range(0, noLeadingTabs): print('   ', end = '', file = sys.stdout)
+    print(line, file = sys.stdout)
+
+    # If there are still lines, print these to screen.
+    if lines:
+      for line in lines: print(''.ljust(lineWidth), line, sep = '', file = sys.stdout)
+
 
 
 
@@ -266,359 +401,13 @@ class helpInformation:
     'in the \'' + category + '\' category. If this was not the desired category, please check the command line.', 0, 1, '')
     print(file = sys.stdout)
 
-  # Get parameter set information.
-  def getParameterSets(self, graph, config, jsonFiles, toolConfigurationFilesPath, pipelineConfigurationFilesPath, mode, name):
-
-    # Define information based on whether a tool or pipeline is being run.
-    if mode == 'tool':
-      isPipeline       = False
-      text             = 'tool parameter sets'
-      filePath         = toolConfigurationFilesPath
-      externalFilename = name + '_parameterSets'
-      externalFilePath = filePath + externalFilename + '.json'
-    elif mode == 'pipe':
-      isPipeline       = True
-      text             = 'pipeline parameter sets'
-      filePath         = pipelineConfigurationFilesPath
-      externalFilename = name + '_parameterSets'
-      externalFilePath = filePath + externalFilename + '.json'
-
-    # Open the pipeline configuration file and process the parameter set data.
-    configurationData = config.fileOperations.readConfigurationFile(filePath + name + '.json')
-    config.parameterSets.checkParameterSets(graph, name, configurationData['parameter sets'], isPipeline, isExternal = False)
-
-    # Now get any external parameter sets.
-    if externalFilename + '.json' in jsonFiles[text]:
-      configurationData = config.fileOperations.readConfigurationFile(externalFilePath)
-      config.parameterSets.checkParameterSets(graph, name, configurationData['parameter sets'], isPipeline, isExternal = True)
-
-  # Write out parameter sets.
-  def writeParameterSets(self, config, tool, parameterSetName):
-    if parameterSetName == 'default': print('     Parameter set for: ', parameterSetName, sep = '', file = sys.stdout)
-    else: print('     Parameter set (including default parameters) for: ', parameterSetName, sep = '', file = sys.stdout)
-
-    # Get the length of the longest argument in the parameter set.
-    argumentLength = 0
-    for argument, values in config.parameterSets.getArguments(tool, 'default', isPipeline = False):
-      if len(argument) > argumentLength: argumentLength = len(argument)
-    for argument, values in config.parameterSets.getArguments(tool, parameterSetName, isPipeline = False):
-      if len(argument) > argumentLength: argumentLength = len(argument)
-
-    # Write out the values.
-    arguments = {}
-    for argument, values in config.parameterSets.getArguments(tool, 'default', isPipeline = False): arguments[argument] = values
-    for argument, values in config.parameterSets.getArguments(tool, parameterSetName, isPipeline = False): arguments[argument] = values
-    for argument in sorted(arguments):
-      firstValue = True
-      for value in arguments[argument]:
-        if firstValue:
-          self.writeFormattedText(argument + ':', str(value), argumentLength + 5, 2, '')
-          firstValue = False
-        else: self.writeFormattedText('', str(value), argumentLength + 5, 2, '')
-
-  # Write out the gkno specific options.
-  def gknoOptions(self, graph, config):
-    print('     General gkno arguments:', file = sys.stdout)
-
-    # Find the length of the longest argument.
-    argumentLength = 0
-    for nodeID in config.nodeMethods.getNodes(graph, 'general'):
-      longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'longFormArgument')
-      shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'shortFormArgument')
-      argumentText      = longFormArgument + ' (' + shortFormArgument + ')'
-      if len(argumentText) > argumentLength: argumentLength = len(argumentText)
-
-    # Write out the arguments.
-    arguments = {}
-    for nodeID in config.nodeMethods.getNodes(graph, 'general'):
-      arguments[config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'longFormArgument')] = nodeID
-
-    for longFormArgument in sorted(arguments):
-      nodeID            = arguments[longFormArgument]
-      longFormArgument  = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'longFormArgument')
-      shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, 'gkno', 'shortFormArgument')
-      argumentText      = longFormArgument + ' (' + shortFormArgument + ')'
-      description       = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'description')
-      dataType          = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType')
-      self.writeFormattedText(argumentText + ':', description, argumentLength + 5, 2, dataType)
-
-    print(file = sys.stdout)
-
-  # If help with a specific pipeline was requested, write out all of the commands available
-  # for the requested pipeline.
-  def writeSpecificPipelineUsage(self, graph, config, jsonFiles, name, toolConfigurationFilesPath, parameterSetName):
-    length = len(name) + 26
-    print('=' * length)
-    print('  gkno pipeline usage - ', name, sep = '', file = sys.stdout)
-    print('=' * length)
-    print(file = sys.stdout)
-    print('Usage: gkno pipe ', name, ' [options]', sep = '', file = sys.stdout)
-    print(file = sys.stdout)
-
-    # Print out the decription of the pipeline.
-    print('     Description:', file = sys.stdout)
-    self.writeFormattedText('', config.pipeline.attributes.description, 0, 2, '')
-    print(file = sys.stdout)
-
-    # Write out the pipeline workflow.
-    print('     Workflow:', file = sys.stdout)
-    length = 0
-    for task in config.pipeline.workflow: length = len(task) if (len(task) > length) else length
-    for task in config.pipeline.workflow:
-      associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-      description    = config.nodeMethods.getGraphNodeAttribute(graph, task, 'description')
-      self.writeFormattedText(task + ":", description, length + 4, 2, '')
-    print(file = sys.stdout)
-
-    # If this pipeline has different parameter sets, print them to screen.
-    if config.parameterSets.parameterSetAttributes[name]:
-      print('     Parameter sets:', file = sys.stdout)
-
-      # Find the length of the longest parameter set name.
-      parameterSetLength = 0
-      for parameterSet in config.parameterSets.parameterSetAttributes[name].keys():
-        if len(parameterSet) > parameterSetLength: parameterSetLength = len(parameterSet)
-
-      for parameterSet in sorted(config.parameterSets.parameterSetAttributes[name].keys()):
-         self.writeFormattedText(parameterSet + ":", config.parameterSets.parameterSetAttributes[name][parameterSet].description, parameterSetLength + 4, 2, '')
-      print(file = sys.stdout)
-
-    # Write out all of the gkno options.
-    self.gknoOptions(graph, config)
-
-    # List the options available at the pipeline level.
-    #
-    # Loop over all the allowable arguments and determine if there is a short form and
-    # the length of the combined '--argument (-a)' text.
-    length            = 0
-    arguments         = {}
-    optionNodeIDs     = config.nodeMethods.getNodes(graph, 'option')
-    requiredArguments = {}
-    optionalArguments = {}
-    for longFormArgument in config.pipeline.pipelineArguments:
-      description       = config.pipeline.pipelineArguments[longFormArgument].description
-      shortFormArgument = config.pipeline.pipelineArguments[longFormArgument].shortFormArgument
-      configNodeID      = config.pipeline.pipelineArguments[longFormArgument].configNodeID
-      text              = longFormArgument + ' (' + shortFormArgument + '):'
-      length            = len(text) if (len(text) > length) else length
-
-      # First check if the pipeline requires the argument. If not, check if the tool
-      # requires the argument. If the tool has construction instructions, the argument
-      # does not need to be listed as required.
-      isRequired                  = config.pipeline.pipelineArguments[longFormArgument].isRequired
-      hasConstructionInstructions = False
-      if not isRequired:
-
-        # Check the tasks.
-        if config.pipeline.nodeAttributes[configNodeID].tasks:
-          for associatedTask in config.pipeline.nodeAttributes[configNodeID].tasks:
-            associatedTool     = config.pipeline.taskAttributes[associatedTask].tool
-            associatedArgument = config.pipeline.nodeAttributes[configNodeID].tasks[associatedTask]
-            if config.tools.getArgumentAttribute(associatedTool, associatedArgument, 'isRequired'): isRequired = True
-            if config.tools.getArgumentAttribute(associatedTool, associatedArgument, 'constructionInstructions'):
-              hasConstructionInstructions = True
-              break
-
-        # If iSRequired is still False, check for greedy tasks.
-        if not isRequired and config.pipeline.nodeAttributes[configNodeID].greedyTasks:
-          for associatedTask in config.pipeline.nodeAttributes[configNodeID].greedyTasks:
-            associatedTool     = config.pipeline.taskAttributes[associatedTask].tool
-            associatedArgument = config.pipeline.nodeAttributes[configNodeID].greedyTasks[associatedTask]
-            if config.tools.getArgumentAttribute(associatedTool, associatedArgument, 'isRequired'): isRequired = True
-            if config.tools.getArgumentAttribute(associatedTool, associatedArgument, 'constructionInstructions'):
-              hasConstructionInstructions = True
-              break
-
-      if isRequired and not hasConstructionInstructions: requiredArguments[text] = description
-      else: optionalArguments[text] = description
-
-    if requiredArguments:
-      print('     Required pipeline specific arguments:', file = sys.stdout)
-      for argument in sorted(requiredArguments.keys()):
-        self.writeFormattedText(argument, requiredArguments[argument], length + 4, 2, '')
-      print(file = sys.stdout)
-
-    if optionalArguments:
-      print('     Optional pipeline specific arguments:', file = sys.stdout)
-      for argument in sorted(optionalArguments.keys()):
-        self.writeFormattedText(argument, optionalArguments[argument], length + 4, 2, '')
-      print(file = sys.stdout)
-
-    # List the names of the tools in the pipeline.  These can appear as command line arguments
-    # in order to modify parameters for the specified tool.
-    print('     The following tasks can have parameters modified:', file = sys.stdout)
-    length = 0
-    for task in config.pipeline.workflow: length = len(task) if (len(task) > length) else length
-
-    self.getTools(config, jsonFiles, toolConfigurationFilesPath)
-    for task in sorted(config.pipeline.workflow):
-      associatedTool = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-      if associatedTool in self.availableTools: isHidden = self.availableTools[associatedTool][1]
-      elif associatedTool in self.experimentalTools: isHidden = self.experimentalTools[associatedTool][1]
-      if not isHidden: self.writeFormattedText('--' + task + ':', associatedTool, length + 5, 2, '')
-    print(file = sys.stdout)
-    sys.stdout.flush()
-
-    # Write out all of the values included in the selected parameter set, if there are any.
-    if config.parameterSets.getArguments(name, parameterSetName, isPipeline = True): self.writeParameterSets(config, name, parameterSetName)
-
-    # Terminate.
-    exit(0)
-
-  # If a pipeline was requested, but no configuration file can be found, add
-  # this extra error at the end of the usage information.
-  def invalidPipelineMessage(self, pipeline):
-    text = 'The requested pipeline \'' + pipeline + '\' does not exist. Use \'gkno --pipeline-categories (-pcat)\' to see all available pipeline ' + \
-    'categories. If the category is known, include the category (\'gkno --pipeline-categories (-pcat) [category]\') to see all of the pipelines ' + \
-    'available for that category. To see a list of all available pipelines, use \'gkno --all-pipelines (-apo)\''
-    self.writeFormattedText('', text, 0, 0, 'ERROR:')
-    sys.stdout.flush()
-
-  # If help for a specific tool was requested, but that tool does not exist,
-  # print an error after the usage information.
-  def invalidToolMessage(self, tool):
-    text = 'The requested tool \'' + tool + '\' does not exist. Use \'gkno --tool-categories (-tcat)\' to see all available tool categories. If the ' + \
-    'category is known, include the category (\'gkno --tool-categories (-tcat) [category]\') to see all of the tools available for that category. ' + \
-    'To see a list of all available tools, use \'gkno --all-tools (-ato)\''
-    self.writeFormattedText('', text, 0, 0, 'ERROR:')
-    sys.stdout.flush()
-
-  # Write out key value pairs in a formatted manned.  These may be tool and
-  # description or command line argument and description or whatever else is
-  # required.
-  def writeFormattedText(self, key, value, length, noTab, dataType):
-
-    # Set the maximum width of the line.
-    maxLength   = 100
-
-    # Determine the amount of text prior to the value.
-    startLength = length
-    if dataType != '': startLength += 10
-
-    valueList = []
-    while len(value) > (maxLength - startLength):
-      index = value.rfind(' ', 0, (maxLength - startLength))
-      if index == -1:
-        index = value.find(' ', 0, len(value))
-        if index == -1:
-          valueList.append(value)
-          value = ''
-        else:
-          valueList.append(value[0:index])
-          value = value[index + 1:len(value)]
-      else:
-        valueList.append(value[0:index])
-        value = value[index + 1:len(value)]
-    if value != '': valueList.append(value)
-
-    value = valueList.pop(0)
-    if dataType == '':
-      print("%-*s%-*s%-*s" % ((5 * noTab), '', length, key, 1, value), file = sys.stdout)
-      for value in valueList:  print('%-*s%-*s%-*s' % ((5 * noTab), '', length, '', 1, value), file = sys.stdout)
-    else:
-      print("%-*s%-*s%-*s%-*s" % ((5 * noTab), '', length, key, 10, dataType, 1, value), file = sys.stdout)
-      for value in valueList:  print('%-*s%-*s%-*s%-*s' % ((5 * noTab), '', length, '', 10, '', 1, value), file = sys.stdout)
-
-  # Print usage information on the tool mode of operation.
-  def writeToolModeUsage(self, config, admin):
-    print('=============', file = sys.stdout)
-    print('  tool mode', file = sys.stdout)
-    print('=============', file = sys.stdout)
-    print(file = sys.stdout)
-    print('NOTE: Tools preceded by a \'!\' cannot be used due to the absence of a required executable', file = sys.stdout)
-    print('file. To use these tools ensure that the required executables have been succesfully compiled.', file = sys.stdout)
-    print(file = sys.stdout)
-    print("Usage: gkno <tool name> [options]", file = sys.stdout)
-    print(file = sys.stdout)
-
-    # Write the tools to screen.
-    toolGroups = {}
-    for tool in sorted(self.availableTools.keys()):
-      allToolsCompiled = True
-      for requiredTool in config.tools.getGeneralAttribute(tool, 'requiredCompiledTools'):
-        if requiredTool not in admin.userSettings['compiled tools']: allToolsCompiled = False
-
-      # Get the tool group to which this tool belongs.
-      toolGroup = config.tools.getGeneralAttribute(tool, 'helpGroup')
-      if toolGroup not in toolGroups: toolGroups[toolGroup] = []
-
-      # If the tool requires tools to be compiled and they are not, prepend the tool name with a '!'. This
-      # indicates that the tool is not available.
-      toolText = tool if allToolsCompiled else str('!') + tool
-      if not self.availableTools[tool][1]: toolGroups[toolGroup].append((tool, toolText))
-
-    sortedGroups = sorted(list(toolGroups.keys()))
-    for toolGroup in sortedGroups:
-      print('     ', toolGroup, ':', sep = '', file = sys.stdout)
-      for tool, toolText in toolGroups[toolGroup]: self.writeFormattedText(toolText + ':', self.availableTools[tool][0], self.toolLength + 5, 2, '')
-      print(file = sys.stdout)
-
-    # Now list any tool configuration files that are listed as experimental..
-    if self.experimentalTools:
-      print('     The following tools have been identified as experimental, so should be used with caution:', file = sys.stdout)
-      print(file = sys.stdout)
-      for tool in sorted(self.experimentalTools.keys()):
-        allToolsCompiled = True
-        for requiredTool in config.tools.getGeneralAttribute(tool, 'requiredCompiledTools'):
-          if requiredTool not in admin.userSettings['compiled tools']: allToolsCompiled = False
-  
-        # If the tool requires tools to be compiled and they are not, prepend the tool name with a '!'. This
-        # indicates that the tool is not available.
-        toolText = tool if allToolsCompiled else str('!') + tool
-        if not self.experimentalTools[tool][1]: self.writeFormattedText(toolText + ':', self.experimentalTools[tool][0], self.toolLength + 5, 2, '')
-      print(file = sys.stdout)
-
-    # Now list any tool configuration files that have errors.
-    if self.failedTools:
-      print('     The following tools have malformed configuration files, so are currently unusable:', file = sys.stdout)
-      print(file = sys.stdout)
-      for tool in sorted(self.failedTools.keys()):
-        self.writeFormattedText(tool + ':', self.failedTools[tool], self.toolLength + 5, 2, '')
-      print(file = sys.stdout)
- 
-    # Terminate.
-    exit(0)
-
-  # Print usage information on the pipeline mode of operation.
-  def writePipelineModeUsage(self, config):
-    print('=================', file = sys.stdout)
-    print('  pipeline mode', file = sys.stdout)
-    print('=================', file = sys.stdout)
-    print(file = sys.stdout)
-    print('Usage: gkno pipe <pipeline name> [options]', file = sys.stdout)
-    print(file = sys.stdout)
-
-    # Write the pipelines to screen.
-    sortedPipelines = sorted(list(self.availablePipelines.keys()))
-    for pipeline in sortedPipelines: self.writeFormattedText(pipeline + ':', self.availablePipelines[pipeline][0], self.pipelineLength + 5, 2, '')
-    print(file = sys.stdout)
-
-    # Write the developmental pipelines to screen.
-    if self.developmentalPipelines:
-      print('     The following pipelines have been identified as developmental, so should be used with caution:', file = sys.stdout)
-      print(file = sys.stdout)
-      for pipeline in sorted(self.developmentalPipelines.keys()):
-         self.writeFormattedText(pipeline + ':', self.developmentalPipelines[pipeline], self.pipelineLength + 5, 2, '')
-      print(file = sys.stdout)
-
-    # Now list any pipeline configuratiobn files that have errors.
-    if self.failedPipelines:
-      print('     The following pipelines have malformed configuration files, so are currently unusable:', file = sys.stdout)
-      print(file = sys.stdout)
-      for pipeline in sorted(self.failedPipelines.keys()):
-        self.writeFormattedText(pipeline + ':', self.failedPipelines[pipeline], self.pipelineLength + 5, 2, '')
-      print(file = sys.stdout)
-
-    # Terminate.
-    exit(0)
-
   # If an admin mode's help was requested.
   def selectAdminModeUsage(self, admin):
-    if   admin.mode == "build"           : self.buildUsage(admin)
-    elif admin.mode == "update"          : self.updateUsage(admin)
-    elif admin.mode == "add-resource"    : self.addResourceUsage(admin)
-    elif admin.mode == "remove-resource" : self.removeResourceUsage(admin)
-    elif admin.mode == "update-resource" : self.updateResourceUsage(admin)
+    if   admin.mode == "build"          : self.buildUsage(admin)
+    elif admin.mode == "update"         : self.updateUsage(admin)
+    elif admin.mode == "add-resource"   : self.addResourceUsage(admin)
+    elif admin.mode == "remove-resource": self.removeResourceUsage(admin)
+    elif admin.mode == "update-resource": self.updateResourceUsage(admin)
   
   # If build help was requested
   def buildUsage(self, admin):

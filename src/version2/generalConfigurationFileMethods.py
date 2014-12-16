@@ -18,10 +18,10 @@ def checkIsDictionary(node, allowTermination):
   return success
 
 # Check that the supplied dictionary has an id field.
-def checkForId(node, allowTermination):
+def checkForId(node, name, section, allowTermination, isTool):
   try: return node['id']
   except:
-    if allowTermination: print('generalConfig.checkForId - 1'); exit(0)
+    if allowTermination: er.generalConfigurationFileErrors().missingID(name, section, isTool)
     return False
 
 # Check that the supplied dictionary has an id field.
@@ -55,8 +55,7 @@ def checkAttributes(data, allowedAttributes, attributes, allowTermination, helpI
     # convert to a string first.
     value = str(data[attribute]) if isinstance(data[attribute], unicode) else data[attribute]
     if allowedAttributes[attribute][0] != type(value):
-      #TODO ERROR
-      if allowTermination: print('generalConfig.checkAttributes - 2'); exit(0) # incorrectTypeInPipelineConfigurationFile
+      if allowTermination: errors.incorrectType(helpInfo, attribute, value, allowedAttributes[attribute][0])
       else: return False, None
 
     # At this point, the attribute in the configuration file is allowed and of valid type. Check that 

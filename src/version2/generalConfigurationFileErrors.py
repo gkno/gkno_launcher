@@ -74,3 +74,36 @@ class generalConfigurationFileErrors:
     'are defined.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  # The data type is incorrect.
+  def incorrectType(self, helpInfo, attribute, value, dataType):
+    name, section, id = helpInfo
+
+    # Get the data types as strings.
+    dataType  = str(dataType).rsplit('\'')[1]
+    valueType = str(type(value)).rsplit('\'')[1]
+
+    # Write the error.
+    self.text.append('Incorrect data type for configuration file attribute.')
+
+    # Define the error message if no section or node ID is provided.
+    if not section and not id:
+      self.text.append('The top level of the configuration file (' + name + '.json) contains the attribute \'' + attribute + '\'. The data type ' + \
+      'of this attribute is expected to be \'' + dataType + '\', but the value provided has the type \'' + valueType + '\'. Please check the ' + \
+      'configuration file and ensure that all attributes are correctly defined.')
+
+    # TODO FINISH
+    else: print('generalConfigurationFileErrors - incorrectType- NOT HANDLED')
+
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # A node is missing an ID.
+  def missingID(self, name, section, isTool):
+    configurationType = 'tool' if isTool else 'pipeline'
+    self.text.append('A ' + configurationType + ' configuration file node is missing an ID.')
+    self.text.append('The configuration file for ' + configurationType + ' \'' + name + '\' contains a node in the \'' + section + '\' section ' + \
+    'that is missing the \'id\' attribute. All nodes in this section must be identified with a unique ID. Please check the configuration file ' + \
+    'and ensure that every node in the section has the \'id\' attribute defined.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode) 

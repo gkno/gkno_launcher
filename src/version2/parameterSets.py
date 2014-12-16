@@ -66,7 +66,7 @@ class parameterSets:
       if not methods.checkIsDictionary(parameterSet, allowTermination): return
 
       # Check that the node has a valid ID. This is required for help messages.
-      id = methods.checkForId(parameterSet, allowTermination)
+      id = methods.checkForId(parameterSet, name, 'parameter sets', allowTermination, isTool)
       if not id: return
 
       # Define a set of information to be used in help messages.
@@ -100,11 +100,16 @@ class parameterSets:
 
     return success
 
+  # Return a parameter sets description.
+  def getDescription(self, name):
+    try: return self.sets[name].description
+    except: return None
+
   ######################
   ### Static methods ###
   ######################
 
-  # Get a parameter set from a tool configuration file.
+  # Get parameter set argument from a tool configuration file.
   @staticmethod
   def SM_getArguments(parameterSet):
     arguments = {}

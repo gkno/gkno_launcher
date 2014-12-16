@@ -29,8 +29,17 @@ class pipelineArguments:
     self.longFormArgument  = None
     self.shortFormArgument = None
 
+    # Record the category to which the argument belongs.
+    self.category = None
+
+    # Record the expected data type.
+    self.dataType = None
+
     # Define the node that the argument points to.
     self.nodeID = None
+
+    # Record if the argument is listed as required in the pipeline configuration file.
+    self.isRequired = False
 
 # Define a class to store information on shared pipeline nodes.
 class sharedGraphNodes:
@@ -211,7 +220,7 @@ class pipelineConfiguration:
     # Define the allowed general attributes.
     allowedAttributes                            = {}
     allowedAttributes['id']                      = (str, True, True, 'id')
-    allowedAttributes['arguments']               = (list, True, False, None)
+    allowedAttributes['arguments']               = (dict, True, False, None)
     allowedAttributes['description']             = (str, True, True, 'description')
     allowedAttributes['categories']              = (list, True, True, 'categories')
     allowedAttributes['connect nodes to tasks' ] = (list, False, False, None)
@@ -298,7 +307,7 @@ class pipelineConfiguration:
       if not methods.checkIsDictionary(uniqueNode, self.allowTermination): return
 
       # Check that the node has a valid ID. This is required for help messages.
-      id = methods.checkForId(uniqueNode, self.allowTermination)
+      id = methods.checkForId(uniqueNode, self.name, 'unique graph nodes', self.allowTermination, isTool = False)
       if not id: return
 
       # Define a set of information to be used in help messages.
@@ -326,7 +335,7 @@ class pipelineConfiguration:
     # If there is not information on unique graph nodes, return.
     if 'shared graph nodes' not in data: return
 
-    # Define the allowed nodes attributes.
+    # Defin the allowed nodes attributes.
     allowedAttributes                           = {}
     allowedAttributes['arguments sharing node'] = (list, True, True, 'nodes')
     allowedAttributes['id']                     = (str, True, True, 'id')
@@ -338,7 +347,7 @@ class pipelineConfiguration:
       if not methods.checkIsDictionary(sharedNode, self.allowTermination): return
 
       # Check that the node has a valid ID. This is required for help messages.
-      id = methods.checkForId(sharedNode, self.allowTermination)
+      id = methods.checkForId(sharedNode, self.name, 'shared graph nodes', self.allowTermination, isTool = False)
       if not id: return
 
       # Define a set of information to be used in help messages.
@@ -403,36 +412,41 @@ class pipelineConfiguration:
     allowedAttributes['description']         = (str, True, True, 'description')
     allowedAttributes['long form argument']  = (str, True, True, 'longFormArgument')
     allowedAttributes['node id']             = (str, True, True, 'nodeID')
+    allowedAttributes['required']            = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument'] = (str, True, True, 'shortFormArgument')
 
-    # Loop over all of the defined nodes.
-    for argumentInformation in data['arguments']:
+    # Loop over all of the argument categories.
+    for category in data['arguments']:
 
-      # Check that the supplied structure is a dictionary.
-      if not methods.checkIsDictionary(argumentInformation, self.allowTermination): return
-
-      # Check that the node has a long form argument. This is required for help messages.
-      longFormArgument = methods.checkForLongFormArgument(argumentInformation, self.allowTermination)
-      if not longFormArgument: return
-
-      # Define a set of information to be used in help messages.
-      helpInfo = (self.name, 'arguments', longFormArgument)
-
-      # Define the attributes object.
-      attributes = pipelineArguments()
-
-      # Check the attributes conform to expectations.
-      self.success, attributes = methods.checkAttributes(argumentInformation, allowedAttributes, attributes, self.allowTermination, helpInfo)
-
-      # If the long form argument already exists, there is a problem. All arguments must be unique.
-      if longFormArgument in self.longFormArguments: print('pipeline.checkArguments - 6'); exit(0)
-
-      # Also check that the node id is not the name of a task.
-      if attributes.shortFormArgument in self.shortFormArguments: print('pipeline.checkArguments - 7'); exit(0)
-
-      # Store the attributes.
-      self.longFormArguments[longFormArgument]              = attributes
-      self.shortFormArguments[attributes.shortFormArgument] = longFormArgument
+      # Loop over all arguments in the category.
+      for argumentInformation in data['arguments'][category]:
+  
+        # Check that the supplied structure is a dictionary.
+        if not methods.checkIsDictionary(argumentInformation, self.allowTermination): return
+  
+        # Check that the node has a long form argument. This is required for help messages.
+        longFormArgument = methods.checkForLongFormArgument(argumentInformation, self.allowTermination)
+        if not longFormArgument: return
+  
+        # Define a set of information to be used in help messages.
+        helpInfo = (self.name, 'arguments -> ' + category, longFormArgument)
+  
+        # Define the attributes object and add the help category.
+        attributes          = pipelineArguments()
+        attributes.category = category
+  
+        # Check the attributes conform to expectations.
+        self.success, attributes = methods.checkAttributes(argumentInformation, allowedAttributes, attributes, self.allowTermination, helpInfo)
+  
+        # If the long form argument already exists, there is a problem. All arguments must be unique.
+        if longFormArgument in self.longFormArguments: print('pipeline.checkArguments - 6'); exit(0)
+  
+        # Also check that the node id is not the name of a task.
+        if attributes.shortFormArgument in self.shortFormArguments: print('pipeline.checkArguments - 7'); exit(0)
+  
+        # Store the attributes.
+        self.longFormArguments[longFormArgument]              = attributes
+        self.shortFormArguments[attributes.shortFormArgument] = longFormArgument
 
   # Check that defined edges are correctly included.
   def checkDefinedEdges(self, data):
@@ -567,6 +581,16 @@ class pipelineConfiguration:
   # Get attributes for a task defined in the shared node section.
   def getNodeTaskAttribute(self, node, attribute):
     try: return getattr(node, attribute)
+    except: return None
+
+  # Get the names of all the parametes sets.
+  def getParameterSetNames(self):
+    try: return self.parameterSets.sets.keys()
+    except: return None
+
+  # Get the description of a parametes set.
+  def getParameterSetDescription(self, name):
+    try: return self.parameterSets.getDescription(name)
     except: return None
 
   # Get an attribute for an argument.
