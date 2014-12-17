@@ -33,7 +33,7 @@ class fileErrors:
     'line or request help (\'gkno --help\') to identify the required pipeline.')
     if pipelines:
       self.text.append('\t')
-      self.text.append('The following pipelines have similar names to that requested:')
-      for task in pipelines: self.text.append('\t' + task)
+      self.text.append('The following are the closest pipelines, ranked by similarity:')
+      for task in pipelines[:5]: self.text.append('\t' + task)
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)

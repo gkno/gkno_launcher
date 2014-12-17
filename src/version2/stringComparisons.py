@@ -7,11 +7,16 @@ import json
 import os
 import sys
 
-def findClosestPipelines(pipelines, pipeline):
-  pipelineMatches = []
+def rankListByString(inputList, queryString):
 
-  # Compare the given pipeline to the available pipelines.
-  for task in pipelines:
-    if SequenceMatcher(None, task, pipeline).ratio() > 0.8: pipelineMatches.append(task)
+  # Loop over the list and store the value with it's match score.
+  scores = []
+  for listString in inputList: scores.append((int( 1000 * SequenceMatcher(None, listString.lower(), queryString.lower()).ratio()), listString))
 
-  return pipelineMatches
+  # Generate the ranked list.
+  rankedList = []
+  for score, listString in sorted(scores): rankedList.append(listString)
+  rankedList.reverse()
+
+  # Return the ranked list.
+  return rankedList

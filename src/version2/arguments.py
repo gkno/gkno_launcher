@@ -30,7 +30,7 @@ class arguments:
 
   # Now that the graph is built, parse all of the arguments in the pipelines and associate them with
   # the graph nodes and vice versa.
-  def assignNodesToArguments(self, superpipeline):
+  def assignNodesToArguments(self, graph, superpipeline):
 
     # Loop over all tiers of the superpipeline (except the top level as this has already been handled),
     # and add the arguments by path.
@@ -64,6 +64,13 @@ class arguments:
 
           # Link the argument with the graph node ID to which it points.
           self.arguments[str(argumentAddress)].graphNodeID = str(graphNodeID)
+
+          # Check for predecessors or successors and find the data type for the argument.
+          successors = graph.graph.successors(graphNodeID)
+          if successors: self.arguments[str(argumentAddress)].dataType = graph.getArgumentAttribute(graphNodeID, successors[0], 'dataType')
+          if not self.arguments[str(argumentAddress)].dataType:
+            predcessors = graph.graph.predecessors(graphNodeID)
+            if predecessors: self.arguments[str(argumentAddress)].dataType = graph.getArgumentAttribute(predecessors[0], graphNodeID, 'dataType')
 
   # If the main pipeline lists a tool whose arguments should be imported, check that the listed tool is
   # valid, that none of the arguments conflict with the pipeline and then add the arguments to the

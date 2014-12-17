@@ -27,12 +27,12 @@ class fileHandling:
   def checkPipeline(self, toolsPath, pipelinesPath, pipeline):
                                                                              
     # If the requested pipeline is valid, return the path to the configuration file.
-    if pipeline in  self.pipelines: return pipelinesPath + pipeline + '.json'
+    if pipeline in self.pipelines: return pipelinesPath + pipeline + '.json'
 
     # If the requested pipeline is invalid, terminate.
     else:
-      closestPipelines = stringComparisons.findClosestPipelines(self.pipelines, pipeline)
-      self.errors.invalidPipelineName(closestPipelines, pipeline)
+      rankedPipelines = stringComparisons.rankListByString(self.pipelines, pipeline)
+      self.errors.invalidPipelineName(rankedPipelines, pipeline)
   
   ######################
   ### Static methods ###

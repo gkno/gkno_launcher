@@ -31,7 +31,7 @@ def main():
   command = cl.commandLine()
 
   # Define a help class.
-  gknoHelp = hp.helpInformation()
+  gknoHelp = hp.helpInformation(os.getenv('GKNOCOMMITID'), __date__, __version__)
 
    # Define the source path of all the gkno machinery.
   sourcePath                     = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno.py')]
@@ -72,7 +72,7 @@ def main():
   else: print('NOT HANDLED ADMIN'); exit(0)
 
   # If the pipeline name has not been supplied, general help must be required.
-  if not pipeline: gknoHelp.generalHelp(admin)
+  if not pipeline or mode == 'categories' or mode == 'list-all': gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
 
   # Get the path to the pipeline and configuration file.
   filename = files.checkPipeline(toolConfigurationFilesPath, pipelineConfigurationFilesPath, pipeline)
@@ -119,7 +119,7 @@ def main():
 
   # Now that the graph is built, parse all of the arguments in the pipelines and associate them with the
   # graph nodes and vice versa.
-  args.assignNodesToArguments(superpipeline)
+  args.assignNodesToArguments(graph, superpipeline)
 
   # If the main pipeline lists a tool whose arguments should be imported, check that the listed tool is
   # valid, that none of the arguments conflict with the pipeline and then add the arguments to the
@@ -133,11 +133,8 @@ def main():
   # TODO ADMIN HELP
   if mode == 'help' or mode == 'gkno help':
 
-    # Write out help categories.
-    if command.getHelpCategory(): gknoHelp.categoryHelp()
-
     # Write out help on gkno specific (e.g. not associated with a specific pipeline) arguments.
-    elif mode == 'gkno help': gknoHelp.gknoArgumentHelp(gknoConfiguration.arguments)
+    if mode == 'gkno help': gknoHelp.gknoArgumentHelp(gknoConfiguration.arguments)
 
     # Otherwise, write out help for the pipeline being run.
     else: gknoHelp.pipelineHelp(superpipeline, graph, args.arguments)

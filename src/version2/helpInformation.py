@@ -4,16 +4,23 @@ from __future__ import print_function
 from difflib import SequenceMatcher
 
 import helpErrors as err
+import stringComparisons as sc
+import version2.pipelineConfiguration as pc
 
 import os
 import sys
 import textwrap
 
 class helpInformation:
-  def __init__(self):
+  def __init__(self, commitID, date, version):
 
     # Define the errors class.
     self.errors = err.helpErrors()
+
+    # Store version information.
+    self.commitID = commitID
+    self.date     = date 
+    self.version  = version
 
     # Define allowed help categories.
     self.helpCategories                      = {}
@@ -36,29 +43,171 @@ class helpInformation:
     self.width = 100
 
   # Provide general help.
-  def generalHelp(self, admin):
-    print(file = sys.stdout)
-    self.writeSimpleLine('The gkno package can be run in the following modes:', isIndent = False, noLeadingTabs = 0)
-    self.writeSimpleLine('ADMIN mode:    allows management of gkno and it\'s resources,', isIndent = False, noLeadingTabs = 1)
-    self.writeSimpleLine('PIPELINE mode: executes a predetermined pipeline', isIndent = False, noLeadingTabs = 1)
-    print(file = sys.stdout)
-    self.writeSimpleLine('See below for usage instructions for each mode.', isIndent = False, noLeadingTabs = 0)
-    print(file = sys.stdout)
+  def generalHelp(self, mode, category, admin, path):
+    self.printHeader()
 
-    # Write out admin help.
-    self.adminModeUsage(admin)
+    # if information on help categories was requested, provide that information.
+    if mode == 'categories':
+      if category == None: self.writeHelpCategories()
+      else: self.specificHelpCategory(category, path)
 
-    # Write out pipeline usage information.
-    self.pipelineUsage()
+    elif mode == 'list-all': self.listAllPipelines(path)
+
+    # Otherwise, provide general help.
+    else:
+      print(file = sys.stdout)
+      self.writeSimpleLine('The gkno package can be run in the following modes:', isIndent = False, noLeadingTabs = 0)
+      self.writeSimpleLine('ADMIN mode:    allows management of gkno and it\'s resources,', isIndent = False, noLeadingTabs = 1)
+      self.writeSimpleLine('PIPELINE mode: executes a predetermined pipeline', isIndent = False, noLeadingTabs = 1)
+      print(file = sys.stdout)
+      self.writeSimpleLine('See below for usage instructions for each mode.', isIndent = False, noLeadingTabs = 0)
+      print(file = sys.stdout)
+  
+      # Write out admin help.
+      self.adminModeUsage(admin)
+  
+      # Write out pipeline usage information.
+      self.pipelineUsage()
 
     # Terminate gkno.
     exit(0)
 
+  # Write out the version number and date at the start of the message.
+  def printHeader(self):
+    print(file = sys.stdout)
+    commitLength = len(self.commitID) + 18
+    length       = max(commitLength, 29)
+    self.writeSimpleLine('=' * length, isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('University of Utah gkno package', isIndent = True, noLeadingTabs = 0)
+    print(file = sys.stdout)
+    self.writeSimpleLine('version:    ' + self.version, isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('date:       ' + self.date, isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('git commit: ' + self.commitID, isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('=' * length, isIndent = False, noLeadingTabs = 0)
+    print(file = sys.stdout)
+
+  # Print out all of the available help categories.
+  def writeHelpCategories(self):
+    self.writeSimpleLine('==============================', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('gkno pipeline categories', isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('==============================', isIndent = False, noLeadingTabs = 0)
+    print(file = sys.stdout)
+    self.writeSimpleLine('All available pipelines are organised into the following categories:', isIndent = False, noLeadingTabs = 0)
+    print(file = sys.stdout)
+
+    # List all of the categories with their descriptions.
+    length = len(max(self.helpCategories.keys(), key = len)) + 3
+    for category in sorted(self.helpCategories.keys()):
+      self.writeComplexLine([category + ':', self.helpCategories[category]], [length, 0], noLeadingTabs = 1)
+
+    print(file = sys.stdout)
+    self.writeSimpleLine('To see all of the pipelines in a specific category, use the command line:', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('gkno --categories <category>', isIndent = True, noLeadingTabs = 0)
+    print(file = sys.stdout)
+
+  # Print out informatino on a specific help category.
+  def specificHelpCategory(self, providedCategory, path):
+    self.writeSimpleLine('==========================', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('gkno help categories', isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('==========================', isIndent = False, noLeadingTabs = 0)
+    print(file = sys.stdout)
+
+    # Check that the requested category is valid. If not, find the closest category to that written.
+    category = providedCategory
+    if providedCategory not in self.helpCategories:
+      rankedList = sc.rankListByString(self.helpCategories, category)
+      category   = rankedList[0]
+
+    # Open all the pipeline and determine the categories they fall into.
+    categories, descriptions = self.findPipelinesInCategories(path)
+
+    self.writeSimpleLine('Following is a list of pipelines in the category \'' + category + '\':', isIndent = False, noLeadingTabs = 0)
+    print(file = sys.stdout)
+
+    # If there are no pipelines in the category, write this out.
+    try: pipelines = categories[category]
+    except:
+      self.writeSimpleLine('The requested category (' + category + ') does not contain any pipelines.', isIndent = True, noLeadingTabs = 0)
+      print(file = sys.stdout)
+
+    # Write out the pipelines that fall into the category.
+    else:
+
+      # Get all the pipelines and their descriptions.
+      length = len(max(pipelines, key = len)) + 3
+      for pipeline in sorted(pipelines):
+        self.writeComplexLine([pipeline + ':', descriptions[pipeline]], [length, 0], noLeadingTabs = 1)
+      print(file = sys.stdout)
+
+    # If the entered category did not exactly match one of the supplied categories, provide
+    # a warning that the provided list was based on the assumed most likely category.
+    if providedCategory not in self.helpCategories: self.invalidCategory(providedCategory, category)
+
+  # Loop over all the pipeline and identify the categories they belong to.
+  def findPipelinesInCategories(self, path):
+    categories   = {}
+    descriptions = {}
+    for filename in os.listdir(path):
+      if filename.endswith(".json"):
+        pipeline = pc.pipelineConfiguration()
+        pipeline.getConfigurationData(path + filename)
+
+        # Store the pipeline description.
+        descriptions[pipeline.name] = pipeline.description
+
+        # Loop over the categories and populate the data structure.
+        for category in pipeline.categories:
+
+          # Check that the category is allowed.
+          if category not in self.helpCategories: self.errors.invalidCategory(pipeline.name, category, self.helpCategories)
+          if category not in categories: categories[str(category)] = [str(pipeline.name)]
+          else: categories[str(category)].append(str(pipeline.name))
+
+    # Return the dictionary containing all the tools connected to each category.
+    return categories, descriptions
+
+  # If the requested category is not available, write out the available categories.
+  def invalidCategory(self, providedCategory, category):
+
+    # Define text for the output message.
+    self.writeSimpleLine('===============', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('    WARNING    ', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('===============', isIndent = False, noLeadingTabs = 0)
+    print(file = sys.stdout)
+    self.writeSimpleLine('The requested category \'' + providedCategory + '\' is invalid. The pipelines shown are those available in the \'' + \
+    category + '\' category. If this was not the desired category, please remove the category name from the command line to see a full list ' + \
+    'of the available categories.', isIndent = False, noLeadingTabs = 0)
+    print(file = sys.stdout)
+
+  # List all available pipelines.
+  def listAllPipelines(self, path):
+    self.writeSimpleLine('========================', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('all gkno pipelines', isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('========================', isIndent = False, noLeadingTabs = 0)
+    print(file = sys.stdout)
+    self.writeSimpleLine('Following is a list of all of the pipelines currently available:', isIndent = False, noLeadingTabs = 0)
+    print(file = sys.stdout)
+
+    # Get the names and descriptions for all the pipelines.
+    descriptions = {}
+    for filename in os.listdir(path):
+      if filename.endswith(".json"):
+        pipeline = pc.pipelineConfiguration()
+        pipeline.getConfigurationData(path + filename)
+
+        # Get and store the description.
+        descriptions[pipeline.name] = pipeline.description
+
+    # Write out all the pipelines with their descriptions.
+    length = len(max(descriptions.keys(), key = len)) + 3
+    for pipeline in sorted(descriptions): self.writeComplexLine([pipeline + ':', descriptions[pipeline]], [length, 0], noLeadingTabs = 1)
+    print(file = sys.stdout)
+
   # Print usage information on the admin mode of operation.
   def adminModeUsage(self, admin):
-    self.writeSimpleLine('================', isIndent = True, noLeadingTabs = 0)
-    self.writeSimpleLine('=  admin mode  =', isIndent = True, noLeadingTabs = 0)
-    self.writeSimpleLine('================', isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('================', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('=  admin mode  =', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('================', isIndent = False, noLeadingTabs = 0)
     print(file = sys.stdout)
     self.writeSimpleLine('Usage: gkno <admin operation> [options]', isIndent = True, noLeadingTabs = 0)
     print(file = sys.stdout)
@@ -74,21 +223,22 @@ class helpInformation:
 
   # Print out how to use pipelines.
   def pipelineUsage(self):
-    self.writeSimpleLine('=======================', isIndent = True, noLeadingTabs = 0)
-    self.writeSimpleLine('= gkno pipeline usage =', isIndent = True, noLeadingTabs = 0)
-    self.writeSimpleLine('=======================', isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine('=======================', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('= gkno pipeline usage =', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('=======================', isIndent = False, noLeadingTabs = 0)
     print(file = sys.stdout)
     self.writeSimpleLine('Usage: gkno [pipeline] [options]', isIndent = True, noLeadingTabs = 0)
     print(file = sys.stdout)
 
-    self.writeSimpleLine('All pipelines are classified into help categories. To see these categories, type:', isIndent = True, noLeadingTabs = 1)
-    self.writeSimpleLine('gkno --pipeline-categories (-pcat)', isIndent = False, noLeadingTabs = 4)
+    self.writeSimpleLine('All pipelines are classified by category. To see a list of the available categories, type:', isIndent = True, \
+    noLeadingTabs = 1)
+    self.writeSimpleLine('gkno --categories (-cat)', isIndent = False, noLeadingTabs = 4)
     print(file = sys.stdout)
-    self.writeSimpleLine('To see a list of all pipelines in a category, type:', isIndent = False, noLeadingTabs = 2)
-    self.writeSimpleLine('gkno --tool-categories (-pcat) [category]', isIndent = False, noLeadingTabs = 4)
+    self.writeSimpleLine('To see a list of all pipelines contained in a category, type:', isIndent = False, noLeadingTabs = 2)
+    self.writeSimpleLine('gkno --categories (-cat) [category]', isIndent = False, noLeadingTabs = 4)
     print(file = sys.stdout)
-    self.writeSimpleLine('To see all available pipeliness, type:', isIndent = False, noLeadingTabs = 2)
-    self.writeSimpleLine('gkno --all-pipelines (-apo)', isIndent = False, noLeadingTabs = 4)
+    self.writeSimpleLine('To see a list of all available pipelines, type:', isIndent = False, noLeadingTabs = 2)
+    self.writeSimpleLine('gkno --all-pipelines (-ap)', isIndent = False, noLeadingTabs = 4)
     print(file = sys.stdout)
 
   # Print out help on gkno arguments.
@@ -130,9 +280,9 @@ class helpInformation:
 
     # Write out general header information.
     print(file = sys.stdout)
-    self.writeSimpleLine((len(superpipeline.pipeline) + 26) * '=', isIndent = False, noLeadingTabs = 0)
-    self.writeSimpleLine('gkno pipeline usage - ' + superpipeline.pipeline, isIndent = False, noLeadingTabs = 0)
-    self.writeSimpleLine((len(superpipeline.pipeline) + 26) * '=', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine((len(superpipeline.pipeline) + 28) * '=', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('gkno pipeline usage - ' + superpipeline.pipeline, isIndent = True, noLeadingTabs = 0)
+    self.writeSimpleLine((len(superpipeline.pipeline) + 28) * '=', isIndent = False, noLeadingTabs = 0)
     print(file = sys.stdout)
     self.writeSimpleLine('Usage: gkno ' + superpipeline.pipeline + ' [options]', isIndent = False, noLeadingTabs = 0)
     print(file = sys.stdout)
@@ -173,8 +323,7 @@ class helpInformation:
       if '.' not in argument:
         graphNodeID       = arguments[argument].graphNodeID
         category          = arguments[argument].category
-        # FIXME SORT DATATYPE
-        dataType          = 'string'#arguments[argument].dataType
+        dataType          = arguments[argument].dataType
         description       = arguments[argument].description
         isRequired        = graph.getGraphNodeAttribute(graphNodeID, 'isRequired')
         shortFormArgument = arguments[argument].shortFormArgument
@@ -307,99 +456,6 @@ class helpInformation:
 ### REMOVE OR AMEND ###
 #######################
 
-
-  # Print out info on pipeline categories.
-  def writePipelineCategories(self):
-    if not self.suppressHeader:
-      print('========================', file = sys.stdout)
-      print('gkno pipeline categories', file = sys.stdout)
-      print('========================', file = sys.stdout)
-      print(file = sys.stdout)
-      text = 'Following is a list of pipeline categories. To see all of the pipelines in a specific category, use the command line: \'gkno ' + \
-      '--pipeline-categories <category>\''
-      self.writeFormattedText('', text, 0, 1, '')
-      self.writeFormattedText('', '\t', 0, 1, '')
-
-    length = 0
-    for category in self.allowedPipelineCategories.keys():
-      if len(category) > length: length = len(category)
-
-    for category in sorted(self.allowedPipelineCategories.keys()):
-      description   = self.allowedPipelineCategories[category]
-      printCategory = category + ": "
-      self.writeFormattedText(printCategory, description, length + 2, 2, '')
-
-  # Write out all the tools/pipelines within a category.
-  def writeCategory(self, isToolHelp, allowedCategories, category):
-    print('====================', file = sys.stdout)
-    print('gkno help categories', file = sys.stdout)
-    print('====================', file = sys.stdout)
-    print(file = sys.stdout)
-
-    # Check that the requested category is valid. If not, find the closest category to that written.
-    isInvalidCategory = False
-    if category not in allowedCategories:
-      isInvalidCategory = True
-      providedCategory  = category
-      category          = self.findCategory(category, allowedCategories)
-
-    runType = 'tools' if isToolHelp else 'pipelines'
-    self.writeFormattedText('', 'Following is a list of ' + runType + ' in the category \'' + category + '\'', 0, 1, '')
-    print(file = sys.stdout)
-
-    # Write out the tools and pipelines that fall into the category.
-    if isToolHelp: available = self.availableToolCategories
-    else: available = self.availablePipelineCategories
-
-    # Check that there are tools/pipelines in the category.
-    try: values = available[category]
-    except:
-      self.writeFormattedText('', 'The requested category (' + category + ') does not contain any ' + runType + '.', 0, 1, '')
-      exit(0)
-
-    # Write out the tools/pipelines.
-    length = 0
-    for value in values.keys():
-      if len(value) > length: length = len(value)
-
-    for value in sorted(values.keys()):
-      description = values[value]
-      printValue  = value + ": "
-      self.writeFormattedText(printValue, description, length + 2, 2, '')
-
-    # If the entered category did not exactly match one of the supplied categories, provide
-    # a warning that the provided list was based on the assumed most likely category.
-    if isInvalidCategory: self.invalidCategory(providedCategory, category)
-
-  # Compare the given category against all the available categories and determine which
-  # was the most likely.
-  def findCategory(self, category, allowedCategories):
-    maxRatio           = 0
-    mostLikelyCategory = ''
-    for allowedCategory in allowedCategories:
-      match = SequenceMatcher(None, allowedCategory, category)
-      ratio = match.ratio()
-      if ratio > maxRatio:
-        maxRatio           = ratio
-        mostLikelyCategory = allowedCategory
-
-    return mostLikelyCategory
-
-  # If the requested category is not available, write out the available categories.
-  def invalidCategory(self, providedCategory, category):
-
-    # Suppress writing the header when writing available categories.
-    self.suppressHeader = True
-
-    # Define text for the output message.
-    print(file = sys.stdout)
-    print('===============', file = sys.stdout)
-    print('    WARNING    ', file = sys.stdout)
-    print('===============', file = sys.stdout)
-    print(file = sys.stdout)
-    self.writeFormattedText('', 'The requested category \'' + providedCategory + '\' is not valid. The shown tools are available ' + \
-    'in the \'' + category + '\' category. If this was not the desired category, please check the command line.', 0, 1, '')
-    print(file = sys.stdout)
 
   # If an admin mode's help was requested.
   def selectAdminModeUsage(self, admin):
