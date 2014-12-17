@@ -672,12 +672,12 @@ class pipelineGraph:
 
   # Loop over all of the nodes for which arguments are defined on the command line and create the nodes
   # that are missing.
-  def attachArgumentValuesToNodes(self, superpipeline, arguments, nodeList):
+  def attachArgumentValuesToNodes(self, superpipeline, args, arguments, nodeList):
 
     # Loop over all of the set pipeline arguments.
     for argument in arguments:
       values      = arguments[argument]
-      nodeAddress = superpipeline.argumentToNode[argument]
+      nodeAddress = args.arguments[argument].graphNodeID
       self.setGraphNodeAttribute(nodeAddress, 'values', values)
 
     # Loop over the list of nodes and extract those for which a node requires creating.

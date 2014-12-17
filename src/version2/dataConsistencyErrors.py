@@ -40,7 +40,9 @@ class consistencyErrors:
   # A required argument has not been set.
   def unsetRequiredArgument(self, longFormArgument, shortFormArgument, description):
     self.text.append('The required command line argument \'' + longFormArgument + ' (' + shortFormArgument + ')\' is missing.')
-    self.text.append('This argument is described as \'' + description + '\'.')
+    self.text.append('The description of this argument is:')
+    self.text.append('\t')
+    self.text.append(description)
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 

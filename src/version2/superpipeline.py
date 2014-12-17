@@ -46,10 +46,6 @@ class superpipelineClass:
     # Keep track of the graph node that each pipeline configuration file node points to.
     self.configurationNodes = {}
 
-    # Link the arguments in the top level pipeline to the graph nodes and vice versa.
-    self.nodeToArgument = {}
-    self.argumentToNode = {}
-
   # Starting from the defined pipeline, process and validate the configuration file contents,
   # then dig down through all the nested pipelines and validate their configuration files.
   def getNestedPipelineData(self, path, filename):

@@ -110,7 +110,7 @@ def checkExtensions(value, extensions):
 
 # Loop over all tasks in the pipeline and check that all required values (excepting output files
 # which can be constructed) have been defined.
-def checkRequiredArguments(graph, superpipeline):
+def checkRequiredArguments(graph, superpipeline, args):
 
   # Define error handling,
   errors = er.consistencyErrors()
@@ -162,14 +162,14 @@ def checkRequiredArguments(graph, superpipeline):
 
                   # Check to see if this node can have it's values set with a top level pipeline argument (e.g. can
                   # be set without defining the task on the command line).
-                  if superpipeline.nodeToArgument[nodeID][2]:
+                  try: linkedArgument = args.nodeToArgument[nodeID]
+                  except: linkedArgument = None
+                  if '.' not in linkedArgument:
 
                     # Get the short form of the pipeline argument and the argument description.
-                    pipeline          = superpipeline.pipelineConfigurationData[superpipeline.pipeline]
-                    longFormArgument  = superpipeline.nodeToArgument[nodeID][1]
-                    shortFormArgument = pipeline.getArgumentAttribute(longFormArgument, 'shortFormArgument')
-                    pipelineNodeID    = pipeline.getArgumentAttribute(longFormArgument, 'nodeID')
-                    description       = superpipeline.getNodeAttribute(pipelineNodeID, 'description')
+                    longFormArgument  = args.nodeToArgument[nodeID]
+                    shortFormArgument = args.arguments[longFormArgument].shortFormArgument
+                    description       = args.arguments[longFormArgument].description
                     errors.unsetRequiredArgument(longFormArgument, shortFormArgument, description)
 
                   # If this is not a top level argument, provide a different error.

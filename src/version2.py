@@ -150,8 +150,8 @@ def main():
   graph.addPipelineParameterSets(superpipeline, 'default')
 
   # Determine the requested parameter set and add the parameters to the graph.
-  #parameterSet = command.getParameterSetName(command.gknoArguments)
-  #if parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, parameterSet)
+  parameterSet = command.getParameterSetName(command.gknoArguments)
+  if parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, parameterSet)
 
   # Parse the command line arguments and associate the supplied command line argument values with the graph node.
   command.parseTasksAsArguments(superpipeline)
@@ -159,7 +159,7 @@ def main():
 
   # Create nodes for all of the defined arguments for which a node does not already exist and add the
   # argument values to the node.
-  graph.attachArgumentValuesToNodes(superpipeline, command.pipelineArguments, associatedNodes)
+  graph.attachArgumentValuesToNodes(superpipeline, args, command.pipelineArguments, associatedNodes)
 
   # Loop over all nodes and expand lists of arguments. This is only valid for arguments that are either options,
   # or inputs to a task that are not simulateously outputs of another task.
@@ -174,7 +174,7 @@ def main():
 
   # Loop over all of the nodes in the graph and ensure that all required arguments have been set. Any output files
   # for which construction instructions are provided can be omitted from this check.
-  #dc.checkRequiredArguments(graph, superpipeline)
+  dc.checkRequiredArguments(graph, superpipeline, args)
 
   # With the graph built, all arguments attached and checked, the final task prior to converting the graph to
   # an executable is to construct filenames that have not been provided.
