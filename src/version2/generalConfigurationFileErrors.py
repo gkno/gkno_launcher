@@ -40,8 +40,8 @@ class generalConfigurationFileErrors:
 
     # If a section, but no ID are provided.
     elif section and not id:
-      self.text.append('The \'' + section + '\' section of the configuration file contains the attribute \'' + attribute + '\' which is not ' + \
-      'valid. The allowed attributes for this section are:')
+      self.text.append('The \'' + section + '\' section of the configuration file contains a node with the attribute \'' + attribute + '\' which ' + \
+      'is not valid. The allowed attributes for this section are:')
 
     # If both the section and ID are provided.
     else:

@@ -44,6 +44,9 @@ class taskNodeAttributes:
     # Define the tool to be used to execute this task.
     self.tool = None
 
+    # Record if this node should be included in any graphical output.
+    self.includeInPlot = False
+
 # Define a data structure for file/option nodes.
 class dataNodeAttributes:
   def __init__(self, nodeType):
@@ -82,7 +85,8 @@ class pipelineGraph:
     # Loop over all the pipeline tasks and build a node for each task. If the task is
     # a pipeline, ignore it.
     for task in pipeline.pipelineTasks:
-      if not pipeline.getTaskAttribute(task, 'pipeline'): self.addTaskNode(address + str(task), pipeline.getTaskAttribute(task, 'tool'))
+      if not pipeline.getTaskAttribute(task, 'pipeline'):
+        self.addTaskNode(superpipeline, address + str(task), pipeline.getTaskAttribute(task, 'tool'))
 
     # Add unique nodes.
     self.addUniqueNodes(superpipeline, pipeline)
@@ -463,7 +467,8 @@ class pipelineGraph:
           if nodeID in superpipeline.sharedNodeIDs or nodeID in superpipeline.uniqueNodeIDs: print('graph.connectNodesToTasks - 2'); exit(0)
 
           # Generate the node address (e.g. the output file for a task in the external pipeline).
-          nodeAddress = str(externalPipeline + '.' + nodeID) if externalPipeline else str(nodeID)
+          #nodeAddress = str(externalPipeline + '.' + nodeID) if externalPipeline else str(nodeID)
+          nodeAddress = str(taskAddress + '.' + taskArgument)
 
           # Get the tool associated with this task.
           tool = superpipeline.tasks[address + taskAddress]
@@ -520,9 +525,16 @@ class pipelineGraph:
 
   # Add a task node to the graph.
   #TODO ADD TOOLS CLASS ATTRIBUTES TO TASK NODE.
-  def addTaskNode(self, task, tool):
+  def addTaskNode(self, superpipeline, task, tool):
+
+    # Define the attributes object and add the tool.
     attributes      = taskNodeAttributes()
     attributes.tool = tool
+
+    # Mark the node for plotting.
+    attributes.includeInPlot = superpipeline.tasksInPlot[task]
+
+    # Add the node to the graph.
     self.graph.add_node(task, attributes = attributes)
 
   # Add an edge to the graph.

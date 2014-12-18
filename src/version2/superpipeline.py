@@ -46,6 +46,9 @@ class superpipelineClass:
     # Keep track of the graph node that each pipeline configuration file node points to.
     self.configurationNodes = {}
 
+    # Keep track of the tasks that should be included in a plot.
+    self.tasksInPlot = {}
+
   # Starting from the defined pipeline, process and validate the configuration file contents,
   # then dig down through all the nested pipelines and validate their configuration files.
   def getNestedPipelineData(self, path, filename):
@@ -112,6 +115,9 @@ class superpipelineClass:
 
           # Store the task with its tool.
           self.tasks[taskAddress] = tool
+
+          # Store whether the task should be included in a plot.
+          self.tasksInPlot[taskAddress] = pipeline.getTaskAttribute(task, 'includeInPlot')
 
         # Store the unique and shared node IDs for each pipeline.
         self.uniqueNodeIDs += [str(pipeline.address + '.' + nodeID) if pipeline.address else str(nodeID) for nodeID in pipeline.getUniqueNodeIDs()]

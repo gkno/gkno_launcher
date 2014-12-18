@@ -14,9 +14,14 @@ import sys
 # Define a class to store task attribtues.
 class taskAttributes:
   def __init__(self):
-    self.pipeline        = None
-    self.task            = None
-    self.tool            = None
+
+    # Store the task name along with the tool or pipeline used to execute the task.
+    self.pipeline = None
+    self.task     = None
+    self.tool     = None
+
+    # Record if the task should be included in any plots.
+    self.includeInPlot = False
 
 # Define a class to hold the pipeline arguments.
 class pipelineArguments:
@@ -91,6 +96,9 @@ class uniqueGraphNodes:
     # Define the task and argument to which this node applies.
     self.task         = None
     self.taskArgument = None
+
+    # Record if the unique node should be included in the plot.
+    self.includeInPlot = False
 
 # Define a class to store information on edges to be created. These are defined using the
 # 'connect nodes and edges' section in the pipeline configuration file.
@@ -240,15 +248,17 @@ class pipelineConfiguration:
   def checkPipelineTasks(self, data):
 
     # Define the allowed general attributes.
-    allowedAttributes             = {}
-    allowedAttributes['pipeline'] = (str, False, True, 'pipeline')
-    allowedAttributes['task']     = (str, True, True, 'task')
-    allowedAttributes['tool']     = (str, False, True, 'tool')
+    allowedAttributes                    = {}
+    allowedAttributes['include in plot'] = (bool, False, True, 'includeInPlot')
+    allowedAttributes['pipeline']        = (str, False, True, 'pipeline')
+    allowedAttributes['task']            = (str, True, True, 'task')
+    allowedAttributes['tool']            = (str, False, True, 'tool')
 
     for taskInformation in data:
 
       # Define a set of information to be used in help messages.
-      helpInfo = (self.name, 'pipeline tasks', taskInformation)
+      #helpInfo = (self.name, 'pipeline tasks', taskInformation)
+      helpInfo = (self.name, 'pipeline tasks', None)
 
       # Define a class to store task attribtues.
       attributes = taskAttributes()
@@ -295,10 +305,11 @@ class pipelineConfiguration:
     if 'unique graph nodes' not in data: return
 
     # Define the allowed nodes attributes.
-    allowedAttributes                  = {}
-    allowedAttributes['id']            = (str, True, True, 'id')
-    allowedAttributes['task']          = (str, True, True, 'task')
-    allowedAttributes['task argument'] = (str, False, True, 'taskArgument')
+    allowedAttributes                    = {}
+    allowedAttributes['id']              = (str, True, True, 'id')
+    allowedAttributes['include in plot'] = (bool, False, True, 'includeInPlot')
+    allowedAttributes['task']            = (str, True, True, 'task')
+    allowedAttributes['task argument']   = (str, False, True, 'taskArgument')
 
     # Loop over all of the defined nodes.
     for uniqueNode in data['unique graph nodes']:

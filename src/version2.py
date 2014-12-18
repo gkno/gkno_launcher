@@ -180,15 +180,15 @@ def main():
   # an executable is to construct filenames that have not been provided.
   construct.constructFilenames(graph, superpipeline)
 
-  for task in graph.workflow:
-    print(task)
-    print('\tINPUTS')
-    for nodeID in graph.getPredecessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-    print('\tOUTPUTS')
-    for nodeID in graph.getSuccessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+#  for task in graph.workflow:
+#    print(task)
+#    print('\tINPUTS')
+#    for nodeID in graph.getPredecessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+#    print('\tOUTPUTS')
+#    for nodeID in graph.getSuccessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
 
   plot = pg.plotGraph()
-  plot.plot(graph.graph.copy(), 'test.dot')
+  plot.plot(superpipeline, graph.graph.copy(), 'test.dot', isReduced = True)
 
 if __name__ == "__main__":
   main()
