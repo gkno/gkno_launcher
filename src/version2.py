@@ -188,7 +188,8 @@ def main():
 #    for nodeID in graph.getSuccessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
 
   plot = pg.plotGraph()
-  plot.plot(superpipeline, graph.graph.copy(), 'test.dot', isReduced = True)
+  plot.plot(superpipeline, graph.graph.copy(), 'reduced.dot', isReduced = True)
+  #plot.plot(superpipeline, graph.graph.copy(), 'full.dot', isReduced = False)
 
 if __name__ == "__main__":
   main()

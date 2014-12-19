@@ -464,11 +464,10 @@ class pipelineGraph:
         # task. 
         #TODO PUT IN A CHECK THAT IF CREATING NODES, THE ABOVE LOGIC IS VALID.
         else:
-          if nodeID in superpipeline.sharedNodeIDs or nodeID in superpipeline.uniqueNodeIDs: print('graph.connectNodesToTasks - 2'); exit(0)
 
           # Generate the node address (e.g. the output file for a task in the external pipeline).
-          #nodeAddress = str(externalPipeline + '.' + nodeID) if externalPipeline else str(nodeID)
           nodeAddress = str(taskAddress + '.' + taskArgument)
+          if nodeAddress in superpipeline.sharedNodeIDs or nodeAddress in superpipeline.uniqueNodeIDs: print('graph.connectNodesToTasks - 2'); exit(0)
 
           # Get the tool associated with this task.
           tool = superpipeline.tasks[address + taskAddress]
