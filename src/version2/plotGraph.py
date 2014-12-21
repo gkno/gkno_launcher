@@ -73,6 +73,7 @@ class plotGraph():
       graphToDraw.node[taskNodeID]["shape"]     = 'doublecircle'
       graphToDraw.node[taskNodeID]["label"]     = taskName
       graphToDraw.node[taskNodeID]["fillcolor"] = '#2d8fc1'
+      graphToDraw.node[taskNodeID]["fontname"]  = 'montserrat'
       graphToDraw.node[taskNodeID]["fontcolor"] = 'white'
 
     # Remove nodes marked for removal, handling edges that are left dangling.
@@ -87,6 +88,7 @@ class plotGraph():
       graphToDraw.node[nodeID]["shape"]     = 'circle'
       graphToDraw.node[nodeID]["style"]     = 'filled'
       graphToDraw.node[nodeID]["fillcolor"] = '#123d53'
+      graphToDraw.node[nodeID]["fontname"]  = 'montserrat'
       graphToDraw.node[nodeID]["fontcolor"] = 'white'
 
     # Draw the graph from left to right, rather than default top to bottom.

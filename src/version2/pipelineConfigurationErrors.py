@@ -60,3 +60,22 @@ class pipelineErrors:
     'nodes in the configuration file defining arguments contain both a short and long form version of the argument.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  # A pipeline long form argument conflicts with a gkno argument.
+  def conflictWithGknoArguments(self, longFormArgument, shortFormArgument, isLongForm):
+    self.text.append('Pipeline argument conflicts with a gkno argument.')
+
+    # If a long form argument conflicts.
+    if isLongForm:
+      self.text.append('The pipeline argument \'' + longFormArgument + '\' is also a gkno argument. Please modify the pipeline configuration ' + \
+      'file such that all arguments are unique.')
+
+    # If a short form argument conflicts.
+    else:
+      self.text.append('The pipeline argument \'' + longFormArgument + '\' has the short form \'' + shortFormArgument + '\'. This short form is ' + \
+      'shared with the short form version of a gkno argument. Please modify the pipeline configuration file such that all arguments (both the ' + \
+      'long and short forms are unique.')
+
+    # Write out the error and terminate.
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

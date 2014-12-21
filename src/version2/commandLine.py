@@ -102,24 +102,28 @@ class commandLine:
   # Determine the mode in which gkno is being run. This is either in 'admin' mode for general gkno
   # admin (resource management, building, updating etc.), 'help' for different categories of help
   # or 'run' for running tools or pipelines.
-  def determineMode(self, isAdmin):
+  def determineMode(self, isAdmin, gkno):
     if isAdmin: return 'admin'
 
     # Check if help for gkno specific arguments was requested.
-    if '--gkno-arguments' in self.arguments or '-gh' in self.arguments: return 'gkno help'
+    if gkno.options['GKNO-ARGUMENTS'].longFormArgument in self.arguments or gkno.options['GKNO-ARGUMENTS'].shortFormArgument in self.arguments:
+      return 'gkno help'
 
     # If help is requested, return the mode 'help'.
-    if '--help' in self.arguments or '-h' in self.arguments: return 'help'
+    if gkno.options['GKNO-HELP'].longFormArgument in self.arguments or gkno.options['GKNO-HELP'].shortFormArgument in self.arguments: return 'help'
 
     # Check if help categories were requested.
-    if '--categories' in self.arguments or '-cat' in self.arguments: 
-      if '--categories' in self.arguments: self.category = self.arguments['--categories'][0]
-      elif '-cat' in self.arguments: self.category = self.arguments['-cat'][0]
+    if gkno.options['GKNO-CATEGORIES'].longFormArgument in self.arguments or gkno.options['GKNO-CATEGORIES'].shortFormArgument in self.arguments:
+      if gkno.options['GKNO-CATEGORIES'].longFormArgument in self.arguments:
+        self.category = self.arguments[gkno.options['GKNO-CATEGORIES'].longFormArgument][0]
+      elif gkno.options['GKNO-CATEGORIES'].shortFormArgument in self.arguments:
+        self.category = self.arguments[gkno.options['GKNO-CATEGORIES'].shortFormArgument][0]
 
       return 'categories'
 
     # Check if a list of all pipeline was requested.
-    if '--all-pipelines' in self.arguments or '-ap' in self.arguments: return 'list-all'
+    if gkno.options['GKNO-ALL-PIPELINES'].longFormArgument in self.arguments: return 'list-all'
+    if gkno.options['GKNO-ALL-PIPELINES'].shortFormArgument in self.arguments: return 'list-all'
 
     # If no information is provided (e.g. no admin, tool or pipeline), return 'help' as the mode.
     if len(self.commands) == 0 and len(self.arguments) == 0: return 'help'
@@ -195,7 +199,7 @@ class commandLine:
 
     # Loop over the gkno specific arguments looking for the --parameter-set argument,
     for argument in arguments:
-      if argument == '--parameter-set':
+      if argument == gkno.options['GKNO-PARAMETER-SET'].longFormArgument:
 
         # Only one parameter set can be defined.
         if len(arguments[argument]) != 1: self.errors.multipleParameterSets()

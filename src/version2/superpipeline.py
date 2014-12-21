@@ -5,6 +5,7 @@ from copy import deepcopy
 
 import version2.pipelineConfiguration as pipelineConfiguration
 import version2.toolConfiguration as toolConfiguration
+import version2.pipelineConfigurationErrors as perr
 
 import json
 import os
@@ -13,6 +14,9 @@ import sys
 # Define a class to store task attributes.
 class superpipelineClass:
   def __init__(self, pipeline):
+
+    # Define errors.
+    self.pipelineErrors = perr.pipelineErrors()
 
     # Record the name of the top level pipeline, e.g. that defined on the command line.
     self.pipeline = None
@@ -95,6 +99,15 @@ class superpipelineClass:
         tier += 1
         if not tierHasNestedPipeline: checkForNestedPipelines = False
   
+  # Check that none of the pipeline arguments conflict with gkno arguments.
+  def checkForArgumentConflicts(self, longForms, shortForms):
+    for tier in self.pipelinesByTier:
+      for pipeline in self.pipelinesByTier[tier]:
+        for longFormArgument in self.pipelineConfigurationData[pipeline].longFormArguments:
+          shortFormArgument = self.pipelineConfigurationData[pipeline].longFormArguments[longFormArgument].shortFormArgument
+          if longFormArgument in longForms: self.pipelineErrors.conflictWithGknoArguments(longFormArgument, shortFormArgument, isLongForm = True)
+          if shortFormArgument in shortForms: self.pipelineErrors.conflictWithGknoArguments(longFormArgument, shortFormArgument, isLongForm = False)
+
   # Get all of the tools from each pipeline in the super pipeline and store them.
   def setTools(self):
     for tier in self.pipelinesByTier:

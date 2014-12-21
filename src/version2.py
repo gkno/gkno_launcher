@@ -59,9 +59,12 @@ def main():
   # along with 'resource' management.
   admin = au.adminUtils(sourcePath)
 
+  # Initialise the gkno specific configuration file.
+  gknoConfiguration = gc.gknoConfiguration(configurationFilesPath)
+
   # Determine if gkno is being run in admin mode and then determine the mode.
   isAdminMode, adminMode = command.isAdmin(admin.allModes)
-  mode                   = command.determineMode(isAdminMode)
+  mode                   = command.determineMode(isAdminMode, gknoConfiguration)
 
   # If not being run in admin mode, determine the name of the pipeline being run. Note that
   # for the code, a tool is considered a pipeline with a single task, so the terminology
@@ -72,13 +75,10 @@ def main():
   else: print('NOT HANDLED ADMIN'); exit(0)
 
   # If the pipeline name has not been supplied, general help must be required.
-  if not pipeline or mode == 'categories' or mode == 'list-all': gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
+  if not pipeline: gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
 
   # Get the path to the pipeline and configuration file.
   filename = files.checkPipeline(toolConfigurationFilesPath, pipelineConfigurationFilesPath, pipeline)
-
-  # Initialise the gkno specific configuration file.
-  gknoConfiguration = gc.gknoConfiguration(configurationFilesPath)
 
   # Generate a super pipeline class that holds information about the full collection of all nested
   # pipeline.
@@ -87,6 +87,12 @@ def main():
   # Dig down into the pipeline configuration files, validate the contents of the configuration files
   # and build the super pipeline tiered structure.
   superpipeline.getNestedPipelineData(pipelineConfigurationFilesPath, filename)
+
+  # Check that no pipeline arguments conflict with gkno arguments.
+  superpipeline.checkForArgumentConflicts(gknoConfiguration.arguments, gknoConfiguration.shortForms)
+
+  # If help categories were requested, or a list of all available pipelines, print them here.
+  if mode == 'categories' or mode == 'list-all': gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
 
   # Generate a list of all tasks, tools, unique and shared node IDs from all pipelines.
   superpipeline.setTools()
@@ -180,16 +186,20 @@ def main():
   # an executable is to construct filenames that have not been provided.
   construct.constructFilenames(graph, superpipeline)
 
-#  for task in graph.workflow:
-#    print(task)
-#    print('\tINPUTS')
-#    for nodeID in graph.getPredecessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-#    print('\tOUTPUTS')
-#    for nodeID in graph.getSuccessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+  # At this point, all values must be set. If anything is missing, the pipeline is incomplete or data hasn't been
+  # provided. If this is the case, terminate.
+  dc.finalCheck(graph, superpipeline)
+
+  for task in graph.workflow:
+    print(task)
+    print('\tINPUTS')
+    for nodeID in graph.getPredecessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+    print('\tOUTPUTS')
+    for nodeID in graph.getSuccessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
 
   plot = pg.plotGraph()
+  plot.plot(superpipeline, graph.graph.copy(), 'full.dot', isReduced = False)
   plot.plot(superpipeline, graph.graph.copy(), 'reduced.dot', isReduced = True)
-  #plot.plot(superpipeline, graph.graph.copy(), 'full.dot', isReduced = False)
 
 if __name__ == "__main__":
   main()

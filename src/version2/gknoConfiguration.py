@@ -38,6 +38,10 @@ class gknoConfiguration:
     # Open the gkno configuration file.
     data = fileHandling.fileHandling.readConfigurationFile(path + '/tools/gknoConfiguration.json', True)
 
+    # Store the long and short form arguments keyed by the identifier (e.g. GKNO-HELP) from the gkno
+    # configuration file.
+    self.options = {}
+
     # As part of the initialisation, validate the contents of the gkno configuration file.
     self.validate(data['gkno options'])
 
@@ -54,14 +58,14 @@ class gknoConfiguration:
     allowedAttributes['values']              = (list, True, True, 'values')
 
     # Loop over all of the defined gkno arguments.
-    for argument in data:
+    for identifier in data:
 
       # Define a set of information to be used in help messages.
-      helpInfo = ('gknoConfiguration', 'gkno options', argument)
+      helpInfo = ('gknoConfiguration', 'gkno options', identifier)
 
       # Check all the supplied attributes.
       attributes = gknoArgumentAttributes()
-      success, attributes = methods.checkAttributes(data[argument], allowedAttributes, attributes, True, helpInfo)
+      success, attributes = methods.checkAttributes(data[identifier], allowedAttributes, attributes, True, helpInfo)
 
       # Check that the argument name is unique.
       #TODO ERROR
@@ -71,3 +75,6 @@ class gknoConfiguration:
       # Store the attributes for the argument.
       self.arguments[attributes.longFormArgument]   = attributes
       self.shortForms[attributes.shortFormArgument] = attributes.longFormArgument
+      self.options[str(identifier)]                 = gknoArgumentAttributes()
+      self.options[identifier].longFormArgument     = attributes.longFormArgument
+      self.options[identifier].shortFormArgument    = attributes.shortFormArgument

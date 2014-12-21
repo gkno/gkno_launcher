@@ -10,7 +10,7 @@ import os
 import sys
 
 # Loop over all of the nodes in a graph and check that the values associated with it
-# are of the correct type and have extensions consistene with all of the arguments
+# are of the correct type and have extensions consistent with all of the arguments
 # attached to the node.
 def checkValues(graph, superpipeline):
 
@@ -181,10 +181,27 @@ def checkRequiredArguments(graph, superpipeline, args):
                     description       = graph.getArgumentAttribute(nodeID, task, 'description')
                     errors.unsetRequiredNestedArgument(task, argument, shortFormArgument, description, superpipeline.pipeline)
 
+          # If there is no node for this argument, this means that the pipeline configuration file does not contain
+          # a unique or shared node for this argument. In addition, the value has not been provided on the command
+          # line. This means that no values will get assigned to this argument, so terminate.
+          if not foundNode:
+            instructions = toolData.getArgumentAttribute(argument, 'constructionInstructions')
+            if not instructions: errors.noInputNode(task, tool, argument)
+ 
+            # If there are instructions, but no node, construct the node.
+            else:
+              if instructions['method'] == 'from tool argument':
+                print('FIGURE OUT INDEXES', instructions['use argument']); exit(0)
+                nodeAddress = str(task + '.' + instructions['use argument'].strip('-') + '.' + argument.strip('--'))
+              else:
+                nodeAddress = str(task + '.' + argument.strip('-'))
+              argumentAttributes = toolData.getArgumentData(argument)
+              graph.graph.add_node(nodeAddress, attributes = gr.dataNodeAttributes('file'))
+              graph.graph.add_edge(nodeAddress, task, attributes = argumentAttributes)
 
         # Now consider output files.
         else:
-          hasInstructions = toolData.getArgumentAttribute(argument, 'constructionInstructions')
+          instructions = toolData.getArgumentAttribute(argument, 'constructionInstructions')
 
           # Loop over all output nodes looking for edges that use this argument.
           for nodeID in graph.CM_getOutputNodes(graph.graph, task):
@@ -194,22 +211,80 @@ def checkRequiredArguments(graph, superpipeline, args):
             if edgeArgument == argument:
               foundNode = True
 
-              # If construction instructions are provided, just mark this node as constructable.
-              if hasInstructions and nodeID not in constructableNodes: constructableNodes.append(nodeID)
+              # If construction instructions are provided.
+              if instructions:
+
+                # If the construction is to proceed by using an argument from this task, ensure that that
+                # argument is either set, or is itelf a successor to another task and so has the chance
+                # of being set.
+                if instructions['method'] == 'from tool argument':
+                  longFormArgument = toolData.getLongFormArgument(instructions['use argument'])
+                  foundNode        = False
+                  for predecessorNodeID in graph.graph.predecessors(task):
+                    edgeArgument = graph.getArgumentAttribute(predecessorNodeID, task, 'longFormArgument')
+                    if edgeArgument == longFormArgument:
+                      foundNode           = True
+                      constructionNodeID = predecessorNodeID
+
+                  # If the node being used to construct the file does not exist, then it cannot be used to 
+                  # construct the filename and so some data must be missing.
+                  if not foundNode: errors.noNodeForConstruction(task, tool, argument, longFormArgument)
+
+                  # If the node used to construct this filename exists, but it has no values or predecessors,
+                  # it also will not be able to be used to construct the argument.
+                  elif not graph.getGraphNodeAttribute(constructionNodeID, 'values'):
+                    if not graph.graph.predecessors(constructionNodeID):
+                      # TODO ERROR
+                      print('dataConsistency - checkRequiredArguments - cannot construct output', task, argument); exit(1)
+
+                # Add the node to the list of nodes that have the potential to be constructed.
+                if nodeID not in constructableNodes: constructableNodes.append(nodeID)
 
               # If no instructions are provided check that there are values supplied.
               # TODO ERROR
-              if not hasInstructions and not graph.getGraphNodeAttribute(nodeID, 'values'):
-                print('dataConsistency - checkRequiredArguments - output error', argument); exit(1)
+              if not instructions and not graph.getGraphNodeAttribute(nodeID, 'values'):
+                print('dataConsistency - checkRequiredArguments - output error', task, argument); exit(1)
 
           # If no node exists for this argument, determine the course of action.
           if not foundNode:
 
             # If there are no instructions for constructing the filename, terminate.
-            if not hasInstructions: print('dataConsistency.checkRequiredArguments - no output node', task, argument); exit(1)
+            if not instructions: print('dataConsistency.checkRequiredArguments - no output node', task, argument); exit(1)
 
             # If there are instructions, but no node, construct the node.
             nodeAddress        = str(task + '.' + argument.strip('-'))
             argumentAttributes = toolData.getArgumentData(argument)
             graph.graph.add_node(nodeAddress, attributes = gr.dataNodeAttributes('file'))
             graph.graph.add_edge(task, nodeAddress, attributes = argumentAttributes)
+
+# Loop over all of the tasks in the pipeline and check that all arguments identified as required have been
+# set. Then check that all arguments listed as required in the pipeline configuration file as required have
+# been set.
+def finalCheck(graph, superpipeline):
+
+  # Loop over all of the pipeline tasks.
+  for task in superpipeline.tasks:
+    tool     = superpipeline.tasks[task]
+    toolData = superpipeline.toolConfigurationData[tool]
+
+    # Loop over all arguments for the tool, identify those that are required and check that they exist.
+    print('TEST', task, tool)
+    for argument in toolData.arguments:
+      if toolData.arguments[argument].isRequired:
+
+        # Find the node for this argument in the graph.
+        isOutput = toolData.arguments[argument].isOutput
+        if isOutput: nodeIDs = graph.graph.successors(task)
+        else: nodeIDs = graph.graph.predecessors(task)
+
+        # Loop over the nodes and check the argument for the node.
+        checkNode = None
+        for nodeID in nodeIDs:
+          if isOutput: edgeArgument = graph.getArgumentAttribute(task, nodeID, 'longFormArgument')
+          else: edgeArgument = graph.getArgumentAttribute(nodeID, task, 'longFormArgument')
+
+          # If this is the correct node, break out of the loop and check that values have been set.
+          if edgeArgument == argument:
+            checkNode = nodeID
+            break
+        print('\t', argument, checkNode)
