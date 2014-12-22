@@ -3,7 +3,6 @@
 from __future__ import print_function
 import dataConsistencyErrors as er
 import superpipeline
-import graph as gr
 
 import json
 import os
@@ -12,7 +11,7 @@ import sys
 # Loop over all of the nodes in a graph and check that the values associated with it
 # are of the correct type and have extensions consistent with all of the arguments
 # attached to the node.
-def checkValues(graph, superpipeline):
+def checkValues(graph, superpipeline, args):
 
   # First, loop over all of the option nodes and check that the data types for all values
   # are valid.
@@ -23,12 +22,12 @@ def checkValues(graph, superpipeline):
     # Get all of the arguments that use this node and check the data types. Start with all predecessors to this node.
     expectedDataType = None
     for predecessorNodeID in graph.getPredecessors(nodeID):
-      expectedDataType = checkNode(graph, predecessorNodeID, nodeID, nodeType, expectedDataType, values)
+      expectedDataType = checkNode(graph, args, predecessorNodeID, nodeID, nodeType, expectedDataType, values, isInput = False)
     for successorNodeID in graph.getSuccessors(nodeID):
-      expectedDataType = checkNode(graph, nodeID, successorNodeID, nodeType, expectedDataType, values)
+      expectedDataType = checkNode(graph, args, nodeID, successorNodeID, nodeType, expectedDataType, values, isInput = True)
 
 # Check the values for a node.
-def checkNode(graph, source, target, nodeType, expectedDataType, values):
+def checkNode(graph, args, source, target, nodeType, expectedDataType, values, isInput):
  
   # Define error handling,
   errors = er.consistencyErrors()
@@ -59,7 +58,22 @@ def checkNode(graph, source, target, nodeType, expectedDataType, values):
 
         # Not all files have specified extensions. If no extensions are supplied, this check should not be performed.
         if extensions:
-          if not checkExtensions(value, extensions): errors.invalidExtension(longFormArgument, value, extensions)
+          task       = target if isInput else source
+          fileNodeID = source if isInput else target
+
+          # Fail if there was an error.
+          if not checkExtensions(value, extensions):
+
+            # Check if a top level pipeline argument exists.
+            if fileNodeID in args.nodeToArgument:
+              pipelineLongFormArgument  = args.nodeToArgument[fileNodeID]
+              pipelineShortFormArgument = args.arguments[pipelineLongFormArgument].shortFormArgument
+              errors.invalidExtensionPipeline(pipelineLongFormArgument, pipelineShortFormArgument, value, extensions)
+
+            # If no pipeline argument exists for this argument, list the task and argument.
+            else:
+              shortFormArgument = graph.CM_getArgumentAttribute(graph.graph, source, target, 'shortFormArgument')
+              errors.invalidExtension(task, longFormArgument, shortFormArgument, value, extensions)
 
   # Return the expected data type
   return expectedDataType
@@ -101,6 +115,9 @@ def isCorrectDataType(value, dataType):
 # Check that the file extension is valid.
 def checkExtensions(value, extensions):
 
+  # If the extensions are not known (e.g. are listed as 'no extension') do not perform this check.
+  if len(extensions) == 1 and extensions[0] == 'no extension': return True
+
   # If the value ends with any of the extensions, return True.
   for extension in extensions:
     if value.endswith(extension): return True
@@ -110,7 +127,7 @@ def checkExtensions(value, extensions):
 
 # Loop over all tasks in the pipeline and check that all required values (excepting output files
 # which can be constructed) have been defined.
-def checkRequiredArguments(graph, superpipeline, args):
+def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
 
   # Define error handling,
   errors = er.consistencyErrors()
@@ -164,7 +181,7 @@ def checkRequiredArguments(graph, superpipeline, args):
                   # be set without defining the task on the command line).
                   try: linkedArgument = args.nodeToArgument[nodeID]
                   except: linkedArgument = None
-                  if '.' not in linkedArgument:
+                  if linkedArgument and '.' not in linkedArgument:
 
                     # Get the short form of the pipeline argument and the argument description.
                     longFormArgument  = args.nodeToArgument[nodeID]
@@ -191,13 +208,29 @@ def checkRequiredArguments(graph, superpipeline, args):
             # If there are instructions, but no node, construct the node.
             else:
               if instructions['method'] == 'from tool argument':
-                print('FIGURE OUT INDEXES', instructions['use argument']); exit(0)
-                nodeAddress = str(task + '.' + instructions['use argument'].strip('-') + '.' + argument.strip('--'))
+                argumentToUse = instructions['use argument']
+
+                # Find all nodes for this task using this argument.
+                for predecessorNodeID in graph.graph.predecessors(task):
+                  if graph.getArgumentAttribute(predecessorNodeID, task, 'longFormArgument') == argumentToUse:
+                    nodeAddress = str(predecessorNodeID + '.' + argument.strip('-'))
+
+                    # Add the node and edge.
+                    argumentAttributes = toolData.getArgumentData(argument)
+                    graph.addFileNode(superpipeline, task, argument, nodeAddress)
+                    graph.addEdge(nodeAddress, task, argumentAttributes)
+
+                    # Attach the name of the node from which this filename is constructed to the node.
+                    graph.setGraphNodeAttribute(nodeAddress, 'constructUsingNode', predecessorNodeID)
+
+              # If there are instructions, but the construction method does not use another argument, create a node.
               else:
                 nodeAddress = str(task + '.' + argument.strip('-'))
-              argumentAttributes = toolData.getArgumentData(argument)
-              graph.graph.add_node(nodeAddress, attributes = gr.dataNodeAttributes('file'))
-              graph.graph.add_edge(nodeAddress, task, attributes = argumentAttributes)
+
+                # Add the node and edge.
+                argumentAttributes = toolData.getArgumentData(argument)
+                graph.addFileNode(superpipeline, task, argument, nodeAddress)
+                graph.addEdge(nodeAddress, task, argumentAttributes)
 
         # Now consider output files.
         else:
@@ -254,37 +287,5 @@ def checkRequiredArguments(graph, superpipeline, args):
             # If there are instructions, but no node, construct the node.
             nodeAddress        = str(task + '.' + argument.strip('-'))
             argumentAttributes = toolData.getArgumentData(argument)
-            graph.graph.add_node(nodeAddress, attributes = gr.dataNodeAttributes('file'))
-            graph.graph.add_edge(task, nodeAddress, attributes = argumentAttributes)
-
-# Loop over all of the tasks in the pipeline and check that all arguments identified as required have been
-# set. Then check that all arguments listed as required in the pipeline configuration file as required have
-# been set.
-def finalCheck(graph, superpipeline):
-
-  # Loop over all of the pipeline tasks.
-  for task in superpipeline.tasks:
-    tool     = superpipeline.tasks[task]
-    toolData = superpipeline.toolConfigurationData[tool]
-
-    # Loop over all arguments for the tool, identify those that are required and check that they exist.
-    print('TEST', task, tool)
-    for argument in toolData.arguments:
-      if toolData.arguments[argument].isRequired:
-
-        # Find the node for this argument in the graph.
-        isOutput = toolData.arguments[argument].isOutput
-        if isOutput: nodeIDs = graph.graph.successors(task)
-        else: nodeIDs = graph.graph.predecessors(task)
-
-        # Loop over the nodes and check the argument for the node.
-        checkNode = None
-        for nodeID in nodeIDs:
-          if isOutput: edgeArgument = graph.getArgumentAttribute(task, nodeID, 'longFormArgument')
-          else: edgeArgument = graph.getArgumentAttribute(nodeID, task, 'longFormArgument')
-
-          # If this is the correct node, break out of the loop and check that values have been set.
-          if edgeArgument == argument:
-            checkNode = nodeID
-            break
-        print('\t', argument, checkNode)
+            graph.addFileNode(superpipeline, task, argument, nodeAddress)
+            graph.addEdge(task, nodeAddress, argumentAttributes)

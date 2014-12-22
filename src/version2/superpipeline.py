@@ -130,7 +130,7 @@ class superpipelineClass:
           self.tasks[taskAddress] = tool
 
           # Store whether the task should be included in a plot.
-          self.tasksInPlot[taskAddress] = pipeline.getTaskAttribute(task, 'includeInPlot')
+          self.tasksInPlot[taskAddress] = pipeline.getTaskAttribute(task, 'includeInReducedPlot')
 
         # Store the unique and shared node IDs for each pipeline.
         self.uniqueNodeIDs += [str(pipeline.address + '.' + nodeID) if pipeline.address else str(nodeID) for nodeID in pipeline.getUniqueNodeIDs()]

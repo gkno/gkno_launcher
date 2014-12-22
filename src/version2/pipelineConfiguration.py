@@ -21,7 +21,7 @@ class taskAttributes:
     self.tool     = None
 
     # Record if the task should be included in any plots.
-    self.includeInPlot = False
+    self.includeInReducedPlot = False
 
 # Define a class to hold the pipeline arguments.
 class pipelineArguments:
@@ -98,7 +98,7 @@ class uniqueGraphNodes:
     self.taskArgument = None
 
     # Record if the unique node should be included in the plot.
-    self.includeInPlot = False
+    self.includeInReducedPlot = False
 
 # Define a class to store information on edges to be created. These are defined using the
 # 'connect nodes and edges' section in the pipeline configuration file.
@@ -248,11 +248,11 @@ class pipelineConfiguration:
   def checkPipelineTasks(self, data):
 
     # Define the allowed general attributes.
-    allowedAttributes                    = {}
-    allowedAttributes['include in plot'] = (bool, False, True, 'includeInPlot')
-    allowedAttributes['pipeline']        = (str, False, True, 'pipeline')
-    allowedAttributes['task']            = (str, True, True, 'task')
-    allowedAttributes['tool']            = (str, False, True, 'tool')
+    allowedAttributes                            = {}
+    allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
+    allowedAttributes['pipeline']                = (str, False, True, 'pipeline')
+    allowedAttributes['task']                    = (str, True, True, 'task')
+    allowedAttributes['tool']                    = (str, False, True, 'tool')
 
     for taskInformation in data:
 
@@ -305,11 +305,11 @@ class pipelineConfiguration:
     if 'unique graph nodes' not in data: return
 
     # Define the allowed nodes attributes.
-    allowedAttributes                    = {}
-    allowedAttributes['id']              = (str, True, True, 'id')
-    allowedAttributes['include in plot'] = (bool, False, True, 'includeInPlot')
-    allowedAttributes['task']            = (str, True, True, 'task')
-    allowedAttributes['task argument']   = (str, False, True, 'taskArgument')
+    allowedAttributes                            = {}
+    allowedAttributes['id']                      = (str, True, True, 'id')
+    allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
+    allowedAttributes['task']                    = (str, True, True, 'task')
+    allowedAttributes['task argument']           = (str, False, True, 'taskArgument')
 
     # Loop over all of the defined nodes.
     for uniqueNode in data['unique graph nodes']:

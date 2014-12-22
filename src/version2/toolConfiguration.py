@@ -58,6 +58,9 @@ class argumentAttributes:
     # pipeline builder.
     self.isSuggestible = False
 
+    # Record whether the node associated with this argument should be included in a reduced plot.
+    self.includeInReducedPlot = True
+
 # Define a class to hold information about the tool.
 class toolAttributes:
   def __init_(self):
@@ -191,19 +194,20 @@ class toolConfiguration:
 
     # Define the allowed input argument attributes.
     allowedAttributes = {}
-    allowedAttributes['allow multiple values'] = (bool, False, True, 'allowMultipleValues')
-    allowedAttributes['command line argument'] = (str, True, True, 'commandLineArgument')
-    allowedAttributes['data type']             = (str, True, True, 'dataType')
-    allowedAttributes['description']           = (str, True, True, 'description')
-    allowedAttributes['extensions']            = (list, False, True, 'extensions')
-    allowedAttributes['stub extensions']       = (list, False, True, 'stubExtensions')
-    allowedAttributes['hide in help']          = (bool, False, True, 'hideInHelp')
-    allowedAttributes['long form argument']    = (str, True, True, 'longFormArgument')
-    allowedAttributes['required']              = (bool, False, True, 'isRequired')
-    allowedAttributes['short form argument']   = (str, False, True, 'shortFormArgument')
-    allowedAttributes['construct filename']    = (dict, False, True, 'constructionInstructions')
-    allowedAttributes['is filename stub']      = (bool, False, True, 'isStub')
-    allowedAttributes['suggestible']           = (bool, False, True, 'isSuggestible')
+    allowedAttributes['allow multiple values']   = (bool, False, True, 'allowMultipleValues')
+    allowedAttributes['command line argument']   = (str, True, True, 'commandLineArgument')
+    allowedAttributes['construct filename']      = (dict, False, True, 'constructionInstructions')
+    allowedAttributes['data type']               = (str, True, True, 'dataType')
+    allowedAttributes['description']             = (str, True, True, 'description')
+    allowedAttributes['extensions']              = (list, False, True, 'extensions')
+    allowedAttributes['hide in help']            = (bool, False, True, 'hideInHelp')
+    allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
+    allowedAttributes['is filename stub']        = (bool, False, True, 'isStub')
+    allowedAttributes['long form argument']      = (str, True, True, 'longFormArgument')
+    allowedAttributes['required']                = (bool, False, True, 'isRequired')
+    allowedAttributes['short form argument']     = (str, False, True, 'shortFormArgument')
+    allowedAttributes['stub extensions']         = (list, False, True, 'stubExtensions')
+    allowedAttributes['suggestible']             = (bool, False, True, 'isSuggestible')
 
     # Return if there are no input arguments.
     if 'Inputs' not in arguments: return
@@ -218,16 +222,17 @@ class toolConfiguration:
     allowedAttributes = {}
     allowedAttributes['allow multiple values'] = (bool, False, True, 'allowMultipleValues')
     allowedAttributes['command line argument'] = (str, True, True, 'commandLineArgument')
+    allowedAttributes['construct filename']    = (dict, False, True, 'constructionInstructions')
     allowedAttributes['data type']             = (str, True, True, 'dataType')
     allowedAttributes['description']           = (str, True, True, 'description')
     allowedAttributes['extensions']            = (list, False, True, 'extensions')
-    allowedAttributes['stub extensions']       = (list, False, True, 'stubExtensions')
     allowedAttributes['hide in help']          = (bool, False, True, 'hideInHelp')
+    allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
+    allowedAttributes['is filename stub']      = (bool, False, True, 'isStub')
     allowedAttributes['long form argument']    = (str, True, True, 'longFormArgument')
     allowedAttributes['required']              = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']   = (str, False, True, 'shortFormArgument')
-    allowedAttributes['construct filename']    = (dict, False, True, 'constructionInstructions')
-    allowedAttributes['is filename stub']      = (bool, False, True, 'isStub')
+    allowedAttributes['stub extensions']       = (list, False, True, 'stubExtensions')
 
     # Return if there are no input arguments.
     if 'Outputs' not in arguments: return
@@ -240,15 +245,16 @@ class toolConfiguration:
 
     # Define the allowed input argument attributes.
     allowedAttributes = {}
-    allowedAttributes['allow multiple values'] = (bool, False, True, 'allowMultipleValues')
-    allowedAttributes['command line argument'] = (str, True, True, 'commandLineArgument')
-    allowedAttributes['data type']             = (str, True, True, 'dataType')
-    allowedAttributes['description']           = (str, True, True, 'description')
-    allowedAttributes['extensions']            = (list, False, True, 'extensions')
-    allowedAttributes['hide in help']          = (bool, False, True, 'hideInHelp')
-    allowedAttributes['long form argument']    = (str, True, True, 'longFormArgument')
-    allowedAttributes['required']              = (bool, False, True, 'isRequired')
-    allowedAttributes['short form argument']   = (str, False, True, 'shortFormArgument')
+    allowedAttributes['allow multiple values']   = (bool, False, True, 'allowMultipleValues')
+    allowedAttributes['command line argument']   = (str, True, True, 'commandLineArgument')
+    allowedAttributes['data type']               = (str, True, True, 'dataType')
+    allowedAttributes['description']             = (str, True, True, 'description')
+    allowedAttributes['extensions']              = (list, False, True, 'extensions')
+    allowedAttributes['hide in help']            = (bool, False, True, 'hideInHelp')
+    allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
+    allowedAttributes['long form argument']      = (str, True, True, 'longFormArgument')
+    allowedAttributes['required']                = (bool, False, True, 'isRequired')
+    allowedAttributes['short form argument']     = (str, False, True, 'shortFormArgument')
 
     # Loop over all the other categories of arguments.
     for category in arguments:

@@ -45,7 +45,7 @@ class taskNodeAttributes:
     self.tool = None
 
     # Record if this node should be included in any graphical output.
-    self.includeInPlot = False
+    self.includeInReducedPlot = False
 
 # Define a data structure for file/option nodes.
 class dataNodeAttributes:
@@ -59,6 +59,11 @@ class dataNodeAttributes:
 
     # Store values for this node.
     self.values = []
+
+    # Some input file nodes have their values generated from another node associated
+    # with the task (e.g. index files). For these nodes, keep track of the node from
+    # which their values should be constructed.
+    self.constructUsingNode = None
 
 # Define a class to store and manipulate the pipeline graph.
 class pipelineGraph:
@@ -75,6 +80,9 @@ class pipelineGraph:
 
     # Store parameter set information.
     self.ps = ps.parameterSets()
+
+    # Associate the graph nodes with the tasks and arguments that use it.
+    self.nodeToTaskAndArgument = {}
 
   # Using a pipeline configuration file, build and connect the defined nodes.
   def buildPipelineTasks(self, pipeline, superpipeline):
@@ -133,22 +141,19 @@ class pipelineGraph:
   
         # Add the required nodes and edges.
         if isInput and isStub:
-          self.addStubNodes(nodeAddress, stubExtensions)
+          self.addStubNodes(superpipeline, taskAddress, longFormArgument, nodeAddress, stubExtensions)
           self.addStubEdges(nodeAddress, taskAddress, stubExtensions, argumentAttributes, isInput = True)
         elif isInput:
-          nodeAttributes = dataNodeAttributes('file')
-          self.graph.add_node(str(nodeAddress), attributes = nodeAttributes)
+          self.addFileNode(superpipeline, taskAddress, longFormArgument, str(nodeAddress))
           self.addEdge(nodeAddress, taskAddress, argumentAttributes)
         elif isOutput and isStub:
-          self.addStubNodes(nodeAddress, stubExtensions)
+          self.addStubNodes(superpipeline, taskAddress, longFormArgument, nodeAddress, stubExtensions)
           self.addStubEdges(taskAddress, nodeAddress, stubExtensions, argumentAttributes, isInput = False)
         elif isOutput:
-          nodeAttributes = dataNodeAttributes('file')
-          self.graph.add_node(str(nodeAddress), attributes = nodeAttributes)
+          self.addFileNode(superpipeline, taskAddress, longFormArgument, str(nodeAddress))
           self.addEdge(taskAddress, nodeAddress, argumentAttributes)
         else:
-          nodeAttributes = dataNodeAttributes('option')
-          self.graph.add_node(str(nodeAddress), attributes = nodeAttributes)
+          self.addOptionNode(superpipeline, taskAddress, longFormArgument, str(nodeAddress))
           self.addEdge(nodeAddress, taskAddress, argumentAttributes)
 
         # Mark this node as having been added to the graph.
@@ -341,13 +346,13 @@ class pipelineGraph:
     # All of the stub arguments need to share the same set of extensions. Take the first task in the
     # list and create a file node for each of the extensions. Each subsequent task will be checked to 
     # ensure it shares the same extensions before being linked.
-    information = tasks[0]
-    for extension in tasks[0].stubExtensions:
-      self.graph.add_node(str(nodeAddress + '.' + extension), attributes = dataNodeAttributes('file'))
-      allowedExtensions.append(extension)
+    for extension in tasks[0].stubExtensions: allowedExtensions.append(extension)
 
     # Loop over all the tasks sharing the node.
     for information in tasks:
+
+      # Extract information from the information
+      taskAddress = information.taskAddress
 
       # Link the pipeline configuration file nodes to the graph node.
       superpipeline.configurationNodes[information.nodeID] = str(nodeAddress + '.' + extension)
@@ -356,21 +361,23 @@ class pipelineGraph:
       longFormArgument, attributes = self.getAttributes(superpipeline, information.tool, information.argument)
 
       for extension in information.stubExtensions:
+
+        # Add the extensions to the attributes.
+        attributes.extensions = [str(extension)]
+
+        # Create th file node.
+        self.addFileNode(superpipeline, taskAddress, longFormArgument, str(nodeAddress + '.' + extension))
+
         #TODO ERROR
         if extension not in allowedExtensions: print('graph.allStubArguments'); exit(0)
 
         # Add the edges.
-        source = str(nodeAddress + '.' + extension) if information.isInput else information.taskAddress
-        target = information.taskAddress if information.isInput else str(nodeAddress + '.' + extension)
-        self.graph.add_edge(source, target, attributes = attributes)
+        source = str(nodeAddress + '.' + extension) if information.isInput else taskAddress
+        target = taskAddress if information.isInput else str(nodeAddress + '.' + extension)
+        self.addEdge(source, target, attributes)
 
   # If a set of shared configuration file nodes have no stubs, create the node and join to all of the tasks.
   def noStubArguments(self, superpipeline, nodeAddress, tasks, isFile):
-
-    # Add the new node to the graph.
-    if isFile: nodeAttributes = dataNodeAttributes('file')
-    else: nodeAttributes = dataNodeAttributes('option')
-    self.graph.add_node(str(nodeAddress), attributes = nodeAttributes) 
 
     # Loop over the tasks, adding the necessary edges.
     for information in tasks:
@@ -380,6 +387,12 @@ class pipelineGraph:
 
       # Get the argument attributes associated with this argument and add the edge.
       longFormArgument, argumentAttributes = self.getAttributes(superpipeline, information.tool, information.argument)
+
+      # Add the node to the graph.
+      if isFile: self.addFileNode(superpipeline, information.taskAddress, longFormArgument, str(nodeAddress))
+      else: self.addOptionNode(superpipeline, information.taskAddress, longFormArgument, str(nodeAddress))
+
+      # Add the edges.
       if information.isOutput: self.addEdge(information.taskAddress, nodeAddress, attributes = argumentAttributes)
       else: self.addEdge(nodeAddress, information.taskAddress, attributes = argumentAttributes)
 
@@ -394,10 +407,9 @@ class pipelineGraph:
         usedExtension = information.stubExtension
         break
 
-    # Create the node to which all of the tasks link (stub nodes will have additional nodes added as they are
-    # encountered).
+    # Create the name of the node to create.
     modifiedNodeAddress = str(nodeAddress + '.' + usedExtension)
-    self.graph.add_node(str(modifiedNodeAddress), attributes = dataNodeAttributes('file'))
+    self.addFileNode(superpipeline, information.taskAddress, information.argument, modifiedNodeAddress)
 
     # Loop over the tasks, adding the necessary edges.
     for information in tasks:
@@ -420,8 +432,12 @@ class pipelineGraph:
         # all the nodes.
         for extension in information.stubExtensions:
 
+          # Add the extension to the attributes.
+          argumentAttributes.extensions = [str(extension)]
+
           # Add the nodes associated with the stub that are not being linked to the other tasks,
-          if extension != information.stubExtension: self.graph.add_node(str(nodeAddress + '.' + extension), attributes = dataNodeAttributes('file'))
+          if extension != information.stubExtension:
+            self.addFileNode(superpipeline, information.taskAddress, longFormArgument, str(nodeAddress + '.' + extension))
 
           # Add the edge.
           if information.isInput: self.addEdge(str(nodeAddress + '.' + extension), information.taskAddress, attributes = argumentAttributes)
@@ -466,7 +482,7 @@ class pipelineGraph:
         else:
 
           # Generate the node address (e.g. the output file for a task in the external pipeline).
-          nodeAddress = str(taskAddress + '.' + taskArgument)
+          nodeAddress = str(taskAddress + '.' + taskArgument.split('--', 1)[-1])
           if nodeAddress in superpipeline.sharedNodeIDs or nodeAddress in superpipeline.uniqueNodeIDs: print('graph.connectNodesToTasks - 2'); exit(0)
 
           # Get the tool associated with this task.
@@ -480,8 +496,8 @@ class pipelineGraph:
           if isStub: stubExtensions = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'stubExtensions')    
 
           # Create the file node and connect it to the task for which it is an output.
-          if (address + nodeAddress) not in self.graph: self.graph.add_node(address + nodeAddress, attributes = dataNodeAttributes('file'))
-          self.graph.add_edge(address + taskAddress, address + nodeAddress, attributes = argumentAttributes)
+          self.addFileNode(superpipeline, address + taskAddress, longFormArgument, address + nodeAddress)
+          self.addEdge(address + taskAddress, address + nodeAddress, argumentAttributes)
 
           # Store the node ID for connecting to the target task node.
           sourceNodeIDs.append(str(address + nodeAddress))
@@ -514,31 +530,6 @@ class pipelineGraph:
     argumentAttributes = toolAttributes.getArgumentData(longFormArgument)
 
     return longFormArgument, argumentAttributes
-
-  # If this is a filename stub, a node for each of the files needs to be created. The
-  # node ID should be the node ID with the file extension appended.
-  def addStubNodes(self, nodeID, extensions):
-    for extension in extensions:
-      nodeAttributes = dataNodeAttributes('file')
-      self.graph.add_node(nodeID + '.' + str(extension), attributes = nodeAttributes)
-
-  # Add a task node to the graph.
-  #TODO ADD TOOLS CLASS ATTRIBUTES TO TASK NODE.
-  def addTaskNode(self, superpipeline, task, tool):
-
-    # Define the attributes object and add the tool.
-    attributes      = taskNodeAttributes()
-    attributes.tool = tool
-
-    # Mark the node for plotting.
-    attributes.includeInPlot = superpipeline.tasksInPlot[task]
-
-    # Add the node to the graph.
-    self.graph.add_node(task, attributes = attributes)
-
-  # Add an edge to the graph.
-  def addEdge(self, source, target, attributes):
-    self.graph.add_edge(source, target, attributes = attributes)
 
   # Add edges to the graph for files created from a stub.
   def addStubEdges(self, source, target, extensions, attributes, isInput):
@@ -631,13 +622,6 @@ class pipelineGraph:
         # Check if this edge exists.
         edges = self.checkIfEdgeExists(task, longFormArgument, not isOutput)
 
-        # Define the node attributes.
-        if isInput or isOutput: nodeAttributes = dataNodeAttributes('file')
-        else: nodeAttributes = dataNodeAttributes('option')
-
-        # Attach the values to the node attributes.
-        nodeAttributes.values = values
-
         # If no edges were found, create a new node, add the edges and values.
         if not edges:
 
@@ -646,10 +630,19 @@ class pipelineGraph:
 
           # Create a name for the node. This should be the name of the current task with the argument
           # appended (dashes removed).
+          address = str(task) + '.' if task != superpipeline.pipeline else ''
           nodeAddress = task + '.' + longFormArgument.split('--', 1)[-1]
-          if nodeAddress not in self.graph: self.graph.add_node(nodeAddress, attributes = nodeAttributes)
-          if isOutput: self.graph.add_edge(str(task), str(nodeAddress), attributes = argumentAttributes)
-          else: self.graph.add_edge(str(nodeAddress), str(task), attributes = argumentAttributes)
+
+          # Create the node.
+          if isInput or isOutput: self.addFileNode(superpipeline, task, longFormArgument, nodeAddress)
+          else: self.addOptionNode(superpipeline, task, longFormArgument, nodeAddress)
+
+          # Add the values to the created node.
+          self.setGraphNodeAttribute(nodeAddress, 'values', values)
+
+          # Add the edge.
+          if isOutput: self.addEdge(str(task), str(nodeAddress), argumentAttributes)
+          else: self.addEdge(str(nodeAddress), str(task), argumentAttributes)
 
         # If a single possible edge was found, populate the relevant node with the values.
         elif len(edges) == 1: print('HELLO', edges)
@@ -722,19 +715,19 @@ class pipelineGraph:
         if isStub:
           for extension in stubExtensions:
             modifiedNodeAddress = str(nodeAddress + '.' + extension)
-            self.graph.add_node(modifiedNodeAddress, attributes = nodeAttributes)
+            self.addFileNode(superpipeline, taskAddress, argument, modifiedNodeAddress)
 
             # Add the edge.
-            if isOutput: self.graph.add_edge(taskAddress, modifiedNodeAddress, attributes = argumentAttributes)
-            else: self.graph.add_edge(modifiedNodeAddress, taskAddress, attributes = argumentAttributes)
+            if isOutput: self.addEdge(taskAddress, modifiedNodeAddress, argumentAttributes)
+            else: self.addEedge(modifiedNodeAddress, taskAddress, argumentAttributes)
 
         # If this is not a stub, add a single node.
         else:
-          self.graph.add_node(nodeAddress, attributes = nodeAttributes)
+          self.addFileNode(superpipeline, taskAddress, argument, nodeAddress)
 
           # Add the edge.
-          if isOutput: self.graph.add_edge(taskAddress, nodeAddress, attributes = argumentAttributes)
-          else: self.graph.add_edge(nodeAddress, taskAddress, attributes = argumentAttributes)
+          if isOutput: self.addEdge(taskAddress, nodeAddress, argumentAttributes)
+          else: self.addEdge(nodeAddress, taskAddress, argumentAttributes)
 
       # If the node already exists, just add the values to the node.
       else: self.setGraphNodeAttribute(nodeAddress, 'values', values)
@@ -778,10 +771,52 @@ class pipelineGraph:
         # Replace the values with the modifiedValues.
         self.setGraphNodeAttribute(nodeID, 'values', modifiedValues)
 
-  # Return an attribute from a graph node.
-  def getGraphNodeAttribute(self, nodeID, attribute):
-    try: return getattr(self.graph.node[nodeID]['attributes'], attribute)
-    except: return None
+  ########################################
+  ##  methods for modifying the graph.  ##
+  ########################################
+
+  # Add a task node to the graph.
+  #TODO ADD TOOLS CLASS ATTRIBUTES TO TASK NODE.
+  def addTaskNode(self, superpipeline, task, tool):
+
+    # Define the attributes object and add the tool.
+    attributes      = taskNodeAttributes()
+    attributes.tool = tool
+
+    # Mark the node for plotting.
+    attributes.includeInReducedPlot = superpipeline.tasksInPlot[task]
+
+    # Add the node to the graph.
+    self.graph.add_node(task, attributes = attributes)
+
+  # Add a file node to the graph.
+  def addFileNode(self, superpipeline, task, argument, nodeAddress):
+    nodeAttributes = dataNodeAttributes('file')
+
+    # Add the node to the graph, if it does not already exist.
+    if nodeAddress not in self.graph: self.graph.add_node(str(nodeAddress), attributes = nodeAttributes)
+
+    # Associate the node being added (or that already existed), with the task and argument.
+    if nodeAddress not in self.nodeToTaskAndArgument: self.nodeToTaskAndArgument[nodeAddress] = []
+    self.nodeToTaskAndArgument[nodeAddress].append((task, argument))
+
+  # Add an option node to the graph.
+  def addOptionNode(self, superpipeline, task, argument, nodeAddress):
+    nodeAttributes = dataNodeAttributes('option')
+    self.graph.add_node(str(nodeAddress), attributes = nodeAttributes)
+
+    # Associate the node being added (or that already existed), with the task and argument.
+    if nodeAddress not in self.nodeToTaskAndArgument: self.nodeToTaskAndArgument[nodeAddress] = []
+    self.nodeToTaskAndArgument[nodeAddress].append((task, argument))
+
+  # If this is a filename stub, a node for each of the files needs to be created. The
+  # node ID should be the node ID with the file extension appended.
+  def addStubNodes(self, superpipeline, task, argument, nodeID, extensions):
+    for extension in extensions: self.addFileNode(superpipeline, task, argument, nodeID + '.' + str(extension))
+
+  # Add an edge to the graph.
+  def addEdge(self, source, target, attributes):
+    self.graph.add_edge(source, target, attributes = attributes)
 
   # Set an attribute for a graph node.
   def setGraphNodeAttribute(self, nodeID, attribute, values):
@@ -789,6 +824,15 @@ class pipelineGraph:
     except: return False
 
     return True
+
+  #######################################
+  ##  methods for querying the graph.  ##
+  #######################################
+
+  # Return an attribute from a graph node.
+  def getGraphNodeAttribute(self, nodeID, attribute):
+    try: return getattr(self.graph.node[nodeID]['attributes'], attribute)
+    except: return None
 
   # Get the an argument attribute from graph edge.
   def getArgumentAttribute(self, source, target, attribute):
@@ -871,6 +915,20 @@ class pipelineGraph:
 
     # Get the predecessor nodes.
     return graph.predecessors(task)
+
+  # Get all of the input file nodes for a task.
+  @classmethod
+  def CM_getInputFileNodes(cls, graph, task):
+
+    # Check that the supplied node (e.g. task), is a task and not another type of node.
+    if cls.CM_getGraphNodeAttribute(graph, task, 'nodeType') != 'task': print('ERROR - getInputNodes - 1'); exit(0)
+
+    # Get the predecessor nodes.
+    nodeIDs = []
+    for nodeID in graph.predecessors(task):
+      if cls.CM_getGraphNodeAttribute(graph, nodeID, 'nodeType') == 'file': nodeIDs.append(nodeID)
+
+    return nodeIDs
 
   # Get all of the output nodes for a task.
   @classmethod

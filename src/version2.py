@@ -172,34 +172,47 @@ def main():
   graph.expandLists()
 
   # Check that all of the values associated with all of the nodes are of the correct type (e.g. integer, flag etc)
-  # and also that any files also have the correct extension. This implicitly checks that tools that are linked
-  # together in the configuration file can be validly linked. If a tool outputs a file format 'bam' and it feeds
-  # into the next tool expecting files with the extension 'vcf', then the node will be flagged as invalid for one
-  # of the tools.
-  dc.checkValues(graph, superpipeline)
+  # and also that any files also have the correct extension.
+  dc.checkValues(graph, superpipeline, args)
 
   # Loop over all of the nodes in the graph and ensure that all required arguments have been set. Any output files
-  # for which construction instructions are provided can be omitted from this check.
-  dc.checkRequiredArguments(graph, superpipeline, args)
+  # for which construction instructions are provided can be omitted from this check. This will ensure that all required
+  # input files are set, ensuring that filename construction can proceed. The check will be performed again after
+  # filenames have been constructed, without the omission of constructed files.
+  dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = False)
 
   # With the graph built, all arguments attached and checked, the final task prior to converting the graph to
   # an executable is to construct filenames that have not been provided.
   construct.constructFilenames(graph, superpipeline)
 
+  # Construct input files.
+  construct.constructInputNodes(graph, superpipeline)
+
+  # Having constructed all of the output file names (which may then be linked to other tasks as outputs), rerun the
+  # check of the values to ensure that the data types and the ssociated extensions are valid. This will provide a
+  # check of whether tools can be linked as described in the configuration file. In the previous check, not all of the
+  # filenames were present (but the check ensured that the values provided on the command line were valid). If a task
+  # outputs a file with and extension 'ext1' and the file is then passed to a file that requires files with the
+  # extension 'ext2', the pipeline is invalid. The output filename has been constructed as file.ext1 and so the following
+  # routine will flag the file as invalid as input to the next task.
+  dc.checkValues(graph, superpipeline, args)
+  dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = True)
+
+  #for task in graph.workflow:
+  #  print(task)
+  #  print('\tINPUTS')
+  #  for nodeID in graph.getPredecessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+  #  print('\tOUTPUTS')
+  #  for nodeID in graph.getSuccessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+
   # At this point, all values must be set. If anything is missing, the pipeline is incomplete or data hasn't been
   # provided. If this is the case, terminate.
-  dc.finalCheck(graph, superpipeline)
+  #dc.finalCheck(graph, superpipeline)
 
-  for task in graph.workflow:
-    print(task)
-    print('\tINPUTS')
-    for nodeID in graph.getPredecessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-    print('\tOUTPUTS')
-    for nodeID in graph.getSuccessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
 
   plot = pg.plotGraph()
-  plot.plot(superpipeline, graph.graph.copy(), 'full.dot', isReduced = False)
-  plot.plot(superpipeline, graph.graph.copy(), 'reduced.dot', isReduced = True)
+  plot.plot(superpipeline, graph, 'full.dot', isReduced = False)
+  plot.plot(superpipeline, graph, 'reduced.dot', isReduced = True)
 
 if __name__ == "__main__":
   main()
