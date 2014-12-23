@@ -198,17 +198,9 @@ def main():
   dc.checkValues(graph, superpipeline, args)
   dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = True)
 
-  #for task in graph.workflow:
-  #  print(task)
-  #  print('\tINPUTS')
-  #  for nodeID in graph.getPredecessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-  #  print('\tOUTPUTS')
-  #  for nodeID in graph.getSuccessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-
-  # At this point, all values must be set. If anything is missing, the pipeline is incomplete or data hasn't been
-  # provided. If this is the case, terminate.
-  #dc.finalCheck(graph, superpipeline)
-
+  # Check the number of values in each node and determine how many times each task needs to be run. For example,
+  # a tool could be fed n input files for a single argument and be run n times or once etc.
+  graph.determineNumberOfTaskExecutions(superpipeline)
 
   plot = pg.plotGraph()
   plot.plot(superpipeline, graph, 'full.dot', isReduced = False)

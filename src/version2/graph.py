@@ -771,6 +771,14 @@ class pipelineGraph:
         # Replace the values with the modifiedValues.
         self.setGraphNodeAttribute(nodeID, 'values', modifiedValues)
 
+  # Check the number of values in each node and determine how many times each task needs to be run. For example,
+  # a tool could be fed n input files for a single argument and be run n times or once etc.
+  def determineNumberOfTaskExecutions(self, superpipeline):
+
+    # Loop over all tasks in the pipeline.
+    for task in self.workflow:
+      print(task)
+
   ########################################
   ##  methods for modifying the graph.  ##
   ########################################

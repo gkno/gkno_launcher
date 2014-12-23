@@ -5,7 +5,7 @@ from __future__ import print_function
 import fileErrors
 from fileErrors import *
 
-import stringComparisons
+import stringOperations
 
 import json
 import os
@@ -31,7 +31,7 @@ class fileHandling:
 
     # If the requested pipeline is invalid, terminate.
     else:
-      rankedPipelines = stringComparisons.rankListByString(self.pipelines, pipeline)
+      rankedPipelines = stringOperations.rankListByString(self.pipelines, pipeline)
       self.errors.invalidPipelineName(rankedPipelines, pipeline)
   
   ######################

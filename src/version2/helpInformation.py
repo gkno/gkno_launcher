@@ -4,7 +4,7 @@ from __future__ import print_function
 from difflib import SequenceMatcher
 
 import helpErrors as err
-import stringComparisons as sc
+import stringOperations as so
 import version2.pipelineConfiguration as pc
 
 import os
@@ -115,7 +115,7 @@ class helpInformation:
     # Check that the requested category is valid. If not, find the closest category to that written.
     category = providedCategory
     if providedCategory not in self.helpCategories:
-      rankedList = sc.rankListByString(self.helpCategories, category)
+      rankedList = so.rankListByString(self.helpCategories, category)
       category   = rankedList[0]
 
     # Open all the pipeline and determine the categories they fall into.
