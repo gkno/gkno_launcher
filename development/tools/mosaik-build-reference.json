@@ -1,0 +1,64 @@
+{
+  "id" : "mosaik-build-reference",
+  "description" : "Build the Mosaik reference",
+  "categories" : ["FASTA-processing", "Mosaik", "Marthlab-software"],
+  "tools" : ["mosaik"],
+  "path" : "MOSAIK/bin",
+  "executable" : "MosaikBuild",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The FASTA reference sequence file",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "-fr",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["fasta", "fa"]
+      }
+    ],
+
+    "Outputs" : [
+      {    
+        "description" : "The output Mosaik reference file",
+        "long form argument" : "--mosaik-reference",
+        "short form argument" : "-m",
+        "command line argument" : "-oa",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["dat"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "replace"
+        }
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"],
+          "argument" : "--fasta-reference"
+        },
+        {
+          "id" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
+    }
+  ]
+}

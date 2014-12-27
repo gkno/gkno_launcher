@@ -19,13 +19,10 @@ class arguments:
     # Store information for each argument.
     self.arguments = {}
 
-    # A dictionary to long graph node IDs with an argument that can set it's value.
-    self.nodeToArgument = {}
-
   # Add arguments from pipeline configuration data to the object.
   def addPipelineArguments(self, data):
 
-    # Loop over the arguments.
+    # Loop over the arguments and add the argument information to the arguments data structure.
     for argument in data: self.arguments[argument] = data[argument]
 
   # Now that the graph is built, parse all of the arguments in the pipelines and associate them with
@@ -47,30 +44,37 @@ class arguments:
           address = pipelineData.address
 
           # Get the node that this argument is associated with and the graph node associated with
-          # the configuration node.
+          # the configuration node. There may be more than one graph node if this is a stub argument.
           configurationNodeID = pipelineData.longFormArguments[argument].nodeID
           nodeAddress         = address + '.' + configurationNodeID if address else configurationNodeID
-          graphNodeID         = superpipeline.configurationNodes[nodeAddress]
+          print('TEST', pipeline, argument, nodeAddress)
+          print('\t', graph.configurationFileToGraphNodeID.keys())
+          graphNodeIDs        = graph.configurationFileToGraphNodeID[nodeAddress]
 
           # If this is not the top level pipeline, the argument requires the pipeline address. Define
           # the argument name for use in the data structures.
           argumentAddress = str(address + '.' + argument) if address else str(argument)
 
-          # Link the graph node ID with the argument.
-          if graphNodeID not in self.nodeToArgument: self.nodeToArgument[str(graphNodeID)] = argumentAddress
+          # Link the graph node IDs with the argument.
+          for graphNodeID in graphNodeIDs:
+
+            # Add the arguments to the graph node as well as the description of the argument.
+            graph.setGraphNodeAttribute(graphNodeID, 'longFormArgument', str(argumentAddress))
+            graph.setGraphNodeAttribute(graphNodeID, 'shortFormArgument', pipelineData.longFormArguments[argument].shortFormArgument)
+            graph.setGraphNodeAttribute(graphNodeID, 'description', pipelineData.longFormArguments[argument].description)
+
+            # Link the argument with the graph node ID to which it points.
+            self.arguments[str(argumentAddress)].graphNodeID.append(str(graphNodeID))
+
+            # Check for predecessors or successors and find the data type for the argument.
+            successors = graph.graph.successors(graphNodeID)
+            if successors: self.arguments[str(argumentAddress)].dataType = graph.getArgumentAttribute(graphNodeID, successors[0], 'dataType')
+            if not self.arguments[str(argumentAddress)].dataType:
+              predecessors = graph.graph.predecessors(graphNodeID)
+              if predecessors: self.arguments[str(argumentAddress)].dataType = graph.getArgumentAttribute(predecessors[0], graphNodeID, 'dataType')
 
           # If this is not the top level pipeline, add the argument to the list of available arguments.
-          if tier != 1: self.arguments[str(argumentAddress)] = pipelineData.longFormArguments[argument]
-
-          # Link the argument with the graph node ID to which it points.
-          self.arguments[str(argumentAddress)].graphNodeID = str(graphNodeID)
-
-          # Check for predecessors or successors and find the data type for the argument.
-          successors = graph.graph.successors(graphNodeID)
-          if successors: self.arguments[str(argumentAddress)].dataType = graph.getArgumentAttribute(graphNodeID, successors[0], 'dataType')
-          if not self.arguments[str(argumentAddress)].dataType:
-            predcessors = graph.graph.predecessors(graphNodeID)
-            if predecessors: self.arguments[str(argumentAddress)].dataType = graph.getArgumentAttribute(predecessors[0], graphNodeID, 'dataType')
+          if tier != 1: self.arguments[str(argumentAddress)] = [pipelineData.longFormArguments[argument]]
 
   # If the main pipeline lists a tool whose arguments should be imported, check that the listed tool is
   # valid, that none of the arguments conflict with the pipeline and then add the arguments to the

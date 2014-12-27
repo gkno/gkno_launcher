@@ -77,60 +77,69 @@ def main():
   # If the pipeline name has not been supplied, general help must be required.
   if not pipeline: gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
 
-  # Get the path to the pipeline and configuration file.
-  filename = files.checkPipeline(toolConfigurationFilesPath, pipelineConfigurationFilesPath, pipeline)
-
-  # Generate a super pipeline class that holds information about the full collection of all nested
-  # pipeline.
-  superpipeline = sp.superpipelineClass(filename)
-
-  # Dig down into the pipeline configuration files, validate the contents of the configuration files
-  # and build the super pipeline tiered structure.
-  superpipeline.getNestedPipelineData(pipelineConfigurationFilesPath, filename)
-
-  # Check that no pipeline arguments conflict with gkno arguments.
-  superpipeline.checkForArgumentConflicts(gknoConfiguration.arguments, gknoConfiguration.shortForms)
-
-  # If help categories were requested, or a list of all available pipelines, print them here.
-  if mode == 'categories' or mode == 'list-all': gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
-
-  # Generate a list of all tasks, tools, unique and shared node IDs from all pipelines.
-  superpipeline.setTools()
-
-  # Now that all the tasks are known, check that each pipeline only contains valid tasks. If a 
-  # task in the pipeline addresses a node in a contained pipeline, knowledge of all pipelines is
-  # required to perform this check.
-  superpipeline.checkContainedTasks()
+  #
+  #mode = 'test'
+  pipelinesList = files.pipelines if mode == 'test' else [pipeline]
+  for pipeline in pipelinesList:
   
-  # Loop over the list of required tools, open and process their configuration files and store.
-  for tool in superpipeline.getTools():
-    toolData = tc.toolConfiguration()
-    toolData.getConfigurationData(tool, toolConfigurationFilesPath + str(tool) + '.json')
-    superpipeline.addTool(tool, toolData)
+    # Get the path to the pipeline and configuration file.
+    filename = files.checkPipeline(toolConfigurationFilesPath, pipelineConfigurationFilesPath, pipeline)
 
-  # Define the graph object that will contain the pipeline graph and necessary operations and methods
-  # to build and modify it.
-  graph = gr.pipelineGraph()
+    # Generate a super pipeline class that holds information about the full collection of all nested
+    # pipeline.
+    superpipeline = sp.superpipelineClass(filename)
 
-  # Loop over the tiers of nested pipelines and build them into the graph.
-  for tier in superpipeline.pipelinesByTier.keys():
-    for pipelineName in superpipeline.pipelinesByTier[tier]:
-      graph.buildPipelineTasks(superpipeline.pipelineConfigurationData[pipelineName], superpipeline)
+    # Dig down into the pipeline configuration files, validate the contents of the configuration files
+    # and build the super pipeline tiered structure.
+    superpipeline.getNestedPipelineData(pipelineConfigurationFilesPath, filename)
+  
+    # Check that no pipeline arguments conflict with gkno arguments.
+    superpipeline.checkForArgumentConflicts(gknoConfiguration.arguments, gknoConfiguration.shortForms)
+  
+    # If help categories were requested, or a list of all available pipelines, print them here.
+    if mode == 'categories' or mode == 'list-all': gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
 
-  # Create an arguments object. This will be populated with all of the arguments available for this
-  # pipeline along with associated functions. Add all of the top level pipeline arguments to this
-  # object.
-  args = ag.arguments()
-  args.addPipelineArguments(superpipeline.pipelineConfigurationData[superpipeline.pipeline].longFormArguments)
+    # Generate a list of all tasks, tools, unique and shared node IDs from all pipelines.
+    superpipeline.setTools()
+  
+    # Now that all the tasks are known, check that each pipeline only contains valid tasks. If a 
+    # task in the pipeline addresses a node in a contained pipeline, knowledge of all pipelines is
+    # required to perform this check.
+    superpipeline.checkContainedTasks()
+    
+    # Loop over the list of required tools, open and process their configuration files and store.
+    for tool in superpipeline.getTools():
+      toolData = tc.toolConfiguration()
+      toolData.getConfigurationData(tool, toolConfigurationFilesPath + str(tool) + '.json')
+      superpipeline.addTool(tool, toolData)
+  
+    # Define the graph object that will contain the pipeline graph and necessary operations and methods
+    # to build and modify it.
+    graph = gr.pipelineGraph()
 
-  # Now that the graph is built, parse all of the arguments in the pipelines and associate them with the
-  # graph nodes and vice versa.
-  args.assignNodesToArguments(graph, superpipeline)
+    # Loop over the tiers of nested pipelines and build them into the graph.
+    for tier in superpipeline.pipelinesByTier.keys():
+      for pipelineName in superpipeline.pipelinesByTier[tier]:
+        graph.buildPipelineTasks(superpipeline.pipelineConfigurationData[pipelineName], superpipeline)
+
+    # Create an arguments object. This will be populated with all of the arguments available for this
+    # pipeline along with associated functions. Add all of the top level pipeline arguments to this
+    # object.
+    args = ag.arguments()
+    args.addPipelineArguments(superpipeline.pipelineConfigurationData[superpipeline.pipeline].longFormArguments)
+
+    # Now that the graph is built, parse all of the arguments in the pipelines and associate them with the
+    # graph nodes and vice versa.
+    args.assignNodesToArguments(graph, superpipeline)
 
   # If the main pipeline lists a tool whose arguments should be imported, check that the listed tool is
   # valid, that none of the arguments conflict with the pipeline and then add the arguments to the
   # allowed arguments.
   args.importArguments(graph, superpipeline)
+
+  # Write out 
+  #gknoHelp.writeCategoryJson(args)
+  #args.
 
   # Generate the workflow.
   workflow = graph.generateWorkflow()
@@ -201,6 +210,15 @@ def main():
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
   # a tool could be fed n input files for a single argument and be run n times or once etc.
   graph.determineNumberOfTaskExecutions(superpipeline)
+
+#  for task in workflow:
+#    print(task)
+#    print('PRE')
+#    for nodeID in graph.graph.predecessors(task):
+#      print('\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+#    print('SUC')
+#    for nodeID in graph.graph.successors(task):
+#      print('\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
 
   plot = pg.plotGraph()
   plot.plot(superpipeline, graph, 'full.dot', isReduced = False)

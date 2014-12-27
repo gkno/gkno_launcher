@@ -179,17 +179,17 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
 
                   # Check to see if this node can have it's values set with a top level pipeline argument (e.g. can
                   # be set without defining the task on the command line).
-                  try: linkedArgument = args.nodeToArgument[nodeID]
-                  except: linkedArgument = None
-                  if linkedArgument and '.' not in linkedArgument:
+                  longFormArgument = graph.getGraphNodeAttribute(nodeID, 'longFormArgument')
+                  if longFormArgument and '.' not in longFormArgument:
 
                     # Get the short form of the pipeline argument and the argument description.
-                    longFormArgument  = args.nodeToArgument[nodeID]
-                    shortFormArgument = args.arguments[longFormArgument].shortFormArgument
-                    description       = args.arguments[longFormArgument].description
+                    #shortFormArgument = args.arguments[longFormArgument].shortFormArgument
+                    shortFormArgument = graph.getGraphNodeAttribute(nodeID, 'shortFormArgument')
+                    description       = graph.getGraphNodeAttribute(nodeID, 'description')
                     errors.unsetRequiredArgument(longFormArgument, shortFormArgument, description)
 
                   # If this is not a top level argument, provide a different error.
+                  # TODO CHECK THIS
                   else: 
 
                     # Get the short form version of the argument as well as the argument description. This is as defined
@@ -265,10 +265,10 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
 
                   # If the node used to construct this filename exists, but it has no values or predecessors,
                   # it also will not be able to be used to construct the argument.
-                  elif not graph.getGraphNodeAttribute(constructionNodeID, 'values'):
-                    if not graph.graph.predecessors(constructionNodeID):
+                  #elif not graph.getGraphNodeAttribute(constructionNodeID, 'values'):
+                    #if not graph.graph.predecessors(constructionNodeID):
                       # TODO ERROR
-                      print('dataConsistency - checkRequiredArguments - cannot construct output', task, argument); exit(1)
+                      #print('dataConsistency - checkRequiredArguments - cannot construct output', task, argument); exit(1)
 
                 # Add the node to the list of nodes that have the potential to be constructed.
                 if nodeID not in constructableNodes: constructableNodes.append(nodeID)

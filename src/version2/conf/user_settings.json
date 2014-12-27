@@ -1,0 +1,39 @@
+{
+  "resources": {
+    "tutorial": {
+      "current": "version_4", 
+      "isTracking": true, 
+      "releases": [
+        "version_4"
+      ]
+    }
+  }, 
+  "compiled tools": [
+    "bamtools", 
+    "bwa", 
+    "freebayes", 
+    "gatk", 
+    "glia", 
+    "libStatGen", 
+    "bamUtil", 
+    "fastQValidator", 
+    "qplot", 
+    "verifyBamID", 
+    "mosaik", 
+    "mutatrix", 
+    "ogap", 
+    "picard", 
+    "premo", 
+    "Rufus", 
+    "samtools", 
+    "scissors", 
+    "seqan", 
+    "snpEff", 
+    "tabix", 
+    "tangram", 
+    "vcflib", 
+    "vt", 
+    "wham"
+  ], 
+  "isBuilt": true
+}

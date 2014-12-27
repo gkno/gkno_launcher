@@ -1,0 +1,130 @@
+{
+  "id" : "mosaik",
+  "description" : "ref + align",
+  "categories" : ["Alignment"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "ref",
+      "tool" : "mosaik-build-reference",
+      "include in reduced plot" : true
+    },
+    {
+      "task" : "jump",
+      "tool" : "mosaik-jump"
+    },
+    {
+      "task" : "align",
+      "tool" : "mosaik-aligner-standard",
+      "include in reduced plot" : true
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The reference FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "node id" : "fasta"
+      },
+      {
+        "description" : "The input read archive.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "archive"
+      },
+      {
+        "description" : "The single end ann file.",
+        "long form argument" : "--ann-se",
+        "short form argument" : "-as",
+        "node id" : "annse"
+      },
+      {
+        "description" : "The paired end ann file.",
+        "long form argument" : "--ann-pe",
+        "short form argument" : "-ap",
+        "node id" : "annpe"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output BAM files.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "bam"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "fasta",
+      "task" : "ref",
+      "task argument" : "-r"
+    },
+    {
+      "id" : "archive",
+      "task" : "align",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "annse",
+      "task" : "align",
+      "task argument" : "--ann-single-end"
+    },
+    {
+      "id" : "annpe",
+      "task" : "align",
+      "task argument" : "--ann-paired-end"
+    },
+    {
+      "id" : "bam",
+      "task" : "align",
+      "task argument" : "--out"
+    }
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "mosaik-ref",
+      "arguments sharing node" : [
+        {
+          "task" : "ref",
+          "task argument" : "--mosaik-reference"
+        },
+        {
+          "task" : "jump",
+          "task argument" : "-m"
+        },
+        {
+          "task" : "align",
+          "task argument" : "--mosaik-reference"
+        }
+      ]
+    },
+    {
+      "id" : "jump-database",
+      "arguments sharing node" : [
+        {
+          "task" : "jump",
+          "task argument" : "--jump-database"
+        },
+        {
+          "task" : "align",
+          "task argument" : "--jump-database"
+        }
+      ]
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    }
+  ]
+}

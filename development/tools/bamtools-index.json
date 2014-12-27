@@ -1,0 +1,65 @@
+{
+  "id" : "bamtools-index",
+  "description" : "Index a BAM file.",
+  "categories" : ["BAM-processing", "Bamtools", "Marthlab-software"],
+  "tools" : ["bamtools"],
+  "path" : "bamtools/bin",
+  "executable" : "bamtools",
+  "modifier" : "index",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input BAM file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "-in",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bam"]
+      }
+    ],
+  
+    "Outputs" : [
+      {
+        "description" : "The index file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "-out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".bam.bai"]
+      }
+    ],
+  
+    "Options" : [
+      {
+        "description" : "create non-standard (depth based) index file (*.bti). Default behaviour is to create standard BAM index (*.bai)",
+        "long form argument" : "--depth-based-index",
+        "short form argument" : "-b",
+        "command line argument" : "-bti",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : []
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "Input BAM file",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        }
+      ]
+    }
+  ]
+}

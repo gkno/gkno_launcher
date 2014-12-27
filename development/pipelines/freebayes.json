@@ -1,0 +1,80 @@
+{
+  "id" : "freebayes-compress",
+  "description" : "run freebayes",
+  "categories" : ["Variant-discovery"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "call",
+      "tool" : "freebayes",
+      "include in reduced plot" : true
+    },
+    {
+      "task" : "compress",
+      "tool" : "bgzip"
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input BAM file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "bam"
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The genomic region.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "node id" : "region"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "bam",
+      "task" : "call",
+      "task argument" : "-i"
+    },
+    {
+      "id" : "region",
+      "task" : "call",
+      "task argument" : "-rg"
+    }
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "out",
+      "arguments sharing node" : [
+        {
+          "task" : "call",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "compress",
+          "task argument" : "--in"
+        }
+      ]
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+        {
+          "id" : "region",
+          "node" : "region",
+          "values" : [20]
+        }
+      ]
+    }
+  ]
+}

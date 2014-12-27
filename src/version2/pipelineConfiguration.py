@@ -40,8 +40,9 @@ class pipelineArguments:
     # Record the expected data type.
     self.dataType = None
 
-    # Define the node that the argument points to.
-    self.nodeID = None
+    # Define the configuration file and graph node that the argument points to.
+    self.nodeID      = None
+    self.graphNodeID = []
 
     # Record if the argument is listed as required in the pipeline configuration file.
     self.isRequired = False

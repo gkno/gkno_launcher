@@ -1,0 +1,180 @@
+{
+  "id" : "two-fb",
+  "description" : "parallel calling",
+  "categories" : [],
+
+  "pipeline tasks" : [
+    {
+      "task" : "align",
+      "pipeline" : "mosaik"
+    },
+    {
+      "task" : "build-bam",
+      "tool" : "bamtools-filter",
+      "include in reduced plot" : true
+    },
+    {
+      "task" : "call1",
+      "pipeline" : "freebayes"
+    },
+    {
+      "task" : "call2",
+      "pipeline" : "freebayes"
+    },
+    {
+      "task" : "sort",
+      "tool" : "bamtools-sort"
+    },
+    {
+      "task" : "combine-vcf",
+      "tool" : "vcf-combine"
+    },
+    {
+      "task" : "compress",
+      "tool" : "bgzip"
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The filtered BAM file.",
+        "long form argument" : "--filter-bam",
+        "short form argument" : "-f",
+        "node id" : "bam-to-filter"
+      },
+      {
+        "description" : "An additional test BAM.",
+        "long form argument" : "--bonus-bam",
+        "short form argument" : "-b",
+        "node id" : "additional-bam"
+      },
+      {
+        "description" : "The input BAM files.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "collect-bam"
+      },
+      {
+        "description" : "Another filtered bam",
+        "long form argument" : "--filtered",
+        "short form argument" : "-fi",
+        "node id" : "filtered-bam"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "bam-to-filter",
+      "task" : "build-bam",
+      "task argument" : "-i"
+    },
+    {
+      "id" : "additional-bam",
+      "task" : "call1.call",
+      "task argument" : "--in"
+    }
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "collect-bam",
+      "arguments sharing node" : [
+        {
+          "task" : "align",
+          "external node" : "bam",
+          "stub extension" : "bam"
+        },
+        {
+          "task" : "call1",
+          "external node" : "bam"
+        },
+        {
+          "task" : "call2",
+          "external node" : "bam"
+        },
+        {
+          "task" : "sort",
+          "task argument" : "--in"
+        }
+      ]
+    },
+
+    {
+      "id" : "filtered-bam",
+      "arguments sharing node" : [
+        {
+          "task" : "build-bam",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "call1.call",
+          "task argument" : "--in"
+        }
+      ]
+    },
+
+    {
+      "id" : "compress-vcf",
+      "arguments sharing node" : [
+        {
+          "task" : "combine-vcf",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "compress",
+          "task argument" : "--in"
+        }
+      ]
+    }
+  ],
+
+  "connect nodes to tasks" : [
+    {
+      "id" : "vcf-combine-connections",
+      "sources" : [
+        {
+          "task" : "call1.compress",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "call2.compress",
+          "task argument" : "--out"
+        }
+      ],
+      "targets" : [
+        {
+          "task" : "combine-vcf",
+          "task argument" : "--in"
+        }
+      ]
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+        {
+          "id" : "in",
+          "node" : "collect-bam",
+          "values" : ["glia-example.bam"]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set.",
+      "data" : [
+        {
+          "id" : "in",
+          "node" : "collect-bam",
+          "values" : ["glia-test.bam"]
+        }
+      ]
+    }
+  ]
+}
