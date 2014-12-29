@@ -41,8 +41,8 @@ class pipelineArguments:
     self.dataType = None
 
     # Define the configuration file and graph node that the argument points to.
-    self.nodeID      = None
-    self.graphNodeID = []
+    self.nodeID       = None
+    self.graphNodeIDs = []
 
     # Record if the argument is listed as required in the pipeline configuration file.
     self.isRequired = False

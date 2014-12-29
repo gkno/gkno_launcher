@@ -44,11 +44,8 @@ class superpipelineClass:
     self.pipelinesByTier = {}
     self.tiersByPipeline = {}
 
-    # Keep track of the configuration nodes that have been added to the graph.
-    self.nodesInGraph = []
-
-    # Keep track of the graph node that each pipeline configuration file node points to.
-    self.configurationNodes = {}
+    # Keep track of the graph nodes that the configuration nodes point to.
+    self.nodeInformation = {}
 
     # Keep track of the tasks that should be included in a plot.
     self.tasksInPlot = {}

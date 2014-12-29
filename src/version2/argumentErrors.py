@@ -49,11 +49,11 @@ class argumentErrors:
     self.text.append('Imported tool argument conflicts with a pipeline argument.')
     self.text.append('Arguments for the task \'' + task + '\' using tool \'' + tool + '\' are being imported to be available on the command ' + \
     'line for the pipeline \'' + pipeline + '\'. The tool and pipeline share the argument \'' + longFormArgument + ' (' + shortFormArgument + \
-    ')\'. It is likely that if these arguments are shared, they perform the same function. In order to operate, this conflict must be resolved ' + \
-    'by one of the following steps')
+    ')\'. It is likely that if these arguments are shared, they perform the same function. In order to operate, this conflict must be ' + \
+    'resolved by one of the following steps')
     self.text.append('\t')
-    self.text.append('1. Identify the graph node that the pipeline argument points to with the tool, so that the tool shares the value supplied ' + \
-    'by the pipeline argument.')
+    self.text.append('1. Identify the pipeline argument in the configuration file and the configuration file node that the argument sets. ' + \
+    'Ensure that this node is a shared node, and then include the argument from the tool being imported as sharing this pipeline argument.')
     self.text.append('\t')
     self.text.append('2. If the value for the tool is not shared with other tasks in the pipeline, create a unique node in the pipeline ' + \
     'configuration file and identify a new (unique) argument for this node. This node can then be identified with the tool argument.')

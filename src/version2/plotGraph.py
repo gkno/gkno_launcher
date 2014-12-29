@@ -40,10 +40,16 @@ class plotGraph():
       # associated with the node for the includeInReducedPlot variable set to False.
       isIncluded = True
       if isReduced:
-        for task, argument in graph.getGraphNodeAttribute(fileNodeID, 'tasksAndArguments'):
+        arguments = []
+        for task in graphToDraw.predecessors(fileNodeID):
+          arguments.append((task, graph.getArgumentAttribute(task, fileNodeID, 'longFormArgument')))
+        for task in graphToDraw.successors(fileNodeID):
+          arguments.append((task, graph.getArgumentAttribute(fileNodeID, task, 'longFormArgument')))
+
+        for task, longFormArgument in arguments:
           tool     = superpipeline.tasks[task]
           toolData = superpipeline.toolConfigurationData[tool]
-          if not toolData.getArgumentAttribute(argument, 'includeInReducedPlot'):
+          if not toolData.getArgumentAttribute(longFormArgument, 'includeInReducedPlot'):
             isIncluded = False
             break
 

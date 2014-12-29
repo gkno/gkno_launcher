@@ -20,6 +20,7 @@ import version2.plotGraph as pg
 import version2.toolConfiguration as tc
 import version2.pipelineConfiguration as pc
 import version2.superpipeline as sp
+import version2.web as w
 
 __author__ = "Alistair Ward"
 __version__ = "2.0.0"
@@ -33,7 +34,13 @@ def main():
   # Define a help class.
   gknoHelp = hp.helpInformation(os.getenv('GKNOCOMMITID'), __date__, __version__)
 
-   # Define the source path of all the gkno machinery.
+  # Define a plotting class for drawing the graph.
+  plot = pg.plotGraph()
+
+  #Define an object to hold information for creating web content.
+  web = w.webContent()
+
+  # Define the source path of all the gkno machinery.
   sourcePath                     = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno.py')]
 
   # TODO REMOVE
@@ -75,11 +82,11 @@ def main():
   else: print('NOT HANDLED ADMIN'); exit(0)
 
   # If the pipeline name has not been supplied, general help must be required.
-  if not pipeline: gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
+  if not pipeline and mode != 'web': gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
 
-  #
-  #mode = 'test'
-  pipelinesList = files.pipelines if mode == 'test' else [pipeline]
+  # If json files for the web page were requested, set the pipelinesList to all pipelines and loop over
+  # them all, generating the required information. Otherwise, set the list to the pipeline to be run.
+  pipelinesList = files.pipelines if mode == 'web' else [pipeline]
   for pipeline in pipelinesList:
   
     # Get the path to the pipeline and configuration file.
@@ -132,14 +139,18 @@ def main():
     # graph nodes and vice versa.
     args.assignNodesToArguments(graph, superpipeline)
 
-  # If the main pipeline lists a tool whose arguments should be imported, check that the listed tool is
-  # valid, that none of the arguments conflict with the pipeline and then add the arguments to the
-  # allowed arguments.
-  args.importArguments(graph, superpipeline)
+    # If the main pipeline lists a tool whose arguments should be imported, check that the listed tool is
+    # valid, that none of the arguments conflict with the pipeline and then add the arguments to the
+    # allowed arguments.
+    args.importArguments(graph, superpipeline)
 
-  # Write out 
-  #gknoHelp.writeCategoryJson(args)
-  #args.
+    # If web page json files are being created, update the list of categories and the pipeline information.
+    if mode == 'web':
+      web.updateCategories(superpipeline.pipelineConfigurationData[superpipeline.pipeline])
+      web.updatePipelineInformation(superpipeline.pipelineConfigurationData[superpipeline.pipeline], args.arguments)
+
+  # Write out web content and terminate.
+  if mode == 'web': web.writeContent()
 
   # Generate the workflow.
   workflow = graph.generateWorkflow()
@@ -209,7 +220,7 @@ def main():
 
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
   # a tool could be fed n input files for a single argument and be run n times or once etc.
-  graph.determineNumberOfTaskExecutions(superpipeline)
+  #graph.determineNumberOfTaskExecutions(superpipeline)
 
 #  for task in workflow:
 #    print(task)
@@ -220,7 +231,6 @@ def main():
 #    for nodeID in graph.graph.successors(task):
 #      print('\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
 
-  plot = pg.plotGraph()
   plot.plot(superpipeline, graph, 'full.dot', isReduced = False)
   plot.plot(superpipeline, graph, 'reduced.dot', isReduced = True)
 

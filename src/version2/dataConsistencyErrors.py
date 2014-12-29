@@ -57,7 +57,7 @@ class consistencyErrors:
     self.text.append('The required command line argument \'' + longFormArgument + ' (' + shortFormArgument + ')\' is missing.')
     self.text.append('The description of this argument is:')
     self.text.append('\t')
-    self.text.append(description)
+    self.text.append('"' + description + '"')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 

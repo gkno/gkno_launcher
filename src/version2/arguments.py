@@ -47,34 +47,45 @@ class arguments:
           # the configuration node. There may be more than one graph node if this is a stub argument.
           configurationNodeID = pipelineData.longFormArguments[argument].nodeID
           nodeAddress         = address + '.' + configurationNodeID if address else configurationNodeID
-          print('TEST', pipeline, argument, nodeAddress)
-          print('\t', graph.configurationFileToGraphNodeID.keys())
-          graphNodeIDs        = graph.configurationFileToGraphNodeID[nodeAddress]
+          graphNodeIDs        = superpipeline.nodeInformation[nodeAddress]
 
           # If this is not the top level pipeline, the argument requires the pipeline address. Define
-          # the argument name for use in the data structures.
+          # the argument name for use in the data structures. The '--' of the argument is left intact
+          # to ensure that the created name doesn't conflict with a configuration file node name.
           argumentAddress = str(address + '.' + argument) if address else str(argument)
+
+          # If this is not the top level pipeline, add the argument to the list of available arguments.
+          if tier != 1: self.arguments[str(argumentAddress)] = pipelineData.longFormArguments[argument]
 
           # Link the graph node IDs with the argument.
           for graphNodeID in graphNodeIDs:
 
+            # Get the short form of the argument.
+            shortFormArgument = pipelineData.longFormArguments[argument].shortFormArgument
+            shortFormAddress  = str(address + '.' + shortFormArgument) if address else str(shortFormArgument)
+
             # Add the arguments to the graph node as well as the description of the argument.
-            graph.setGraphNodeAttribute(graphNodeID, 'longFormArgument', str(argumentAddress))
-            graph.setGraphNodeAttribute(graphNodeID, 'shortFormArgument', pipelineData.longFormArguments[argument].shortFormArgument)
-            graph.setGraphNodeAttribute(graphNodeID, 'description', pipelineData.longFormArguments[argument].description)
+            if not graph.getGraphNodeAttribute(graphNodeID, 'longFormArgument'):
+              graph.setGraphNodeAttribute(graphNodeID, 'longFormArgument', str(argumentAddress))
+              graph.setGraphNodeAttribute(graphNodeID, 'shortFormArgument', shortFormAddress)
+              graph.setGraphNodeAttribute(graphNodeID, 'description', pipelineData.longFormArguments[argument].description)
+
+            # If the argument had already been set, add this argument to the list of alternative arguments.
+            else:
+              alternativeArguments = graph.getGraphNodeAttribute(graphNodeID, 'alternativeArguments')
+              alternativeArguments.append((str(argumentAddress), str(shortFormAddress)))
+              graph.setGraphNodeAttribute(graphNodeID, 'alternativeArguments', alternativeArguments)
 
             # Link the argument with the graph node ID to which it points.
-            self.arguments[str(argumentAddress)].graphNodeID.append(str(graphNodeID))
+            self.arguments[str(argumentAddress)].graphNodeIDs.append(str(graphNodeID))
 
             # Check for predecessors or successors and find the data type for the argument.
             successors = graph.graph.successors(graphNodeID)
             if successors: self.arguments[str(argumentAddress)].dataType = graph.getArgumentAttribute(graphNodeID, successors[0], 'dataType')
             if not self.arguments[str(argumentAddress)].dataType:
               predecessors = graph.graph.predecessors(graphNodeID)
-              if predecessors: self.arguments[str(argumentAddress)].dataType = graph.getArgumentAttribute(predecessors[0], graphNodeID, 'dataType')
-
-          # If this is not the top level pipeline, add the argument to the list of available arguments.
-          if tier != 1: self.arguments[str(argumentAddress)] = [pipelineData.longFormArguments[argument]]
+              if predecessors:
+                self.arguments[str(argumentAddress)].dataType = graph.getArgumentAttribute(predecessors[0], graphNodeID, 'dataType')
 
   # If the main pipeline lists a tool whose arguments should be imported, check that the listed tool is
   # valid, that none of the arguments conflict with the pipeline and then add the arguments to the
@@ -104,12 +115,19 @@ class arguments:
     for argument in self.arguments.keys():
       if '.' not in argument:
 
-        # Store the long and short forms of the pipeline
+        # Store the long and short forms of the pipeline argument.
         definedLongFormArguments.append(str(argument))
         definedShortFormArguments.append(str(self.arguments[argument].shortFormArgument))
-        graphNodeID = self.arguments[argument].graphNodeID
-        if task in graph.graph.predecessors(graphNodeID): setArguments.append(graph.getArgumentAttribute(task, graphNodeID, 'longFormArgument'))
-        if task in graph.graph.successors(graphNodeID): setArguments.append(graph.getArgumentAttribute(graphNodeID, task, 'longFormArgument'))
+
+        # Check if the graph node is a predecessor or successor of the task whose arguments are being
+        # imported. If so, identify the long and short forms of the arguments for the tool.
+        for graphNodeID in self.arguments[argument].graphNodeIDs:
+          if task in graph.graph.predecessors(graphNodeID):
+            longFormArgument = graph.getArgumentAttribute(task, graphNodeID, 'longFormArgument')
+            if longFormArgument not in setArguments: setArguments.append(longFormArgument)
+          if task in graph.graph.successors(graphNodeID):
+            longFormArgument = graph.getArgumentAttribute(graphNodeID, task, 'longFormArgument')
+            if longFormArgument not in setArguments: setArguments.append(longFormArgument)
 
     # Get the tool whose arguments should be imported.
     tool      = superpipeline.tasks[task]

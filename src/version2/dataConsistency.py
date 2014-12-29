@@ -213,11 +213,11 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
                 # Find all nodes for this task using this argument.
                 for predecessorNodeID in graph.graph.predecessors(task):
                   if graph.getArgumentAttribute(predecessorNodeID, task, 'longFormArgument') == argumentToUse:
-                    nodeAddress = str(predecessorNodeID + '.' + argument.strip('-'))
+                    nodeAddress = str(predecessorNodeID + '.' + argument)
 
                     # Add the node and edge.
                     argumentAttributes = toolData.getArgumentData(argument)
-                    graph.addFileNode(superpipeline, task, argument, nodeAddress)
+                    graph.addFileNode(nodeAddress, nodeAddress)
                     graph.addEdge(nodeAddress, task, argumentAttributes)
 
                     # Attach the name of the node from which this filename is constructed to the node.
@@ -225,11 +225,11 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
 
               # If there are instructions, but the construction method does not use another argument, create a node.
               else:
-                nodeAddress = str(task + '.' + argument.strip('-'))
+                nodeAddress = str(task + '.' + argument)
 
                 # Add the node and edge.
                 argumentAttributes = toolData.getArgumentData(argument)
-                graph.addFileNode(superpipeline, task, argument, nodeAddress)
+                graph.addFileNode(nodeAddress, nodeAddress)
                 graph.addEdge(nodeAddress, task, argumentAttributes)
 
         # Now consider output files.
@@ -285,7 +285,7 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
             if not instructions: print('dataConsistency.checkRequiredArguments - no output node', task, argument); exit(1)
 
             # If there are instructions, but no node, construct the node.
-            nodeAddress        = str(task + '.' + argument.strip('-'))
+            nodeAddress        = str(task + '.' + argument)
             argumentAttributes = toolData.getArgumentData(argument)
-            graph.addFileNode(superpipeline, task, argument, nodeAddress)
+            graph.addFileNode(nodeAddress, nodeAddress)
             graph.addEdge(task, nodeAddress, argumentAttributes)

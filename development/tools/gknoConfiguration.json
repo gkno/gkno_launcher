@@ -154,6 +154,13 @@
       "data type" : "flag",
       "values" : ["unset"]
     },
+    "GKNO-WEB" : {
+      "description" : "Write out json files for use with the web page.",
+      "long form argument" : "--web-content",
+      "short form argument" : "-web",
+      "data type" : "flag",
+      "values" : ["unset"]
+    },
     "GKNO-WRITE-INCOMPLETE" : {
       "description" : "List all of the makefiles that have not yet been completed successfully.",
       "long form argument" : "--list-incomplete",

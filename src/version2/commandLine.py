@@ -105,6 +105,9 @@ class commandLine:
   def determineMode(self, isAdmin, gkno):
     if isAdmin: return 'admin'
 
+    # Check if json files for the web page were requested.
+    if gkno.options['GKNO-WEB'].longFormArgument in self.arguments or gkno.options['GKNO-WEB'].shortFormArgument in self.arguments: return 'web'
+
     # Check if help for gkno specific arguments was requested.
     if gkno.options['GKNO-ARGUMENTS'].longFormArgument in self.arguments or gkno.options['GKNO-ARGUMENTS'].shortFormArgument in self.arguments:
       return 'gkno help'
@@ -310,7 +313,7 @@ class commandLine:
 
         # Add the node to the list.
         if associatedNodeID: associatedNodes.append((taskAddress, associatedNodeID, tool, argument, values, False))
-        else: associatedNodes.append((taskAddress, str(taskAddress + '.' + argument.strip('-')), tool, argument, values, True))
+        else: associatedNodes.append((taskAddress, str(taskAddress + '.' + argument), tool, argument, values, True))
 
     # Return the list with information on the nodes to create.
     return associatedNodes
