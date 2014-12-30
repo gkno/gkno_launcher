@@ -198,7 +198,7 @@ class commandLine:
       else:  self.errors.invalidArgument(argument)
 
   # Determine the name (if any) of the requested parameter set.
-  def getParameterSetName(self, arguments):
+  def getParameterSetName(self, arguments, gkno):
 
     # Loop over the gkno specific arguments looking for the --parameter-set argument,
     for argument in arguments:

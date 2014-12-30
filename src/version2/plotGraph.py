@@ -3,8 +3,8 @@
 from __future__ import print_function
 import networkx as nx
 
-import graph
-from graph import *
+import graph as gr
+import plotErrors as er
 
 import os
 import sys
@@ -12,8 +12,58 @@ import sys
 # Define the plotting class.
 class plotGraph():
   def __init__(self):
-    pass
 
+    # Define the errors.
+    self.errors = er.plotErrors()
+
+    # Keep track of the requested plots.
+    self.isFullPlot    = False
+    self.isReducedPlot = False
+
+    # Store the filenames.
+    self.plotFilename        = None
+    self.reducedPlotFilename = None
+    self.fullPlotFilename    = None
+
+  # Determine if a plot was requested and if so, the plot type. Ensure that the filename(s) are
+  # set.
+  def isPlotRequired(self, arguments, gkno):
+
+    # Check if a plot was requested. Firs, check to see if a full plot was requested.
+    option = 'GKNO-DRAW-FULL-PIPELINE'
+    if gkno.options[option].longFormArgument in arguments or gkno.options[option].shortFormArgument in arguments:
+      self.isFullPlot   = True
+      self.plotFilename = arguments[gkno.options[option].longFormArgument][0]
+
+    # Then check if a reduced plot was requested.
+    option = 'GKNO-DRAW-REDUCED-PIPELINE'
+    if gkno.options[option].longFormArgument in arguments or gkno.options[option].shortFormArgument in arguments:
+      self.isReducedPlot = True
+      self.plotFilename  = arguments[gkno.options[option].longFormArgument][0]
+
+    # Finally, check if both plots were requested.
+    option = 'GKNO-DRAW-PIPELINE'
+    if gkno.options[option].longFormArgument in arguments or gkno.options[option].shortFormArgument in arguments:
+      self.isFullPlot    = True
+      self.isReducedPlot = True
+      self.plotFilename  = arguments[gkno.options[option].longFormArgument][0]
+
+    # If no plot was requested, return.
+    if not self.isFullPlot and not self.isReducedPlot: return
+
+    # Check that a filename was provided.
+    if not self.plotFilename: self.errors.noFilename()
+
+    # If both a full and reduced plot are being produced, append '-full' and '-reduced' to the filenames
+    # and ensure that all filenames end with the extension '.dot'.
+    if self.plotFilename.endswith('.dot'): self.plotFilename = self.plotFilename.rsplit('.dot', 1)[0]
+    if self.isFullPlot and self.isReducedPlot:
+      self.fullPlotFilename    = str(self.plotFilename + '-full.dot')
+      self.reducedPlotFilename = str(self.plotFilename + '-reduced.dot')
+    else:
+      self.fullPlotFilename    = str(self.plotFilename + '.dot')
+      self.reducedPlotFilename = str(self.plotFilename + '.dot')
+    
   # Plot a dot file. Either the option, file or all nodes are plotted (gkno specific
   # nodes are removed).
   def plot(self, superpipeline, graph, filename, isReduced):
@@ -22,7 +72,7 @@ class plotGraph():
     graphToDraw = graph.graph.copy()
 
     # Remove all option nodes.
-    for optionNodeID in pipelineGraph.CM_getNodes(graphToDraw, 'option'):
+    for optionNodeID in gr.pipelineGraph.CM_getNodes(graphToDraw, 'option'):
       if isReduced: graphToDraw.remove_node(optionNodeID)
       else:
         graphToDraw.node[optionNodeID]["label"]     = optionNodeID.rsplit('.', 1)[-1]
@@ -34,7 +84,7 @@ class plotGraph():
 
     # Loop over file nodes. If the node has predecessors and successors, leave it in the graph. If it has only
     # predecessors or successors, check if it is listed as a node to be kept in the graph.
-    for fileNodeID in pipelineGraph.CM_getNodes(graphToDraw, 'file'):
+    for fileNodeID in gr.pipelineGraph.CM_getNodes(graphToDraw, 'file'):
 
       # If a reduced plot is requested, check if this node can be removed by checking all of the tool arguments
       # associated with the node for the includeInReducedPlot variable set to False.
@@ -62,12 +112,12 @@ class plotGraph():
         successorNodeIDs   = graphToDraw.successors(fileNodeID)
         extension          = 'NA'
         for predecessorNodeID in predecessorNodeIDs:
-          try: extension = pipelineGraph.CM_getArgumentAttribute(graphToDraw, predecessorNodeID, fileNodeID, 'extensions')[0]
+          try: extension = gr.pipelineGraph.CM_getArgumentAttribute(graphToDraw, predecessorNodeID, fileNodeID, 'extensions')[0]
           except: extension = 'NA'
           if extension != 'NA': break
         if extension == 'NA':
           for successorNodeID in successorNodeIDs:
-            try: extension = pipelineGraph.CM_getArgumentAttribute(graphToDraw, fileNodeID, successorNodeID, 'extensions')[0]
+            try: extension = gr.pipelineGraph.CM_getArgumentAttribute(graphToDraw, fileNodeID, successorNodeID, 'extensions')[0]
             except: extension = 'NA'
             if extension != 'NA': break
   
@@ -75,13 +125,13 @@ class plotGraph():
         graphToDraw.node[fileNodeID]["label"] = extension.rsplit('.', 1)[-1]
 
     # Loop over the nodes and add names, styles etc and mark those node to be removed.
-    for taskNodeID in pipelineGraph.CM_getNodes(graphToDraw, 'task'):
+    for taskNodeID in gr.pipelineGraph.CM_getNodes(graphToDraw, 'task'):
 
       # Remove the address from the task name.
       taskNodeName = taskNodeID.rsplit('.', 1)[-1]
 
       # Mark if nodes should be removed or not.
-      if pipelineGraph.CM_getGraphNodeAttribute(graphToDraw, taskNodeID, 'includeInReducedPlot'): graphToDraw.node[taskNodeID]["include"] = True
+      if gr.pipelineGraph.CM_getGraphNodeAttribute(graphToDraw, taskNodeID, 'includeInReducedPlot'): graphToDraw.node[taskNodeID]["include"] = True
       elif isReduced: graphToDraw.node[taskNodeID]["include"] = False
 
       # Define the name of the new node.
@@ -103,7 +153,7 @@ class plotGraph():
       if not graphToDraw.predecessors(nodeID) and not graphToDraw.successors(nodeID): graphToDraw.remove_node(nodeID)
 
     # Loop over the nodes and add names, styles etc for file nodes.
-    for nodeID in pipelineGraph.CM_getNodes(graphToDraw, 'file'):
+    for nodeID in gr.pipelineGraph.CM_getNodes(graphToDraw, 'file'):
       graphToDraw.node[nodeID]["shape"]     = 'circle'
       graphToDraw.node[nodeID]["style"]     = 'filled'
       graphToDraw.node[nodeID]["fillcolor"] = '#6E915F'
@@ -123,7 +173,7 @@ class plotGraph():
     nodesToDelete = []
 
     # Loop over the task nodes.
-    for taskNodeID in pipelineGraph.CM_getNodes(graphToDraw, 'task'):
+    for taskNodeID in gr.pipelineGraph.CM_getNodes(graphToDraw, 'task'):
 
       # Only process nodes to be removed.
       if not graphToDraw.node[taskNodeID]['include']:
@@ -179,5 +229,5 @@ class plotGraph():
 
     # Finally, step through the graph and remove nodes marked 'NA'. These are files created from stubs that
     # are not passed to other tools, so just clutter the plot.
-    for nodeID in pipelineGraph.CM_getNodes(graphToDraw, 'file'):
+    for nodeID in gr.pipelineGraph.CM_getNodes(graphToDraw, 'file'):
       if graphToDraw.node[nodeID]['label'] == 'NA': graphToDraw.remove_node(nodeID)

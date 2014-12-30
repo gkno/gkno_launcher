@@ -25,7 +25,8 @@ class adminErrors:
     # Errors associated with the graph construction generate an error code of '8'.
     # Errors associated with handling arguments generate an error code of '9'.
     # Data consistency errors generate an error code of '10'.
-    # Error coming from help requests generate an error code of '11'.
+    # Errors coming from help requests generate an error code of '11'.
+    # Errors with plotting the pipeline graph generate an error code of '12'.
     self.errorCode = '2'
 
   #####################

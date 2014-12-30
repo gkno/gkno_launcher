@@ -176,7 +176,7 @@ def main():
   graph.addPipelineParameterSets(superpipeline, 'default')
 
   # Determine the requested parameter set and add the parameters to the graph.
-  parameterSet = command.getParameterSetName(command.gknoArguments)
+  parameterSet = command.getParameterSetName(command.gknoArguments, gknoConfiguration)
   if parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, parameterSet)
 
   # Parse the command line arguments and associate the supplied command line argument values with the graph node.
@@ -222,17 +222,10 @@ def main():
   # a tool could be fed n input files for a single argument and be run n times or once etc.
   #graph.determineNumberOfTaskExecutions(superpipeline)
 
-#  for task in workflow:
-#    print(task)
-#    print('PRE')
-#    for nodeID in graph.graph.predecessors(task):
-#      print('\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-#    print('SUC')
-#    for nodeID in graph.graph.successors(task):
-#      print('\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-
-  plot.plot(superpipeline, graph, 'full.dot', isReduced = False)
-  plot.plot(superpipeline, graph, 'reduced.dot', isReduced = True)
+  # Determine whether or not to output a visual representation of the pipeline graph.
+  plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
+  if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
+  if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
 
 if __name__ == "__main__":
   main()

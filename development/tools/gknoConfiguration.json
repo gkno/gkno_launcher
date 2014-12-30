@@ -42,10 +42,24 @@
       "data type" : "flag",
       "values" : ["unset"]
     },
+    "GKNO-DRAW-FULL-PIPELINE" : {
+      "description" : "Name of the file to which a full visual depiction of the pipeline graph will be output.",
+      "long form argument" : "--draw-full-pipeline-graph",
+      "short form argument" : "-dfpg",
+      "data type" : "string",
+      "values" : []
+    },
     "GKNO-DRAW-PIPELINE" : {
-      "description" : "Name of the file to output a visual depiction of the pipeline graph.",
+      "description" : "A full and reduced version of the pipeline graph will be output to files beginning with this value and appended with '-full' and '-reduced'.",
       "long form argument" : "--draw-pipeline-graph",
       "short form argument" : "-dpg",
+      "data type" : "string",
+      "values" : []
+    },
+    "GKNO-DRAW-REDUCED-PIPELINE" : {
+      "description" : "Name of the file to which a reduced visual depiction of the pipeline graph will be output. This is the form of the pipeline shown on the webpage for the pipeline.",
+      "long form argument" : "--draw-reduced-pipeline-graph",
+      "short form argument" : "-drpg",
       "data type" : "string",
       "values" : []
     },
