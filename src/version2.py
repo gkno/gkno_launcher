@@ -120,6 +120,10 @@ def main():
       toolData.getConfigurationData(tool, toolConfigurationFilesPath + str(tool) + '.json')
       superpipeline.addTool(tool, toolData)
   
+    # Loop over all of the pipeline configuration files and check that all nodes that define a tool
+    # argument have valid arguments for the tool.
+    superpipeline.checkArgumentsInPipeline()
+
     # Define the graph object that will contain the pipeline graph and necessary operations and methods
     # to build and modify it.
     graph = gr.pipelineGraph()
@@ -201,12 +205,16 @@ def main():
   # filenames have been constructed, without the omission of constructed files.
   dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = False)
 
+  # Check the number of values in each node and determine how many times each task needs to be run. For example,
+  # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc.
+  graph.determineNumberOfTaskExecutions(superpipeline)
+
   # With the graph built, all arguments attached and checked, the final task prior to converting the graph to
   # an executable is to construct filenames that have not been provided.
-  construct.constructFilenames(graph, superpipeline)
+  #construct.constructFilenames(graph, superpipeline)
 
   # Construct input files.
-  construct.constructInputNodes(graph, superpipeline)
+  #construct.constructInputNodes(graph, superpipeline)
 
   # Having constructed all of the output file names (which may then be linked to other tasks as outputs), rerun the
   # check of the values to ensure that the data types and the ssociated extensions are valid. This will provide a
@@ -215,12 +223,8 @@ def main():
   # outputs a file with and extension 'ext1' and the file is then passed to a file that requires files with the
   # extension 'ext2', the pipeline is invalid. The output filename has been constructed as file.ext1 and so the following
   # routine will flag the file as invalid as input to the next task.
-  dc.checkValues(graph, superpipeline, args)
-  dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = True)
-
-  # Check the number of values in each node and determine how many times each task needs to be run. For example,
-  # a tool could be fed n input files for a single argument and be run n times or once etc.
-  #graph.determineNumberOfTaskExecutions(superpipeline)
+  #dc.checkValues(graph, superpipeline, args)
+  #dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = True)
 
   # Determine whether or not to output a visual representation of the pipeline graph.
   plot.isPlotRequired(command.gknoArguments, gknoConfiguration)

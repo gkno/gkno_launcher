@@ -29,60 +29,45 @@ def constructFilenames(graph, superpipeline):
         if instructions['method'] == 'from tool argument': constructFromFilename(graph, superpipeline, instructions, task, tool, nodeID)
         else: print('constructFilenames.constructFilenames - unknown method', instructions.method); exit(0)
 
-# Loop over input nodes looking for ones that are connected to other node for construction. Construct
-# the values for these nodes.
-def constructInputNodes(graph, superpipeline):
+# Construct the filenames for an input node.
+def constructInputNode(graph, superpipeline):
 
-  # Loop over all nodes.
-  for task in graph.workflow:
+  # Get the values from the connected node. If none exist, the filenames cannot be constructed, so
+  # terminate.
+  connectedValues = graph.getGraphNodeAttribute(graph.getGraphNodeAttribute(nodeID, 'constructUsingNode'), 'values')
+  #TODO ERROR
+  if not connectedValues: print('constructFilenames.constructInputNodes - no values'); exit(0)
 
-    # Get the tool used for this task.
-    tool     = superpipeline.tasks[task]
-    toolData = superpipeline.toolConfigurationData[tool]
+  # Get the construction instructions.
+  instructions = graph.getArgumentAttribute(nodeID, task, 'constructionInstructions')
 
-    # Loop over inputs to this task.
-    for nodeID in graph.CM_getInputFileNodes(graph.graph, task):
+  # Get the long form of the argument whose values are being used for construction, as well as
+  # the extensions associated with the argument.
+  longFormArgument = toolData.getLongFormArgument(instructions['use argument'])
+  extensions       = toolData.getArgumentAttribute(longFormArgument, 'extensions')
 
-      # If the node has no values and has a link to a node from which filenames can be constructed,
-      # contruct the filenames.
-      if graph.getGraphNodeAttribute(nodeID, 'constructUsingNode') and not graph.getGraphNodeAttribute(nodeID, 'values'):
+  # Loop over the values.
+  values = []
+  for value in connectedValues:
+    modifiedValue = value
 
-        # Get the values from the connected node. If none exist, the filenames cannot be constructed, so
-        # terminate.
-        connectedValues = graph.getGraphNodeAttribute(graph.getGraphNodeAttribute(nodeID, 'constructUsingNode'), 'values')
-        #TODO ERROR
-        if not connectedValues: print('constructFilenames.constructInputNodes - no values'); exit(0)
+    # Determine the extension on the input, the create a working version of the new name with the
+    # extension removed.
+    extension = getExtension(value, extensions)
+    if extension: modifiedValue = modifiedValue.replace('.' + str(extension), '')
 
-        # Get the construction instructions.
-        instructions = graph.getArgumentAttribute(nodeID, task, 'constructionInstructions')
+    # If there are instructions on text to add, add it.
+    if 'modify text' in instructions: modifiedValue = modifyText(graph, toolData, instructions, task, modifiedValue)
 
-        # Get the long form of the argument whose values are being used for construction, as well as
-        # the extensions associated with the argument.
-        longFormArgument = toolData.getLongFormArgument(instructions['use argument'])
-        extensions       = toolData.getArgumentAttribute(longFormArgument, 'extensions')
+    # Determine the extension to place on the filename.
+    newExtensions = graph.getArgumentAttribute(nodeID, task, 'extensions')
+    modifiedValue = furnishExtension(instructions, modifiedValue, extension, newExtensions)
 
-        # Loop over the values.
-        values = []
-        for value in connectedValues:
-          modifiedValue = value
+    # Add the updated value to the modifiedValues list.
+    values.append(modifiedValue)
 
-          # Determine the extension on the input, the create a working version of the new name with the
-          # extension removed.
-          extension = getExtension(value, extensions)
-          if extension: modifiedValue = modifiedValue.replace('.' + str(extension), '')
-
-          # If there are instructions on text to add, add it.
-          if 'modify text' in instructions: modifiedValue = modifyText(graph, toolData, instructions, task, modifiedValue)
-
-          # Determine the extension to place on the filename.
-          newExtensions = graph.getArgumentAttribute(nodeID, task, 'extensions')
-          modifiedValue = furnishExtension(instructions, modifiedValue, extension, newExtensions)
-
-          # Add the updated value to the modifiedValues list.
-          values.append(modifiedValue)
-
-        # Update the graph node with the new values.
-        graph.setGraphNodeAttribute(nodeID, 'values', values)
+  # Update the graph node with the new values.
+  graph.setGraphNodeAttribute(nodeID, 'values', values)
 
 # Construct the filename from an input file from the same task.
 def constructFromFilename(graph, superpipeline, instructions, task, tool, nodeID):
@@ -233,3 +218,59 @@ def furnishExtension(instructions, value, originalExtension, newExtensions):
   # Any other action is not recognised.
   #TODO ERROR
   else: print('constructionInstructions.furnishExtension - unknown instruction'); exit(1)
+
+#FIXME MODIFIED TO DO A TASK AT A TIME. CAN BE DELETED?
+# Loop over input nodes looking for ones that are connected to other node for construction. Construct
+# the values for these nodes.
+def constructInputNodes(graph, superpipeline):
+
+  # Loop over all nodes.
+  for task in graph.workflow:
+
+    # Get the tool used for this task.
+    tool     = superpipeline.tasks[task]
+    toolData = superpipeline.toolConfigurationData[tool]
+
+    # Loop over inputs to this task.
+    for nodeID in graph.CM_getInputFileNodes(graph.graph, task):
+
+      # If the node has no values and has a link to a node from which filenames can be constructed,
+      # contruct the filenames.
+      if graph.getGraphNodeAttribute(nodeID, 'constructUsingNode') and not graph.getGraphNodeAttribute(nodeID, 'values'):
+
+        # Get the values from the connected node. If none exist, the filenames cannot be constructed, so
+        # terminate.
+        connectedValues = graph.getGraphNodeAttribute(graph.getGraphNodeAttribute(nodeID, 'constructUsingNode'), 'values')
+        #TODO ERROR
+        if not connectedValues: print('constructFilenames.constructInputNodes - no values'); exit(0)
+
+        # Get the construction instructions.
+        instructions = graph.getArgumentAttribute(nodeID, task, 'constructionInstructions')
+
+        # Get the long form of the argument whose values are being used for construction, as well as
+        # the extensions associated with the argument.
+        longFormArgument = toolData.getLongFormArgument(instructions['use argument'])
+        extensions       = toolData.getArgumentAttribute(longFormArgument, 'extensions')
+
+        # Loop over the values.
+        values = []
+        for value in connectedValues:
+          modifiedValue = value
+
+          # Determine the extension on the input, the create a working version of the new name with the
+          # extension removed.
+          extension = getExtension(value, extensions)
+          if extension: modifiedValue = modifiedValue.replace('.' + str(extension), '')
+
+          # If there are instructions on text to add, add it.
+          if 'modify text' in instructions: modifiedValue = modifyText(graph, toolData, instructions, task, modifiedValue)
+
+          # Determine the extension to place on the filename.
+          newExtensions = graph.getArgumentAttribute(nodeID, task, 'extensions')
+          modifiedValue = furnishExtension(instructions, modifiedValue, extension, newExtensions)
+
+          # Add the updated value to the modifiedValues list.
+          values.append(modifiedValue)
+
+        # Update the graph node with the new values.
+        graph.setGraphNodeAttribute(nodeID, 'values', values)

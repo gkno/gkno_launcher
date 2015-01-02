@@ -821,10 +821,81 @@ class pipelineGraph:
 
     # Loop over all tasks in the pipeline.
     for task in self.workflow:
-      print(task)
+
+      # Check all of the options for the task.
+      numberOfExecutions = self.checkTaskOptions(task)
+
+      # Check the input files. The number of executions has been set by the number of values supplied to the
+      # task options, unless this is still set to one. The task can be greedy with respect to input files, so
+      # multiple input files can still equate to a single execution of the task; this is checked now.
+      self.checkInputFiles(superpipeline, task, numberOfExecutions)
+      print(task, numberOfExecutions)
+
+    exit(0)
+
+  # Check the supplied options for a task. Options can be supplied with zero or one value without a problem. If
+  # more than one value is provided to any option, this implies that the task is to be run multiple times - once
+  # for each value. If multiple values are supplied to multiple options, then there must be the same number of
+  # values. Each subsequent execution of the task will have all of the options iterated each time, so if option A
+  # is given the values A1 and A2, and option B is givem B1 and B2, the first execution will have A1 and B1, and the
+  # second execution A2 and B2. If option A was provided the values A1, A2 and A3 and option B only have B1 and B2,
+  # it is unclear which combinations to provide. gkno does not attempt to execute all possible combinations of
+  # supplied option values.
+  def checkTaskOptions(self, task):
+
+    # Record how many times this task is to be executed, based on the supplied option values.
+    numberOfExecutions = 1
+    for nodeID in self.getOptionNodes(task):
+
+      # Get the values associated with this option.
+      values = self.getGraphNodeAttribute(nodeID, 'values')
+      if len(values) > 1:
+
+        # If the number of executions, is set at one, reset the number of executions to the number of
+        # values supplied to this option.:
+        if numberOfExecutions == 1: numberOfExecutions = len(values)
+
+        # If the number of executions is already greater than one, the number of values for this option must
+        # equal the number of executions.
+        # TODO ERROR
+        elif len(values) != numberOfExecutions: print('ERROR - graph.checkTaskOptions - 1'); exit(0)
+
+    # Return the number of executions implied by the number of option values. When checking input and outputs
+    # files, this number will be used to check the number of supplied files.
+    return numberOfExecutions
+
+  # Loop over all the input files for the task and check how many have been defined. If the number of set files
+  # is inconsistent with the number of executions implied by the values given to the task options, terminate.
+  def checkInputFiles(self, superpipeline, task, numberOfExecutions):
+
+    # Loop over the input files.
+    for fileNodeID in self.getInputFileNodes(task):
+      values = self.getGraphNodeAttribute(fileNodeID, 'values')
+      if len(values) > 1:
+
+        # If the number of executions is one, update the number of executions.
+        if numberOfExecutions == 1: numberOfExecutions = len(values)
+
+        # If the number of executions is already greater than one, check that the number of set values is consistent
+        # with the number of executions already defined.
+        #TODO ERROR
+        elif len(values) != numberOfExecutions: print('ERROR - graph.checkInputFiles - 1'); exit(0)
+
+      # If there are no set values, check to see if there are instructions on how to construct the filenames. If
+      # so, construct the files.
+      elif len(values) == 0:
+
+        # Get the tool associated with the task, then determine if the argument has filename construction instructions.
+        tool         = superpipeline.tasks[task]
+        argument     = self.getArgumentAttribute(fileNodeID, task, 'longFormArgument')
+        constructUsingNode = self.getGraphNodeAttribute(fileNodeID, 'constructUsingNode')
+        #instructions = superpipeline.toolConfigurationData[tool].getArgumentAttribute(argument, 'constructionInstructions')
+        #if instructions:
+        print('\tTEST', task, tool, fileNodeID, argument, constructUsingNode)
+        if constructUsingNode: print('\t\t', self.getGraphNodeAttribute(constructUsingNode, 'values'))
 
   ########################################
-  ##  methods for modifying the graph.  ##
+  ##  Methods for modifying the graph.  ##
   ########################################
 
   # Add a task node to the graph.
@@ -922,6 +993,30 @@ class pipelineGraph:
 
     # Return a list of edges with the requested argument.
     return edges
+
+  # Return a list of all input file nodes.
+  def getInputFileNodes(self, task):
+    fileNodeIDs = []
+    for nodeID in self.graph.predecessors(task):
+      if self.getGraphNodeAttribute(nodeID, 'nodeType') == 'file': fileNodeIDs.append(nodeID)
+
+    return fileNodeIDs
+
+  # Return a list of all output file nodes.
+  def getOutputFileNodes(self, task):
+    fileNodeIDs = []
+    for nodeID in self.graph.successors(task):
+      if self.getGraphNodeAttribute(nodeID, 'nodeType') == 'file': fileNodeIDs.append(nodeID)
+
+    return fileNodeIDs
+
+  # Return a list of all option nodes.
+  def getOptionNodes(self, task):
+    optionNodeIDs = []
+    for nodeID in self.graph.predecessors(task):
+      if self.getGraphNodeAttribute(nodeID, 'nodeType') == 'option': optionNodeIDs.append(nodeID)
+
+    return optionNodeIDs
 
   # Return a list of all nodes of the a requested type.
   def getNodes(self, nodeType):

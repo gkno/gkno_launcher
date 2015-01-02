@@ -376,7 +376,7 @@ class pipelineConfiguration:
       if attributes.id in self.sharedNodeAttributes: print('pipeline.checkSharedNodes - 6'); exit(0)
 
       # Also check that the node id is not the name of a task.
-      if attributes.id in self.allTasks: print('pipeline.checkSharedNodes - 7'); exit(0)
+      if attributes.id in self.allTasks: self.errors.nodeIDIsTaskID(self.name, 'shared graph nodes', id)
 
       # Store the attributes.
       self.sharedNodeAttributes[attributes.id] = attributes
@@ -387,7 +387,7 @@ class pipelineConfiguration:
 
     # Define the allowed nodes attributes.
     allowedAttributes                        = {}
-    allowedAttributes['external node']       = (str, False, True, 'externalNodeID')
+    allowedAttributes['node id']             = (str, False, True, 'externalNodeID')
     allowedAttributes['stub extension']      = (str, False, True, 'stubExtension')
     allowedAttributes['task']                = (str, True, True, 'task')
     allowedAttributes['task argument']       = (str, False, True, 'taskArgument')
@@ -554,6 +554,26 @@ class pipelineConfiguration:
     if shortFormArgument in observedShortFormArguments: self.errors.repeatedShortFormArgument(nodeID, longFormArgument, shortFormArgument)
     if longFormArgument and not shortFormArgument: self.errors.noShortFormArgument(nodeID, longFormArgument)
     if shortFormArgument and not longFormArgument: self.errors.noLongFormArgument(nodeID, shortFormArgument)
+
+  # Return a list of all of the tool arguments used in the pipeline.
+  def getToolArguments(self):
+    arguments = []
+
+    # Get all the tool arguments associated with unique nodes.
+    for nodeID in self.getUniqueNodeIDs():
+      task         = self.getUniqueNodeAttribute(nodeID, 'task')
+      tool         = self.getTaskAttribute(task, 'tool')
+      taskArgument = self.getUniqueNodeAttribute(nodeID, 'taskArgument')
+      if taskArgument: arguments.append(('unique', nodeID, task, tool, taskArgument))
+
+    # Get all the tool arguments associated with shared nodes.
+    for nodeID in self.getSharedNodeIDs():
+      for information in self.getSharedNodeTasks(nodeID):
+        if information.taskArgument:
+          tool = self.getTaskAttribute(information.task, 'tool')
+          arguments.append(('shared', nodeID, task, tool, information.taskArgument))
+
+    return arguments
 
   # Return a list of all the tasks in the pipeline.
   def getAllTasks(self):

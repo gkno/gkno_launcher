@@ -79,3 +79,22 @@ class pipelineErrors:
     # Write out the error and terminate.
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  # A node ID is also the name of a task.
+  def nodeIDIsTaskID(self, name, node, id):
+    self.text.append('Node ID conflicts with a task ID.')
+    self.text.append('The configuration file for the \'' + name + '\' pipeline contains a node in the \'' + node + '\' section with the ' + \
+    'id \'' + id + '\'. This is also the name of a task in the pipeline. All the task names and node ids within a single configuration ' + \
+    'file must be unique. Please amend the configuration file to make sure that all of the ids are unique.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # A configuration file node contains a tool argument that is not valid.
+  def invalidToolArgument(self, pipeline, nodeType, nodeID, task, tool, argument):
+    self.text.append('Invalid tool argument.')
+    self.text.append('The configuration file for pipeline \'' + pipeline + '\', contains a node with id \'' + nodeID + '\' in the \'' + \
+    nodeType + ' graph nodes\' section. Within this node, the task \'' + task + '\' which uses the tool \'' + tool + '\' is associated ' + \
+    'with the argument \'' + argument + '\', but this argument is not valid for the tool. Please check that all of the tool arguments ' + \
+    'in the pipeline configuration file are valid for the tools they are linked to.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

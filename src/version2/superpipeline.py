@@ -194,6 +194,24 @@ class superpipelineClass:
   def addTool(self, tool, toolData):
     self.toolConfigurationData[tool] = toolData
 
+  # Check that all tool arguments reference in pipeline configuration files are valid.
+  def checkArgumentsInPipeline(self):
+    for tier in self.pipelinesByTier:
+      for pipeline in self.pipelinesByTier[tier]: 
+
+        # Get a list of all the tool arguments contained in each pipeline.
+        arguments = self.pipelineConfigurationData[pipeline].getToolArguments()
+
+        # Check that each argument is valid.
+        for nodeType, nodeID, task, tool, argument in arguments:
+
+          # Get the long form of the supplied argument.
+          longFormArgument = self.toolConfigurationData[tool].getLongFormArgument(argument)
+
+          # If the long form does not exist, the argument in the pipeline configuration file is not valid.
+          if not longFormArgument:
+            self.pipelineConfigurationData[pipeline].errors.invalidToolArgument(pipeline, nodeType, nodeID, task, tool, argument)
+
   # Return the tool used for a task. The task is the full address, so may well be a task
   # buried within enclosed pipelines.
   def getTool(self, taskAddress):
