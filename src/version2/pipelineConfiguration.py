@@ -408,7 +408,9 @@ class pipelineConfiguration:
         # Check that the supplied attributes are valid.
         self.success, attributes = methods.checkAttributes(node, allowedAttributes, attributes, self.allowTermination, helpInfo)
 
-        #TODO INCLUDE A CHECK TO ENSURE THAT AN ALLOWED COMBINATION OF FIELDS IS PRESENT.
+        #TODO INCLUDE A CHECK TO ENSURE THAT AN ALLOWED COMBINATION OF FIELDS IS PRESENT. IN PARTICULAR,
+        # IF THE TASK POINTS TO A PIPELINE RATHER THAN A TOOL, ENSURE THAT THE NODE ID IS PRESENT AND NOT
+        # THE TASK ARGUMENT.
 
         # Store the attributes.
         self.sharedNodeAttributes[nodeID].sharedNodeTasks.append(attributes)
@@ -562,16 +564,14 @@ class pipelineConfiguration:
     # Get all the tool arguments associated with unique nodes.
     for nodeID in self.getUniqueNodeIDs():
       task         = self.getUniqueNodeAttribute(nodeID, 'task')
-      tool         = self.getTaskAttribute(task, 'tool')
       taskArgument = self.getUniqueNodeAttribute(nodeID, 'taskArgument')
-      if taskArgument: arguments.append(('unique', nodeID, task, tool, taskArgument))
+      if taskArgument: arguments.append(('unique', nodeID, task, taskArgument))
 
     # Get all the tool arguments associated with shared nodes.
     for nodeID in self.getSharedNodeIDs():
       for information in self.getSharedNodeTasks(nodeID):
         if information.taskArgument:
-          tool = self.getTaskAttribute(information.task, 'tool')
-          arguments.append(('shared', nodeID, task, tool, information.taskArgument))
+          arguments.append(('shared', nodeID, information.task, information.taskArgument))
 
     return arguments
 

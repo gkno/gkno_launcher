@@ -47,7 +47,12 @@ class arguments:
           # the configuration node. There may be more than one graph node if this is a stub argument.
           configurationNodeID = pipelineData.longFormArguments[argument].nodeID
           nodeAddress         = address + '.' + configurationNodeID if address else configurationNodeID
-          graphNodeIDs        = superpipeline.nodeInformation[nodeAddress]
+
+          # Check that the node address is present in the graph.configurationFileToGraphNodeID dictionary. If
+          # it isn't, then no node with this address has been observed in the superpipeline and so, there is
+          # an error in the pipeline configuration file.
+          try: graphNodeIDs = graph.configurationFileToGraphNodeID[nodeAddress]
+          except: pipelineData.errors.invalidNodeInArgument(pipeline, argument, nodeAddress, pipelineData.longFormArguments[argument].category)
 
           # If this is not the top level pipeline, the argument requires the pipeline address. Define
           # the argument name for use in the data structures. The '--' of the argument is left intact

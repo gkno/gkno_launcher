@@ -9,7 +9,7 @@
       "pipeline" : "two-freebayes"
     },
     {
-      "task" : "realign-with-graph",
+      "task" : "realign",
       "tool" : "glia",
       "include in reduced plot" : true
     }
@@ -90,7 +90,7 @@
   "unique graph nodes" : [
     {
       "id" : "dag",
-      "task" : "realign-with-graph",
+      "task" : "realign",
       "task argument" : "--vcf"
     },
     {
@@ -106,7 +106,7 @@
       "arguments sharing node" : [
         {
           "task" : "workhorse.align",
-          "external node" : "fasta"
+          "node id" : "fasta"
         },
         {
           "task" : "workhorse.call1.call",
@@ -117,7 +117,7 @@
           "task argument" : "--fasta-reference"
         },
         {
-          "task" : "realign-with-graph",
+          "task" : "realign",
           "task argument" : "--fasta-reference"
         }
       ]
@@ -127,10 +127,10 @@
       "arguments sharing node" : [
         {
           "task" : "workhorse",
-          "external node" : "collect-bam"
+          "node id" : "collect-bam"
         },
         {
-          "task" : "realign-with-graph",
+          "task" : "realign",
           "task argument" : "--in"
         }
       ]
@@ -143,7 +143,7 @@
           "task argument" : "--out"
         },
         {
-          "task" : "realign-with-graph",
+          "task" : "realign",
           "task argument" : "--vcf"
         }
       ]

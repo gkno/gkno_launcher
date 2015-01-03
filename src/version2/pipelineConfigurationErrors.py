@@ -89,10 +89,37 @@ class pipelineErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  #####################################
+  ## Errors in the arguments section ##
+  #####################################
+
+  # A node id supplied with a pipeline argument is not valid.
+  def invalidNodeInArgument(self, pipeline, argument, address, category):
+    self.text.append('Invalid node address supplied with argument.')
+    self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains information in the \'' + category + '\' section ' + \
+    'of \'arguments\' for the argument \'' + argument + '\'. This argument is defined as pointing to the node with address \'' + \
+    address + '\', but this address does not point to a valid node in the pipeline. Please ensure that the node address is correct.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  ##########################################
+  ## Errors in the unique or shared nodes ##
+  ##########################################
+
+  # A supplied task is not valid.
+  def invalidTaskInNode(self, pipeline, nodeType, nodeID, task, tasks):
+    self.text.append('Invalid task in configuration file node.')
+    self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains a node with id \'' + nodeID + '\' in the \'' + \
+    nodeType + ' graph nodes\' secion. Within this node, the task \'' + task + '\' is used, but this task has not been defined in the ' + \
+    '\'pipeline tasks\' section of the configuration file and consequently is not valid. Please check that all tasks in the configuration ' + \
+    'file are valid for the pipeline.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   # A configuration file node contains a tool argument that is not valid.
   def invalidToolArgument(self, pipeline, nodeType, nodeID, task, tool, argument):
     self.text.append('Invalid tool argument.')
-    self.text.append('The configuration file for pipeline \'' + pipeline + '\', contains a node with id \'' + nodeID + '\' in the \'' + \
+    self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains a node with id \'' + nodeID + '\' in the \'' + \
     nodeType + ' graph nodes\' section. Within this node, the task \'' + task + '\' which uses the tool \'' + tool + '\' is associated ' + \
     'with the argument \'' + argument + '\', but this argument is not valid for the tool. Please check that all of the tool arguments ' + \
     'in the pipeline configuration file are valid for the tools they are linked to.')

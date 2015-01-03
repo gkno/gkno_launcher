@@ -83,16 +83,16 @@
       "arguments sharing node" : [
         {
           "task" : "align",
-          "external node" : "bam",
+          "node id" : "bam",
           "stub extension" : "bam"
         },
         {
           "task" : "call1",
-          "external node" : "bam"
+          "node id" : "bam"
         },
         {
           "task" : "call2",
-          "external node" : "bam"
+          "node id" : "bam"
         },
         {
           "task" : "sort",
