@@ -9,44 +9,45 @@ import os
 import sys
 
 # Construct the filenames for an input node.
-def constructInputNode(graph, superpipeline):
+def constructInputNode(graph, superpipeline, task, argument, nodeID, baseValues):
 
-  # Get the values from the connected node. If none exist, the filenames cannot be constructed, so
-  # terminate.
-  connectedValues = graph.getGraphNodeAttribute(graph.getGraphNodeAttribute(nodeID, 'constructUsingNode'), 'values')
   #TODO ERROR
-  if not connectedValues: print('constructFilenames.constructInputNodes - no values'); exit(0)
+  if not baseValues: print('constructFilenames.constructInputNodes - no values'); exit(0)
+
+  # Get the tool used for this value.
+  tool     = superpipeline.tasks[task]
+  toolData = superpipeline.toolConfigurationData[tool]
 
   # Get the construction instructions.
-  instructions = graph.getArgumentAttribute(nodeID, task, 'constructionInstructions')
+  instructions = gr.pipelineGraph.CM_getArgumentAttribute(graph, nodeID, task, 'constructionInstructions')
 
   # Get the long form of the argument whose values are being used for construction, as well as
   # the extensions associated with the argument.
-  longFormArgument = toolData.getLongFormArgument(instructions['use argument'])
-  extensions       = toolData.getArgumentAttribute(longFormArgument, 'extensions')
+  useArgument = toolData.getLongFormArgument(instructions['use argument'])
+  extensions  = toolData.getArgumentAttribute(useArgument, 'extensions')
 
   # Loop over the values.
   values = []
-  for value in connectedValues:
-    modifiedValue = value
+  for value in baseValues:
+    updatedValue = value
 
     # Determine the extension on the input, the create a working version of the new name with the
     # extension removed.
     extension = getExtension(value, extensions)
-    if extension: modifiedValue = modifiedValue.replace('.' + str(extension), '')
+    if extension: updatedValue = updatedValue.replace('.' + str(extension), '')
 
     # If there are instructions on text to add, add it.
-    if 'modify text' in instructions: modifiedValue = modifyText(graph, toolData, instructions, task, modifiedValue)
+    if 'modify text' in instructions: updatedValue = modifyText(graph, toolData, instructions, task, updatedValue)
 
     # Determine the extension to place on the filename.
-    newExtensions = graph.getArgumentAttribute(nodeID, task, 'extensions')
-    modifiedValue = furnishExtension(instructions, modifiedValue, extension, newExtensions)
+    newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, nodeID, task, 'extensions')
+    updatedValue  = furnishExtension(instructions, updatedValue, extension, newExtensions)
 
     # Add the updated value to the modifiedValues list.
-    values.append(modifiedValue)
+    values.append(updatedValue)
 
-  # Update the graph node with the new values.
-  graph.setGraphNodeAttribute(nodeID, 'values', values)
+  # Return the constructed values.
+  return values
 
 # Update the construction instructions to include additional argument values. This is triggered because a task is
 # being executed multiple times, but each execution uses the same input file - it is an option argument that is

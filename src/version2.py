@@ -205,7 +205,7 @@ def main():
   # filenames have been constructed, without the omission of constructed files.
   dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = False)
 
-  #
+  # Determine which files are marked for deletion.
   superpipeline.determineFilesToDelete(graph)
 
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
@@ -223,13 +223,6 @@ def main():
       argument = graph.getArgumentAttribute(task, nodeID, 'longFormArgument')
       print('\t\t', nodeID, argument, graph.getGraphNodeAttribute(nodeID, 'values'))
 
-  # With the graph built, all arguments attached and checked, the final task prior to converting the graph to
-  # an executable is to construct filenames that have not been provided.
-  #construct.constructFilenames(graph, superpipeline)
-
-  # Construct input files.
-  #construct.constructInputNodes(graph, superpipeline)
-
   # Having constructed all of the output file names (which may then be linked to other tasks as outputs), rerun the
   # check of the values to ensure that the data types and the ssociated extensions are valid. This will provide a
   # check of whether tools can be linked as described in the configuration file. In the previous check, not all of the
@@ -237,8 +230,8 @@ def main():
   # outputs a file with and extension 'ext1' and the file is then passed to a file that requires files with the
   # extension 'ext2', the pipeline is invalid. The output filename has been constructed as file.ext1 and so the following
   # routine will flag the file as invalid as input to the next task.
-  #dc.checkValues(graph, superpipeline, args)
-  #dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = True)
+  dc.checkValues(graph, superpipeline, args)
+  dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = True)
 
   # Determine whether or not to output a visual representation of the pipeline graph.
   plot.isPlotRequired(command.gknoArguments, gknoConfiguration)

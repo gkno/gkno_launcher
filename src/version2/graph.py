@@ -948,7 +948,9 @@ class pipelineGraph:
 
         # Determine if the argument has filename construction instructions.
         constructUsingNode = self.getGraphNodeAttribute(fileNodeID, 'constructUsingNode')
-        if constructUsingNode: print('\t\tTEST', self.getGraphNodeAttribute(constructUsingNode, 'values'))
+        if constructUsingNode:
+          baseValues = self.getGraphNodeAttribute(constructUsingNode, 'values')
+          self.setGraphNodeAttribute(fileNodeID, 'values', construct.constructInputNode(self.graph, superpipeline, task, argument, fileNodeID, baseValues))
 
     # Update the task node.
     self.setGraphNodeAttribute(task, 'numberOfExecutions', numberOfExecutions)
