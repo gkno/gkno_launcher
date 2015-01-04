@@ -2,32 +2,11 @@
 
 from __future__ import print_function
 import superpipeline
-import graph
+import graph as gr
 
 import json
 import os
 import sys
-
-# Loop through the workflow identifying nodes that require filenames to be constructed.
-def constructFilenames(graph, superpipeline):
-  for task in graph.workflow:
-
-    # Loop over the sets of nodes, e.g. loop over all input nodes, then loop over all output nodes.
-    # The same construction techniques are used for both.
-    for nodeID in graph.CM_getOutputNodes(graph.graph, task):
-
-      # Check if this node has values.
-      if not graph.getGraphNodeAttribute(nodeID, 'values'):
-
-        # Get the tool associated with the task.
-        tool = superpipeline.tasks[task]
-
-        # Get the instructions for constructing the filename.
-        instructions = graph.getArgumentAttribute(task, nodeID, 'constructionInstructions')
-
-        # Construct the filename according to the requested method.
-        if instructions['method'] == 'from tool argument': constructFromFilename(graph, superpipeline, instructions, task, tool, nodeID)
-        else: print('constructFilenames.constructFilenames - unknown method', instructions.method); exit(0)
 
 # Construct the filenames for an input node.
 def constructInputNode(graph, superpipeline):
@@ -69,8 +48,48 @@ def constructInputNode(graph, superpipeline):
   # Update the graph node with the new values.
   graph.setGraphNodeAttribute(nodeID, 'values', values)
 
+# Update the construction instructions to include additional argument values. This is triggered because a task is
+# being executed multiple times, but each execution uses the same input file - it is an option argument that is
+# being changed on each exectution. As a result, the construction instructions as supplied would result in each
+# execution of the task generating the same filename. The option that changes is being forced into the output
+# filename to ensure that each output filename is unique, and that it is clear how the file was generated.
+def updateArgumentsInInstructions(graph, instructions, task):
+
+  # If the instructions do not contain the 'modify text' list, add it. This list provides instructions
+  # on text or argument values to add to the filename, so is required to include the options.
+  if 'modify text' not in instructions: instructions['modify text'] = []
+
+  # Loop over the modify text section and record which arguments already have their values added to
+  # the filename.
+  else:
+    listedArguments = []
+    for modification in instructions['modify text']:
+      if 'add argument values' in modification: listedArguments.extend(modification['add argument values'])
+
+  # Loop over the options nodes with multiple values and get their arguments.
+  addArguments = []
+  for optionNodeID in gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'nodesWithMultipleValues'):
+    optionArgument = gr.pipelineGraph.CM_getArgumentAttribute(graph, optionNodeID, task, 'longFormArgument')
+    if optionArgument not in listedArguments: addArguments.append(str(optionArgument))
+
+  # Define the new instructions block, then add it to the instructions. For each argument, add text including
+  # the argument name, then instructions to include the argument value.
+  if addArguments:
+    for argument in addArguments:
+
+      # Include the text.
+      block = {'add text' : [str('-' + argument.strip('-') + '_')]}
+      instructions['modify text'].append(block)
+
+      # Then include the value.
+      block = {'add argument values' : addArguments}
+      instructions['modify text'].append(block)
+
 # Construct the filename from an input file from the same task.
-def constructFromFilename(graph, superpipeline, instructions, task, tool, nodeID):
+def constructFromFilename(graph, superpipeline, instructions, task, nodeID, baseValues):
+
+  # Define a list of updated values.
+  updatedValues = []
 
   # Get the input file from which the filenames should be built.
   try: inputArgument = instructions['use argument']
@@ -78,6 +97,7 @@ def constructFromFilename(graph, superpipeline, instructions, task, tool, nodeID
 
   # Get the configuration data for this tool and get the long form version of the argument to 
   # use for building the filenames.
+  tool             = superpipeline.tasks[task]
   toolData         = superpipeline.getToolData(tool)
   longFormArgument = toolData.getLongFormArgument(inputArgument)
 
@@ -85,36 +105,27 @@ def constructFromFilename(graph, superpipeline, instructions, task, tool, nodeID
   extensions = toolData.getArgumentAttribute(longFormArgument, 'extensions')
   isStub     = toolData.getArgumentAttribute(longFormArgument, 'isStub')
 
-  # Find all of the predecessor nodes to this task that use this argument and add their values to a
-  # list.
-  values = []
-  for predecessorID in graph.getPredecessors(task):
-    predecessorArgument = graph.getArgumentAttribute(predecessorID, task, 'longFormArgument')
-    if predecessorArgument == longFormArgument:
-      for value in graph.getGraphNodeAttribute(predecessorID, 'values'): values.append(value)
-
   # Now loop over each of the values and modify them accoriding to the provided instructions.
-  modifiedValues = []
-  for value in values:
-    modifiedValue = value
+  for counter, value in enumerate(baseValues):
+    updatedValue = value
 
     # Determine the extension on the input, the create a working version of the new name with the
     # extension removed.
     extension = getExtension(value, extensions)
-    if extension: modifiedValue = modifiedValue.replace('.' + str(extension), '')
+    if extension: updatedValue = updatedValue.replace('.' + str(extension), '')
 
     # If there are instructions on text to add, add it.
-    if 'modify text' in instructions: modifiedValue = modifyText(graph, toolData, instructions, task, modifiedValue)
+    if 'modify text' in instructions: updatedValue = modifyText(graph, toolData, instructions, task, counter, updatedValue)
 
     # Determine the extension to place on the filename.
-    newExtensions = graph.getArgumentAttribute(task, nodeID, 'extensions')
-    modifiedValue = furnishExtension(instructions, modifiedValue, extension, newExtensions)
+    newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeID, 'extensions')
+    updatedValue  = furnishExtension(instructions, updatedValue, extension, newExtensions)
 
     # Add the updated value to the modifiedValues list.
-    modifiedValues.append(modifiedValue)
+    updatedValues.append(updatedValue)
 
-  # Update the graph node with the new values.
-  graph.setGraphNodeAttribute(nodeID, 'values', modifiedValues)
+  # Return the values.
+  return updatedValues
 
 # Determine the extension on a file.
 def getExtension(value, extensions):
@@ -141,7 +152,7 @@ def getExtension(value, extensions):
     print('constructFilenames.getExtension - Unable to identify extension'); exit(1)
 
 # Modify the text in a filename.
-def modifyText(graph, toolData, instructions, task, value):
+def modifyText(graph, toolData, instructions, task, counter, value):
 
   # Loop over the operations to perform.
   for modify in instructions['modify text']:
@@ -169,15 +180,16 @@ def modifyText(graph, toolData, instructions, task, value):
 
         # Get the node for the linked argument and then find the value.
         taskArgumentValues = []
-        for predecessorID in graph.getPredecessors(task):
-          if longFormArgument == graph.getArgumentAttribute(predecessorID, task, 'longFormArgument'):
-            taskArgumentValues = graph.getGraphNodeAttribute(predecessorID, 'values')
+        for predecessorID in graph.predecessors(task):
+          if longFormArgument == gr.pipelineGraph.CM_getArgumentAttribute(graph, predecessorID, task, 'longFormArgument'):
+            taskArgumentValues = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, predecessorID, 'values')
             break
 
         # If there are multiple values, terminate for now, until a method to decide which value to use
         # is introduced.
+        if isinstance(counter, int): value += str(taskArgumentValues[counter])
         #TODO ERROR
-        if len(taskArgumentValues) > 1: print('constructFilenames.modifyText - multiple arguments'); exit(1)
+        elif len(taskArgumentValues) > 1: print('constructFilenames.modifyText - multiple arguments'); exit(1)
         elif len(taskArgumentValues) == 1: value += str(taskArgumentValues[0])
 
   # Return the modifed value.

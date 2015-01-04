@@ -15,7 +15,7 @@
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam"]
+        "extensions" : ["bam"]
       }
     ],
   
@@ -27,7 +27,7 @@
         "command line argument" : "-out",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam.bai"]
+        "extensions" : ["bam.bai"]
       }
     ],
   

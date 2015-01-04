@@ -26,5 +26,5 @@ def rankListByString(inputList, queryString):
   return rankedList
 
 # Return a random string of length n.
-def randomString(n):
+def getRandomString(n):
   return ''.join(random.SystemRandom().choice(string.uppercase + string.digits) for _ in xrange(n))

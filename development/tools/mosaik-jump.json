@@ -94,18 +94,18 @@
       "data" : [
         {
           "id" : "reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.dat"],
-          "argument" : "--mosaik-reference"
+          "argument" : "--mosaik-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.dat"]
         },
         {
           "id" : "hash size",
-          "values" : ["8"],
-          "argument" : "--hash-size"
+          "argument" : "--hash-size",
+          "values" : ["8"]
         },
         {
           "id" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
+          "argument" : "--output-path",
+          "values" : ["./"]
         }
       ]
     }

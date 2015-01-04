@@ -228,6 +228,25 @@ class superpipelineClass:
     try: return self.pipelineConfigurationData[pipelineName].getTaskAttribute(task, 'tool')
     except: return False
 
+  # Determine which nodes are intermediate (e.g. are listed in the shared nodes section of the
+  # pipeline configuration file with the 'delete files' set).
+  def determineFilesToDelete(self, graph):
+
+    # Loop over all pipelines in the superpipeline.
+    for tier in self.pipelinesByTier:
+      for pipeline in self.pipelinesByTier[tier]:
+
+        # Loop over all of the shared nodes.
+        for nodeID in self.pipelineConfigurationData[pipeline].getSharedNodeIDs():
+          if self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeID, 'delete'):
+            address     = self.pipelineConfigurationData[pipeline].address
+            nodeAddress = str(address + '.' + nodeID) if address else str(nodeID)
+            for graphNodeID in graph.configurationFileToGraphNodeID[nodeAddress]: graph.setGraphNodeAttribute(graphNodeID, 'isIntermediate', True)
+
+  #######################################################
+  ## Methods to get information from the superpipeline ##
+  #######################################################
+
   # Return all the tools used in the superpipeline.
   def getTools(self):
     return self.tools

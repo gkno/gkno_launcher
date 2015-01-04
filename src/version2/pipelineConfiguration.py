@@ -61,6 +61,9 @@ class sharedGraphNodes:
     # Information on the tasks and arguments sharing the node.
     self.nodes = {}
 
+    # Store if the files associated with this node should be deleted.
+    self.delete = False
+
     # Define a structure to hold information on all the tasks that the shared graph node points
     # to.
     self.sharedNodeTasks = []
@@ -73,7 +76,7 @@ class nodeTaskAttributes:
     self.task = None
 
     # If the task uses a tool, the argument associated with the tool needs to be defined.
-    self.taskArgument   = None
+    self.taskArgument = None
 
     # If, however, the task uses another pipeline, the node within the pipeline needs to be
     # specified.
@@ -82,6 +85,10 @@ class nodeTaskAttributes:
     # If a non stub node is connecting to a stub node, the extension from the stub node
     # needs to be specified.
     self.stubExtension = None
+
+    # If this is listed as being greedy (e.g. if multiple files are specified, use all the files in
+    # one execution, rather than running the task multiple times).
+    self.isGreedy = False
 
 # Define a class to store information on unique pipeline nodes.
 class uniqueGraphNodes:
@@ -350,6 +357,7 @@ class pipelineConfiguration:
     # Defin the allowed nodes attributes.
     allowedAttributes                           = {}
     allowedAttributes['arguments sharing node'] = (list, True, True, 'nodes')
+    allowedAttributes['delete files']           = (bool, False, True, 'delete')
     allowedAttributes['id']                     = (str, True, True, 'id')
 
     # Loop over all of the defined nodes.
@@ -387,6 +395,7 @@ class pipelineConfiguration:
 
     # Define the allowed nodes attributes.
     allowedAttributes                        = {}
+    allowedAttributes['is greedy']           = (bool, False, True, 'isGreedy')
     allowedAttributes['node id']             = (str, False, True, 'externalNodeID')
     allowedAttributes['stub extension']      = (str, False, True, 'stubExtension')
     allowedAttributes['task']                = (str, True, True, 'task')

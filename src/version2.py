@@ -205,9 +205,23 @@ def main():
   # filenames have been constructed, without the omission of constructed files.
   dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = False)
 
+  #
+  superpipeline.determineFilesToDelete(graph)
+
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
   # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc.
   graph.determineNumberOfTaskExecutions(superpipeline)
+
+  for task in graph.workflow:
+    print(task, graph.getGraphNodeAttribute(task, 'numberOfExecutions'))
+    print('\tIN')
+    for nodeID in graph.graph.predecessors(task):
+      argument = graph.getArgumentAttribute(nodeID, task, 'longFormArgument')
+      print('\t\t', nodeID, argument, graph.getGraphNodeAttribute(nodeID, 'values'))
+    print('\tOUT')
+    for nodeID in graph.graph.successors(task):
+      argument = graph.getArgumentAttribute(task, nodeID, 'longFormArgument')
+      print('\t\t', nodeID, argument, graph.getGraphNodeAttribute(nodeID, 'values'))
 
   # With the graph built, all arguments attached and checked, the final task prior to converting the graph to
   # an executable is to construct filenames that have not been provided.

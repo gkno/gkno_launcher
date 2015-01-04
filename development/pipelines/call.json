@@ -66,6 +66,7 @@
   "shared graph nodes" : [
     {
       "id" : "out",
+      "delete files" : true,
       "arguments sharing node" : [
         {
           "task" : "merge",
@@ -79,6 +80,7 @@
     },
     {
       "id" : "compress",
+      "delete files" : true,
       "arguments sharing node" : [
         {
           "task" : "call",

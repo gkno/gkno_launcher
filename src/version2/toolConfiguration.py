@@ -54,6 +54,9 @@ class argumentAttributes:
     self.isInput  = False
     self.isOutput = False
 
+    # Store if the argument is greedy (e.g. uses all values associated with the node).
+    self.isGreedy = False
+
     # Store whether the argument can be suggested as a possible tool to use in a
     # pipeline builder.
     self.isSuggestible = False
