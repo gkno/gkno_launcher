@@ -6,20 +6,12 @@
   "pipeline tasks" : [
     {
       "task" : "merge",
-      "tool" : "bamtools-merge",
-      "generate multiple output nodes" : "--out"
+      "tool" : "bamtools-merge"
     },
     {
       "task" : "call",
       "tool" : "freebayes",
-      "multiple task calls" : true,
       "include in reduced plot" : true
-    },
-    {
-      "task" : "combine-vcf",
-      "tool" : "vcf-combine",
-      "multiple task calls" : true,
-      "consolidate nodes" : "--out"
     }
   ],
 
@@ -44,7 +36,7 @@
         "description" : "The output VCF file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
-        "node id" : "combine"
+        "node id" : "out"
       }
     ],
 
@@ -53,7 +45,6 @@
         "description" : "The genomic region.",
         "long form argument" : "--region",
         "short form argument" : "-rg",
-        "required" : true,
         "node id" : "region"
       }
     ]
@@ -76,8 +67,8 @@
       "task argument" : "--fasta-reference"
     },
     {
-      "id" : "output",
-      "task" : "combine-vcf",
+      "id" : "out",
+      "task" : "call",
       "task argument" : "--out"
     }
   ],
@@ -89,26 +80,11 @@
       "arguments sharing node" : [
         {
           "task" : "merge",
-          "task argument" : "--out"
+          "task argument" : "-o"
         },
         {
           "task" : "call",
           "task argument" : "--in"
-        }
-      ]
-    },
-    {
-      "id" : "combine",
-      "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "call",
-          "task argument" : "-o"
-        },
-        {
-          "task" : "combine-vcf",
-          "task argument" : "--in",
-          "is greedy" : true
         }
       ]
     }

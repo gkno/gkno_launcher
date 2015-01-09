@@ -15,10 +15,39 @@ import sys
 class taskAttributes:
   def __init__(self):
 
+    # List this node type as a task.
+    self.nodeType = 'task'
+
     # Store the task name along with the tool or pipeline used to execute the task.
     self.pipeline = None
     self.task     = None
     self.tool     = None
+
+    # Mark greedy tasks.
+    self.isGreedy = False
+
+    # If a task is allowed to generate multiple output file nodes, set this flag. This can be used
+    # when a task may have multiple input files and the input files are processed separately, but are
+    # divided into segments for processing, e.g. splitting a BAM file into regions. Each BAM file can
+    # be split into multiple regions, each of which are processed seperately, generating N nodes (one
+    # for each BAM file), each containing M values (the number of genomic regions).
+    self.generateMultipleOutputNodes = None
+
+    # Related to the above, the task following that creating multiple output file nodes, can be run
+    # multiple times (M times for each of the N inputs). If the following flag is set, multiple task
+    # nodes will be generated, one task node for each of the N files.
+    self.multipleTaskCalls = False
+
+    # Following the above example, after the M regions have been called for each of the N samples, the
+    # VCF files are combined. The 'combine' task will be run multiple times and each of the 'combine'
+    # task nodes will generate a single output node. If the following flag is set, the output nodes
+    # for each of the N 'combine' calls are consolidated into a single node with N values.
+    self.consolidate = None
+
+    # Identify any sister tasks. If the task is listed as being having multiple task calls, the same
+    # task in the pipeline will appear as multiple nodes to handle different sets of data. Any task
+    # that gets duplicated for this purpose has the IDs of the sister tasks stored in this list.
+    self.daughterTasks = []
 
     # Record if the task should be included in any plots.
     self.includeInReducedPlot = False
@@ -105,6 +134,14 @@ class uniqueGraphNodes:
     self.task         = None
     self.taskArgument = None
 
+    # Record if this node is greedy.
+    self.isGreedy = False
+
+    # If the task associated with this node is being run multiple times and this node points to an output
+    # file, then there is a node for each of the multiple executions of the task. This flag indicates that
+    # all these versions of this node should be consolidated into a single node.
+    self.consolidateNodes = False
+
     # Record if the unique node should be included in the plot.
     self.includeInReducedPlot = False
 
@@ -180,6 +217,10 @@ class pipelineConfiguration:
     # times, if a problem is encountered, execution should terminate. Keep track of this.
     self.allowTermination = True
 
+    # Flag if this pipeline contains instructions for building tasks that generate multiple output
+    # file nodes.
+    self.generatesMultipleNodes = False
+
     # As pipeline configuration files are processed, success will identify whether a problem was
     # encountered.
     self.success = True
@@ -230,6 +271,13 @@ class pipelineConfiguration:
     # Parse all of the unique nodes and shared nodes and pull out all of the pipeline arguments and store them.
     if self.success: self.success = self.storeArguments()
 
+    # Check if the pipeline defines any tasks that can generate multiple output file nodes. If so, check
+    # that everything requires is defined.
+    if self.success: self.success = self.checkMultipleNodeGeneration()
+
+    # Return whether processing of the file was successful.
+    return self.success
+
   # Process the top level pipeline configuration information.
   def checkTopLevelInformation(self, data):
 
@@ -256,11 +304,14 @@ class pipelineConfiguration:
   def checkPipelineTasks(self, data):
 
     # Define the allowed general attributes.
-    allowedAttributes                            = {}
-    allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
-    allowedAttributes['pipeline']                = (str, False, True, 'pipeline')
-    allowedAttributes['task']                    = (str, True, True, 'task')
-    allowedAttributes['tool']                    = (str, False, True, 'tool')
+    allowedAttributes                                   = {}
+    allowedAttributes['consolidate nodes']              = (str, False, True, 'consolidate')
+    allowedAttributes['include in reduced plot']        = (bool, False, True, 'includeInReducedPlot')
+    allowedAttributes['generate multiple output nodes'] = (str, False, True, 'generateMultipleOutputNodes')
+    allowedAttributes['multiple task calls']            = (bool, False, True, 'multipleTaskCalls')
+    allowedAttributes['pipeline']                       = (str, False, True, 'pipeline')
+    allowedAttributes['task']                           = (str, True, True, 'task')
+    allowedAttributes['tool']                           = (str, False, True, 'tool')
 
     for taskInformation in data:
 
@@ -313,11 +364,12 @@ class pipelineConfiguration:
     if 'unique graph nodes' not in data: return
 
     # Define the allowed nodes attributes.
-    allowedAttributes                            = {}
-    allowedAttributes['id']                      = (str, True, True, 'id')
-    allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
-    allowedAttributes['task']                    = (str, True, True, 'task')
-    allowedAttributes['task argument']           = (str, False, True, 'taskArgument')
+    allowedAttributes                             = {}
+    allowedAttributes['id']                       = (str, True, True, 'id')
+    allowedAttributes['include in reduced plot']  = (bool, False, True, 'includeInReducedPlot')
+    allowedAttributes['is greedy']                = (bool, False, True, 'isGreedy')
+    allowedAttributes['task']                     = (str, True, True, 'task')
+    allowedAttributes['task argument']            = (str, False, True, 'taskArgument')
 
     # Loop over all of the defined nodes.
     for uniqueNode in data['unique graph nodes']:
@@ -379,9 +431,10 @@ class pipelineConfiguration:
       # Check the attributes conform to expectations.
       self.success, attributes = methods.checkAttributes(sharedNode, allowedAttributes, attributes, self.allowTermination, helpInfo)
 
-      # If the nodeID already exists in the attributes, a node of this name has already been seen. All 
-      #nodes must have a unique name.
+      # If the node id already exists in the attributes, a node of this name has already been seen. All 
+      # nodes must have a unique name.
       if attributes.id in self.sharedNodeAttributes: print('pipeline.checkSharedNodes - 6'); exit(0)
+      if attributes.id in self.uniqueNodeAttributes: print('pipeline.checkSharedNodes - 6'); exit(0)
 
       # Also check that the node id is not the name of a task.
       if attributes.id in self.allTasks: self.errors.nodeIDIsTaskID(self.name, 'shared graph nodes', id)
@@ -559,12 +612,90 @@ class pipelineConfiguration:
         observedShortFormArguments.append(shortFormArgument)
         self.arguments[longFormArgument] = shortFormArgument
 
+    return True
+
   # If termination is allowed, call errors on the observed arguments.
   def callArgumentErrors(self, nodeID, longFormArgument, shortFormArgument, observedLongFormArguments, observedShortFormArguments):
     if longFormArgument in observedLongFormArguments: self.errors.repeatedLongFormArgument(nodeID, longFormArgument)
     if shortFormArgument in observedShortFormArguments: self.errors.repeatedShortFormArgument(nodeID, longFormArgument, shortFormArgument)
     if longFormArgument and not shortFormArgument: self.errors.noShortFormArgument(nodeID, longFormArgument)
     if shortFormArgument and not longFormArgument: self.errors.noLongFormArgument(nodeID, shortFormArgument)
+
+  # If the pipeline contains any tasks that generate multiple ouptut nodes, check that all definitions
+  # to make sense of the pipeline have been provided.
+  def checkMultipleNodeGeneration(self):
+
+    # Initialise variables.
+    consolidatingNodes               = []
+    isPreviousTaskConsolidatingNodes = False
+    isPreviousTaskGeneratingMultiple = False
+    isPreviousTaskMultipleTaskCalls  = False
+    isUnterminated                   = False
+
+    # Loop over all of the tasks in the pipeline and
+    for task in self.getAllTasks():
+
+      # Get the flags describing the task behaviour related to multiple node generation.
+      isConsolidatingNodes = self.getTaskAttribute(task, 'consolidate')
+      isGeneratingMultiple = self.getTaskAttribute(task, 'generateMultipleOutputNodes')
+      isMultipleTaskCalls  = self.getTaskAttribute(task, 'multipleTaskCalls')
+
+      # The isGeneratingMultiple flag cannot be set with either of the other flags.
+      if isGeneratingMultiple:
+        if isMultipleTaskCalls or isConsolidatingNodes: print('ERROR - pipelineConfiguration.checkMultipleNodeGeneration - 1'); exit(1)
+
+        # If this task has isGeneratingMultiple set to true, the previous task cannot. In addition,
+        # the previous task cannot have isMultipleTaskCalls set to true either, unless it also has
+        # isConsolidatingNodes set to true.
+        if isPreviousTaskGeneratingMultiple: print('ERROR - pipelineConfiguration.checkMultipleNodeGeneration - 2'); exit(1)
+        if isPreviousTaskMultipleTaskCalls and not isPreviousTaskConsolidatingNodes: print('ERROR - pipelineConfiguration.checkMultipleNodeGeneration - 3'); exit(1)
+
+        # Set isUnterminated to true. Once multiple output nodes have been generated by a task, the
+        # nodes can pass through multiple tasks that run multlipe times, but ultimately, the nodes
+        # need to be consolidated to a sinlge node prior to termination of the pipeline.
+        isUnterminated = True
+
+        # Record that this pipeline has instructions for tasks with multiple output nodes.
+        self.generatesMultipleNodes = True
+
+      # If the task is being run multiple times, a number of other conditions to be met need to be checked.
+      if isMultipleTaskCalls:
+
+        # If the previous task does not have isMultipleTaskCalls or isGeneratingMultiple set to true, this
+        # task cannot be run multiple times as it will not have the necessary input nodes to operate on.
+        if not isPreviousTaskGeneratingMultiple and not isPreviousTaskMultipleTaskCalls: print('ERROR - pipelineConfiguration.checkMultipleNodeGeneration - 4'); exit(1)
+
+      # The isMultipleTaskCalls flag must be true if the isConsolidatingNodes is true. Output nodes can only
+      # be consolidated if multiple tasks were run to generate the multiple nodes to be consolidated.
+      if isConsolidatingNodes:
+        if not isMultipleTaskCalls: print('ERROR - pipelineConfiguration.checkMultipleNodeGeneration - 5'); exit(1)
+
+        # As the nodes have been consolidated, set isUnterminated to False and the run of tasks with multiple
+        # task nodes has been completed.
+        isUnterminated = False
+
+      # If the previous task was listed as isGeneratingMultiple, this task must have the isMultipleTaskCalls flag
+      # set to true. If a task generated multiple output nodes, at least one task must be run using those nodes
+      # before consolidating output nodes back to a single node.
+      if isPreviousTaskGeneratingMultiple and not isMultipleTaskCalls: print('ERROR - pipelineConfiguration.checkMultipleNodeGeneration - 6'); exit(1)
+
+      # If the previous task has isMultipleTaskCalls set to true, but didn't consolidate the output file nodes, this
+      # task must have isMultipleTaskCalls set to true
+      if isPreviousTaskMultipleTaskCalls and not isPreviousTaskConsolidatingNodes and not isMultipleTaskCalls: print('ERROR - pipelineConfiguration.checkMultipleNodeGeneration - 7'); exit(1)
+
+      # Update the flags for the previous task (e.g. the task just processed).
+      isPreviousTaskConsolidatingNodes = isConsolidatingNodes
+      isPreviousTaskGeneratingMultiple = isGeneratingMultiple
+      isPreviousTaskMultipleTaskCalls  = isMultipleTaskCalls
+
+    # If the run of tasks with multiple task nodes is not ultimately consolidated into a single node throw an error.
+    if isUnterminated: print('ERROR - pipelineConfiguration.checkMultipleNodeGeneration - 8'); exit(1)
+
+    return True
+
+  ########################################################
+  ## Methods for getting information about the pipeline ##
+  ########################################################
 
   # Return a list of all of the tool arguments used in the pipeline.
   def getToolArguments(self):

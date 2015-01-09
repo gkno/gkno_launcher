@@ -12,6 +12,7 @@ import version2.arguments as ag
 import version2.commandLine as cl
 import version2.constructFilenames as construct
 import version2.dataConsistency as dc
+import version2.executionStructure as ex
 import version2.fileHandling as fh
 import version2.gknoConfiguration as gc
 import version2.graph as gr
@@ -21,10 +22,11 @@ import version2.toolConfiguration as tc
 import version2.pipelineConfiguration as pc
 import version2.superpipeline as sp
 import version2.web as w
+import version2.writeToScreen as write
 
 __author__ = "Alistair Ward"
 __version__ = "2.0.0"
-__date__ = "October 2014"
+__date__ = "January 2015"
 
 def main():
 
@@ -72,6 +74,9 @@ def main():
   # Determine if gkno is being run in admin mode and then determine the mode.
   isAdminMode, adminMode = command.isAdmin(admin.allModes)
   mode                   = command.determineMode(isAdminMode, gknoConfiguration)
+
+  # Print gkno title and version to the screen.
+  write.printHeader(__version__, __date__, os.getenv('GKNOCOMMITID'))
 
   # If not being run in admin mode, determine the name of the pipeline being run. Note that
   # for the code, a tool is considered a pipeline with a single task, so the terminology
@@ -210,18 +215,25 @@ def main():
 
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
   # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc.
+  plot.plot(superpipeline, graph, 'before.dot', isReduced = False)
   graph.determineNumberOfTaskExecutions(superpipeline)
+  plot.plot(superpipeline, graph, 'after.dot', isReduced = False)
+  print()
+  for task in graph.getNodes('task'):
+    print('TASK:', task)
+    print('\tOPTIONS:')
+    for nodeID in graph.getOptionNodes(task):
+      print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+    print('\tINPUTS:')
+    for nodeID in graph.getInputFileNodes(task):
+      print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+    print('\tOUTPUTS:')
+    for nodeID in graph.getOutputFileNodes(task):
+      print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+  exit(0)
 
-  for task in graph.workflow:
-    print(task, graph.getGraphNodeAttribute(task, 'numberOfExecutions'))
-    print('\tIN')
-    for nodeID in graph.graph.predecessors(task):
-      argument = graph.getArgumentAttribute(nodeID, task, 'longFormArgument')
-      print('\t\t', nodeID, argument, graph.getGraphNodeAttribute(nodeID, 'values'))
-    print('\tOUT')
-    for nodeID in graph.graph.successors(task):
-      argument = graph.getArgumentAttribute(task, nodeID, 'longFormArgument')
-      print('\t\t', nodeID, argument, graph.getGraphNodeAttribute(nodeID, 'values'))
+  # Print the workflow to screen.
+  write.workflow(superpipeline, workflow)
 
   # Having constructed all of the output file names (which may then be linked to other tasks as outputs), rerun the
   # check of the values to ensure that the data types and the ssociated extensions are valid. This will provide a
@@ -237,6 +249,15 @@ def main():
   plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
   if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
   if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
+
+  #
+  print('TEST')
+  print()
+  #struct = ex.executionStructure()
+  #struct.determineStructure(graph)
+  
+  for task in workflow:
+    print(task.ljust(30), 'isGreedy:', graph.getGraphNodeAttribute(task, 'isGreedy'), 'exeutions:', graph.getGraphNodeAttribute(task, 'numberOfExecutions'), 'input sets', graph.getGraphNodeAttribute(task, 'numberOfInputSets'), 'output sets:', graph.getGraphNodeAttribute(task, 'numberOfOutputSets'))
 
 if __name__ == "__main__":
   main()

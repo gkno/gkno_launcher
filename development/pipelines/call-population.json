@@ -6,20 +6,24 @@
   "pipeline tasks" : [
     {
       "task" : "merge",
-      "tool" : "bamtools-merge",
-      "generate multiple output nodes" : "--out"
+      "tool" : "bamtools-merge"
     },
     {
       "task" : "call",
       "tool" : "freebayes",
-      "multiple task calls" : true,
       "include in reduced plot" : true
     },
     {
       "task" : "combine-vcf",
-      "tool" : "vcf-combine",
-      "multiple task calls" : true,
-      "consolidate nodes" : "--out"
+      "tool" : "vcf-combine"
+    },
+    {
+      "task" : "compress-vcf",
+      "tool" : "bgzip"
+    },
+    {
+      "task" : "index-vcf",
+      "tool" : "vcf-index"
     }
   ],
 
@@ -44,7 +48,7 @@
         "description" : "The output VCF file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
-        "node id" : "combine"
+        "node id" : "compress"
       }
     ],
 
@@ -53,7 +57,6 @@
         "description" : "The genomic region.",
         "long form argument" : "--region",
         "short form argument" : "-rg",
-        "required" : true,
         "node id" : "region"
       }
     ]
@@ -63,7 +66,8 @@
     {
       "id" : "bam",
       "task" : "merge",
-      "task argument" : "--in"
+      "task argument" : "--in",
+      "is greedy" : true
     },
     {
       "id" : "region",
@@ -74,11 +78,6 @@
       "id" : "reference",
       "task" : "call",
       "task argument" : "--fasta-reference"
-    },
-    {
-      "id" : "output",
-      "task" : "combine-vcf",
-      "task argument" : "--out"
     }
   ],
 
@@ -89,7 +88,7 @@
       "arguments sharing node" : [
         {
           "task" : "merge",
-          "task argument" : "--out"
+          "task argument" : "-o"
         },
         {
           "task" : "call",
@@ -109,6 +108,32 @@
           "task" : "combine-vcf",
           "task argument" : "--in",
           "is greedy" : true
+        }
+      ]
+    },
+    {
+      "id" : "compress",
+      "arguments sharing node" : [
+        {
+          "task" : "combine-vcf",
+          "task argument" : "-o"
+        },
+        {
+          "task" : "compress-vcf",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "index",
+      "arguments sharing node" : [
+        {
+          "task" : "compress-vcf",
+          "task argument" : "-o"
+        },
+        {
+          "task" : "index-vcf",
+          "task argument" : "--in"
         }
       ]
     }
