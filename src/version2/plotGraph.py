@@ -97,7 +97,7 @@ class plotGraph():
           arguments.append((task, graph.getArgumentAttribute(fileNodeID, task, 'longFormArgument')))
 
         for task, longFormArgument in arguments:
-          tool     = superpipeline.tasks[task]
+          tool     = graph.getGraphNodeAttribute(task, 'tool')
           toolData = superpipeline.toolConfigurationData[tool]
           if not toolData.getArgumentAttribute(longFormArgument, 'includeInReducedPlot'):
             isIncluded = False

@@ -44,10 +44,17 @@ class taskAttributes:
     # for each of the N 'combine' calls are consolidated into a single node with N values.
     self.consolidate = None
 
-    # Identify any sister tasks. If the task is listed as being having multiple task calls, the same
+    # Identify any daughterer tasks. If the task is listed as being having multiple task calls, the same
     # task in the pipeline will appear as multiple nodes to handle different sets of data. Any task
-    # that gets duplicated for this purpose has the IDs of the sister tasks stored in this list.
+    # that gets duplicated for this purpose has the IDs of the daughter tasks stored in this list.
     self.daughterTasks = []
+
+    # Keep track of input and output nodes that have multiple nodes.
+    self.multinodeInput  = None
+    self.multinodeOutput = None
+
+    # Store the node IDs of options that have multiple values.
+    self.multivalueOptions = []
 
     # Record if the task should be included in any plots.
     self.includeInReducedPlot = False

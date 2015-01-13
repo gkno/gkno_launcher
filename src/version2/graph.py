@@ -104,7 +104,7 @@ class dataNodeAttributes:
 
     # If a file node is broken out into multiple nodes, the original node has a list of all the
     # nodes created. See information on generating multiple output nodes for more information.
-    self.sisterNodes = []
+    self.daughterNodes = []
 
 # Define a class to store and manipulate the pipeline graph.
 class pipelineGraph:
@@ -897,23 +897,26 @@ class pipelineGraph:
 
     # Determine the input node with multiple copies and a list of all other nodes so that
     # all required edges can be set for the new task nodes.
-    inputNodeIDs   = []
-    multipleNodeID = None
+    inputNodeIDs = []
+    multinodeID  = None
     for inputNodeID in self.getInputFileNodes(task):
-      if self.getGraphNodeAttribute(inputNodeID, 'sisterNodes'): multipleNodeID = inputNodeID
+      if self.getGraphNodeAttribute(inputNodeID, 'daughterNodes'): multinodeID = inputNodeID
       else: inputNodeIDs.append(inputNodeID)
     for optionNodeID in self.getOptionNodes(task): inputNodeIDs.append(optionNodeID)
 
     # If no node was found, throw an error.
-    #if not multipleNodeID: print('ERROR - graph.multipleTaskCalls - 1'); exit(1)
+    if not multinodeID: print('ERROR - graph.multipleTaskCalls - 1'); exit(1)
+
+    # Record the multinode input in the task attributes.
+    self.setGraphNodeAttribute(task, 'multinodeInput', multinodeID)
 
     # Get the argument attributes associated with the argument linking the multiple input nodes to the
     # multiple tasks (e.g. from the edge that links the originally exsiting node to the original task).
-    argumentAttributes = self.getEdgeAttributes(multipleNodeID, task)
+    argumentAttributes = self.getEdgeAttributes(multinodeID, task)
 
     # Loop over the multiple nodes.
     createdTaskNodeIDs = []
-    for i, nodeID in enumerate(self.getGraphNodeAttribute(multipleNodeID, 'sisterNodes')):
+    for i, nodeID in enumerate(self.getGraphNodeAttribute(multinodeID, 'daughterNodes')):
 
       # Create a new task node.
       daughterTask = str(task + '-' + str(i + 1))
@@ -925,10 +928,13 @@ class pipelineGraph:
         edgeAttributes = self.getEdgeAttributes(inputNodeID, task)
         self.addEdge(inputNodeID, daughterTask, edgeAttributes)
 
-      # Add the edge between the sister node and the new task.
+      # Add the edge between the daughter node and the new task.
       self.addEdge(nodeID, daughterTask, argumentAttributes)
 
-    # Add the sister nodes to the original task node.
+      # Mark the multinode inputs in the new task attributes.
+      self.setGraphNodeAttribute(daughterTask, 'multinodeInput', nodeID)
+
+    # Add the daughter nodes to the original task node.
     self.setGraphNodeAttribute(task, 'daughterTasks', createdTaskNodeIDs)
 
   # Check the supplied options for a task. Options can be supplied with zero or one value without a problem. If
@@ -942,7 +948,7 @@ class pipelineGraph:
   def checkTaskOptions(self, task):
 
     # Keep track of the options with multiple values.
-    nodesWithMultipleValues = []
+    multivalueOptions = []
 
     # Record how many times this task is to be executed, based on the supplied option values.
     numberOfExecutions = 1
@@ -953,7 +959,7 @@ class pipelineGraph:
       if len(values) > 1:
 
         # If the number of executions, is set at one, reset the number of executions to the number of
-        # values supplied to this option.:
+        # values supplied to this option.
         if numberOfExecutions == 1: numberOfExecutions = len(values)
 
         # If the number of executions is already greater than one, the number of values for this option must
@@ -962,11 +968,13 @@ class pipelineGraph:
         elif len(values) != numberOfExecutions: print('ERROR - graph.checkTaskOptions - 1'); exit(0)
 
         # Store the node ID.
-        nodesWithMultipleValues.append(nodeID)
+        multivalueOptions.append(nodeID)
 
     # Update the task node to reflect the number of executions it needs to undertake.
     self.setGraphNodeAttribute(task, 'numberOfExecutions', numberOfExecutions)
-    self.setGraphNodeAttribute(task, 'nodesWithMultipleValues', nodesWithMultipleValues)
+
+    # Store the options that are multivalued.
+    self.setGraphNodeAttribute(task, 'multivalueOptions', multivalueOptions)
 
   # Loop over all the input files for the task and check how many have been defined. If the number of set files
   # is inconsistent with the number of executions implied by the values given to the task options, terminate.
@@ -977,7 +985,7 @@ class pipelineGraph:
 
     # Keep track of the number of sets of input files for this task. Note that if the task is greedy, the number of
     # sets of input files is one.
-    numberOfInputSets = 1
+    numberOfInputNodes = 1
 
     # Get the tool associated with the task.
     tool = superpipeline.tasks[task]
@@ -1001,18 +1009,23 @@ class pipelineGraph:
           self.setGraphNodeAttribute(task, 'isGreedy', True)
 
         # If the number of executions is one and the argument is not greedy, update the number of executions.
-        elif numberOfExecutions == 1:
-          numberOfExecutions = len(values)
-          numberOfInputSets  = len(values)
+        elif numberOfExecutions == 1: numberOfExecutions = len(values)
+
+        # If this task produces multiple output file nodes, this is allowed as the number of executions will
+        # correspond to the number of output file nodes produced multiplied by the numberOfExecutions already
+        # listed. For example, consider the case where there are two input files and an option is given three
+        # values. Since this task is not greedy, each of the input files produce their own output node and the
+        # task is executed once per option - so there are 2 x 3 = 6 total executions. This isn't set here,
+        # however, since the filenames are constructed for each of the output nodes. For each of the output nodes,
+        # there are still just numberOfExecutions calls. The value is modified in the createAdditionalOutputNodes
+        # method.
+        elif self.getGraphNodeAttribute(task, 'generateMultipleOutputNodes'): pass#numberOfExecutions = len(values) * numberOfExecutions
 
         # If the number of executions is already greater than one, check that the number of set values is consistent
         # with the number of executions already defined. If the argument is greedy, this is not checked, since the
         # task can be executed multiple times due to the options.
-        # If this task produces multiple output file nodes, this is allowed as the number of executions will
-        # correspond to the number of output file nodes produced.
         #TODO ERROR
-        elif len(values) != numberOfExecutions and not self.getGraphNodeAttribute(task, 'generateMultipleOutputNodes'):
-          print('ERROR - graph.checkInputFiles - 1', task, values, numberOfExecutions); exit(0)
+        elif len(values) != numberOfExecutions: print('ERROR - graph.checkInputFiles - 1', task, values, numberOfExecutions); exit(0)
 
       # If there are no set values, check to see if there are instructions on how to construct the filenames. If
       # so, construct the files.
@@ -1026,7 +1039,7 @@ class pipelineGraph:
 
     # Update the task node.
     self.setGraphNodeAttribute(task, 'numberOfExecutions', numberOfExecutions)
-    self.setGraphNodeAttribute(task, 'numberOfInputSets', numberOfInputSets)
+    #self.setGraphNodeAttribute(task, 'numberOfInputSets', numberOfInputSets)
 
   # Loop over all of the output files and construct those that are not present.
   def checkOutputFiles(self, superpipeline, task):
@@ -1073,8 +1086,11 @@ class pipelineGraph:
           baseValues = self.getBaseValues(superpipeline, task, instructions)
 
           # Check if this task produces multiple output file nodes. If so, determine the number of nodes there should
-          # be and create the missing nodes and connect them up in the graph.
-          if isGenerateMultiple: self.createAdditionalOutputNodes(superpipeline, instructions, task, nodeID, baseValues)
+          # be and create the missing nodes and connect them up in the graph. Also update the number of output sets
+          # for the task.
+          if isGenerateMultiple:
+            self.createAdditionalOutputNodes(superpipeline, instructions, task, nodeID, baseValues)
+            numberOfOutputSets = len(baseValues)
 
           # If multiple task nodes have been created for this task and the outputs from all of these tasks are being
           # consolidated into a single node, perform necessary checks and populate the single output node with all
@@ -1203,7 +1219,10 @@ class pipelineGraph:
       self.setGraphNodeAttribute(nodeID, 'values', values)
 
     # Attach the created node IDs to the existing node, so that all associated output nodes can be easily retrieved.
-    self.setGraphNodeAttribute(existingNodeID, 'sisterNodes', createdNodeIDs)
+    self.setGraphNodeAttribute(existingNodeID, 'daughterNodes', createdNodeIDs)
+
+    # Add the ID of the node that has been split into multiple nodes to the task attributes.
+    self.setGraphNodeAttribute(task, 'multinodeOutput', existingNodeID)
 
   # If multiple task nodes have been created for this task and the outputs from all of these tasks are being
   # consolidated into a single node, perform necessary checks and populate the single output node with all
@@ -1217,11 +1236,8 @@ class pipelineGraph:
     #TODO ERROR
     if not self.getGraphNodeAttribute(task, 'isGreedy'): print('ERROR - graph.consolidate - not greedy'); exit(1)
 
-    # Find the multiple input nodes.
-    for nodeID in self.getInputFileNodes(task):
-      if self.getGraphNodeAttribute(nodeID, 'sisterNodes'):
-        inputNodeID = nodeID
-        break
+    # Get the multinode input.
+    inputNodeID = self.getGraphNodeAttribute(task, 'multinodeInput')
     
     # Get the attributes associated with the edge connecting the current task to the existing output node.
     edgeAttributes = deepcopy(self.getEdgeAttributes(task, existingNodeID))
@@ -1230,8 +1246,8 @@ class pipelineGraph:
     baseValues   = [self.getGraphNodeAttribute(inputNodeID, 'values')[0]]
     outputValues = construct.constructFromFilename(self.graph, superpipeline, instructions, task, existingNodeID, baseValues)
 
-    # Loop over the sister nodes and create their values.
-    for i, nodeID in enumerate(self.getGraphNodeAttribute(inputNodeID, 'sisterNodes')):
+    # Loop over the daughter nodes and create their values.
+    for i, nodeID in enumerate(self.getGraphNodeAttribute(inputNodeID, 'daughterNodes')):
       baseValues   = [self.getGraphNodeAttribute(nodeID, 'values')[0]]
       outputValues.extend(construct.constructFromFilename(self.graph, superpipeline, instructions, task, existingNodeID, baseValues))
 
@@ -1247,11 +1263,8 @@ class pipelineGraph:
   # them up in the graph.
   def createMultipleTaskOutputs(self, superpipeline, instructions, task, existingNodeID):
 
-    # Find the multiple input nodes.
-    for nodeID in self.getInputFileNodes(task):
-      if self.getGraphNodeAttribute(nodeID, 'sisterNodes'):
-        inputNodeID = nodeID
-        break
+    # Get the multinode input.
+    inputNodeID = self.getGraphNodeAttribute(task, 'multinodeInput')
 
     # Get the attributes associated with the exising output node and the edge connecting to the current
     # task.
@@ -1263,10 +1276,13 @@ class pipelineGraph:
     values     = construct.constructFromFilename(self.graph, superpipeline, instructions, task, existingNodeID, baseValues)
     self.setGraphNodeAttribute(existingNodeID, 'values', values)
 
+    # Identify the multinode output in the task attributes.
+    self.setGraphNodeAttribute(task, 'multinodeOutput', inputNodeID)
+
     # Create new output nodes for each of the input nodes, connect them to the relevant nodes and create the
     # filenames.
     createdNodeIDs = []
-    for i, nodeID in enumerate(self.getGraphNodeAttribute(inputNodeID, 'sisterNodes')):
+    for i, nodeID in enumerate(self.getGraphNodeAttribute(inputNodeID, 'daughterNodes')):
 
       # Create the name of the new output file node.
       fileNodeID  = str(existingNodeID + '-' + str(i + 1))
@@ -1282,8 +1298,11 @@ class pipelineGraph:
       values     = construct.constructFromFilename(self.graph, superpipeline, instructions, task, existingNodeID, baseValues)
       self.setGraphNodeAttribute(fileNodeID, 'values', values)
 
+      # Identify the multinode output in the task attributes.
+      self.setGraphNodeAttribute(taskAddress, 'multinodeOutput', nodeID)
+
     # Attach the created node IDs to the existing node, so that all associated output nodes can be easily retrieved.
-    self.setGraphNodeAttribute(existingNodeID, 'sisterNodes', createdNodeIDs)
+    self.setGraphNodeAttribute(existingNodeID, 'daughterNodes', createdNodeIDs)
 
   # Find all of the predecessor nodes to a task that use a given argument and add the values to a list.
   def getBaseValues(self, superpipeline, task, instructions):

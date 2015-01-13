@@ -69,7 +69,7 @@ def updateArgumentsInInstructions(graph, instructions, task):
 
   # Loop over the options nodes with multiple values and get their arguments.
   addArguments = []
-  for optionNodeID in gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'nodesWithMultipleValues'):
+  for optionNodeID in gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'multivalueOptions'):
     optionArgument = gr.pipelineGraph.CM_getArgumentAttribute(graph, optionNodeID, task, 'longFormArgument')
     if optionArgument not in listedArguments: addArguments.append(str(optionArgument))
 

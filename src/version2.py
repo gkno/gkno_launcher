@@ -12,11 +12,12 @@ import version2.arguments as ag
 import version2.commandLine as cl
 import version2.constructFilenames as construct
 import version2.dataConsistency as dc
-import version2.executionStructure as ex
+import version2.executionStructure as es
 import version2.fileHandling as fh
 import version2.gknoConfiguration as gc
 import version2.graph as gr
 import version2.helpInformation as hp
+import version2.makefiles as mk
 import version2.plotGraph as pg
 import version2.toolConfiguration as tc
 import version2.pipelineConfiguration as pc
@@ -129,6 +130,12 @@ def main():
     # argument have valid arguments for the tool.
     superpipeline.checkArgumentsInPipeline()
 
+    # Create an arguments object. This will be populated with all of the arguments available for this
+    # pipeline along with associated functions. Add all of the top level pipeline arguments to this
+    # object.
+    args = ag.arguments()
+    args.addPipelineArguments(superpipeline.pipelineConfigurationData[superpipeline.pipeline].longFormArguments)
+
     # Define the graph object that will contain the pipeline graph and necessary operations and methods
     # to build and modify it.
     graph = gr.pipelineGraph()
@@ -137,12 +144,6 @@ def main():
     for tier in superpipeline.pipelinesByTier.keys():
       for pipelineName in superpipeline.pipelinesByTier[tier]:
         graph.buildPipelineTasks(superpipeline.pipelineConfigurationData[pipelineName], superpipeline)
-
-    # Create an arguments object. This will be populated with all of the arguments available for this
-    # pipeline along with associated functions. Add all of the top level pipeline arguments to this
-    # object.
-    args = ag.arguments()
-    args.addPipelineArguments(superpipeline.pipelineConfigurationData[superpipeline.pipeline].longFormArguments)
 
     # Now that the graph is built, parse all of the arguments in the pipelines and associate them with the
     # graph nodes and vice versa.
@@ -215,22 +216,20 @@ def main():
 
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
   # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc.
-  plot.plot(superpipeline, graph, 'before.dot', isReduced = False)
   graph.determineNumberOfTaskExecutions(superpipeline)
-  plot.plot(superpipeline, graph, 'after.dot', isReduced = False)
-  print()
-  for task in graph.getNodes('task'):
-    print('TASK:', task)
-    print('\tOPTIONS:')
-    for nodeID in graph.getOptionNodes(task):
-      print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-    print('\tINPUTS:')
-    for nodeID in graph.getInputFileNodes(task):
-      print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-    print('\tOUTPUTS:')
-    for nodeID in graph.getOutputFileNodes(task):
-      print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-  exit(0)
+#  print()
+#  for task in graph.getNodes('task'):
+#    print('TASK:', task)
+#    print('\tOPTIONS:')
+#    for nodeID in graph.getOptionNodes(task):
+#      print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+#    print('\tINPUTS:')
+#    for nodeID in graph.getInputFileNodes(task):
+#      print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+#    print('\tOUTPUTS:')
+#    for nodeID in graph.getOutputFileNodes(task):
+#      print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+#  exit(0)
 
   # Print the workflow to screen.
   write.workflow(superpipeline, workflow)
@@ -249,15 +248,14 @@ def main():
   plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
   if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
   if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
-
-  #
-  print('TEST')
-  print()
-  #struct = ex.executionStructure()
-  #struct.determineStructure(graph)
   
-  for task in workflow:
-    print(task.ljust(30), 'isGreedy:', graph.getGraphNodeAttribute(task, 'isGreedy'), 'exeutions:', graph.getGraphNodeAttribute(task, 'numberOfExecutions'), 'input sets', graph.getGraphNodeAttribute(task, 'numberOfInputSets'), 'output sets:', graph.getGraphNodeAttribute(task, 'numberOfOutputSets'))
+  # Determine the execution structure of the pipeline.
+  struct = es.executionStructure()
+  struct.determineExecutionStructure(graph)
+
+  # Generate a makefiles object prior to building command lines and creating makefiles.
+  #make = mk.makefiles()
+  #a    = make.generateCommandLines(graph, superpipeline, 'merge')
 
 if __name__ == "__main__":
   main()
