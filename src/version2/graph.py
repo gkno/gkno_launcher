@@ -104,7 +104,10 @@ class dataNodeAttributes:
 
     # If a file node is broken out into multiple nodes, the original node has a list of all the
     # nodes created. See information on generating multiple output nodes for more information.
-    self.daughterNodes = []
+    self.daughterNodes  = []
+
+    # Also store if this node is the daughter of another node.
+    self.isDaughterNode = False
 
 # Define a class to store and manipulate the pipeline graph.
 class pipelineGraph:
@@ -920,7 +923,9 @@ class pipelineGraph:
 
       # Create a new task node.
       daughterTask = str(task + '-' + str(i + 1))
-      self.addTaskNode(superpipeline, daughterTask, task, deepcopy(taskAttributes))
+      attributes   = deepcopy(taskAttributes)
+      attributes.isDaughterNode = True
+      self.addTaskNode(superpipeline, daughterTask, task, attributes)
       createdTaskNodeIDs.append(daughterTask)
 
       # Attach all the options to the new task node.
@@ -1210,7 +1215,9 @@ class pipelineGraph:
       createdNodeIDs.append(nodeID)
 
       # Create the node and edges.
-      self.graph.add_node(nodeID, attributes = deepcopy(nodeAttributes))
+      attributes                = deepcopy(nodeAttributes)
+      attributes.isDaughterNode = True
+      self.graph.add_node(nodeID, attributes = attributes)
       self.addEdge(task, nodeID, edgeAttributes)
 
       # Create the filenames for the new node.
@@ -1277,7 +1284,7 @@ class pipelineGraph:
     self.setGraphNodeAttribute(existingNodeID, 'values', values)
 
     # Identify the multinode output in the task attributes.
-    self.setGraphNodeAttribute(task, 'multinodeOutput', inputNodeID)
+    self.setGraphNodeAttribute(task, 'multinodeOutput', existingNodeID)
 
     # Create new output nodes for each of the input nodes, connect them to the relevant nodes and create the
     # filenames.
@@ -1290,7 +1297,9 @@ class pipelineGraph:
       createdNodeIDs.append(fileNodeID)
 
       # Create the node and edges.
-      self.graph.add_node(fileNodeID, attributes = deepcopy(nodeAttributes))
+      attributes                = deepcopy(nodeAttributes)
+      attributes.isDaughterNode = True
+      self.graph.add_node(fileNodeID, attributes = attributes)
       self.addEdge(taskAddress, fileNodeID, edgeAttributes)
 
       # Create the filenames for the new node.

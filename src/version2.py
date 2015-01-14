@@ -254,8 +254,9 @@ def main():
   struct.determineExecutionStructure(graph)
 
   # Generate a makefiles object prior to building command lines and creating makefiles.
-  #make = mk.makefiles()
-  #a    = make.generateCommandLines(graph, superpipeline, 'merge')
+  make = mk.makefiles()
+  for task in graph.workflow:
+    a = make.generateCommandLines(graph, superpipeline, struct, task)
 
 if __name__ == "__main__":
   main()

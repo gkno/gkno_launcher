@@ -31,6 +31,9 @@ class executionStructure():
     # Generate a structure to hold information about each phase.
     self.phaseInformation = {}
 
+    # Record which phase each task is in.
+    self.task = {}
+
   # Determine the structure of the pipeline execution.
   def determineExecutionStructure(self, graph):
   
@@ -86,8 +89,9 @@ class executionStructure():
       elif (subphases != self.phaseInformation[self.numberOfPhases].subphases) or (divisions != self.phaseInformation[self.numberOfPhases].divisions):
         self.defineNewPhase(subphases, divisions)
 
-      # Add the task to the current phase.
+      # Add the task to the current phase and also record the reverse, the phase that the task is in.
       self.phaseInformation[self.numberOfPhases].tasks.append(task)
+      self.task[task] = self.numberOfPhases
 
   # Define a new phase in the pipeline structure.
   def defineNewPhase(self, subphases, divisions):
