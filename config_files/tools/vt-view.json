@@ -1,0 +1,125 @@
+{
+  "id" : "vt-view",
+  "description" : "View and filter variants in a VCF file.",
+  "categories" : ["VCF-processing"],
+  "tools" : ["vt"],
+  "path" : "vt/",
+  "executable" : "vt",
+  "modifier" : "view",
+  "help" : "--help|-h",
+  "arguments" : {
+    "inputs" : [
+      {
+        "description" : "The input VCF file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "modify argument name on command line" : "hide",
+        "data type" : "string",
+        "if input is stream" : "replace",
+        "replace argument with" : {
+          "argument" : "none",
+          "value" : "-"
+        },
+        "extensions" : [".vcf", ".vcf.gz"]
+      },
+      {
+        "description" : "A file containing list of intervals.",
+        "long form argument" : "--intervals-file",
+        "short form argument" : "-if",
+        "command line argument" : "-I",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      }
+    ],
+  
+    "outputs" : [
+      {
+        "description" : "The output compressed VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "-o",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".vcf.gz"],
+        "if output to stream" : "do not include",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_filtered"]
+            }
+          ]
+        }
+      }
+    ],
+  
+    "Options" : [
+      {
+        "description" : "An expression to filter on.",
+        "long form argument" : "--filter",
+        "short form argument" : "-f",
+        "command line argument" : "-f",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Window size for local sorting of variants [0].",
+        "long form argument" : "--window",
+        "short form argument" : "-w",
+        "command line argument" : "-w",
+        "data type" : "integer",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Output a sites only VCF file (e.g. no genotypes).",
+        "long form argument" : "--sites-only",
+        "short form argument" : "-s",
+        "command line argument" : "-s",
+        "data type" : "flag",
+        "extensions" : ["no extension"]
+      },
+      {
+        "description" : "Intervals to analyse.",
+        "long form argument" : "--intervals",
+        "short form argument" : "-v",
+        "command line argument" : "-i",
+        "data type" : "string",
+        "extensions" : ["no extension"]
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--intervals-file",
+    "--filter",
+    "--window",
+    "--sites-only",
+    "--intervals",
+    "--out",
+    "--in"
+  ],
+
+  "parameter sets" : [
+    {
+      "ID" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "nodes" : []
+    },
+
+    {
+      "ID" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "nodes" : [
+        {
+          "ID" : "vcf",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
+        }
+      ]
+    }
+  ]
+}
