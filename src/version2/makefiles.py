@@ -48,9 +48,10 @@ class commandLineInformation():
     # Store the command lines for this task.
     self.commands = []
 
-    # Store the dependencies and outputs for each command line.
-    self.dependencies = []
-    self.outputs      = []
+    # Store the dependencies, intermediate and output files for each command line.
+    self.dependencies  = []
+    self.intermediates = []
+    self.outputs       = []
 
 # Define a class to build and manipulate makefiles.
 class makefiles:
@@ -62,54 +63,58 @@ class makefiles:
     # Store the paths of all the tools executed in the pipeline.
     self.toolPaths = {}
 
+    # Store information including command lines, dependencies and outputs for each task.
+    self.executionInfo = {}
+
+    # Record if multiple makefiles are to be generated.
+    self.isMultipleMakefiles = False
+
+    # Store the user specified ID to add to all makefile filesnames.
+    self.makefileID = None
+
+    # Create a dictionary to store the names of all the created makefiles. The dictionary
+    # is keyed on the phase, subphase and the division.
+    self.makefileNames   = {}
+    self.makefilehandles = {}
+
   # Generate the command lines associated with a task.
-  def generateCommandLines(self, graph, superpipeline, struct, task):
+  def generateCommandLines(self, graph, superpipeline, struct):
 
-    # Generate a data structure for building the command line.
-    data = commandLineInformation(graph, superpipeline, struct, task)
+    # Loop over all the tasks in the pipeline, generating the command lines for each task.
+    for task in graph.workflow:
 
-    # Store the tools path in the global makefiles dictionary toolPaths.
-    if data.tool not in self.toolPaths: self.toolPaths[data.tool] = str(data.toolID + '-PATH)=$(TOOL_BIN)/' + data.path)
-
-    # The output of the method is a list of command lines, one command line for each execution
-    # of the task. Each command line is itself a list of the command line executable and arguments.
-    # Since each command line starts with the same exeutable command, initialise the output list as
-    # numberOfCommandLines individual lists, each of which is the executable command.
-    command = str(data.precommand + ' ') if data.precommand else ''
-    command += str(data.toolID + '/' + data.executable)
-    if data.modifier: command += str(' ' + data.modifier)
-    for i in range(0, data.noCommandLines): data.commands.append([command])
-
-    # Initialise the lists of dependencies and outputs to have the same length as the commands.
-    for i in range(0, data.noCommandLines):
-      data.dependencies.append([])
-      data.outputs.append([])
-
-    print()
-    print('======NEW TASK======')
-    print('task:', data.task)
-    print('\ttool:', data.tool)
-    print('\tphase:', data.phase)
-    print('\tsubphases:', data.noSubphases)
-    print('\tdivisions:', data.noDivisions)
-    print('\tcommand lines:', data.noCommandLines)
-
-    # Loop over all input files.
-    for nodeID in graph.getInputFileNodes(task): self.processFiles(graph, task, data, nodeID, isInput = True)
-
-    # Loop over all the option nodes for this task and get the arguments and values.
-    for nodeID in graph.getOptionNodes(task): self.addOption(graph, task, data, nodeID)
-
-    # Loop over all output files.
-    for nodeID in graph.getOutputFileNodes(task): self.processFiles(graph, task, data, nodeID, isInput = False)
-
-    print()
-    print('command:')
-    for command in data.commands: print(command)
-    print('dependencies:')
-    for dependency in data.dependencies: print(dependency)
-    print('outputs:')
-    for output in data.outputs: print(output)
+      # Generate a data structure for building the command line.
+      data = commandLineInformation(graph, superpipeline, struct, task)
+  
+      # Store the tools path in the global makefiles dictionary toolPaths.
+      if data.tool not in self.toolPaths: self.toolPaths[data.tool] = str(data.toolID + '=$(TOOL_BIN)/' + data.path)
+  
+      # The output of the method is a list of command lines, one command line for each execution
+      # of the task. Each command line is itself a list of the command line executable and arguments.
+      # Since each command line starts with the same exeutable command, initialise the output list as
+      # numberOfCommandLines individual lists, each of which is the executable command.
+      command = str(data.precommand + ' ') if data.precommand else ''
+      command += str(data.toolID + '/' + data.executable)
+      if data.modifier: command += str(' ' + data.modifier)
+      for i in range(0, data.noCommandLines): data.commands.append([command])
+  
+      # Initialise the lists of dependencies and outputs to have the same length as the commands.
+      for i in range(0, data.noCommandLines):
+        data.dependencies.append([])
+        data.intermediates.append([])
+        data.outputs.append([])
+  
+      # Loop over all input files.
+      for nodeID in graph.getInputFileNodes(task): self.processFiles(graph, task, data, nodeID, isInput = True)
+  
+      # Loop over all the option nodes for this task and get the arguments and values.
+      for nodeID in graph.getOptionNodes(task): self.addOption(graph, task, data, nodeID)
+  
+      # Loop over all output files.
+      for nodeID in graph.getOutputFileNodes(task): self.processFiles(graph, task, data, nodeID, isInput = False)
+  
+      # Store the command lines for the task.
+      self.executionInfo[task] = data
 
   # Process file inputt/outputs.
   def processFiles(self, graph, task, data, nodeID, isInput):
@@ -129,7 +134,6 @@ class makefiles:
     # If this is a single output node.
     else: self.addFiles(graph, task, data, nodeID, isInput)
 
-
   # Get all the command arguments for subphase input or output files.
   def addSubphaseFiles(self, graph, task, data, nodeID, isInput):
 
@@ -147,6 +151,9 @@ class makefiles:
     if isInput: argument = graph.getArgumentAttribute(nodeIDs[0], task, 'longFormArgument')
     else: argument = graph.getArgumentAttribute(task, nodeIDs[0], 'longFormArgument')
 
+    # Check if this node consolidates the multinodes.
+    isConsolidate = True if graph.getGraphNodeAttribute(task, 'consolidate') else False
+
     # TODO ADD METHIDS TO MODIFY ARGUMENTS, E.G. STREAMS ETC.
 
     # Loop over the input multinodes and add the values to the command line. The order is important here.
@@ -156,8 +163,8 @@ class makefiles:
     for nodeID in nodeIDs:
       values = graph.getGraphNodeAttribute(nodeID, 'values')
 
-      # Check if this node consolidates the multinodes.
-      isConsolidate = True if graph.getGraphNodeAttribute(task, 'consolidate') else False
+      # Check if this node contains intermediate files.
+      isIntermediate = graph.getGraphNodeAttribute(nodeID, 'isIntermediate')
 
       # If there are less values than the number of divisions, there is a problem, unless this is a
       # consolidation node. In this case, all of the inputs files are being used in the same command line
@@ -175,6 +182,10 @@ class makefiles:
         # Add the files to the dependencies or outputs for the command line.
         if isInput: data.dependencies[i].append(str(value))
         else: data.outputs[i].append(str(value))
+
+        # If this is an intermediate file, add to the list of intermediate files.
+        if isIntermediate:
+          if str(value) not in data.intermediates[i]: data.intermediates[i].append(str(value))
 
         # If this is not a consolidation node, increment the counter.
         if not isConsolidate: i += 1
@@ -220,6 +231,13 @@ class makefiles:
     else: argument = graph.getArgumentAttribute(task, nodeID, 'longFormArgument')
     values = graph.getGraphNodeAttribute(nodeID, 'values')
 
+    # Check if this task generates multiple nodes.
+    isGeneratesMultipleNode = graph.getGraphNodeAttribute(task, 'generateMultipleOutputNodes')
+    isConsolidate           = graph.getGraphNodeAttribute(task, 'consolidate')
+
+    # Check if this node is associated with intermediate files.
+    isIntermediate = graph.getGraphNodeAttribute(nodeID, 'isIntermediate')
+
     # If there is only a single file, attach to all of the command lines.
     if len(values) == 1:
       for i in range(0, data.noCommandLines):
@@ -238,10 +256,35 @@ class makefiles:
           # Add the files to the dependencies or outputs for the command line.
           data.dependencies[i].append(str(value))
 
-    # If there are as many files as there are divisions, add the files in the correct order. If there
-    # are N divisions, the first file is used for the first subphase and so the first N command lines
-    # etc.
-    elif len(values) == data.noDivisions:
+    # If this is an input for a task that generates multiple nodes, and there are as many values as
+    # there are subphases, add the files in the correct order. If there are N divisions, the first
+    # file is used for the first subphase and so the first N command lines etc.
+    elif isInput and isGeneratesMultipleNode:
+      i = 0
+      for value in values:
+        for j in range(0, data.noDivisions):
+          data.commands[i].append(str(argument) + str(data.delimiter) + str(value))
+
+          # Add the files to the dependencies or outputs for the command line.
+          data.dependencies[i].append(str(value))
+          i += 1
+
+    # If this is a consolidation node. In this case, all of the inputs files are being used in the
+    # same command line and the number of command lines is reduced down to the number of subphases,
+    # e.g. the number of divisions is reset to one. If this is the case, consolidate the command lines.
+    elif not isInput and isConsolidate:
+      i = 0
+      for value in values:
+        data.commands[i].append(str(argument) + str(data.delimiter) + str(value))
+
+        # Add the files to the dependencies or outputs for the command line.
+        data.outputs[i].append(str(value))
+
+        # Increment the counter.
+        i += 1
+
+    # If there are as many files as there are divisions, add the files in the correct order.
+    elif not isGeneratesMultipleNode and len(values) == data.noDivisions:
       for i, value in enumerate(values):
         data.commands[i].append(str(argument) + str(data.delimiter) + str(value))
 
@@ -252,3 +295,202 @@ class makefiles:
     # If there are a different number of files to subphases, there is a problem.
     #TODO ERROR
     else: print('ERROR - makefileErrors.addFiles'); exit(1)
+
+    # Add the value to the list of intermediates if necessary.
+    if isIntermediate: 
+      for i, value in enumerate(values):
+        if str(value) not in data.intermediates[i]: data.intermediates[i].append(str(value))
+
+  # Generate the makefiles for this execution of gkno.
+  def generateMakefiles(self, struct, pipeline, gknoArguments, arguments):
+
+    # Check if multiple makefiles were requested.
+    mm = gknoArguments['GKNO-MULTIPLE-MAKEFILES'].longFormArgument
+    self.isMultipleMakefiles = True if mm in arguments else False
+
+    # Check if a makefile ID was supplied.
+    mid = gknoArguments['GKNO-MAKEFILE-ID'].longFormArgument
+    if mid in arguments: self.makefileID = arguments[mid][0]
+
+    # Define the baseName for the makefiles.
+    baseName = str(pipeline + '-' + self.makefileID) if self.makefileID else str(pipeline)
+
+    # Loop over all the phases and set the names of all of the makefiles. Also link each
+    # phase/subphase/division to the makefile.
+    if self.isMultipleMakefiles:
+      for phase in struct.phaseInformation:
+  
+        # Add the phase to the makefile name (if there are multiple phases).
+        if phase not in self.makefileNames: self.makefileNames[phase] = {}
+        if len(struct.phaseInformation.keys()) == 1: phaseName = baseName
+        else: phaseName = str(baseName + '-phase' + str(phase))
+  
+        for subphase in range(1, struct.phaseInformation[phase].subphases + 1):
+  
+          # Add the subphase to the makefile name (if there are multiple subphases).
+          if subphase not in self.makefileNames[phase]: self.makefileNames[phase][subphase] = {}
+          if struct.phaseInformation[phase].subphases == 1: name = phaseName
+          else: name = str(phaseName + '-subphase' + str(subphase))
+  
+          # Add the makefile names.
+          if struct.phaseInformation[phase].divisions == 1: self.makefileNames[phase][subphase][1] = str(name + '.make')
+          else:
+            for division in range(1, struct.phaseInformation[phase].divisions + 1):
+              self.makefileNames[phase][subphase][division] = str(name + '-division' + str(division) + '.make')
+
+    # If only a single makefile is being produced, everything links to the same makefile.
+    else:
+      for phase in struct.phaseInformation:
+        if phase not in self.makefileNames: self.makefileNames[phase] = {}
+        for subphase in range(1, struct.phaseInformation[phase].subphases + 1):
+          if subphase not in self.makefileNames[phase]: self.makefileNames[phase][subphase] = {}
+          if struct.phaseInformation[phase].divisions == 1: self.makefileNames[phase][subphase][1] = str(baseName + '.make')
+          else:
+            for division in range(1, struct.phaseInformation[phase].divisions + 1):
+              self.makefileNames[phase][subphase][division] = str(baseName + '.make')
+
+  # Get the makefile name for a given phase, subphase and division.
+  def getMakefileName(self, phase, subphase, division):
+    return self.makefileNames[phase][subphase][division]
+
+  # Open all of the required makefiles.
+  def openFiles(self, graph ,struct, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath):
+
+    # If there are not multiple makefiles being made, then there is no need to loop over all the
+    # phases etc, as all phases point to the same makefile. In this event, just open the single
+    # makefile.
+    if not self.isMultipleMakefiles:
+      filehandle = fh.fileHandling.openFileForWriting(self.makefileNames[1][1][1])
+
+      # Add header text to the file.
+      self.addHeader(graph, struct, filehandle, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath, self.makefileNames[1][1][1], 1)
+      self.addIntermediates(struct, 1, filehandle, 1)
+      self.addOutputs(filehandle)
+      self.removeOk(filehandle)
+
+    # Loop over all the phases, subphases and divisions.
+    for phase in self.makefileNames:
+      i = 0
+      if phase not in self.makefilehandles: self.makefilehandles[phase] = {}
+      for subphase in self.makefileNames[phase]:
+        if subphase not in self.makefilehandles[phase]: self.makefilehandles[phase][subphase] = {}
+        for division in self.makefileNames[phase][subphase]:
+          if self.isMultipleMakefiles:
+            name = self.makefileNames[phase][subphase][division]
+            filehandle = fh.fileHandling.openFileForWriting(name)
+
+            # Add the header, intermediate files and all output files for the phase.
+            self.addHeader(graph, struct, filehandle, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath, name, phase)
+            self.addIntermediates(struct, phase, filehandle, i)
+            self.addOutputs(filehandle)
+            self.removeOk(filehandle)
+
+          # Add the makefile handle to the data structure.
+          self.makefilehandles[phase][subphase][division] = filehandle
+
+          # Increment the counter.
+          i += 1
+
+  # Add header text to the file.
+  def addHeader(self, graph, struct, filehandle, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath, name, phase):
+
+    # Add basic text about the gkno version.
+    print('### gkno makefile', file = filehandle)
+    print('### Generated using gkno version: ', version, ' (', date, ')', sep = '', file = filehandle)
+    print('### gkno commit: ', commitID, sep = '', file = filehandle)
+    print('### Pipeline: ', pipeline, sep = '', file = filehandle)
+    print(file = filehandle)
+    print('### Set the shell to bash.', file = filehandle)
+    print('SHELL=/bin/bash', file = filehandle)
+    print(file = filehandle)
+
+    # Include the paths to tools and resources.
+    print('### Paths to tools and resources.', file = filehandle)
+    print('GKNO_PATH=', sourcePath, sep = '', file = filehandle)
+    print('TOOL_BIN=', toolPath, sep = '', file = filehandle)
+    print('RESOURCES=', resourcePath, sep = '', file = filehandle)
+    print('MAKEFILE_ID=', name.rsplit('.make', 1)[0], sep = '', file = filehandle)
+    print(file = filehandle)
+
+    # Define the stdout and stderr.
+    print('### Standard output and error files.', file = filehandle)
+    print('STDOUT=$(PWD)/', name, '.stdout', sep = '', file = filehandle)
+    print('STDERR=$(PWD)/', name, '.stderr', sep = '', file = filehandle)
+    print('COMPLETE_OK=$(PWD)/', name, '.ok', sep = '', file = filehandle)
+    print(file = filehandle)
+
+    # Remove file on failed execution.
+    print('### If the pipeline terminates unexpectedly, delete all files that were in', file = filehandle)
+    print('### the process of being generated.', file = filehandle)
+    print('.DELETE_ON_ERROR:', file = filehandle)
+    print(file = filehandle)
+
+    # Determine which tasks are used in the phase, find the corresponding tools and finally their paths.
+    # Include these paths in the makefile.
+    print('### Executable paths.', file = filehandle)
+    for task in struct.phaseInformation[phase].tasks: print(self.toolPaths[graph.getGraphNodeAttribute(task, 'tool')], file = filehandle)
+    print(file = filehandle)
+
+    # List phony arguments. This is used solely for the file created on successful execution of the pipeline.
+    print('### List all PHONY targets. These are targets that are not actual files.', file = filehandle)
+    print('.PHONY: DELETE_COMPLETE_OK', file = filehandle)
+    print(file = filehandle)
+
+  # Add intermediate files to the makefile.
+  def addIntermediates(self, struct, phase, filehandle, i):
+
+    # Collect all intermediate files for this makefile.
+    intermediates = []
+
+    # Write intermediate files to the makefile header. Files marked as intermediate are removed during
+    # execution of the pipeline. By being marked as intermediate, reexecution of the pipeline will not
+    # commence to regenerate the intermediate files.
+    print('### The following files are intermediates. If the pipeline is rerun, rules for creating', file = filehandle)
+    print('### will not be rerun unless files prior to these rules have been updated.', file = filehandle)
+    print('.INTERMEDIATE: ', end = '', file = filehandle)
+    for task in struct.phaseInformation[phase].tasks:
+      
+      # If there are multiple makefiles, only add the intermediate files for the relevant command line,
+      # defined by the counter, i.
+      if self.isMultipleMakefiles:
+        for value in self.executionInfo[task].intermediates[i]:
+          if value not in intermediates: intermediates.append(value)
+
+      # If there is only a single makefile, add all intermediate files for the task to the list.
+      else:
+        for values in self.executionInfo[task].intermediates:
+          for value in values:
+            if value not in intermediates: intermediates.append(value)
+
+    # Add all the intermediates to the makefile.
+    for intermediate in intermediates: print(intermediate, end = ' ', file = filehandle)
+    print(file = filehandle)
+    print(file = filehandle)
+
+  # Add all of the output files produced by the phase to the makefile.
+  def addOutputs(self, filehandle):
+
+    # List all the output files created by this makefile.
+    print('### List all of the files that are required outputs of the pipeline.', file = filehandle)
+    print('all: ', end = '', file = filehandle)
+    print(file = filehandle)
+
+  # Prior to pipeline execution, remove the 'ok' file prodiced by a previous successful execution.
+  def removeOk(self, filehandle):
+    print('### Remove the file indicating successful completion of the pipeline. This file needs', file = filehandle)
+    print('### to be recreated if the pipeline is rerun to indicate successful completion.', file = filehandle)
+    print('DELETE_COMPLETE_OK:', file = filehandle)
+    print('\t@rm -f $(COMPLETE_OK)', file = filehandle)
+    print(file = filehandle)
+
+  # Close all the open makefiles.
+  def closeFiles(self):
+
+    # If only a single makefile was created, only a single file needs to be closed.
+    if not self.isMultipleMakefiles: filehandle = fh.fileHandling.closeFile(self.makefilehandles[1][1][1])
+
+    # If multiple files were opened, close them all.
+    else:
+      for phase in self.makefilehandles:
+        for subphase in self.makefilehandles[phase]:
+          for division in self.makefilehandles[phase][subphase]: fh.fileHandling.closeFile(self.makefilehandles[phase][subphase][division])

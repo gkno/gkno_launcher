@@ -848,7 +848,7 @@ class pipelineGraph:
           if str(value).endswith('.list'):
   
             # Open the file and terminate if it doesn't exist.
-            data = fh.fileHandling.openFile(value)
+            data = fh.fileHandling.openFileForReading(value)
             #TODO ERROR
             if not data: print('graph.expandLists - FILE DOESN\'T EXIST', value); exit(0)
   

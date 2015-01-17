@@ -49,17 +49,17 @@ def main():
   # TODO REMOVE
   sourcePath                     = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/version2.py')]
 
-  configurationFilesPath         = sourcePath + '/config_files/'
-  pipelineConfigurationFilesPath = sourcePath + '/config_files/pipes/'
-  toolConfigurationFilesPath     = sourcePath + '/config_files/tools/'
+  configurationFilesPath         = sourcePath + '/config_files'
+  pipelineConfigurationFilesPath = sourcePath + '/config_files/pipes'
+  toolConfigurationFilesPath     = sourcePath + '/config_files/tools'
 
   # TODO REMOVE
-  configurationFilesPath         = sourcePath + '/development/'
-  pipelineConfigurationFilesPath = sourcePath + '/development/pipelines/'
-  toolConfigurationFilesPath     = sourcePath + '/development/tools/'
+  configurationFilesPath         = sourcePath + '/development'
+  pipelineConfigurationFilesPath = sourcePath + '/development/pipelines'
+  toolConfigurationFilesPath     = sourcePath + '/development/tools'
 
-  resourcesPath                  = sourcePath + '/resources/'
-  toolsPath                      = sourcePath + '/tools/'
+  resourcesPath                  = sourcePath + '/resources'
+  toolsPath                      = sourcePath + '/tools'
 
   # Define a class for handling files. In the initialisation, determine the names of all available
   # tools and pipelines.
@@ -123,7 +123,7 @@ def main():
     # Loop over the list of required tools, open and process their configuration files and store.
     for tool in superpipeline.getTools():
       toolData = tc.toolConfiguration()
-      toolData.getConfigurationData(tool, toolConfigurationFilesPath + str(tool) + '.json')
+      toolData.getConfigurationData(tool, toolConfigurationFilesPath + '/' + str(tool) + '.json')
       superpipeline.addTool(tool, toolData)
   
     # Loop over all of the pipeline configuration files and check that all nodes that define a tool
@@ -253,10 +253,32 @@ def main():
   struct = es.executionStructure()
   struct.determineExecutionStructure(graph)
 
-  # Generate a makefiles object prior to building command lines and creating makefiles.
+  # Generate a makefiles object and then build all the command lines for the tasks as well as creating a list of each
+  # tasks dependencies and output.
   make = mk.makefiles()
-  for task in graph.workflow:
-    a = make.generateCommandLines(graph, superpipeline, struct, task)
+  make.generateCommandLines(graph, superpipeline, struct)
+
+  # Create the makefiles. This could either be a single makefile, or a set of multiple makefiles.
+  make.generateMakefiles(struct, superpipeline.pipeline, gknoConfiguration.options, command.gknoArguments)
+
+  # Open all the makefiles for writing.
+  make.openFiles(graph, struct, os.getenv('GKNOCOMMITID'), __date__, __version__, superpipeline.pipeline, sourcePath, toolsPath, resourcesPath)
+
+  # Close all of the open makefiles.
+  make.closeFiles()
+
+  # Check that all of the dependent files exist (excluding dependencies that are created by tasks in the pipeline).
+  #fh.checkFileExistence()
+
+#  for task in graph.workflow:
+#    print(task, make.executionInfo[task].phase)
+#    print('commands')
+#    for command in make.executionInfo[task].commands: print(command)
+#    print('dependencies')
+#    for command in make.executionInfo[task].dependencies: print(command)
+#    print('outputs')
+#    for command in make.executionInfo[task].outputs: print(command)
+#    print()
 
 if __name__ == "__main__":
   main()

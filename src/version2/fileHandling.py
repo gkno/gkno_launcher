@@ -27,13 +27,13 @@ class fileHandling:
   def checkPipeline(self, toolsPath, pipelinesPath, pipeline):
                                                                              
     # If the requested pipeline is valid, return the path to the configuration file.
-    if pipeline in self.pipelines: return pipelinesPath + pipeline + '.json'
+    if pipeline in self.pipelines: return pipelinesPath + '/' + pipeline + '.json'
 
     # If the requested pipeline is invalid, terminate.
     else:
       rankedPipelines = stringOperations.rankListByString(self.pipelines, pipeline)
       self.errors.invalidPipelineName(rankedPipelines, pipeline)
-  
+
   ######################
   ### Static methods ###
   ######################
@@ -49,7 +49,7 @@ class fileHandling:
 
   # Open a file and return the contents.
   @staticmethod
-  def openFile(filename):
+  def openFileForReading(filename):
     try: return open(filename)
     except: return False
 
@@ -72,3 +72,14 @@ class fileHandling:
       else: return False
   
     return data
+
+  # Open all files in a list and return a list of filehandles.
+  @staticmethod
+  def openFileForWriting(filename):
+    return open(filename, 'w')
+  
+  # Close all the files provided.
+  @staticmethod
+  def closeFile(filehandle):
+    filehandle.close()
+
