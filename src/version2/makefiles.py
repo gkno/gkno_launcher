@@ -359,14 +359,58 @@ class makefiles:
     # If there are not multiple makefiles being made, then there is no need to loop over all the
     # phases etc, as all phases point to the same makefile. In this event, just open the single
     # makefile.
-    if not self.isMultipleMakefiles:
-      filehandle = fh.fileHandling.openFileForWriting(self.makefileNames[1][1][1])
+    if not self.isMultipleMakefiles: self.singleFileHeader(graph ,struct, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath)
+    else: self.multifileHeader(graph ,struct, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath)
 
-      # Add header text to the file.
-      self.addHeader(graph, struct, filehandle, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath, self.makefileNames[1][1][1], 1)
-      self.addIntermediates(struct, 1, filehandle, 1)
-      self.addOutputs(filehandle)
-      self.removeOk(filehandle)
+  # Write the header text to a single makefile.
+  def singleFileHeader(self, graph ,struct, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath):
+
+    # Define the filehandle.
+    filehandle = fh.fileHandling.openFileForWriting(self.makefileNames[1][1][1])
+
+    # Add header text to the file.
+    self.addHeader(graph, struct, filehandle, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath, self.makefileNames[1][1][1], 1)
+
+    # Loop over all the phases, subphases and divisions.
+    allIntermediates = []
+    allOutputs       = []
+    tempOutputs      = []
+    for phase in self.makefileNames:
+      i = 0
+      if phase not in self.makefilehandles: self.makefilehandles[phase] = {}
+      for subphase in self.makefileNames[phase]:
+        if subphase not in self.makefilehandles[phase]: self.makefilehandles[phase][subphase] = {}
+        for division in self.makefileNames[phase][subphase]:
+
+          # Add the header, intermediate files and all output files for the phase.
+          intermediates = self.getFiles(struct, phase, 'intermediates', i)
+          outputs       = self.getFiles(struct, phase, 'outputs', i)
+
+          # Add the values to the larger lists.
+          for intermediate in intermediates:
+            if intermediate not in allIntermediates: allIntermediates.append(intermediate)
+          for output in outputs:
+            if output not in tempOutputs: tempOutputs.append(output)
+
+          # Add the makefile handle to the data structure.
+          self.makefilehandles[phase][subphase][division] = filehandle
+
+          # Increment the counter.
+          i += 1
+
+    # Remove output files that are also marked as intermediates.
+    for output in tempOutputs:
+      if output not in allIntermediates: allOutputs.append(output)
+
+    # Add the intermediate and output files.
+    self.addIntermediateFiles(allIntermediates, filehandle)
+    self.addOutputFiles(allOutputs, filehandle)
+
+    # Remove the file created on successful execution of the makefile.
+    self.removeOk(filehandle)
+
+  # Write header text to multiple makefiles.
+  def multifileHeader(self, graph ,struct, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath):
 
     # Loop over all the phases, subphases and divisions.
     for phase in self.makefileNames:
@@ -375,15 +419,37 @@ class makefiles:
       for subphase in self.makefileNames[phase]:
         if subphase not in self.makefilehandles[phase]: self.makefilehandles[phase][subphase] = {}
         for division in self.makefileNames[phase][subphase]:
-          if self.isMultipleMakefiles:
-            name = self.makefileNames[phase][subphase][division]
-            filehandle = fh.fileHandling.openFileForWriting(name)
 
-            # Add the header, intermediate files and all output files for the phase.
-            self.addHeader(graph, struct, filehandle, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath, name, phase)
-            self.addIntermediates(struct, phase, filehandle, i)
-            self.addOutputs(filehandle)
-            self.removeOk(filehandle)
+          # Create a new filehandle and add the header text.
+          name       = self.makefileNames[phase][subphase][division]
+          filehandle = fh.fileHandling.openFileForWriting(name)
+
+          # Add the header, intermediate files and all output files for the phase.
+          self.addHeader(graph, struct, filehandle, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath, name, phase)
+          tempIntermediates = self.getFiles(struct, phase, 'intermediates', i)
+          tempOutputs       = self.getFiles(struct, phase, 'outputs', i)
+
+          # If this is the final task in the makefile, all output files should be included as outputs, not
+          # intermediates, even if so marked. If this is not followed, there could be phases that produce
+          # no output files, which would ensure that the makefile would not execute.
+          finalOutputs = self.getFinalTaskOutputs(struct, phase, i)
+
+          # Remove final outputs from the intermediates.
+          intermediates = []
+          for intermediate in tempIntermediates:
+            if intermediate not in finalOutputs: intermediates.append(intermediate)
+
+          # Remove intermediate files from the outputs.
+          outputs = []
+          for output in tempOutputs:
+            if output not in intermediates: outputs.append(output)
+
+          # Add the intermediate and output files.
+          self.addIntermediateFiles(intermediates, filehandle)
+          self.addOutputFiles(outputs, filehandle)
+
+          # Remove the file created on successful execution of the makefile.
+          self.removeOk(filehandle)
 
           # Add the makefile handle to the data structure.
           self.makefilehandles[phase][subphase][division] = filehandle
@@ -436,11 +502,38 @@ class makefiles:
     print('.PHONY: DELETE_COMPLETE_OK', file = filehandle)
     print(file = filehandle)
 
-  # Add intermediate files to the makefile.
-  def addIntermediates(self, struct, phase, filehandle, i):
+  # Get files for the task and phase.
+  def getFiles(self, struct, phase, fileType, i):
+    files = []
 
-    # Collect all intermediate files for this makefile.
-    intermediates = []
+    # Loop over the tasks for this phase.
+    for task in struct.phaseInformation[phase].tasks:
+
+      # Define the files to loop over.
+      if fileType == 'intermediates': fileList = self.executionInfo[task].intermediates
+      elif fileType == 'outputs': fileList = self.executionInfo[task].outputs
+
+      # Get the files. If there are multiple makefiles, only take the values from the current phase, subphase
+      # and division.
+      for value in fileList[i]:
+        if value not in files: files.append(value)
+
+    # Return the files.
+    return files
+
+  # Return the output files from the final task in this phase.
+  def getFinalTaskOutputs(self, struct, phase, i):
+    files = []
+
+    # Get the files.
+    for value in self.executionInfo[struct.phaseInformation[phase].tasks[-1]].outputs[i]:
+      if value not in files: files.append(value)
+
+    # Return the files.
+    return files
+
+  # Add intermediate files to the makefile.
+  def addIntermediateFiles(self, intermediates, filehandle):
 
     # Write intermediate files to the makefile header. Files marked as intermediate are removed during
     # execution of the pipeline. By being marked as intermediate, reexecution of the pipeline will not
@@ -448,31 +541,23 @@ class makefiles:
     print('### The following files are intermediates. If the pipeline is rerun, rules for creating', file = filehandle)
     print('### will not be rerun unless files prior to these rules have been updated.', file = filehandle)
     print('.INTERMEDIATE: ', end = '', file = filehandle)
-    for task in struct.phaseInformation[phase].tasks:
-      
-      # If there are multiple makefiles, only add the intermediate files for the relevant command line,
-      # defined by the counter, i.
-      if self.isMultipleMakefiles:
-        for value in self.executionInfo[task].intermediates[i]:
-          if value not in intermediates: intermediates.append(value)
-
-      # If there is only a single makefile, add all intermediate files for the task to the list.
-      else:
-        for values in self.executionInfo[task].intermediates:
-          for value in values:
-            if value not in intermediates: intermediates.append(value)
 
     # Add all the intermediates to the makefile.
     for intermediate in intermediates: print(intermediate, end = ' ', file = filehandle)
     print(file = filehandle)
     print(file = filehandle)
 
-  # Add all of the output files produced by the phase to the makefile.
-  def addOutputs(self, filehandle):
+
+  # Add output files to the makefile.
+  def addOutputFiles(self, outputs, filehandle):
 
     # List all the output files created by this makefile.
     print('### List all of the files that are required outputs of the pipeline.', file = filehandle)
     print('all: ', end = '', file = filehandle)
+
+    # Add all the output files to the makefile.
+    for output in outputs: print(output, end = ' ', file = filehandle)
+    print(file = filehandle)
     print(file = filehandle)
 
   # Prior to pipeline execution, remove the 'ok' file prodiced by a previous successful execution.
