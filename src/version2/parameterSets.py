@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import generalConfigurationFileMethods as methods
+import parameterSetErrors as er
 
 import json
 import os
@@ -34,6 +35,9 @@ class parameterSetArguments:
 # Define a class to handle parameter sets.
 class parameterSets:
   def __init__(self):
+
+    # Define the error class.
+    self.errors = er.parameterSetErrors()
 
     # Store information on parameter sets.
     self.sets = {}
@@ -134,3 +138,14 @@ class parameterSets:
       nodeIDs[nodeID] = values
 
     return nodeIDs
+
+  # Get an attribute included in the data section of a parameter set.
+  @staticmethod
+  def SM_getDataAttributeFromNodeID(parameterSet, dataID, attribute):
+
+    # Loop over the data and find the correct ID.
+    for dataSet in parameterSet.data:
+      if dataSet.nodeID == dataID: return getattr(dataSet, attribute)
+
+    # If the ID wasn't found, return False.
+    return False

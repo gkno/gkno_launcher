@@ -134,6 +134,26 @@ class commandLine:
     # If none of the above, return 'run',
     return 'run'
 
+  # Determine the path to the configuration files, if set.
+  def getConfigurationFilePath(self, options):
+    longFormArgument  = options['GKNO-CONFIGURATION-DIRECTORY'].longFormArgument
+    shortFormArgument = options['GKNO-CONFIGURATION-DIRECTORY'].shortFormArgument
+
+    # If the path is defined, get the path.
+    path = None
+    if longFormArgument in self.arguments: path = self.arguments[longFormArgument][0]
+    elif shortFormArgument in self.arguments: path = self.arguments[shortFormArgument][0]
+
+    # If the path is defined, check that the path exists.
+    # TODO ERROR
+    if path and not os.path.isdir(path): print('commandLine.getConfigurationFilePath - PATH DOESN\'T EXIST'); exit(1)
+
+    # Remove trailing '/'.
+    if path and path.endswith('/'): path = path.rstrip('/')
+
+    # Return the path.
+    return path
+
   # Determine the name of the pipeline being run (tools are considered pipelines of a single task).
   def determinePipeline(self):
 

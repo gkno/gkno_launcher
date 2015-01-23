@@ -43,7 +43,7 @@ def main():
   #Define an object to hold information for creating web content.
   web = w.webContent()
 
-  # Define the source path of all the gkno machinery.
+  # Define the source paths of all the gkno machinery.
   sourcePath                     = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno.py')]
 
   # TODO REMOVE
@@ -61,10 +61,6 @@ def main():
   resourcesPath                  = sourcePath + '/resources'
   toolsPath                      = sourcePath + '/tools'
 
-  # Define a class for handling files. In the initialisation, determine the names of all available
-  # tools and pipelines.
-  files = fh.fileHandling(toolConfigurationFilesPath, pipelineConfigurationFilesPath)
-
   # Define an admin utilities object. This handles all of the build/update steps
   # along with 'resource' management.
   admin = au.adminUtils(sourcePath)
@@ -78,6 +74,16 @@ def main():
 
   # Print gkno title and version to the screen.
   write.printHeader(__version__, __date__, os.getenv('GKNOCOMMITID'))
+
+  # Check to see if the configuration files are to be found in a directory other than the default.
+  path                           = command.getConfigurationFilePath(gknoConfiguration.options)
+  if path:
+    toolConfigurationFilesPath     = path
+    pipelineConfigurationFilesPath = path
+
+  # Define a class for handling files. In the initialisation, determine the names of all available
+  # tools and pipelines.
+  files = fh.fileHandling(toolConfigurationFilesPath, pipelineConfigurationFilesPath)
 
   # If not being run in admin mode, determine the name of the pipeline being run. Note that
   # for the code, a tool is considered a pipeline with a single task, so the terminology
@@ -217,19 +223,6 @@ def main():
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
   # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc.
   graph.determineNumberOfTaskExecutions(superpipeline)
-#  print()
-#  for task in graph.getNodes('task'):
-#    print('TASK:', task)
-#    print('\tOPTIONS:')
-#    for nodeID in graph.getOptionNodes(task):
-#      print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-#    print('\tINPUTS:')
-#    for nodeID in graph.getInputFileNodes(task):
-#      print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-#    print('\tOUTPUTS:')
-#    for nodeID in graph.getOutputFileNodes(task):
-#      print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-#  exit(0)
 
   # Print the workflow to screen.
   write.workflow(superpipeline, workflow)
@@ -243,6 +236,11 @@ def main():
   # routine will flag the file as invalid as input to the next task.
   dc.checkValues(graph, superpipeline, args)
   dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = True)
+
+  # Having reached this point, all of the required values have been checked, are present and have the correct data
+  # type. In the construction of the graph, a number of non-required nodes could have been created and, since they
+  # are not required, they could be unpopoulated. March through the graph and purge any nodes that have no values.
+  dc.purgeEmptyNodes(graph)
 
   # Determine whether or not to output a visual representation of the pipeline graph.
   plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
@@ -264,11 +262,29 @@ def main():
   # Open all the makefiles for writing.
   make.openFiles(graph, struct, os.getenv('GKNOCOMMITID'), __date__, __version__, superpipeline.pipeline, sourcePath, toolsPath, resourcesPath)
 
+  # Add the command lines to the makefiles.
+  make.addCommandLines(graph, struct)
+
   # Close all of the open makefiles.
   make.closeFiles()
 
   # Check that all of the dependent files exist (excluding dependencies that are created by tasks in the pipeline).
   #fh.checkFileExistence()
+
+  # Execute the generated script unless the user has explicitly asked for it not to be run, or if multiple makefiles
+  # have been generated.
+  success = 0
+  if gknoConfiguration.options['GKNO-DO-NOT-EXECUTE'].longFormArgument not in command.gknoArguments and not make.isMultipleMakefiles:
+    makefileName = make.makefileNames[1][1][1]
+
+    # Get the number of parallel jobs to be requested.
+    jobsArgument = gknoConfiguration.options['GKNO-JOBS'].longFormArgument
+    numberJobs   = command.gknoArguments[jobsArgument][0] if jobsArgument in command.gknoArguments else 1
+    print('executing', makefileName, numberJobs)
+
+    # Generate the execution command.
+    execute = 'make -j ' + str(numberJobs) + ' --file ' + makefileName
+    success = subprocess.call(execute.split())
 
 #  for task in graph.workflow:
 #    print(task, make.executionInfo[task].phase)

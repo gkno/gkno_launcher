@@ -24,6 +24,11 @@ class argumentAttributes:
     self.longFormArgument    = None
     self.shortFormArgument   = None
 
+    # Instructions on how to modify the argument and the value to be used on
+    # the command line in the makefile.
+    self.modifyArgument = None
+    self.modifyValue    = None
+
     # Define the extensions allowed for the argument.
     self.extensions = []
 
@@ -162,6 +167,16 @@ class toolConfiguration:
     # Check that certain required combinations of attributes are adhered to.
     if self.success: self.checkAttributeCombinations()
 
+    # There are occasions where a particular attribute value can force the value of
+    # another. Check for these cases and force the values as required. As an example,
+    # if the 'command line argument' attribute is set to 'none', then the argument
+    # will not be written to the command line. If the 'modify argument' attribute is
+    # unset, it can be set to 'omit' in this instance
+    if self.success: self.forceAttributes()
+
+    # Check the values supplied to attributes.
+    if self.success: self.checkAttributeValues()
+
     # Check the parameter set information and store.
     if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination, self.name, isTool = True)
 
@@ -207,6 +222,8 @@ class toolConfiguration:
     allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
     allowedAttributes['is filename stub']        = (bool, False, True, 'isStub')
     allowedAttributes['long form argument']      = (str, True, True, 'longFormArgument')
+    allowedAttributes['modify argument']         = (str, False, True, 'modifyArgument')
+    allowedAttributes['modify value']            = (str, False, True, 'modifyValue')
     allowedAttributes['required']                = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']     = (str, False, True, 'shortFormArgument')
     allowedAttributes['stub extensions']         = (list, False, True, 'stubExtensions')
@@ -233,6 +250,8 @@ class toolConfiguration:
     allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
     allowedAttributes['is filename stub']      = (bool, False, True, 'isStub')
     allowedAttributes['long form argument']    = (str, True, True, 'longFormArgument')
+    allowedAttributes['modify argument']       = (str, False, True, 'modifyArgument')
+    allowedAttributes['modify value']          = (str, False, True, 'modifyValue')
     allowedAttributes['required']              = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']   = (str, False, True, 'shortFormArgument')
     allowedAttributes['stub extensions']       = (list, False, True, 'stubExtensions')
@@ -256,6 +275,8 @@ class toolConfiguration:
     allowedAttributes['hide in help']            = (bool, False, True, 'hideInHelp')
     allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
     allowedAttributes['long form argument']      = (str, True, True, 'longFormArgument')
+    allowedAttributes['modify argument']         = (str, False, True, 'modifyArgument')
+    allowedAttributes['modify value']            = (str, False, True, 'modifyValue')
     allowedAttributes['required']                = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']     = (str, False, True, 'shortFormArgument')
 
@@ -311,10 +332,50 @@ class toolConfiguration:
           self.success = False
           return
 
+  # Force attribute values based on set values.
+  def forceAttributes(self):
+    for argument in self.arguments:
+
+      # If the 'command line argument' is set to none adn 'modify argument' is unset, force 'modify
+      # argument' to be set to 'omit'.
+      if self.getArgumentAttribute(argument, 'commandLineArgument') == 'none' and not self.getArgumentAttribute(argument, 'modifyArgument'):
+        self.setArgumentAttribute(argument, 'modifyArgument', 'omit')
+
+  # Check that the values given to certain attributes are valid.
+  def checkAttributeValues(self):
+
+    # Loop over all the arguments.
+    for argument in self.arguments:
+
+      # If modify argument is populated, check that the supplied value is valid.
+      value = self.getArgumentAttribute(argument, 'modifyArgument')
+      if value:
+  
+        # Define the valid values.
+        validValues = [
+                        'omit'
+                      ]
+  
+        # Check that the supplied value is valid.
+        #TODO ERROR
+        if value not in validValues:
+          if self.allowTermination: self.errors.invalidValues(self.name, argument, 'modifyArgument', value, validValues)
+          else:
+            self.success = False
+            return False
+
+  ##############################
+  ### Get and set attributes ###
+  ##############################
+
   # Get an argument attribute.
   def getArgumentAttribute(self, argument, attribute):
     try: return getattr(self.arguments[argument], attribute)
     except: return None
+
+  # Set an argument attribute.
+  def setArgumentAttribute(self, argument, attribute, value):
+    setattr(self.arguments[argument], attribute, value)
 
   # Return the long form version of an argument.
   def getLongFormArgument(self, argument):

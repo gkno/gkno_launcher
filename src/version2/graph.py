@@ -10,6 +10,7 @@ import networkx as nx
 
 import constructFilenames as construct
 import parameterSets as ps
+import parameterSetErrors as pse
 import stringOperations as stringOps
 import superpipeline as sp
 
@@ -57,6 +58,10 @@ class taskNodeAttributes:
     # be executed.
     self.isGreedy           = False
     self.numberOfExecutions = 1
+
+    # Store the number of subphaes and divisions the task is broken up into.
+    self.divisions = 0
+    self.subphases = 0
 
     # Store the number of sets of input and output files for the task.
     self.numberOfInputSets  = 1
@@ -712,11 +717,11 @@ class pipelineGraph:
         # Check if this edge exists.
         edges = self.checkIfEdgeExists(task, longFormArgument, not isOutput)
 
+        # Get the attributes for the edge.
+        argumentAttributes = toolData.getArgumentData(longFormArgument)
+
         # If no edges were found, create a new node, add the edges and values.
         if not edges:
-
-          # Get the attributes for the edge.
-          argumentAttributes = toolData.getArgumentData(longFormArgument)
 
           # Create a name for the node. This should be the name of the current task with the argument
           # appended (dashes removed).
@@ -735,7 +740,7 @@ class pipelineGraph:
           else: self.addEdge(str(nodeAddress), str(task), argumentAttributes)
 
         # If a single possible edge was found, populate the relevant node with the values.
-        elif len(edges) == 1: print('HELLO', edges)
+        elif len(edges) == 1: self.setGraphNodeAttribute(edges[0], 'values', values)
 
         # If multiple edges were found, there are multiple nodes associated with this task using the
         # defined argument.
@@ -760,6 +765,11 @@ class pipelineGraph:
       values       = nodeIDs[nodeID]
       pipelineData = superpipeline.getPipelineData(pipelineName)
       nodeAddress  = pipelineData.address + '.' + nodeID if pipelineData.address else nodeID
+
+      # Check that the nodeAddress is valid.
+      if nodeAddress not in self.configurationFileToGraphNodeID:
+        ID = ps.parameterSets.SM_getDataAttributeFromNodeID(parameterSet, nodeID, 'id')
+        pse.parameterSetErrors().invalidNodeInPipelineParameterSet(pipelineName, setName, nodeID, ID)
 
       # Set the values for the graph node.
       for graphNodeID in self.configurationFileToGraphNodeID[nodeAddress]: self.setGraphNodeAttribute(graphNodeID, 'values', values)
@@ -956,7 +966,7 @@ class pipelineGraph:
     multivalueOptions = []
 
     # Record how many times this task is to be executed, based on the supplied option values.
-    numberOfExecutions = 1
+    divisions = 1
     for nodeID in self.getOptionNodes(task):
 
       # Get the values associated with this option.
@@ -965,18 +975,24 @@ class pipelineGraph:
 
         # If the number of executions, is set at one, reset the number of executions to the number of
         # values supplied to this option.
-        if numberOfExecutions == 1: numberOfExecutions = len(values)
+        if divisions == 1: divisions = len(values)
 
         # If the number of executions is already greater than one, the number of values for this option must
         # equal the number of executions.
         # TODO ERROR
-        elif len(values) != numberOfExecutions: print('ERROR - graph.checkTaskOptions - 1'); exit(0)
+        elif len(values) != divisions: print('ERROR - graph.checkTaskOptions - 1'); exit(0)
 
         # Store the node ID.
         multivalueOptions.append(nodeID)
 
-    # Update the task node to reflect the number of executions it needs to undertake.
-    self.setGraphNodeAttribute(task, 'numberOfExecutions', numberOfExecutions)
+    # The number of independent values given to any one option will dictate the number of divisions the makefile
+    # should be broken into. This is independent of the number of files provided to the task. For example, if N
+    # files are provided to the task (and the task is not greedy, using all files on one command line), then N
+    # subphases will be generated to execute the task for each input. If, in addition, an option is given M
+    # values, then the subphase will itself be broken into M divisions. In the absence of subphases, there will 
+    # still be M divisions (e.g. M makefiles), to execute the task for all of the given option values. Store the
+    # number of divisions this task will be broken up into.
+    self.setGraphNodeAttribute(task, 'divisions', divisions)
 
     # Store the options that are multivalued.
     self.setGraphNodeAttribute(task, 'multivalueOptions', multivalueOptions)
@@ -984,13 +1000,6 @@ class pipelineGraph:
   # Loop over all the input files for the task and check how many have been defined. If the number of set files
   # is inconsistent with the number of executions implied by the values given to the task options, terminate.
   def checkInputFiles(self, superpipeline, task):
-
-    # Get the number of executions currently associated with this task.
-    numberOfExecutions = self.getGraphNodeAttribute(task, 'numberOfExecutions')
-
-    # Keep track of the number of sets of input files for this task. Note that if the task is greedy, the number of
-    # sets of input files is one.
-    numberOfInputNodes = 1
 
     # Get the tool associated with the task.
     tool = superpipeline.tasks[task]
@@ -1001,40 +1010,18 @@ class pipelineGraph:
       # Determine the tool argument that uses the values from this node.
       argument = self.getArgumentAttribute(fileNodeID, task, 'longFormArgument')
       values   = self.getGraphNodeAttribute(fileNodeID, 'values')
-      if len(values) > 1:
 
-        # Determine if this task is listed as being greedy. If so, check that the argument associated with these
-        # values is permitted to accept multiple values. If so, this task is to be run once using all the values,
-        # rather than being run len(values) times.
-        if self.getArgumentAttribute(fileNodeID, task, 'isGreedy'):
-          #TODO ERROR
-          if not superpipeline.toolConfigurationData[tool].getArgumentAttribute(argument, 'allowMultipleValues'): print('ERROR - GREEDY'); exit(0)
-
-          # Mark the task node to indicate that this task is greedy.
-          self.setGraphNodeAttribute(task, 'isGreedy', True)
-
-        # If the number of executions is one and the argument is not greedy, update the number of executions.
-        elif numberOfExecutions == 1: numberOfExecutions = len(values)
-
-        # If this task produces multiple output file nodes, this is allowed as the number of executions will
-        # correspond to the number of output file nodes produced multiplied by the numberOfExecutions already
-        # listed. For example, consider the case where there are two input files and an option is given three
-        # values. Since this task is not greedy, each of the input files produce their own output node and the
-        # task is executed once per option - so there are 2 x 3 = 6 total executions. This isn't set here,
-        # however, since the filenames are constructed for each of the output nodes. For each of the output nodes,
-        # there are still just numberOfExecutions calls. The value is modified in the createAdditionalOutputNodes
-        # method.
-        elif self.getGraphNodeAttribute(task, 'generateMultipleOutputNodes'): pass#numberOfExecutions = len(values) * numberOfExecutions
-
-        # If the number of executions is already greater than one, check that the number of set values is consistent
-        # with the number of executions already defined. If the argument is greedy, this is not checked, since the
-        # task can be executed multiple times due to the options.
+      # Check the greedy attribute for the task and update if necessary.
+      if self.getArgumentAttribute(fileNodeID, task, 'isGreedy'):
         #TODO ERROR
-        elif len(values) != numberOfExecutions: print('ERROR - graph.checkInputFiles - 1', task, values, numberOfExecutions); exit(0)
+        if not superpipeline.toolConfigurationData[tool].getArgumentAttribute(argument, 'allowMultipleValues'): print('ERROR - GREEDY'); exit(0)
+
+        # Mark the task node to indicate that this task is greedy.
+        self.setGraphNodeAttribute(task, 'isGreedy', True)
 
       # If there are no set values, check to see if there are instructions on how to construct the filenames. If
       # so, construct the files.
-      elif len(values) == 0:
+      if len(values) == 0:
 
         # Determine if the argument has filename construction instructions.
         constructUsingNode = self.getGraphNodeAttribute(fileNodeID, 'constructUsingNode')
@@ -1042,23 +1029,17 @@ class pipelineGraph:
           baseValues = self.getGraphNodeAttribute(constructUsingNode, 'values')
           self.setGraphNodeAttribute(fileNodeID, 'values', construct.constructInputNode(self.graph, superpipeline, task, argument, fileNodeID, baseValues))
 
-    # Update the task node.
-    self.setGraphNodeAttribute(task, 'numberOfExecutions', numberOfExecutions)
-    #self.setGraphNodeAttribute(task, 'numberOfInputSets', numberOfInputSets)
-
   # Loop over all of the output files and construct those that are not present.
   def checkOutputFiles(self, superpipeline, task):
+
+    # Get the number of divisions for this task. This is one unless an option for the task has
+    # been given multiple values.
+    divisions = self.getGraphNodeAttribute(task, 'divisions')
 
     # Determine task properties.
     isConsolidate       = self.getGraphNodeAttribute(task, 'consolidate')
     isGenerateMultiple  = self.getGraphNodeAttribute(task, 'generateMultipleOutputNodes')
     isMultipleTaskCalls = self.getGraphNodeAttribute(task, 'multipleTaskCalls')
-
-    # Keep track of the number of sets of output files for this task.
-    numberOfOutputSets = 1
-
-    # Get the number of executions currently associated with this task.
-    numberOfExecutions = self.getGraphNodeAttribute(task, 'numberOfExecutions')
 
     # Loop over all the output nodes.
     for nodeID in self.getOutputFileNodes(task):
@@ -1091,11 +1072,11 @@ class pipelineGraph:
           baseValues = self.getBaseValues(superpipeline, task, instructions)
 
           # Check if this task produces multiple output file nodes. If so, determine the number of nodes there should
-          # be and create the missing nodes and connect them up in the graph. Also update the number of output sets
-          # for the task.
-          if isGenerateMultiple:
-            self.createAdditionalOutputNodes(superpipeline, instructions, task, nodeID, baseValues)
-            numberOfOutputSets = len(baseValues)
+          # be and create the missing nodes and connect them up in the graph. Also update the number of subphases
+          # for the task. When makefiles are generated, the number of subphases the task is split into is dictated by
+          # the number of times a task needs to be run for different input/output data (files). If the task is further
+          # subdivided based on multiple options, the task will also have multiple divisions.
+          if isGenerateMultiple: self.createAdditionalOutputNodes(superpipeline, instructions, task, nodeID, baseValues)
 
           # If multiple task nodes have been created for this task and the outputs from all of these tasks are being
           # consolidated into a single node, perform necessary checks and populate the single output node with all
@@ -1110,33 +1091,14 @@ class pipelineGraph:
           # If no additional output files are being created, check details, then create filenames.
           else:
 
-            # Given the number of executions, whether the task is greedy and the number of base values, determine
+            # Given the number of divisions, whether the task is greedy and the number of base values, determine
             # how to proceed with constructing the output filenames. Begin with cases where there are multiple
             # executions.
-            if numberOfExecutions != 1:
+            if divisions != 1:
   
-              # If there is only a single base value, but there are multiple options, ensure that the options with
-              # multiple values are included in the filenames being constructed.
-              if len(baseValues) == 1: print('graph.checkOutputFiles - Not handled multiple executions, single file'); exit(0) #TODO REMEMBER NUMBER OF OUTPUT SETS
-  
-              # If the number of base values is different from the number of executions and the task is not greedy, terminate.
-              elif len(baseValues) != numberOfExecutions:
-                if not self.getGraphNodeAttribute(task, 'isGreedy'):
-                  #TODO ERROR
-                  print('ERROR - graph.checkOutputFiles - 2 -', len(baseValues), numberOfExecutions, self.getGraphNodeAttribute(task, 'isGreedy'))
-                  exit(1)
-  
-                # If the task is greedy, the first value from the base values can be used to construct the output
-                # filenames, but in order to ensure that the output filenames for each different option value are
-                # unique, update the construction instructions to include the option in the filename (if not
-                # already included. Also, ensure that there are as many base values as there are executions.
-                else: 
-                  baseValues = [baseValues[0]] * numberOfExecutions
-                  construct.updateArgumentsInInstructions(self.graph, instructions, task)
-  
-              # If there are multiple executions and there are the same number of base values as there are number
-              # of executions, no modification to the base values is required. An output file for each of the base
-              # values will be constructed.
+              # If there is only a single base value, but there are multiple divisions (e.g. an option has multiple
+              # values, ensure that the options with multiple values are included in the filenames being constructed.
+              if len(baseValues) == 1: print('graph.checkOutputFiles - Not handled multiple executions, single file'); exit(0)
   
             # Now consider cases where there is only a single execution of the task.
             else:
@@ -1145,22 +1107,14 @@ class pipelineGraph:
               # be used to construct the single output file (since there is only a single execution.)
               if len(baseValues) > 1: baseValues = [baseValues[0]]
   
-              # If there is only a single base value. no action is required.
-  
             # Now that the values from which to construct the filenames are known, construct the filenames.
             values = construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeID, baseValues)
   
             # Having constructed the output filenames, add them to the node.
             self.setGraphNodeAttribute(nodeID, 'values', values)
   
-            # Store the number of output file sets.
-            numberOfOutputSets = len(values)
-
         # If the construction method is unknown, terminate.
         else: print('constructFilenames.constructFilenames - unknown method', instructions.method); exit(0)
-
-    # Store the number of output file sets in the graph node.
-    self.setGraphNodeAttribute(task, 'numberOfOutputSets', numberOfOutputSets)
 
   # Check if this task produces multiple output file nodes. If so, determine the number of nodes there should
   # be and create the missing nodes and connect them up in the graph.
@@ -1174,12 +1128,6 @@ class pipelineGraph:
     # Next, check that there are at least two baseValues (e.g. at least two input files that are to be analysed).
     # TODO ERROR
     if len(baseValues) < 2: print('ERROR - graph.createAdditionalOutputNodes - not enough inputs'); exit(1)
-
-    # Finally check that there are at least two executions to be performed. Each of the N input file from the
-    # baseValues need to be executed numberOfExecutions times. If this is less than two, there is no need to 
-    # generate individual output nodes.
-    #TODO ERROR
-    if self.getGraphNodeAttribute(task, 'numberOfExecutions') < 2: print('ERROR - graph.createAdditionalOutputNodes - executions'); exit(1)
 
     # Get the argument for the output node and check that it is valid and points to an output file.
     argument = self.getGraphNodeAttribute(task, 'generateMultipleOutputNodes')
@@ -1202,7 +1150,7 @@ class pipelineGraph:
 
     # Generate the output file names for the existing output node using the first value in the
     # baseValues.
-    updatedValues = [baseValues[0]] * self.getGraphNodeAttribute(task, 'numberOfExecutions')
+    updatedValues = [baseValues[0]] * self.getGraphNodeAttribute(task, 'divisions')
     values        = construct.constructFromFilename(self.graph, superpipeline, instructions, task, existingNodeID, updatedValues)
     self.setGraphNodeAttribute(existingNodeID, 'values', values)
 
@@ -1221,7 +1169,7 @@ class pipelineGraph:
       self.addEdge(task, nodeID, edgeAttributes)
 
       # Create the filenames for the new node.
-      updatedValues = [baseValues[i]] * self.getGraphNodeAttribute(task, 'numberOfExecutions')
+      updatedValues = [baseValues[i]] * self.getGraphNodeAttribute(task, 'divisions')
       values        = construct.constructFromFilename(self.graph, superpipeline, instructions, task, existingNodeID, updatedValues)
       self.setGraphNodeAttribute(nodeID, 'values', values)
 
@@ -1466,7 +1414,7 @@ class pipelineGraph:
 
     return optionNodeIDs
 
-  # Return a list of all nodes of the a requested type.
+  # Return a list of all nodes of the requested type.
   def getNodes(self, nodeType):
 
     # If a single node type is supplied, turn nodeType into a list.

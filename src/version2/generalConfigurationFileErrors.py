@@ -67,11 +67,19 @@ class generalConfigurationFileErrors:
 
     # Get the information from the helpInfo.
     name, section, id = helpInfo
-    print(name, section, id)
     self.text.append('Missing attribute in the configuration file: ' + name)
-    self.text.append('The configuration file section \'' + section + '\' requires a number of different attributes to be set. The section for ' + \
-    'id \'' + id + '\' is missing the attribute \'' + attribute + '\'. Please ensure that all required attributes in the configuration file ' + \
-    'are defined.')
+
+    # If this is a top level attribute, both the section and the id will have no value. Write the
+    # error for this case.
+    if not section and not id:
+      self.text.append('Each configuration file requires some top level attributes to be set. The pipeline configuration \'' + name + '\' is missing ' + \
+      'the top level attribute \'' + attribute + '\'. Please ensure that all required attributes in the configuration file are defined.')
+
+    # If these are set, use the following text.
+    else:
+      self.text.append('The configuration file section \'' + section + '\' requires a number of different attributes to be set. The section for ' + \
+      'id \'' + id + '\' is missing the attribute \'' + attribute + '\'. Please ensure that all required attributes in the configuration file ' + \
+      'are defined.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 

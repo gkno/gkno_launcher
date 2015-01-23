@@ -33,3 +33,14 @@ class toolErrors:
     'required must be listed.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  # If the value supplied to a tool attribute is invalid.
+  def invalidValues(self, name, argument, attribute, value, validValues):
+    self.text.append('Invalid value given to attribute.')
+    self.text.append('The configuration file for tool \'' + name + '\' contains information for the argument \'' + argument + '\'. The attribute \'' + \
+    attribute + '\' for this argument is given the value \'' + value + '\', but this is not a valid value for this attribute. The valid values are:')
+    for validValue in validValues: self.text.append('\t' + validValue)
+    self.text.append('\t')
+    self.text.append('Please modify the the configuration file to only contain valid values for all attributes.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

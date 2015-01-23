@@ -28,6 +28,7 @@ class adminErrors:
     # Errors coming from help requests generate an error code of '11'.
     # Errors with plotting the pipeline graph generate an error code of '12'.
     # Errors with makefile generation generate an error code of '13'.
+    # Errors with parameter sets generate an error code of '14'.
     self.errorCode = '2'
 
   #####################

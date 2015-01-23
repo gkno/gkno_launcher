@@ -289,3 +289,14 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
             argumentAttributes = toolData.getArgumentData(argument)
             graph.addFileNode(nodeAddress, nodeAddress)
             graph.addEdge(task, nodeAddress, argumentAttributes)
+
+# Purge the graph of nodes with no values.
+def purgeEmptyNodes(graph):
+
+  # Loop over all the option nodes in the graph.
+  for nodeID in graph.getNodes('option'):
+    if not graph.getGraphNodeAttribute(nodeID, 'values'): graph.graph.remove_node(nodeID)
+
+  # Then loop over all file nodes, removing valueless nodes.
+  for nodeID in graph.getNodes('file'):
+    if not graph.getGraphNodeAttribute(nodeID, 'values'): graph.graph.remove_node(nodeID)

@@ -37,17 +37,16 @@ class executionStructure():
   # Determine the structure of the pipeline execution.
   def determineExecutionStructure(self, graph):
   
-    # Initialise variables.
-    currentPhase = 1
-    tasksInPhase = 0
-  
     # Loop over all the tasks in the workflow.
     for i, task in enumerate(graph.workflow):
   
+      # Get the maximum number of values for a single option provided to the task.
+      divisions = graph.getGraphNodeAttribute(task, 'divisions')
+
       # Get execution information about this task. Specifically, the number of input and output
       # multinodes and the number of times the task is executed for each set of nodes.
-      executionsPerNode   = graph.getGraphNodeAttribute(task, 'numberOfExecutions')
-      isGreedy            = graph.getGraphNodeAttribute(task, 'isGreedy')
+      #subphases = graph.getGraphNodeAttribute(task, 'subphases')
+      isGreedy  = graph.getGraphNodeAttribute(task, 'isGreedy')
   
       # Multinode inputs.
       multinodeInput      = graph.getGraphNodeAttribute(task, 'multinodeInput')
@@ -69,16 +68,22 @@ class executionStructure():
 
       # If the task isn't greedy, the total number of executions is the maximum of the number of input 
       # and output nodes, multiplied by the number of executions.
-      else: totalExecutions = max(numberInputNodes, numberOutputNodes) * executionsPerNode
+      else: totalExecutions = max(numberInputNodes, numberOutputNodes) * divisions#executionsPerNode
 
       # Determine the number of subphases. This is simply the maximum of the number of input or output
       # multinodes. A phase contains a set of tasks that need to be run sequentially. If there are
       # multiple values associated with the nodes for the task, there can be multiple jobs in a phase
       # that can be run in parallel. Subphases result from the case where tasks can produce multiple
       # output nodes, each of which has multiple values associated with it. In this case, within the
-      # phase there are subphases and each subphase is itself divided up into divisions.
+      # phase there are subphases and each subphase is itself divided up into divisions. The divisions
+      # are dictated by the number of options provided to the task.
       subphases = max(numberInputNodes, numberOutputNodes)
-      divisions = executionsPerNode
+
+      # If this task has one division and the previous task has multiple, reset the number of divisions
+      # for this task, to the same number as the previous unless this task is greedy. If this task is
+      # greedy, there should only be one division and a new phase will be generated.
+      divisionsInPreviousTask = self.phaseInformation[self.numberOfPhases].divisions if self.numberOfPhases in self.phaseInformation else 1
+      if (divisions == 1) and (divisionsInPreviousTask != 1) and not isGreedy: divisions = divisionsInPreviousTask
 
       # If this is the first task in the pipeline, start a new phase and define the number of subphases
       # and divisions in the phase and append the task to the phase.
@@ -86,7 +91,7 @@ class executionStructure():
 
       # If this isn't the first task, check if the number of subphases and divisions for this task are
       # equal to those of the previous task. If so, this task is part of the same phase.
-      elif (subphases != self.phaseInformation[self.numberOfPhases].subphases) or (divisions != self.phaseInformation[self.numberOfPhases].divisions):
+      elif (subphases != self.phaseInformation[self.numberOfPhases].subphases) or (divisions != divisionsInPreviousTask):
         self.defineNewPhase(subphases, divisions)
 
       # Add the task to the current phase and also record the reverse, the phase that the task is in.
