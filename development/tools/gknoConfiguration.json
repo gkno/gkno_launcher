@@ -21,6 +21,13 @@
       "data type" : "flag",
       "values" : ["unset"]
     },
+    "GKNO-CONFIGURATION-DIRECTORY" : {
+      "description" : "Define the directory in which the configuration file(s) resides.",
+      "long form argument" : "--configuration-directory",
+      "short form argument" : "-cd",
+      "data type" : "string",
+      "values" : []
+    },
     "GKNO-DEBUG" : {
       "description" : "Display debugging information.",
       "long form argument" : "--debug",

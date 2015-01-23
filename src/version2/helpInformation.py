@@ -44,7 +44,6 @@ class helpInformation:
 
   # Provide general help.
   def generalHelp(self, mode, category, admin, path):
-    self.printHeader()
 
     # if information on help categories was requested, provide that information.
     if mode == 'categories':

@@ -1,0 +1,372 @@
+{
+  "id" : "coverage",
+  "description" : "Calculate the genome coverage across reference sequences (usually chromosomes), generating R-plots.",
+  "categories" : ["Visualisation"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "calculate-coverage",
+      "tool" : "genome-coverage",
+      "include in reduced plot" : true
+    },
+    {
+      "task" : "convert-to-txt",
+      "tool" : "convert-bedtools-coverage"
+    },
+    {
+      "task" : "plot-absolute",
+      "tool" : "r-plot",
+      "include in reduced plot" : true
+    },
+    {
+      "task" : "plot-proportional",
+      "tool" : "r-plot"
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input sorted BAM file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "input"
+      },
+      {
+        "description" : "A sorted list of reference sequences to use when plotting the histogram.",
+        "long form argument" : "--reference-sequences",
+        "short form argument" : "-s",
+        "node id" : "refs"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output pdf absolute coverage plot file.",
+        "long form argument" : "--out-absolute",
+        "short form argument" : "-oc",
+        "node id" : "abs-output"
+      },
+      {
+        "description" : "The output pdf proportional coverage plot file.",
+        "long form argument" : "--out-proportional",
+        "short form argument" : "-or",
+        "node id" : "prop-output"
+      }
+    ],
+
+    "Plotting options" : [
+      {
+        "description" : "Combine all positions with a depth >= max into a single bin in the histogram.",
+        "long form argument" : "--combine-max-depth",
+        "short form argument" : "-c",
+        "node id" : "max-depth"
+      },
+      {
+        "description" : "Plot the raw read counts, rather than the percentage of the reads with each coverage.",
+        "long form argument" : "--read-counts",
+        "short form argument" : "-r",
+        "node id" : "raw"
+      },
+      {
+        "description" : "Normalise the read counts based on the reference sequence length.",
+        "long form argument" : "--normalize",
+        "short form argument" : "-n",
+        "node id" : "normalize"
+      },
+      {
+        "description" : "Plot the bin of reads with zero coverage.",
+        "long form argument" : "--include-zero",
+        "short form argument" : "-z",
+        "node id" : "zero"
+      },
+      {
+        "description" : "Plot the tab delimited file with R.",
+        "long form argument" : "--r-script",
+        "short form argument" : "-rs",
+        "node id" : "plot"
+      },
+      {
+        "description" : "The minimum value for the x axis for the absolute coverage plot [determined by data].",
+        "long form argument" : "--x-axis-minimum-absolute",
+        "short form argument" : "-xia",
+        "node id" : "min-x"
+      },
+      {
+        "description" : "The maximum value for the x axis for the absolute coverage plot [determined by data, or --combine-max-depth].",
+        "long form argument" : "--x-axis-maximum-absolute",
+        "short form argument" : "-xaa",
+        "node id" : "max-x"
+      },
+      {
+        "description" : "The minimum value for the x axis for the proportional coverage plot [determined by data].",
+        "long form argument" : "--x-axis-minimum-proportional",
+        "short form argument" : "-xip",
+        "node id" : "min-x2"
+      },
+      {
+        "description" : "The maximum value for the x axis for the absolute coverage plot [determined by data, or --combine-max-depth].",
+        "long form argument" : "--x-axis-maximum-proportional",
+        "short form argument" : "-xap",
+        "node id" : "max-x2"
+      },
+      {
+        "description" : "The x axis label for the absolute coverage plot [coverage].",
+        "long form argument" : "--x-label-absolute",
+        "short form argument" : "-xa",
+        "node id" : "xa"
+      },
+      {
+        "description" : "The y axis label for the absolute coverage plot [read count].",
+        "long form argument" : "--y-label-absolute",
+        "short form argument" : "-ya",
+        "node id" : "ya"
+      },
+      {
+        "description" : "The x axis label for the proportional coverage plot [coverage].",
+        "long form argument" : "--x-label-proportional",
+        "short form argument" : "-xp",
+        "node id" : "xp"
+      },
+      {
+        "description" : "The y axis label for the proportional coverage plot [read count].",
+        "long form argument" : "--y-label-proportional",
+        "short form argument" : "-yp",
+        "node id" : "yp"
+      },
+      {
+        "description" : "The legend title [reference sequence].",
+        "long form argument" : "--legend",
+        "short form argument" : "-l",
+        "node id" : "legend"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "input",
+      "task" : "calculate-coverage",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "refs",
+      "task" : "convert-to-txt",
+      "task argument" : "--reference-sequences"
+    },
+    {
+      "id" : "raw",
+      "task" : "convert-to-txt",
+      "task argument" : "--read-counts"
+    },
+    {
+      "id" : "normalize",
+      "task" : "convert-to-txt",
+      "task argument" : "--normalize"
+    },
+    {
+      "id" : "zero",
+      "task" : "convert-to-txt",
+      "task argument" : "--include-zero"
+    },
+    {
+      "id" : "abs-output",
+      "task" : "plot-absolute",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "prop-output",
+      "task" : "plot-proportional",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "min-x",
+      "task" : "plot-absolute",
+      "task argument" : "--x-axis-minimum"
+    },
+    {
+      "id" : "max-x",
+      "task" : "plot-absolute",
+      "task argument" : "--x-axis-maximum"
+    },
+    {
+      "id" : "min-x2",
+      "task" : "plot-proportional",
+      "task argument" : "--x-axis-minimum"
+    },
+    {
+      "id" : "max-x2",
+      "task" : "plot-proportional",
+      "task argument" : "--x-axis-maximum"
+    },
+    {
+      "id" : "xa",
+      "task" : "plot-absolute",
+      "task argument" : "--x-label"
+    },
+    {
+      "id" : "ya",
+      "task" : "plot-absolute",
+      "task argument" : "--y-label"
+    },
+    {
+      "id" : "xp",
+      "task" : "plot-proportional",
+      "task argument" : "--x-label"
+    },
+    {
+      "id" : "yp",
+      "task" : "plot-proportional",
+      "task argument" : "--y-label"
+    }
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "max-depth",
+      "arguments sharing node" : [
+        {
+          "task" : "calculate-coverage",
+          "task argument" : "--combine-max-depth"
+        },
+        {
+          "task" : "convert-to-txt",
+          "task argument" : "--maximum-coverage-bin"
+        }
+      ]
+    },
+    {
+      "id" : "convert",
+      "arguments sharing node" : [
+        {
+          "task" : "calculate-coverage",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "convert-to-txt",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "pass-to-r",
+      "delete files" : true,
+      "arguments sharing node" : [
+        {
+          "task" : "convert-to-txt",
+          "task argument" : "--out-absolute"
+        },
+        {
+          "task" : "plot-absolute",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "pass-to-r2",
+      "delete files" : true,
+      "arguments sharing node" : [
+        {
+          "task" : "convert-to-txt",
+          "task argument" : "--out-proportional"
+        },
+        {
+          "task" : "plot-proportional",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "plot",
+      "arguments sharing node" : [
+        {
+          "task" : "plot-absolute",
+          "task argument" : "--script"
+        },
+        {
+          "task" : "plot-proportional",
+          "task argument" : "--script"
+        }
+      ]
+    },
+    {
+      "id" : "legend",
+      "arguments sharing node" : [
+        {
+          "task" : "plot-absolute",
+          "task argument" : "--legend"
+        },
+        {
+          "task" : "plot-proportional",
+          "task argument" : "--legend"
+        }
+      ]
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "The default parameter set sets all the parameters for the pipeline to run.",
+      "data" : [
+        {
+          "id" : "xlaba",
+          "node" : "xa",
+          "values" : ["'coverage'"]
+        },
+        {
+          "id" : "ylaba",
+          "node" : "ya",
+          "values" : ["'read count'"]
+        },
+        {
+          "id" : "xlabp",
+          "node" : "xp",
+          "values" : ["'coverage'"]
+        },
+        {
+          "id" : "ylabp",
+          "node" : "yp",
+          "values" : ["'percentage of bases with coverage'"]
+        },
+        {
+          "id" : "legend",
+          "node" : "legend",
+          "values" : ["'reference sequence'"]
+        },
+        {
+          "id" : "xa",
+          "node" : "max-x",
+          "values" : [100]
+        },
+        {
+          "id" : "xp",
+          "node" : "max-x2",
+          "values" : [100]
+        },
+        {
+          "id" : "depth",
+          "node" : "max-depth",
+          "values" : [100]
+        },
+        {
+          "id" : "seqs",
+          "node" : "refs",
+          "values" : ["$(RESOURCES)/tutorial/current/autosome_sex.txt"]
+        },
+        {
+          "id" : "r-script",
+          "node" : "plot",
+          "values" : ["$(TOOL_BIN)/R/plot-histogram.r"]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+      ]
+    }
+  ]
+}
