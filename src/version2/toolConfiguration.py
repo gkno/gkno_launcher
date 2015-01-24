@@ -29,6 +29,10 @@ class argumentAttributes:
     self.modifyArgument = None
     self.modifyValue    = None
 
+    # Some tools output files to stdout. If this is the case, record that fact so that
+    # the command line can be built accordingly.
+    self.isStdout = False
+
     # Define the extensions allowed for the argument.
     self.extensions = []
 
@@ -252,6 +256,7 @@ class toolConfiguration:
     allowedAttributes['long form argument']    = (str, True, True, 'longFormArgument')
     allowedAttributes['modify argument']       = (str, False, True, 'modifyArgument')
     allowedAttributes['modify value']          = (str, False, True, 'modifyValue')
+    allowedAttributes['output to stdout']      = (bool, False, True, 'isStdout')
     allowedAttributes['required']              = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']   = (str, False, True, 'shortFormArgument')
     allowedAttributes['stub extensions']       = (list, False, True, 'stubExtensions')

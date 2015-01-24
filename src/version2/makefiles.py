@@ -43,15 +43,17 @@ class commandLineInformation():
     self.delimiter = self.toolData.delimiter
 
     # Define and store the path to the executable.
-    self.toolID = str('$(' + self.tool.upper() + '-PATH)')
+    self.toolID = str(self.tool.upper() + '-PATH')
 
     # Store the command lines for this task.
     self.commands = []
 
-    # Store the dependencies, intermediate and output files for each command line.
+    # Store the dependencies, intermediates, output files and files for standard out to write to, for each
+    # command line.
     self.dependencies  = []
     self.intermediates = []
     self.outputs       = []
+    self.stdouts       = []
 
 # Define a class to build and manipulate makefiles.
 class makefiles:
@@ -94,7 +96,7 @@ class makefiles:
       # Since each command line starts with the same exeutable command, initialise the output list as
       # numberOfCommandLines individual lists, each of which is the executable command.
       command = str(data.precommand + ' ') if data.precommand else ''
-      command += str(data.toolID + '/' + data.executable)
+      command += str('$(' + data.toolID + ')/' + data.executable)
       if data.modifier: command += str(' ' + data.modifier)
       for i in range(0, data.noCommandLines): data.commands.append(['\t@' + command + ' \\'])
   
@@ -103,7 +105,8 @@ class makefiles:
         data.dependencies.append([])
         data.intermediates.append([])
         data.outputs.append([])
-  
+        data.stdouts.append(str('\t>> $(STDOUT) \\'))
+
       # Loop over all input files.
       for nodeID in graph.getInputFileNodes(task): self.processFiles(graph, task, data, nodeID, isInput = True)
   
@@ -115,8 +118,8 @@ class makefiles:
 
       # Finish the command lines with calls to write to stdout and stdin and indicating that the task is complete.
       for i in range(0, data.noCommandLines):
-        data.commands[i].append('\t>>$(STDOUT) \\')
-        data.commands[i].append('\t2>>$(STDERR)')
+        data.commands[i].append(data.stdouts[i])
+        data.commands[i].append('\t2>> $(STDERR)')
         data.commands[i].append('\t@echo -e "completed successfully')
         data.commands[i].append('')
   
@@ -135,6 +138,7 @@ class makefiles:
     if graph.getGraphNodeAttribute(nodeID, 'isDaughterNode'): pass
 
     # If this is a parent node, process the node and its daughters.
+    # FIXME HANDLE STDOUT FOR SUBPHASE FILES.
     elif isInput and nodeID == multinodeInput: self.addSubphaseFiles(graph, task, data, nodeID, isInput)
     elif not isInput and nodeID == multinodeOutput: self.addSubphaseFiles(graph, task, data, nodeID, isInput)
 
@@ -238,7 +242,7 @@ class makefiles:
 
     # TODO CHECK FOR INFORMATION ON MODIFYING THE ARGUMENT AND THE VALUE.
     # Get the argument and values for the file node.
-    argument = self.getToolArgument(graph, task, nodeID, isInput = True)
+    argument = self.getToolArgument(graph, task, nodeID, isInput)
     values = graph.getGraphNodeAttribute(nodeID, 'values')
 
     # Check if this task generates multiple nodes.
@@ -248,12 +252,18 @@ class makefiles:
     # Check if this node is associated with intermediate files.
     isIntermediate = graph.getGraphNodeAttribute(nodeID, 'isIntermediate')
 
+    # Determine if the task outputs to stdout.
+    isStdout = graph.getArgumentAttribute(task, nodeID, 'isStdout') if not isInput else False
+
     # If there is only a single file, attach to all of the command lines.
     if len(values) == 1:
       lineValue = self.getValue(graph, task, nodeID, values[0], isInput)
       line      = self.buildLine(argument, data.delimiter, lineValue)
       for i in range(0, data.noCommandLines):
-        if line: data.commands[i].append(line)
+
+        # If this task outputs to stdout, put the values into a structure to return.
+        if isStdout: data.stdouts[i] = str('\t>> ' + lineValue  + ' \\')
+        elif line: data.commands[i].append(line)
 
         # Add the files to the dependencies or outputs for the command line.
         if isInput: data.dependencies[i].append(str(values[0]))
@@ -304,7 +314,10 @@ class makefiles:
       for value in values:
         lineValue = self.getValue(graph, task, nodeID, value, isInput)
         line      = self.buildLine(argument, data.delimiter, lineValue)
-        if line: data.commands[i].append(line)
+
+        # If the task outputs to stdout, store the values to return.
+        if isStdout: data.stdouts[i] = str('\t>> ' + lineValue + ' \\')
+        elif line: data.commands[i].append(line)
 
         # Add the files to the dependencies or outputs for the command line.
         data.outputs[i].append(str(value))
@@ -320,7 +333,10 @@ class makefiles:
       for i, value in enumerate(values):
         lineValue = self.getValue(graph, task, nodeID, value, isInput)
         line      = self.buildLine(argument, data.delimiter, lineValue)
-        if line: data.commands[i].append(line)
+
+        # If the task outputs to stdout, store the values to return.
+        if isStdout: data.stdouts[i] = str('\t>> ' + lineValue + ' \\')
+        elif line: data.commands[i].append(line)
 
         # Add the files to the dependencies or outputs for the command line.
         if isInput: data.dependencies[i].append(str(value))
