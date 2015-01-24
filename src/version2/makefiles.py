@@ -112,7 +112,8 @@ class makefiles:
       # Since each command line starts with the same exeutable command, initialise the output list as
       # numberOfCommandLines individual lists, each of which is the executable command.
       command = str(data.precommand + ' ') if data.precommand else ''
-      command = command + str('$(' + data.toolID + ')/' + data.executable) if data.path != 'none' else command + str(data.executable)
+      if data.path == 'none': command += str(data.executable)
+      else: command += str('$(' + data.toolID + ')/' + data.executable)
       if data.modifier: command += str(' ' + data.modifier)
       for i in range(0, data.noCommandLines): data.commands.append(['\t@' + command + ' \\'])
   
@@ -570,7 +571,7 @@ class makefiles:
     print('### Executable paths.', file = filehandle)
     for task in struct.phaseInformation[phase].tasks:
       tool = graph.getGraphNodeAttribute(task, 'tool')
-      if tool in self.toolPaths: print(str(tool), file = filehandle)
+      if tool in self.toolPaths: print(str(self.toolPaths[tool]), file = filehandle)
     print(file = filehandle)
 
     # List phony arguments. This is used solely for the file created on successful execution of the pipeline.

@@ -3,7 +3,7 @@
   "description" : "Run an R script to plot.",
   "categories" : ["Visualisation"],
   "tools" : [],
-  "path" : "no path",
+  "path" : "none",
   "executable" : "Rscript",
   "arguments" : {
     "Inputs" : [
