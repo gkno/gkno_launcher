@@ -140,7 +140,7 @@ class makefiles:
         data.commands[i].append('\t2>> $(STDERR)')
         data.commands[i].append('\t@echo -e "completed successfully"')
         data.commands[i].append('')
-  
+
       # Store the command lines for the task.
       self.executionInfo[task] = data
 
@@ -686,8 +686,9 @@ class makefiles:
       for subphase in self.makefileNames[phase]:
         for division in self.makefileNames[phase][subphase]:
 
-          # Get the filehandle.
-          filehandle = self.makefilehandles[phase][subphase][division]
+          # Get the makefile name and filehandle.
+          makefileName = self.makefileNames[phase][subphase][division]
+          filehandle   = self.makefilehandles[phase][subphase][division]
 
           # Loop over the tasks for this makefile adding the command lines.
           for task in struct.phaseInformation[phase].tasks:
@@ -706,8 +707,34 @@ class makefiles:
             # Print the command line.
             for line in self.executionInfo[task].commands[i]: print(line, file = filehandle)
 
+            # Include an additional rule if the task created multiple output files.
+            if len(self.executionInfo[task].outputs[i]) > 1: self.multipleOutputFiles(self.executionInfo[task], i, makefileName, filehandle)
+
           # Increment the counter.
           i += 1
+
+  # Write an additional rule in the makefile to check for outputs from a task. Only a single
+  # output is included in the rule for the additional task.
+  def multipleOutputFiles(self, data, i, makefileName, filehandle):
+    print('### Rule for checking that all outputs of previous task exist.', file = filehandle)
+    for counter in range(1, len(data.outputs[i]) - 1): print(data.outputs[i][counter], end = ' ', file = filehandle)
+    print(data.outputs[i][-1], end = ': ', file = filehandle)
+    for dependency in data.dependencies[i]: print(dependency, end = ' ', file = filehandle)
+
+    # Add the primaryOutput to the list of dependencies. This is the file that is listed as the output for
+    # the rule. If running with multiple threads and none of the files exist, the original rule is executed
+    # since the output file does not exist. This rule for the additional outputs is the executed in parallel
+    # since none of these additional files exist either. By including the primaryOutput as a dependency, we
+    # ensure that the original rule gets to run first and this check isn't performed until it has been
+    # completed.
+    print(data.outputs[i][0], file = filehandle)
+    print('\t@if test -f $@ || test -d $@; then \\', file = filehandle)
+    print('\t  touch $@; \\', file = filehandle)
+    print('\telse \\', file = filehandle)
+    print('\t  rm -f ', data.outputs[i][0], "; \\", sep = '', file = filehandle)
+    print('\t  $(MAKE) --no-print-directory -f $(PWD)/', makefileName, ' ', data.outputs[i][0], '; \\', sep = '', file = filehandle)
+    print('\tfi', file = filehandle)
+    print(file = filehandle)
 
   #######################################################
   ### Static methods for getting makefile information ###
