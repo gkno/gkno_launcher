@@ -85,6 +85,21 @@ class makefiles:
     # Loop over all the tasks in the pipeline, generating the command lines for each task.
     for task in graph.workflow:
 
+      # Get the tool used to run the task and the data contained in the configuration file.
+      tool     = graph.getGraphNodeAttribute(task, 'tool')
+      toolData = superpipeline.toolConfigurationData[tool]
+
+      # Check if the tool arguments need to be included in a defined order.
+      argumentOrder = toolData.argumentOrder
+
+      # Loop over all of the nodes and get the arguments that are going to be used and the
+      # node IDs to which they connect. This will then be used to allow the arguments to 
+      # be parsed in the order specified.
+      nodeOrder = {}
+      for nodeID in graph.getInputFileNodes(task): nodeOrder[str(graph.getArgumentAttribute(nodeID, task, 'longFormArgument'))] = (nodeID, 'input')
+      for nodeID in graph.getOptionNodes(task): nodeOrder[str(graph.getArgumentAttribute(nodeID, task, 'longFormArgument'))] = (nodeID, 'option')
+      for nodeID in graph.getOutputFileNodes(task): nodeOrder[str(graph.getArgumentAttribute(task, nodeID, 'longFormArgument'))] = (nodeID, 'output')
+
       # Generate a data structure for building the command line.
       data = commandLineInformation(graph, superpipeline, struct, task)
   
@@ -107,14 +122,15 @@ class makefiles:
         data.outputs.append([])
         data.stdouts.append(str('\t>> $(STDOUT) \\'))
 
-      # Loop over all input files.
-      for nodeID in graph.getInputFileNodes(task): self.processFiles(graph, task, data, nodeID, isInput = True)
-  
-      # Loop over all the option nodes for this task and get the arguments and values.
-      for nodeID in graph.getOptionNodes(task): self.addOption(graph, task, data, nodeID)
-  
-      # Loop over all output files.
-      for nodeID in graph.getOutputFileNodes(task): self.processFiles(graph, task, data, nodeID, isInput = False)
+      # Loop over the argument order for the tool, getting information from the nodes in the correct
+      # order.
+      if argumentOrder:
+        for argument in argumentOrder:
+          if argument in nodeOrder: self.updateCommandLine(graph, task, data, nodeOrder[argument][0], nodeOrder[argument][1])
+
+      # If the order was not specified, loop over the arguments in any order.
+      else:
+        for argument in nodeOrder: self.updateCommandLine(graph, task, data, nodeOrder[argument][0], nodeOrder[argument][1])
 
       # Finish the command lines with calls to write to stdout and stdin and indicating that the task is complete.
       for i in range(0, data.noCommandLines):
@@ -125,6 +141,15 @@ class makefiles:
   
       # Store the command lines for the task.
       self.executionInfo[task] = data
+
+  # Update a command line with information for an argument.
+  def updateCommandLine(self, graph, task, data, nodeID, nodeType):
+
+    # Update the command line depending on whether the argument points to an input/output file
+    # or an option.
+    if nodeType == 'option': self.addOption(graph, task, data, nodeID)
+    elif nodeType == 'input': self.processFiles(graph, task, data, nodeID, isInput = True)
+    else: self.processFiles(graph, task, data, nodeID, isInput = False)
 
   # Process file inputt/outputs.
   def processFiles(self, graph, task, data, nodeID, isInput):
