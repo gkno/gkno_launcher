@@ -120,7 +120,7 @@ class makefiles:
       for i in range(0, data.noCommandLines):
         data.commands[i].append(data.stdouts[i])
         data.commands[i].append('\t2>> $(STDERR)')
-        data.commands[i].append('\t@echo -e "completed successfully')
+        data.commands[i].append('\t@echo -e "completed successfully"')
         data.commands[i].append('')
   
       # Store the command lines for the task.
