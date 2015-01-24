@@ -103,15 +103,16 @@ class makefiles:
       # Generate a data structure for building the command line.
       data = commandLineInformation(graph, superpipeline, struct, task)
   
-      # Store the tools path in the global makefiles dictionary toolPaths.
-      if data.tool not in self.toolPaths: self.toolPaths[data.tool] = str(data.toolID + '=$(TOOL_BIN)/' + data.path)
+      # Store the tools path in the global makefiles dictionary toolPaths. If the path is listed
+      # as 'none', do not include the path.
+      if data.tool not in self.toolPaths and data.path != 'none': self.toolPaths[data.tool] = str(data.toolID + '=$(TOOL_BIN)/' + data.path)
   
       # The output of the method is a list of command lines, one command line for each execution
       # of the task. Each command line is itself a list of the command line executable and arguments.
       # Since each command line starts with the same exeutable command, initialise the output list as
       # numberOfCommandLines individual lists, each of which is the executable command.
       command = str(data.precommand + ' ') if data.precommand else ''
-      command += str('$(' + data.toolID + ')/' + data.executable)
+      command = command + str('$(' + data.toolID + ')/' + data.executable) if data.path != 'none' else command + str(data.executable)
       if data.modifier: command += str(' ' + data.modifier)
       for i in range(0, data.noCommandLines): data.commands.append(['\t@' + command + ' \\'])
   
@@ -567,7 +568,9 @@ class makefiles:
     # Determine which tasks are used in the phase, find the corresponding tools and finally their paths.
     # Include these paths in the makefile.
     print('### Executable paths.', file = filehandle)
-    for task in struct.phaseInformation[phase].tasks: print(self.toolPaths[graph.getGraphNodeAttribute(task, 'tool')], file = filehandle)
+    for task in struct.phaseInformation[phase].tasks:
+      tool = graph.getGraphNodeAttribute(task, 'tool')
+      if tool in self.toolPaths: print(str(tool), file = filehandle)
     print(file = filehandle)
 
     # List phony arguments. This is used solely for the file created on successful execution of the pipeline.
