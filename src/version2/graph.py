@@ -99,8 +99,10 @@ class dataNodeAttributes:
     self.values = []
 
     # Store if the node is an intermediate node (e.g. all files associated with this node
-    # will be deleted.
-    self.isIntermediate = False
+    # will be deleted. In addition, store the task after which the files associated with
+    # the node should be deleted.
+    self.isIntermediate  = False
+    self.deleteAfterTask = None
 
     # Some input file nodes have their values generated from another node associated
     # with the task (e.g. index files). For these nodes, keep track of the node from
@@ -1283,6 +1285,39 @@ class pipelineGraph:
     # Return the values.
     return values
 
+  # Determine after which task intermediate files should be deleted.
+  def deleteFiles(self):
+
+    # Loop over all file nodes looking for those marked as intermediate.
+    for nodeID in self.getNodes('file'):
+      if self.getGraphNodeAttribute(nodeID, 'isIntermediate'):
+
+        # If this node is the daughter of another node (e.g. the task has been split into multiple tasks for
+        # each of a set of inputs), the task nodes associated with it will not be in the workflow. If this is
+        # the case, strip off the extension (-i) from the end of the nodeID and use the original value for the
+        # following method. After determining the task, append the original extension, checking that the
+        # resulting task exists. If the task consolidates outputs, the extension is not required.
+        if self.getGraphNodeAttribute(nodeID, 'isDaughterNode'):
+          splitNodeID = nodeID.rsplit('-', 1)
+          useNodeID   = splitNodeID[0]
+          extension   = str('-' + splitNodeID[1])
+        else: useNodeID = nodeID
+
+        # Get all the task nodes that use this node.
+        taskNodeIDs = self.graph.successors(useNodeID)
+
+        # Determine which of these tasks is the latest task in the pipeline.
+        index = 0
+        for taskNodeID in taskNodeIDs: index = max(index, self.workflow.index(taskNodeID))
+        task = self.workflow[index]
+
+        # Append the original extension and check if the task exists.
+        if self.getGraphNodeAttribute(nodeID, 'isDaughterNode'): task = str(task + extension) if str(task + extension) in self.graph else task
+
+        # Set the 'deleteAfterTask' value for the node to the task after whose execution the file should
+        # be deleted.
+        self.setGraphNodeAttribute(nodeID, 'deleteAfterTask', task)
+
   ########################################
   ##  Methods for modifying the graph.  ##
   ########################################
@@ -1374,7 +1409,7 @@ class pipelineGraph:
 
     # If the argument is an input file or an option, isPredecessor is set to true. In this case, loop over
     # all precessor nodes and check if any predecessor nodes connect to the task node with an edge with
-    # the defined argument. If this is an output file, isPredecessor is false and the successoe nodes should
+    # the defined argument. If this is an output file, isPredecessor is false and the successor nodes should
     # be looped over.
     if isPredecessor: nodeIDs = self.graph.predecessors(task)
     else: nodeIDs = self.graph.successors(task)

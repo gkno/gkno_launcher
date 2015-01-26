@@ -246,6 +246,10 @@ def main():
   plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
   if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
   if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
+
+  # For all files marked as intermediate, determine the latest task in the pipeline that uses them. Ensure that
+  # the data structures inside 'struct' only associate the files to delete with this latest task.
+  graph.deleteFiles()
   
   # Determine the execution structure of the pipeline.
   struct = es.executionStructure()

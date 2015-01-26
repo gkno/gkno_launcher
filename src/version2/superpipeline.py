@@ -238,7 +238,7 @@ class superpipelineClass:
 
         # Loop over all of the shared nodes.
         for nodeID in self.pipelineConfigurationData[pipeline].getSharedNodeIDs():
-          if self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeID, 'delete'):
+          if self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeID, 'isDelete'):
             address     = self.pipelineConfigurationData[pipeline].address
             nodeAddress = str(address + '.' + nodeID) if address else str(nodeID)
             for graphNodeID in graph.configurationFileToGraphNodeID[nodeAddress]: graph.setGraphNodeAttribute(graphNodeID, 'isIntermediate', True)

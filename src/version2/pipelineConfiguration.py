@@ -98,7 +98,7 @@ class sharedGraphNodes:
     self.nodes = {}
 
     # Store if the files associated with this node should be deleted.
-    self.delete = False
+    self.isDelete = False
 
     # Define a structure to hold information on all the tasks that the shared graph node points
     # to.
@@ -416,7 +416,7 @@ class pipelineConfiguration:
     # Defin the allowed nodes attributes.
     allowedAttributes                           = {}
     allowedAttributes['arguments sharing node'] = (list, True, True, 'nodes')
-    allowedAttributes['delete files']           = (bool, False, True, 'delete')
+    allowedAttributes['delete files']           = (bool, False, True, 'isDelete')
     allowedAttributes['id']                     = (str, True, True, 'id')
 
     # Loop over all of the defined nodes.

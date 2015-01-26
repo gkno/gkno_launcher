@@ -95,10 +95,27 @@ class makefiles:
       # Loop over all of the nodes and get the arguments that are going to be used and the
       # node IDs to which they connect. This will then be used to allow the arguments to 
       # be parsed in the order specified.
-      nodeOrder = {}
-      for nodeID in graph.getInputFileNodes(task): nodeOrder[str(graph.getArgumentAttribute(nodeID, task, 'longFormArgument'))] = (nodeID, 'input')
-      for nodeID in graph.getOptionNodes(task): nodeOrder[str(graph.getArgumentAttribute(nodeID, task, 'longFormArgument'))] = (nodeID, 'option')
-      for nodeID in graph.getOutputFileNodes(task): nodeOrder[str(graph.getArgumentAttribute(task, nodeID, 'longFormArgument'))] = (nodeID, 'output')
+      inputArguments  = {}
+      optionArguments = {}
+      outputArguments = {}
+
+      # Input file arguments.
+      for nodeID in graph.getInputFileNodes(task):
+        argument = graph.getArgumentAttribute(nodeID, task, 'longFormArgument')
+        if argument not in inputArguments: inputArguments[argument] = [nodeID]
+        else: inputArguments[argument].append(nodeID)
+
+      # Option arguments.
+      for nodeID in graph.getOptionNodes(task):
+        argument = graph.getArgumentAttribute(nodeID, task, 'longFormArgument')
+        if argument not in optionArguments: optionArguments[argument] = [nodeID]
+        else: optionArguments[argument].append(nodeID)
+
+      # Output file arguments.
+      for nodeID in graph.getOutputFileNodes(task):
+        argument = graph.getArgumentAttribute(task, nodeID, 'longFormArgument')
+        if argument not in outputArguments: outputArguments[argument] = [nodeID]
+        else: outputArguments[argument].append(nodeID)
 
       # Generate a data structure for building the command line.
       data = commandLineInformation(graph, superpipeline, struct, task)
@@ -128,11 +145,21 @@ class makefiles:
       # order.
       if argumentOrder:
         for argument in argumentOrder:
-          if argument in nodeOrder: self.updateCommandLine(graph, task, data, nodeOrder[argument][0], nodeOrder[argument][1])
+          if argument in inputArguments:
+            for nodeID in inputArguments[argument]: self.updateCommandLine(graph, task, data, nodeID, 'input')
+          if argument in optionArguments:
+            for nodeID in optionArguments[argument]: self.updateCommandLine(graph, task, data, nodeID, 'option')
+          if argument in outputArguments:
+            for nodeID in outputArguments[argument]: self.updateCommandLine(graph, task, data, nodeID, 'output')
 
       # If the order was not specified, loop over the arguments in any order.
       else:
-        for argument in nodeOrder: self.updateCommandLine(graph, task, data, nodeOrder[argument][0], nodeOrder[argument][1])
+        for argument in inputArguments:
+          for nodeID in inputArguments[argument]: self.updateCommandLine(graph, task, data, nodeID, 'input')
+        for argument in optionArguments:
+          for nodeID in optionArguments[argument]: self.updateCommandLine(graph, task, data, nodeID, 'option')
+        for argument in outputArguments:
+          for nodeID in outputArguments[argument]: self.updateCommandLine(graph, task, data, nodeID, 'output')
 
       # Finish the command lines with calls to write to stdout and stdin and indicating that the task is complete.
       for i in range(0, data.noCommandLines):
@@ -277,7 +304,8 @@ class makefiles:
     isConsolidate           = graph.getGraphNodeAttribute(task, 'consolidate')
 
     # Check if this node is associated with intermediate files.
-    isIntermediate = graph.getGraphNodeAttribute(nodeID, 'isIntermediate')
+    #isIntermediate = graph.getGraphNodeAttribute(nodeID, 'isIntermediate')
+    isIntermediate = True if graph.getGraphNodeAttribute(nodeID, 'deleteAfterTask') == task else False
 
     # Determine if the task outputs to stdout.
     isStdout = graph.getArgumentAttribute(task, nodeID, 'isStdout') if not isInput else False
@@ -406,6 +434,11 @@ class makefiles:
           if subphase not in self.makefileNames[phase]: self.makefileNames[phase][subphase] = {}
           if struct.phaseInformation[phase].subphases == 1: name = phaseName
           else: name = str(phaseName + '-subphase' + str(subphase))
+
+          # Add a set of random characters to the makefile name. After execution the makefile will be deleted, but
+          # by appending random characters, if gkno is run multiple times, any existing makefiles will not be
+          # overwritten.
+          name += str('-' + stringOps.getRandomString(8))
   
           # Add the makefile names.
           if struct.phaseInformation[phase].divisions == 1: self.makefileNames[phase][subphase][1] = str(name + '.make')
@@ -419,6 +452,9 @@ class makefiles:
         if phase not in self.makefileNames: self.makefileNames[phase] = {}
         for subphase in range(1, struct.phaseInformation[phase].subphases + 1):
           if subphase not in self.makefileNames[phase]: self.makefileNames[phase][subphase] = {}
+
+          # Add random characters to the makefile name (see above).
+          baseName += str('.' + stringOps.getRandomString(8))
           if struct.phaseInformation[phase].divisions == 1: self.makefileNames[phase][subphase][1] = str(baseName + '.make')
           else:
             for division in range(1, struct.phaseInformation[phase].divisions + 1):
@@ -624,7 +660,6 @@ class makefiles:
     print(file = filehandle)
     print(file = filehandle)
 
-
   # Add output files to the makefile.
   def addOutputFiles(self, outputs, filehandle):
 
@@ -645,46 +680,16 @@ class makefiles:
     print('\t@rm -f $(COMPLETE_OK)', file = filehandle)
     print(file = filehandle)
 
-  # Close all the open makefiles.
-  def closeFiles(self):
-
-    # If only a single makefile was created, only a single file needs to be closed.
-    if not self.isMultipleMakefiles: 
-      filehandle = self.makefilehandles[1][1][1]
-
-      # Prior to closing the file, include instructions for generating an 'ok' file indicating that the
-      # makefile was successfully executed.
-      print('### Generate a file indicating successful execution of makefile.', file = filehandle)
-      print('$(COMPLETE_OK):', file = filehandle)
-      print('\t@touch $(COMPLETE_OK)', file = filehandle)
-
-      # Close the file.
-      fh.fileHandling.closeFile(filehandle)
-
-    # If multiple files were opened, close them all.
-    else:
-      for phase in self.makefilehandles:
-        for subphase in self.makefilehandles[phase]:
-          for division in self.makefilehandles[phase][subphase]:
-            filehandle = self.makefilehandles[phase][subphase][division]
-
-            # Prior to closing the file, include instructions for generating an 'ok' file indicating that the
-            # makefile was successfully executed.
-            print('### Generate a file indicating successful execution of makefile.', file = filehandle)
-            print('$(COMPLETE_OK):', file = filehandle)
-            print('\t@touch $(COMPLETE_OK)', file = filehandle)
-
-            # Close the file.
-            fh.fileHandling.closeFile(filehandle)
-
   # Add the command lines to the makefiles.
   def addCommandLines(self, graph, struct):
 
-    # Loop over the phases, subphases and divisions.
-    for phase in self.makefileNames:
+    # Loop over the phases, subphases and divisions. By looping over the makefiles in reverse order, any files
+    # marked as intermediate can be deleted as soon as they are seen, as this will be the last task in the
+    # pipeline in which they are used.
+    for phase in self.makefileNames.keys():
       i = 0
-      for subphase in self.makefileNames[phase]:
-        for division in self.makefileNames[phase][subphase]:
+      for subphase in self.makefileNames[phase].keys():
+        for division in self.makefileNames[phase][subphase].keys():
 
           # Get the makefile name and filehandle.
           makefileName = self.makefileNames[phase][subphase][division]
@@ -706,6 +711,12 @@ class makefiles:
 
             # Print the command line.
             for line in self.executionInfo[task].commands[i]: print(line, file = filehandle)
+
+            # If any files are to be deleted after this task, delete them.
+            if self.executionInfo[task].intermediates[i]:
+              print('\t### Delete intermediate files that are no longer required.', file = filehandle)
+              for intermediate in self.executionInfo[task].intermediates[i]: print('\t@rm -f ', intermediate, sep = '', file = filehandle)
+              print(file = filehandle)
 
             # Include an additional rule if the task created multiple output files.
             if len(self.executionInfo[task].outputs[i]) > 1: self.multipleOutputFiles(self.executionInfo[task], i, makefileName, filehandle)
@@ -735,6 +746,41 @@ class makefiles:
     print('\t  $(MAKE) --no-print-directory -f $(PWD)/', makefileName, ' ', data.outputs[i][0], '; \\', sep = '', file = filehandle)
     print('\tfi', file = filehandle)
     print(file = filehandle)
+
+  # Close all the open makefiles.
+  def closeFiles(self):
+
+    # If only a single makefile was created, only a single file needs to be closed.
+    if not self.isMultipleMakefiles:
+      filehandle = self.makefilehandles[1][1][1]
+      filename   = self.makefileNames[1][1][1]
+      self.completeFile(filename, filehandle)
+
+      # Close the file.
+      fh.fileHandling.closeFile(filehandle)
+
+    # If multiple files were opened, close them all.
+    else:
+      for phase in self.makefilehandles:
+        for subphase in self.makefilehandles[phase]:
+          for division in self.makefilehandles[phase][subphase]:
+            filehandle = self.makefilehandles[phase][subphase][division]
+            filename   = self.makefileNames[1][1][1]
+            self.completeFile(filename, filehandle)
+
+            # Close the file.
+            fh.fileHandling.closeFile(filehandle)
+
+  # Write the final instructions to the makefile.
+  def completeFile(self, name, filehandle):
+
+    # Prior to closing the file, include instructions for generating an 'ok' file indicating that the
+    # makefile was successfully executed and delete the makefile.
+    print('### Generate a file indicating successful execution of makefile', file = filehandle)
+    print('$(COMPLETE_OK):', file = filehandle)
+    print('### Delete the makefile after execution', file = filehandle)
+    print('\t@touch $(COMPLETE_OK)', file = filehandle)
+    print('\t@rm -f', name, file = filehandle)
 
   #######################################################
   ### Static methods for getting makefile information ###
