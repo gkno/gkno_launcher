@@ -300,3 +300,43 @@ def purgeEmptyNodes(graph):
   # Then loop over all file nodes, removing valueless nodes.
   for nodeID in graph.getNodes('file'):
     if not graph.getGraphNodeAttribute(nodeID, 'values'): graph.graph.remove_node(nodeID)
+
+# Set the aboslute paths of all the files used in the pipeline.
+def setFilePaths(graph, gknoArguments, gknoOptions):
+  inputFiles    = []
+
+  # Get the path of the input and the output directories.
+  inputPath  = gknoArguments[gknoOptions['GKNO-INPUT-PATH'].longFormArgument][0] if gknoOptions['GKNO-INPUT-PATH'].longFormArgument in gknoArguments else '$(PWD)'
+  outputPath = gknoArguments[gknoOptions['GKNO-OUTPUT-PATH'].longFormArgument][0] if gknoOptions['GKNO-OUTPUT-PATH'].longFormArgument in gknoArguments else '$(PWD)'
+
+  # Ensure that the input and output paths end with /.
+  if not inputPath.endswith('/'): inputPath += '/'
+  if not outputPath.endswith('/'): outputPath += '/'
+
+  # Parse all of the file nodes.
+  for nodeID in graph.getNodes('file'):
+
+    # Determine if the file is an input or output file. Since the node could be feeding
+    # into or from multiple tasks, a file is an input, if and only if, the file nodes
+    # associated with the option node have no predecessors.
+    isInput = False if graph.graph.predecessors(nodeID) else True
+
+    # Get the values associated with the node.
+    updatedValues = []
+    for value in graph.getGraphNodeAttribute(nodeID, 'values'):
+
+      # Check if the value already has a path. If not, add the input or output path. In addition
+      # store all of the input files. Since these are specifically defined as files that are not
+      # created by any task in the pipeline, these files need to exist in order for the pipeline
+      # to run.
+      if isInput:
+        updatedValue = str(value) if '/' in value else str(inputPath + value)
+        updatedValues.append(updatedValue)
+        inputFiles.append(updatedValue)
+      else: updatedValues.append(str(value) if '/' in value else str(outputPath + value))
+
+    # Replace the values stored in the node with the values including the absolute path.
+    graph.setGraphNodeAttribute(nodeID, 'values', updatedValues)
+
+  # Return the list of all required input files.
+  return inputFiles

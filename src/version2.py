@@ -251,6 +251,9 @@ def main():
   # the data structures inside 'struct' only associate the files to delete with this latest task.
   graph.deleteFiles()
   
+  # Set the absolute paths of all the files used in the pipeline.
+  requiredInputFiles = dc.setFilePaths(graph, command.gknoArguments, gknoConfiguration.options)
+
   # Determine the execution structure of the pipeline.
   struct = es.executionStructure()
   struct.determineExecutionStructure(graph)
@@ -273,7 +276,7 @@ def main():
   make.closeFiles()
 
   # Check that all of the dependent files exist (excluding dependencies that are created by tasks in the pipeline).
-  #fh.checkFileExistence()
+  files.checkFileExistence(requiredInputFiles, resourcesPath, toolsPath)
 
   # Execute the generated script unless the user has explicitly asked for it not to be run, or if multiple makefiles
   # have been generated.

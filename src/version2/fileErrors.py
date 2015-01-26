@@ -37,3 +37,13 @@ class fileErrors:
       for task in pipelines[:5]: self.text.append('\t' + task)
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  # If files required for the pipeline to run are missing, write a warning.
+  def missingFiles(self, fileList):
+    self.text.append('Missing input files.')
+    self.text.append('In order to execute, there are a number of input files that are required. The following list indicates all required files that ' + \
+    'are missing. Since files are missing, the generated makefile will not be automatically executed, but will need to be executed manually (make -f' + \
+    ' <makefile name>), or gkno can be reexecuted when the required files are present.')
+    self.text.append('\t')
+    for filename in fileList: self.text.append('\t' + filename)
+    self.errors.writeFormattedText(self.text, errorType = 'warning')

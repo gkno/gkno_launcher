@@ -34,6 +34,29 @@ class fileHandling:
       rankedPipelines = stringOperations.rankListByString(self.pipelines, pipeline)
       self.errors.invalidPipelineName(rankedPipelines, pipeline)
 
+  # Check that all the files in the provided list exist.
+  def checkFileExistence(self, fileList, resourcesPath, toolsPath):
+    missingFiles = []
+    for filename in fileList:
+
+      # If the filename starts with a link to a directory, replace it with the absolute path of
+      # the directory for this test.
+      if filename.startswith('$(PWD)'): updatedFilename = filename.replace('$(PWD)', '.')
+      elif filename.startswith('$(RESOURCES)'): updatedFilename = filename.replace('$(RESOURCES)', resourcesPath)
+      elif filename.startswith('$(TOOL_BIN)'): updatedFilename = filename.replace('$(TOOL_BIN)', toolsPath)
+      else: updatedFilename = filename
+
+      # If the file does not exist, add it to a list of missing files.
+      if not os.path.exists(updatedFilename): missingFiles.append(filename)
+
+    # If there are missing files, write out a warning and return False.
+    if missingFiles:
+      self.errors.missingFiles(missingFiles)
+      return False
+
+    # If all required files are present, return True.
+    else: return True
+
   ######################
   ### Static methods ###
   ######################
@@ -82,4 +105,3 @@ class fileHandling:
   @staticmethod
   def closeFile(filehandle):
     filehandle.close()
-
