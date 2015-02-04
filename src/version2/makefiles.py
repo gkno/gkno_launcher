@@ -55,6 +55,17 @@ class commandLineInformation():
     self.outputs       = []
     self.stdouts       = []
 
+# Define a class that is a data structure for holding information for tasks that are piped
+# together.
+class streamingInformation:
+  def __init__(self):
+    self.commands       = []
+    self.dependencies   = []
+    self.intermediates  = []
+    self.outputs        = []
+    self.streamedFiles  = []
+    self.tasks          = []
+
 # Define a class to build and manipulate makefiles.
 class makefiles:
   def __init__(self):
@@ -162,11 +173,17 @@ class makefiles:
           for nodeID in outputArguments[argument]: self.updateCommandLine(graph, task, data, nodeID, 'output')
 
       # Finish the command lines with calls to write to stdout and stdin and indicating that the task is complete.
+      # These values are modified based on whether the task is outputting to a stream or not.
       for i in range(0, data.noCommandLines):
-        data.commands[i].append(data.stdouts[i])
-        data.commands[i].append('\t2>> $(STDERR)')
-        data.commands[i].append('\t@echo -e "completed successfully"')
-        data.commands[i].append('')
+        if graph.getGraphNodeAttribute(task, 'isOutputStream'):
+          data.commands[i].append('\t2>> $(STDERR)')
+          data.commands[i].append('\t| \\')
+
+        else:
+          data.commands[i].append(data.stdouts[i])
+          data.commands[i].append('\t2>> $(STDERR)')
+          data.commands[i].append('\t@echo -e "completed successfully"')
+          data.commands[i].append('')
 
       # Store the command lines for the task.
       self.executionInfo[task] = data
@@ -212,11 +229,12 @@ class makefiles:
     #TODO ERROR
     if len(nodeIDs) != data.noSubphases: print('ERROR - makefiles.addSubphaseFiles - 1'); exit(1)
 
-    # Get the argument associated with the node.
-    argument = self.getToolArgument(graph, task, nodeIDs[0], isInput)
+    # Determine the argument to be used on the command line.
+    argument = self.getToolArgument(graph, task, nodeID, isInput)
 
-    # Check if this node consolidates the multinodes.
-    isConsolidate = True if graph.getGraphNodeAttribute(task, 'consolidate') else False
+    # Check if this task generates or consolidates the multinodes.
+    isConsolidate      = True if graph.getGraphNodeAttribute(task, 'consolidate') else False
+    isGenerateMultiple = True if graph.getGraphNodeAttribute(task, 'generateMultipleOutputNodes') else False
 
     # Loop over the input multinodes and add the values to the command line. The order is important here.
     # The values for the first multinode should be applied to all the divisions. If there are N subphases,
@@ -235,9 +253,39 @@ class makefiles:
       #TODO ERROR
       if len(values) != data.noDivisions and not isConsolidate: print('ERROR - makefiles.getSubphaseCommands - 1'); exit(1)
 
+      # For daughter nodes, the task needs to be updated in order to access edge information. There are three
+      # possible cases:
+      #   1) We are considering output nodes from a task generating multiple nodes. In this case, all the
+      # daughter nodes are attached to this original task, and no modification is required.
+      if not isInput and isGenerateMultiple: taskNode = task
+
+      #   2) We are considering input nodes to a task that consolidates the inputs. Again, all nodes feed into
+      # the same task and so no modification is required.
+      elif isInput and isConsolidate: taskNode = task
+
+      #   3) The input/output nodes come from individual tasks (e.g. neither of the above cases). Here the task
+      # to which the nodes are connected have been created to generated subphases and have modified names from
+      # the original task. In these cases, the task name needs to be the subtask, so that when interogating the
+      # graph edges, the correct source and target nodes are used.
+      else:
+
+        # Get the actual predecessor or successor task for inputs and outputs respectively. The graph.checkStreams
+        # method checked to ensure that streaming tasks are only fed to or emanate from a single task, so there
+        # can only be a single predecessor or successor task.
+        if isInput: taskNode = graph.graph.successors(nodeID)[0]
+        else: taskNode = graph.graph.predecessors(nodeID)[0]
+
       # Loop over the values and update the command lines for the task.
       for value in values:
-        lineValue = self.getValue(graph, task, nodeID, value, isInput)
+
+        # If this is a streaming input, get the value based on the instructions defined by the tool.
+        if isInput and graph.getArgumentAttribute(nodeID, taskNode, 'isStream'): lineValue = self.getInputStreamValue(graph, taskNode, nodeID, value)
+
+        # Similarly if this is an output stream.
+        elif not isInput and graph.getArgumentAttribute(taskNode, nodeID, 'isStream'): lineValue = self.getOutputStreamValue(graph, taskNode, nodeID, value)
+
+        # If this is not a stream, get the value using the remaining instructions.
+        else: lineValue = self.getValue(graph, taskNode, nodeID, value, isInput)
 
         #TODO ADD METHODS TO MODIFY VALUE. E,G, STREAMS
         line = self.buildLine(argument, data.delimiter, lineValue)
@@ -294,17 +342,15 @@ class makefiles:
   # Add input or output files to the command line (this method is only called for nodes that are not multinodes).
   def addFiles(self, graph, task, data, nodeID, isInput):
 
-    # TODO CHECK FOR INFORMATION ON MODIFYING THE ARGUMENT AND THE VALUE.
     # Get the argument and values for the file node.
     argument = self.getToolArgument(graph, task, nodeID, isInput)
-    values = graph.getGraphNodeAttribute(nodeID, 'values')
+    values   = graph.getGraphNodeAttribute(nodeID, 'values')
 
     # Check if this task generates multiple nodes.
     isGeneratesMultipleNode = graph.getGraphNodeAttribute(task, 'generateMultipleOutputNodes')
     isConsolidate           = graph.getGraphNodeAttribute(task, 'consolidate')
 
     # Check if this node is associated with intermediate files.
-    #isIntermediate = graph.getGraphNodeAttribute(nodeID, 'isIntermediate')
     isIntermediate = True if graph.getGraphNodeAttribute(nodeID, 'deleteAfterTask') == task else False
 
     # Determine if the task outputs to stdout.
@@ -312,8 +358,14 @@ class makefiles:
 
     # If there is only a single file, attach to all of the command lines.
     if len(values) == 1:
-      lineValue = self.getValue(graph, task, nodeID, values[0], isInput)
-      line      = self.buildLine(argument, data.delimiter, lineValue)
+
+      # Get the value to be used on the command line. This depends on whether the file is streamed or not.
+      if isInput and graph.getArgumentAttribute(nodeID, task, 'isStream'): lineValue = self.getInputStreamValue(graph, task, nodeID, values[0])
+      elif not isInput and graph.getArgumentAttribute(task, nodeID, 'isStream'): lineValue = self.getOutputStreamValue(graph, task, nodeID, values[0])
+      else: lineValue = self.getValue(graph, task, nodeID, values[0], isInput)
+
+      # Build the tool specific command line.
+      line = self.buildLine(argument, data.delimiter, lineValue)
       for i in range(0, data.noCommandLines):
 
         # If this task outputs to stdout, put the values into a structure to return.
@@ -331,8 +383,13 @@ class makefiles:
     elif isInput and data.isGreedy:
       for i in range(0, data.noCommandLines):
         for value in values:
+
+          # Get the value to use on the command line (multiple inputs to a greedy node cannot be streamed, so no
+          # check is provided for this.
           lineValue = self.getValue(graph, task, nodeID, value, isInput)
-          line      = self.buildLine(argument, data.delimiter, lineValue)
+
+          # Build the tool specific command line.
+          line = self.buildLine(argument, data.delimiter, lineValue)
           if line: data.commands[i].append(line)
 
           # Add the files to the dependencies or outputs for the command line.
@@ -347,8 +404,15 @@ class makefiles:
     elif isInput and isGeneratesMultipleNode:
       i = 0
       for value in values:
-        lineValue = self.getValue(graph, task, nodeID, value, isInput)
-        line      = self.buildLine(argument, data.delimiter, lineValue)
+
+        # Generate the correct value to use on the command line. Since this task generates multiple output nodes, it
+        # is executed once per input, so the inputs can be streamed in and out of this task. The input value can
+        # therefore, be influenced by streaming instructions.
+        if graph.getArgumentAttribute(nodeID, task, 'isStream'): lineValue = self.getInputStreamValue(graph, task, nodeID, value)
+        else: lineValue = self.getValue(graph, task, nodeID, value, isInput)
+
+        # Construct the tool specific command line.
+        line = self.buildLine(argument, data.delimiter, lineValue)
         for j in range(0, data.noDivisions):
           if line: data.commands[i].append(line)
 
@@ -367,6 +431,9 @@ class makefiles:
     elif not isInput and isConsolidate:
       i = 0
       for value in values:
+
+        # If there are multiple tasks feeding into a single task to be consolidated, the outputs for this task
+        # cannot be streamed.
         lineValue = self.getValue(graph, task, nodeID, value, isInput)
         line      = self.buildLine(argument, data.delimiter, lineValue)
 
@@ -386,8 +453,14 @@ class makefiles:
     # If there are as many files as there are divisions, add the files in the correct order.
     elif not isGeneratesMultipleNode and len(values) == data.noDivisions:
       for i, value in enumerate(values):
-        lineValue = self.getValue(graph, task, nodeID, value, isInput)
-        line      = self.buildLine(argument, data.delimiter, lineValue)
+
+        # Get the value depending on whether the files are streamed or not.
+        if isInput and graph.getArgumentAttribute(nodeID, task, 'isStream'): lineValue = self.getInputStreamValue(graph, task, nodeID, value)
+        elif not isInput and graph.getArgumentAttribute(task, nodeID, 'isStream'): lineValue = self.getOutputStreamValue(graph, task, nodeID, value)
+        else: lineValue = self.getValue(graph, task, nodeID, value, isInput)
+
+        # Build the tool specific command line.
+        line = self.buildLine(argument, data.delimiter, lineValue)
 
         # If the task outputs to stdout, store the values to return.
         if isStdout: data.stdouts[i] = str('\t>> ' + lineValue + ' \\')
@@ -477,7 +550,8 @@ class makefiles:
   def singleFileHeader(self, graph ,struct, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath):
 
     # Define the filehandle.
-    filehandle = fh.fileHandling.openFileForWriting(self.makefileNames[1][1][1])
+    filename   = self.makefileNames[1][1][1]
+    filehandle = fh.fileHandling.openFileForWriting(filename)
 
     # Add header text to the file.
     self.addHeader(graph, struct, filehandle, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath, self.makefileNames[1][1][1], 1)
@@ -514,7 +588,7 @@ class makefiles:
       if output not in allIntermediates: allOutputs.append(output)
 
     # Add the intermediate and output files.
-    self.addIntermediateFiles(allIntermediates, filehandle)
+    self.addIntermediateFiles(allIntermediates, filename, filehandle)
     self.addOutputFiles(allOutputs, filehandle)
 
     # Remove the file created on successful execution of the makefile.
@@ -532,11 +606,11 @@ class makefiles:
         for division in self.makefileNames[phase][subphase]:
 
           # Create a new filehandle and add the header text.
-          name       = self.makefileNames[phase][subphase][division]
-          filehandle = fh.fileHandling.openFileForWriting(name)
+          filename   = self.makefileNames[phase][subphase][division]
+          filehandle = fh.fileHandling.openFileForWriting(filename)
 
           # Add the header, intermediate files and all output files for the phase.
-          self.addHeader(graph, struct, filehandle, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath, name, phase)
+          self.addHeader(graph, struct, filehandle, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath, filename, phase)
           tempIntermediates = self.getFiles(struct, phase, 'intermediates', i)
           tempOutputs       = self.getFiles(struct, phase, 'outputs', i)
 
@@ -556,7 +630,7 @@ class makefiles:
             if output not in intermediates: outputs.append(output)
 
           # Add the intermediate and output files.
-          self.addIntermediateFiles(intermediates, filehandle)
+          self.addIntermediateFiles(intermediates, filename, filehandle)
           self.addOutputFiles(outputs, filehandle)
 
           # Remove the file created on successful execution of the makefile.
@@ -612,7 +686,7 @@ class makefiles:
 
     # List phony arguments. This is used solely for the file created on successful execution of the pipeline.
     print('### List all PHONY targets. These are targets that are not actual files.', file = filehandle)
-    print('.PHONY: DELETE_COMPLETE_OK', file = filehandle)
+    print('.PHONY: DELETE_COMPLETE_OK', name, file = filehandle)
     print(file = filehandle)
 
   # Get files for the task and phase.
@@ -646,14 +720,14 @@ class makefiles:
     return files
 
   # Add intermediate files to the makefile.
-  def addIntermediateFiles(self, intermediates, filehandle):
+  def addIntermediateFiles(self, intermediates, filename, filehandle):
 
     # Write intermediate files to the makefile header. Files marked as intermediate are removed during
     # execution of the pipeline. By being marked as intermediate, reexecution of the pipeline will not
     # commence to regenerate the intermediate files.
     print('### The following files are intermediates. If the pipeline is rerun, rules for creating', file = filehandle)
     print('### will not be rerun unless files prior to these rules have been updated.', file = filehandle)
-    print('.INTERMEDIATE: ', end = '', file = filehandle)
+    print('.INTERMEDIATE: ', filename, end = ' ', file = filehandle)
 
     # Add all the intermediates to the makefile.
     for intermediate in intermediates: print(intermediate, end = ' ', file = filehandle)
@@ -697,32 +771,112 @@ class makefiles:
 
           # Loop over the tasks for this makefile adding the command lines.
           for task in struct.phaseInformation[phase].tasks:
-            print('### Command line information for the following task(s):', file = filehandle)
-            print('### ', task, ' (', graph.getGraphNodeAttribute(task, 'tool'), ')', sep = '', file = filehandle)
+            isInputStream  = graph.getGraphNodeAttribute(task, 'isInputStream')
+            isOutputStream = graph.getGraphNodeAttribute(task, 'isOutputStream')
 
-            # Only include the first output in the rule. If there are additional outputs, these are handled after
-            # the rule in the makefile.
-            print(self.executionInfo[task].outputs[i][0], ':', sep = '', end = ' ', file = filehandle)
-            for dependency in self.executionInfo[task].dependencies[i]: print(dependency, end = ' ', file = filehandle)
-            print(file = filehandle)
+            # If this task outputs to a stream, no information should be written to the makefiles at this point.
+            # All of the tasks that are part of the stream should be processed, so that the list of dependencies
+            # and outputs can be constructed properly. If the task does not accept an input stream, then this is
+            # the first task in the set of piped tools, so a data structure should be initialised.
+            if isOutputStream:
+              if not isInputStream: info = streamingInformation()
+              self.storeStreamingTaskInformation(info, task, i, isLast = False)
 
-            # Print to screen the task being executed.
-            print('\t@echo -e "Executing task(s): ', task, '...\c"', sep = '', file = filehandle)
+            # If this task accepts an input stream and isn't outputting to a stream, all of the stored information
+            # as well as the information for this task can be written to file.
+            elif isInputStream:
+              self.storeStreamingTaskInformation(info, task, i, isLast = True)
+              self.writeStreamingInformation(graph, info, i, filehandle)
 
-            # Print the command line.
-            for line in self.executionInfo[task].commands[i]: print(line, file = filehandle)
-
-            # If any files are to be deleted after this task, delete them.
-            if self.executionInfo[task].intermediates[i]:
-              print('\t### Delete intermediate files that are no longer required.', file = filehandle)
-              for intermediate in self.executionInfo[task].intermediates[i]: print('\t@rm -f ', intermediate, sep = '', file = filehandle)
-              print(file = filehandle)
-
-            # Include an additional rule if the task created multiple output files.
-            if len(self.executionInfo[task].outputs[i]) > 1: self.multipleOutputFiles(self.executionInfo[task], i, makefileName, filehandle)
+            # If this does not accept a stream or output to a stream, just write the information to the makefile.
+            else: self.writeStandardInformation(graph, task, i, filehandle)
 
           # Increment the counter.
           i += 1
+
+  # Update the stored information for tasks piped together.
+  def storeStreamingTaskInformation(self, info, task, i, isLast):
+
+    # Add this task to the list of tasks that are streamed together.
+    info.tasks.append(task)
+
+    # Update the list of task dependencies. This is all of the dependencies for the current
+    # task minus any files that are streamed.
+    for dependency in self.executionInfo[task].dependencies[i]:
+      if dependency not in info.streamedFiles and dependency not in info.dependencies: info.dependencies.append(dependency)
+
+    # Now loop over all of the outputs for the task. If the output file is being piped, this
+    # should not be included in the list of outputs.
+    # FIXME FOR NOW ASSUMING THAT ALL OUTPUTS ARE STREAMED.
+    if isLast:
+      for output in self.executionInfo[task].outputs[i]: info.outputs.append(output)
+    else:
+      for output in self.executionInfo[task].outputs[i]: info.streamedFiles.append(output)
+
+    # Loop over all of the intermediate files (e.g. the files that can be deleted after this task is
+    # complete) and store these files. These will be deleted at the end of the piped tasks.
+    for intermediate in self.executionInfo[task].intermediates[i]:
+      if intermediate not in info.streamedFiles and intermediate not in info.intermediates: info.intermediates.append(intermediate)
+
+    # Finally, store the command line for the task.
+    for line in self.executionInfo[task].commands[i]: info.commands.append(line)
+
+  # Write information to the makefile for a set of piped tasks.
+  def writeStreamingInformation(self, graph, info, i, filehandle):
+    print('### Command line information for the following piped tasks:', file = filehandle)
+    print('### ', end = '', file = filehandle)
+    for j in range(0, len(info.tasks) - 1): print(info.tasks[j], end = ', ', file = filehandle)
+    print(info.tasks[-1], '...', sep = '', file = filehandle)
+
+    # Only include the first output in the rule. If there are additional outputs, these are handled after
+    # the rule in the makefile.
+    print(info.outputs[0], ':', sep = '', end = ' ', file = filehandle)
+    for dependency in info.dependencies: print(dependency, end = ' ', file = filehandle)
+    print(file = filehandle)
+  
+    # Print to screen the tasks being executed.
+    print('\t@echo -e "Executing tasks: ', end = '', file = filehandle)
+    for j in range(0, len(info.tasks) - 1): print(info.tasks[j], end = ', ', file = filehandle)
+    print(info.tasks[-1], '...\c"', sep = '', file = filehandle)
+  
+    # Print the command line.
+    for line in info.commands: print(line, file = filehandle)
+  
+    # Include an additional rule if the task created multiple output files.
+    # FIXME
+    #if len(info.outputs) > 1: self.multipleOutputFiles(info, i, makefileName, filehandle)
+
+    # If any files are to be deleted after this task, delete them.
+    if info.intermediates:
+      print('\t### Delete intermediate files that are no longer required.', file = filehandle)
+      for intermediate in info.intermediates: print('\t@rm -f ', intermediate, sep = '', file = filehandle)
+      print(file = filehandle)
+
+  # Write information to the makefile for a task with no streaming.
+  def writeStandardInformation(self, graph, task, i, filehandle):
+    print('### Command line information for the following task:', file = filehandle)
+    print('### ', task, ' (', graph.getGraphNodeAttribute(task, 'tool'), ')', sep = '', file = filehandle)
+  
+    # Only include the first output in the rule. If there are additional outputs, these are handled after
+    # the rule in the makefile.
+    print(self.executionInfo[task].outputs[i][0], ':', sep = '', end = ' ', file = filehandle)
+    for dependency in self.executionInfo[task].dependencies[i]: print(dependency, end = ' ', file = filehandle)
+    print(file = filehandle)
+  
+    # Print to screen the task being executed.
+    print('\t@echo -e "Executing task: ', task, '...\c"', sep = '', file = filehandle)
+  
+    # Print the command line.
+    for line in self.executionInfo[task].commands[i]: print(line, file = filehandle)
+  
+    # Include an additional rule if the task created multiple output files.
+    if len(self.executionInfo[task].outputs[i]) > 1: self.multipleOutputFiles(self.executionInfo[task], i, makefileName, filehandle)
+
+    # If any files are to be deleted after this task, delete them.
+    if self.executionInfo[task].intermediates[i]:
+      print('\t### Delete intermediate files that are no longer required.', file = filehandle)
+      for intermediate in self.executionInfo[task].intermediates[i]: print('\t@rm -f ', intermediate, sep = '', file = filehandle)
+      print(file = filehandle)
 
   # Write an additional rule in the makefile to check for outputs from a task. Only a single
   # output is included in the rule for the additional task.
@@ -778,33 +932,80 @@ class makefiles:
     # makefile was successfully executed and delete the makefile.
     print('### Generate a file indicating successful execution of makefile', file = filehandle)
     print('$(COMPLETE_OK):', file = filehandle)
-    print('### Delete the makefile after execution', file = filehandle)
     print('\t@touch $(COMPLETE_OK)', file = filehandle)
-    print('\t@rm -f', name, file = filehandle)
+
+  # Return the argument to be written to the command line (and consequently, that stored in the commands
+  # data structure). It is usually the case that the gkno argument does not correspond to the tool
+  # argument.
+  def getToolArgument(self, graph, task, nodeID, isInput):
+    inputInstructions  = graph.getArgumentAttribute(nodeID, task, 'inputStreamInstructions')
+    outputInstructions = graph.getArgumentAttribute(task, nodeID, 'outputStreamInstructions')
+
+    # Determine streaming instructions, beginning with if this is an input accepting a stream.
+    if graph.getGraphNodeAttribute(task, 'isInputStream') and inputInstructions:
+
+      # If the argument should be omitted.
+      if inputInstructions['argument'] == 'omit': return None
+ 
+      # Return the supplied value to use as the argument.
+      else: return str(inputInstructions['argument'])
+
+    # Now handle outputting to a stream.
+    elif graph.getGraphNodeAttribute(task, 'isOutputStream') and outputInstructions:
+  
+      # Check for the different allowed modifications to the argument. If the argument is listed as omit,
+      # the argument should be omitted from the command line (not replaced with another value). In this
+      # case, return None.
+      if outputInstructions['argument'] == 'omit': return None
+  
+      # If the instructions are none of the above, the argument should be replaced with the supplied value.
+      # In this case, return the value supplied.
+      else: return str(outputInstructions['argument'])
+
+    # Otherwise, use the other instructions.
+    else:
+  
+      # If the argument is for an input file.
+      if isInput:
+        commandLineArgument = graph.getArgumentAttribute(nodeID, task, 'commandLineArgument')
+        modifyArgument      = graph.getArgumentAttribute(nodeID, task, 'modifyArgument')
+  
+      # And if the argument is for an output file.
+      else: 
+        commandLineArgument = graph.getArgumentAttribute(task, nodeID, 'commandLineArgument')
+        modifyArgument      = graph.getArgumentAttribute(task, nodeID, 'modifyArgument')
+  
+      # Return the argument to be used on the command line.
+      if modifyArgument == 'omit': return None
+      else: return commandLineArgument
 
   #######################################################
   ### Static methods for getting makefile information ###
   #######################################################
 
-  # Return the argument to be written to the command line (and consequently, that stored in the commands
-  # data structure). It is usually the case that the gkno argument does not correspond to the tool
-  # argument.
+  # If the input is a stream, determine how the value should be written to the command line.
   @staticmethod
-  def getToolArgument(graph, task, nodeID, isInput):
+  def getInputStreamValue(graph, task, nodeID, value):
+    instructions = graph.getArgumentAttribute(nodeID, task, 'inputStreamInstructions')
 
-    # If the argument is for an input file.
-    if isInput:
-      commandLineArgument = graph.getArgumentAttribute(nodeID, task, 'commandLineArgument')
-      modifyArgument      = graph.getArgumentAttribute(nodeID, task, 'modifyArgument')
+    # Return the value based on the instructions.
+    if instructions['value'] == 'omit': return None
 
-    # And if the argument is for an output file.
-    else: 
-      commandLineArgument = graph.getArgumentAttribute(task, nodeID, 'commandLineArgument')
-      modifyArgument      = graph.getArgumentAttribute(task, nodeID, 'modifyArgument')
+    # If none of the above instructions are set, return the value supplied in the instructions. This is
+    # what will be used in place of the value.
+    else: return str(instructions['value'])
 
-    # Return the argument to be used on the command line.
-    if modifyArgument == 'omit': return None
-    else: return commandLineArgument
+  # If the output is a stream, determine how the value should be written to the command line.
+  @staticmethod
+  def getOutputStreamValue(graph, task, nodeID, value):
+    instructions = graph.getArgumentAttribute(task, nodeID, 'outputStreamInstructions')
+
+    # Return the value based on the instructions.
+    if instructions['value'] == 'omit': return None
+
+    # If none of the above instructions are set, return the value supplied in the instructions. This is
+    # what will be used in place of the value.
+    else: return str(instructions['value'])
 
   # Similar method to the getToolArgument except for the associated value.
   @staticmethod

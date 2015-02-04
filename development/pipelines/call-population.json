@@ -6,11 +6,13 @@
   "pipeline tasks" : [
     {
       "task" : "merge",
-      "tool" : "bamtools-merge"
+      "tool" : "bamtools-merge",
+      "output to stream" : true
     },
     {
       "task" : "call",
       "tool" : "freebayes",
+      "input is stream" : true,
       "include in reduced plot" : true
     },
     {

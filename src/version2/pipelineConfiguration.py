@@ -56,6 +56,10 @@ class taskAttributes:
     # Store the node IDs of options that have multiple values.
     self.multivalueOptions = []
 
+    # If the task outputs to a stream rather than a file, or the task accepts a stream.
+    self.isInputStream  = False
+    self.isOutputStream = False
+
     # Record if the task should be included in any plots.
     self.includeInReducedPlot = False
 
@@ -314,8 +318,10 @@ class pipelineConfiguration:
     allowedAttributes                                   = {}
     allowedAttributes['consolidate nodes']              = (str, False, True, 'consolidate')
     allowedAttributes['include in reduced plot']        = (bool, False, True, 'includeInReducedPlot')
+    allowedAttributes['input is stream']                = (bool, False, True, 'isInputStream')
     allowedAttributes['generate multiple output nodes'] = (str, False, True, 'generateMultipleOutputNodes')
     allowedAttributes['multiple task calls']            = (bool, False, True, 'multipleTaskCalls')
+    allowedAttributes['output to stream']               = (bool, False, True, 'isOutputStream')
     allowedAttributes['pipeline']                       = (str, False, True, 'pipeline')
     allowedAttributes['task']                           = (str, True, True, 'task')
     allowedAttributes['tool']                           = (str, False, True, 'tool')
@@ -334,8 +340,7 @@ class pipelineConfiguration:
 
       # Check that the task name is unique.
       if attributes.task in self.pipelineTasks:
-        #TODO ERROR
-        if self.allowTermination: print('pipeline.checkPipelineTasks - 4', attributes.task); exit(0)
+        if self.allowTermination: self.errors.repeatedTaskName(self.name, attributes.task)
         else:
           self.success = False
           return

@@ -149,7 +149,7 @@ class helpInformation:
     for filename in os.listdir(path):
       if filename.endswith(".json"):
         pipeline = pc.pipelineConfiguration()
-        pipeline.getConfigurationData(path + filename)
+        pipeline.getConfigurationData(path + '/' + filename)
 
         # Store the pipeline description.
         descriptions[pipeline.name] = pipeline.description
@@ -192,7 +192,7 @@ class helpInformation:
     for filename in os.listdir(path):
       if filename.endswith(".json"):
         pipeline = pc.pipelineConfiguration()
-        pipeline.getConfigurationData(path + filename)
+        pipeline.getConfigurationData(path + '/' + filename)
 
         # Get and store the description.
         descriptions[pipeline.name] = pipeline.description
@@ -237,7 +237,7 @@ class helpInformation:
     self.writeSimpleLine('gkno --categories (-cat) [category]', isIndent = False, noLeadingTabs = 4)
     print(file = sys.stdout)
     self.writeSimpleLine('To see a list of all available pipelines, type:', isIndent = False, noLeadingTabs = 2)
-    self.writeSimpleLine('gkno --all-pipelines (-ap)', isIndent = False, noLeadingTabs = 4)
+    self.writeSimpleLine('gkno --all-pipelines (-api)', isIndent = False, noLeadingTabs = 4)
     print(file = sys.stdout)
 
   # Print out help on gkno arguments.
@@ -320,15 +320,24 @@ class helpInformation:
       # Only process arguments for the top level pipeline (e.g. not for arguments that include
       # the address of the tool/pipeline that they point to.
       if '.' not in argument:
-        graphNodeID       = arguments[argument].graphNodeID
+        graphNodeIDs      = arguments[argument].graphNodeIDs
         category          = arguments[argument].category
         dataType          = arguments[argument].dataType
         description       = arguments[argument].description
-        isRequired        = graph.getGraphNodeAttribute(graphNodeID, 'isRequired')
         shortFormArgument = arguments[argument].shortFormArgument
 
+        # Determine if any of the nodes connected with this argument list the argument as required. If the node
+        # already has values, they are coming from a parameter set. If this is required, make it clear that it
+        # isn't necessary to define the value.
+        isRequired = False
+        for graphNodeID in graphNodeIDs:
+          isRequired = True if (graph.getGraphNodeAttribute(graphNodeID, 'isRequired') or isRequired) else False
+          hasValues  = True if graph.getGraphNodeAttribute(graphNodeID, 'values') else False
+
         # if the argument is required, add [REQUIRED] to the end of the description.
-        if isRequired: description = description + ' [REQUIRED]'
+        if isRequired:
+          if hasValues: description += ' [REQUIRED AND SET]'
+          else: description += ' [REQUIRED]'
 
         # Build the argument string to write to the screen.
         argumentString = str(argument + ' (' + shortFormArgument + '):')
@@ -365,11 +374,16 @@ class helpInformation:
           self.writeComplexLine(argumentInformation, argumentLengths[category], noLeadingTabs = 1)
         print(file = sys.stdout)
 
-#    # Write out all of the values included in the selected parameter set, if there are any.
-#    if config.parameterSets.getArguments(name, parameterSetName, isPipeline = True): self.writeParameterSets(config, name, parameterSetName)
+    # Write out all of the values included in the selected parameter set, if there are any.
+    self.parameterSets(graph, superpipeline)
 
     # Terminate.
     exit(0)
+
+  #TODO DEAL WITH PARAMETER SETS.
+  # Write out all arguments defined in the default parameter set as well values from a defined parameter set.
+  def parameterSets(self, graph, superpipeline):
+    pass
 
   ###############################################
   ##  Routines to write information to screen  ##

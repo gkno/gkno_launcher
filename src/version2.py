@@ -19,9 +19,10 @@ import version2.graph as gr
 import version2.helpInformation as hp
 import version2.makefiles as mk
 import version2.plotGraph as pg
-import version2.toolConfiguration as tc
+import version2.parameterSets as ps
 import version2.pipelineConfiguration as pc
 import version2.superpipeline as sp
+import version2.toolConfiguration as tc
 import version2.web as w
 import version2.writeToScreen as write
 
@@ -76,7 +77,7 @@ def main():
   write.printHeader(__version__, __date__, os.getenv('GKNOCOMMITID'))
 
   # Check to see if the configuration files are to be found in a directory other than the default.
-  path                           = command.getConfigurationFilePath(gknoConfiguration.options)
+  path = command.getConfigurationFilePath(gknoConfiguration.options)
   if path:
     toolConfigurationFilesPath     = path
     pipelineConfigurationFilesPath = path
@@ -151,6 +152,11 @@ def main():
       for pipelineName in superpipeline.pipelinesByTier[tier]:
         graph.buildPipelineTasks(superpipeline.pipelineConfigurationData[pipelineName], superpipeline)
 
+    # Determine which graph nodes are required. A node may be used by multiple tasks and may be optional
+    # for some and required by others. For each node, loop over all edges and check if any of the edges
+    # are listed as required. If so, the node is required and should be marked as such.
+    graph.markRequiredNodes(superpipeline)
+
     # Now that the graph is built, parse all of the arguments in the pipelines and associate them with the
     # graph nodes and vice versa.
     args.assignNodesToArguments(graph, superpipeline)
@@ -171,16 +177,6 @@ def main():
   # Generate the workflow.
   workflow = graph.generateWorkflow()
 
-  # If help was requested, print out the relevent help information.
-  # TODO ADMIN HELP
-  if mode == 'help' or mode == 'gkno help':
-
-    # Write out help on gkno specific (e.g. not associated with a specific pipeline) arguments.
-    if mode == 'gkno help': gknoHelp.gknoArgumentHelp(gknoConfiguration.arguments)
-
-    # Otherwise, write out help for the pipeline being run.
-    else: gknoHelp.pipelineHelp(superpipeline, graph, args.arguments)
-  
   # Process the command line arguments.
   command.processArguments(superpipeline, gknoConfiguration.arguments, gknoConfiguration.shortForms)
 
@@ -192,8 +188,19 @@ def main():
   graph.addPipelineParameterSets(superpipeline, 'default')
 
   # Determine the requested parameter set and add the parameters to the graph.
-  parameterSet = command.getParameterSetName(command.gknoArguments, gknoConfiguration)
-  if parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, parameterSet)
+  parSet       = ps.parameterSets()
+  graph.parameterSet = command.getParameterSetName(command.gknoArguments, gknoConfiguration)
+  if graph.parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, graph.parameterSet)
+
+  # If help was requested, print out the relevent help information.
+  # TODO ADMIN HELP
+  if mode == 'help' or mode == 'gkno help':
+
+    # Write out help on gkno specific (e.g. not associated with a specific pipeline) arguments.
+    if mode == 'gkno help': gknoHelp.gknoArgumentHelp(gknoConfiguration.arguments)
+
+    # Otherwise, write out help for the pipeline being run.
+    else: gknoHelp.pipelineHelp(superpipeline, graph, args.arguments)  
 
   # Parse the command line arguments and associate the supplied command line argument values with the graph node.
   command.parseTasksAsArguments(superpipeline)
@@ -223,6 +230,13 @@ def main():
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
   # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc.
   graph.determineNumberOfTaskExecutions(superpipeline)
+  #for task in graph.workflow:
+  #  print(task)
+  #  print('\tINPUTS')
+  #  for nodeID in graph.graph.predecessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+  #  print('\tOUTPUTS')
+  #  for nodeID in graph.graph.successors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+  #exit(0)
 
   # Print the workflow to screen.
   write.workflow(superpipeline, workflow)
@@ -235,6 +249,14 @@ def main():
   # extension 'ext2', the pipeline is invalid. The output filename has been constructed as file.ext1 and so the following
   # routine will flag the file as invalid as input to the next task.
   dc.checkValues(graph, superpipeline, args)
+
+  # If the user has requested that a parameter set is to be exported, export the parameter set and terminate.
+  exportSet = gknoConfiguration.getGknoArgument('GKNO-EXPORT-PARAMETER-SET', command.gknoArguments)
+  if exportSet: parSet.export(superpipeline.pipeline, exportSet[0], command.pipelineArguments)
+
+  # Check that all files exist. At this point, all filenames have been constructed, so anything that is required, but
+  # is not set will have no opportunity to be set, so gkno should terminate.
+  #FIXME ENSURE THAT AL FILES ARE CHECKED - THE CAN BE CONSTRUCTED CHECK SHOULD BE REMOVED.
   dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = True)
 
   # Having reached this point, all of the required values have been checked, are present and have the correct data
@@ -242,6 +264,12 @@ def main():
   # are not required, they could be unpopoulated. March through the graph and purge any nodes that have no values.
   dc.purgeEmptyNodes(graph)
 
+  # Check if any tasks have been listed as outputting to a stream. If so, check that the task can output to a
+  # stream and the task it feeds into can accept a stream. If everything is ok, update the graph to reflect
+  # the streaming nodes.
+  graph.checkStreams(superpipeline)
+
+  # TODO SHOULD THIS APPEAR EARLIER?
   # Determine whether or not to output a visual representation of the pipeline graph.
   plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
   if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
@@ -292,16 +320,6 @@ def main():
     # Generate the execution command.
     execute = 'make -j ' + str(numberJobs) + ' --file ' + makefileName
     success = subprocess.call(execute.split())
-
-#  for task in graph.workflow:
-#    print(task, make.executionInfo[task].phase)
-#    print('commands')
-#    for command in make.executionInfo[task].commands: print(command)
-#    print('dependencies')
-#    for command in make.executionInfo[task].dependencies: print(command)
-#    print('outputs')
-#    for command in make.executionInfo[task].outputs: print(command)
-#    print()
 
 if __name__ == "__main__":
   main()

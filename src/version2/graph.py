@@ -73,6 +73,10 @@ class taskNodeAttributes:
     # Record if this node should be included in any graphical output.
     self.includeInReducedPlot = False
 
+    # If this task is marked as accepting a stream as input or output.
+    self.isInputStream  = False
+    self.isOutputStream = False
+
 # Define a data structure for file/option nodes.
 class dataNodeAttributes:
   def __init__(self, nodeType):
@@ -130,7 +134,8 @@ class pipelineGraph:
     self.workflow = []
 
     # Store parameter set information.
-    self.ps = ps.parameterSets()
+    self.parameterSet = None
+    self.ps           = ps.parameterSets()
 
     # When configuration file nodes (unique and shared nodes) are added to the graph, keep
     # track of the node ID in the graph that the configuration file node is attached to.
@@ -656,13 +661,10 @@ class pipelineGraph:
         task = self.workflow[counter]
         if counter == len(self.workflow) - 1: incomplete = False
         else:
-          nextTask         = self.workflow[counter + 1]
-          #FIXME
-          isOutputToStream = False
-          #isOutputToStream = self.nodeMethods.getGraphNodeAttribute(graph, task, 'outputStream')
+          nextTask = self.workflow[counter + 1]
 
           # If this task outputs to the stream, determine what the next task should be.
-          if isOutputToStream:
+          if self.getGraphNodeAttribute(task, 'isOutputStream'):
             for outputNodeID in self.graph.successors(task):
               successorTasks  = []
               for successorTask in self.graph.successors(outputNodeID): successorTasks.append(successorTask)
@@ -696,6 +698,39 @@ class pipelineGraph:
               break
 
     return self.workflow
+
+  # Determine which graph nodes are required. A node may be used by multiple tasks and may be optional
+  # for some and required by others. For each node, loop over all edges and check if any of the edges
+  # are listed as required. If so, the node is required and should be marked as such.
+  def markRequiredNodes(self, superpipeline):
+
+    # Loop over all option nodes.
+    for nodeID in self.getNodes('option'):
+
+      # Loop over all successor nodes (option nodes cannot have any predecessors) and check if any of
+      # the edges indicate that the node is required.
+      for successor in self.graph.successors(nodeID):
+        if self.getArgumentAttribute(nodeID, successor, 'isRequired'):
+          self.setGraphNodeAttribute(nodeID, 'isRequired', True)
+          break
+
+    # Now perform the same tasks for file nodes.
+    for nodeID in self.getNodes('file'):
+
+      # File nodes can also have predecessors.
+      isRequired = False
+      for predecessor in self.graph.predecessors(nodeID):
+        if self.getArgumentAttribute(predecessor, nodeID, 'isRequired'):
+          self.setGraphNodeAttribute(nodeID, 'isRequired', True)
+          isRequired = True
+          break
+
+      # If the node has already been listed as required, there is no need to check successors.
+      if not isRequired:
+        for successor in self.graph.successors(nodeID):
+          if self.getArgumentAttribute(nodeID, successor, 'isRequired'):
+            self.setGraphNodeAttribute(nodeID, 'isRequired', True)
+            break
 
   # Loop over the workflow adding parameter set data for all of the tasks.
   def addTaskParameterSets(self, superpipeline, setName):
@@ -878,25 +913,25 @@ class pipelineGraph:
   def determineNumberOfTaskExecutions(self, superpipeline):
 
     # Loop over all tasks in the pipeline.
-    for task in self.workflow:
+    for i, task in enumerate(self.workflow):
 
       # If this task needs to be called multiple times for multiple sets of input nodes, create the new task
       # nodes and connect them to the relevant input nodes.
       if self.getGraphNodeAttribute(task, 'multipleTaskCalls'): self.multipleTaskCalls(superpipeline, task)
-
-      # Check all of the options for the task.
-      self.checkTaskOptions(task)
 
       # Check the input files. The number of executions has been set by the number of values supplied to the
       # task options, unless this is still set to one. The task can be greedy with respect to input files, so
       # multiple input files can still equate to a single execution of the task; this is checked now.
       self.checkInputFiles(superpipeline, task)
 
+      # Check all of the options for the task.
+      self.checkTaskOptions(i, task)
+
       # Having determined the number of executions for this task, and constructed any necessary input files,
       # construct the output files. Also determine if the output files are to be deleted. If so, mark the node
       # as temporary and add a random string to the output filenames to ensure that there are not filename
       # conflicts.
-      self.checkOutputFiles(superpipeline, task)
+      self.checkOutputFiles(superpipeline, i, task)
 
   # If this task needs to be called multiple times for multiple sets of input nodes, create the new task
   # nodes and connect them to the relevant input file nodes. Note that this does not create the output
@@ -962,10 +997,14 @@ class pipelineGraph:
   # second execution A2 and B2. If option A was provided the values A1, A2 and A3 and option B only have B1 and B2,
   # it is unclear which combinations to provide. gkno does not attempt to execute all possible combinations of
   # supplied option values.
-  def checkTaskOptions(self, task):
+  def checkTaskOptions(self, i, task):
 
     # Keep track of the options with multiple values.
     multivalueOptions = []
+
+    # Determine the previous task.
+    previousTask          = self.workflow[i - 1] if i > 0 else None
+    previousTaskDivisions = self.getGraphNodeAttribute(previousTask, 'divisions') if previousTask else 1
 
     # Record how many times this task is to be executed, based on the supplied option values.
     divisions = 1
@@ -975,17 +1014,27 @@ class pipelineGraph:
       values = self.getGraphNodeAttribute(nodeID, 'values')
       if len(values) > 1:
 
-        # If the number of executions, is set at one, reset the number of executions to the number of
-        # values supplied to this option.
+        # If the number of divisions is set at one, reset it to the number of values supplied to this option.
         if divisions == 1: divisions = len(values)
 
-        # If the number of executions is already greater than one, the number of values for this option must
-        # equal the number of executions.
+        # If the number of divisions is already greater than one, the number of values for this option must
+        # equal the number of divisions.
         # TODO ERROR
         elif len(values) != divisions: print('ERROR - graph.checkTaskOptions - 1'); exit(0)
 
         # Store the node ID.
         multivalueOptions.append(nodeID)
+
+    # Determine if this task is greedy.
+    isGreedy = self.getGraphNodeAttribute(task, 'isGreedy')
+
+    # If the task is not greedy and the previous task had multiple divisions, this task must have the same number
+    # of divisions.
+    if previousTaskDivisions != divisions:
+      if divisions == 1 and not isGreedy: divisions = previousTaskDivisions
+      elif divisions == 1: pass
+      elif previousTaskDivisions == 1: pass
+      else: print('ERROR - CHECK DIVISIONS - graph.checkTaskOptions', task, isGreedy, divisions, previousTaskDivisions); exit(1)
 
     # The number of independent values given to any one option will dictate the number of divisions the makefile
     # should be broken into. This is independent of the number of files provided to the task. For example, if N
@@ -1032,15 +1081,22 @@ class pipelineGraph:
           self.setGraphNodeAttribute(fileNodeID, 'values', construct.constructInputNode(self.graph, superpipeline, task, argument, fileNodeID, baseValues))
 
   # Loop over all of the output files and construct those that are not present.
-  def checkOutputFiles(self, superpipeline, task):
+  def checkOutputFiles(self, superpipeline, i, task):
 
     # Get the number of divisions for this task. This is one unless an option for the task has
-    # been given multiple values.
+    # been given multiple values. In addition, get the number of divisions for the previous task.
     divisions = self.getGraphNodeAttribute(task, 'divisions')
+    if i > 0:
+      previousTask          = self.workflow[i - 1]
+      previousTaskDivisions = self.getGraphNodeAttribute(previousTask, 'divisions')
+    else:
+      previousTask          = None
+      previousTaskDivisions = 1
 
     # Determine task properties.
     isConsolidate       = self.getGraphNodeAttribute(task, 'consolidate')
     isGenerateMultiple  = self.getGraphNodeAttribute(task, 'generateMultipleOutputNodes')
+    isGreedy            = self.getGraphNodeAttribute(task, 'isGreedy')
     isMultipleTaskCalls = self.getGraphNodeAttribute(task, 'multipleTaskCalls')
 
     # Loop over all the output nodes.
@@ -1098,9 +1154,16 @@ class pipelineGraph:
             # executions.
             if divisions != 1:
   
-              # If there is only a single base value, but there are multiple divisions (e.g. an option has multiple
-              # values, ensure that the options with multiple values are included in the filenames being constructed.
-              if len(baseValues) == 1: print('graph.checkOutputFiles - Not handled multiple executions, single file'); exit(0)
+              # If the task is greedy, use the first value in the baseValues to generate the output file names.
+              # The baseValues list can be modified to include len(divisions) entries. This will be the first
+              # baseValue repeated with an extension added to represent the repeated option argument value.
+              if isGreedy:
+                baseValues = [baseValues[0]] * divisions
+                values = construct.constructDivisions(self.graph, superpipeline, instructions, task, nodeID, [baseValues[0]] * divisions)
+
+              # If the task is not greedy, each of the input values will be handled as a seperated execution, so there
+              # should be as many outputs as there are inputs.
+              else: values = construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeID, baseValues)
   
             # Now consider cases where there is only a single execution of the task.
             else:
@@ -1109,8 +1172,8 @@ class pipelineGraph:
               # be used to construct the single output file (since there is only a single execution.)
               if len(baseValues) > 1: baseValues = [baseValues[0]]
   
-            # Now that the values from which to construct the filenames are known, construct the filenames.
-            values = construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeID, baseValues)
+              # Now that the values from which to construct the filenames are known, construct the filenames.
+              values = construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeID, baseValues)
   
             # Having constructed the output filenames, add them to the node.
             self.setGraphNodeAttribute(nodeID, 'values', values)
@@ -1285,6 +1348,104 @@ class pipelineGraph:
     # Return the values.
     return values
 
+  # Check that tasks listed as streaming can be streamed in te pipeline.
+  def checkStreams(self, superpipeline):
+    for task in self.workflow:
+
+      # Determine if this task has multiple subphases. This means that it either generates multiple output nodes
+      # or it has multiple task calls.
+      isGeneratesMultipleNodes = self.getGraphNodeAttribute(task, 'generateMultipleOutputNodes')
+      isMultipleTaskCalls      = self.getGraphNodeAttribute(task, 'multipleTaskCalls')
+
+      # Check if the task outputs to a stream.
+      if self.getGraphNodeAttribute(task, 'isOutputStream'):
+
+        # Get the tool configuration data.
+        tool     = self.getGraphNodeAttribute(task, 'tool')
+        toolData = superpipeline.toolConfigurationData[tool]
+
+        # Loop over all of the output nodes for this task and determine the output that can be streamed.
+        # There can only be a single streaming output node.
+        outputStreamNodeIDs = {}
+        for nodeID in self.graph.successors(task):
+          streamInstructions = self.getArgumentAttribute(task, nodeID, 'outputStreamInstructions')
+          if streamInstructions:
+            if nodeID not in outputStreamNodeIDs: outputStreamNodeIDs[nodeID] = []
+            outputStreamNodeIDs[nodeID].append(streamInstructions)
+            self.setArgumentAttribute(task, nodeID, 'isStream', True)
+
+        # If no arguments were found that can output to a stream, terminate.
+        #TODO ERROR
+        if not outputStreamNodeIDs: print('NO OUTPUT STREAMS. graph.checkStreams - 1'); exit(1)
+
+        # Any individual task can only produce a single output stream, however, if this task generates multiple
+        # outputs, or is executed multiple times, each of the separate subphases can output to a stream. Check
+        # that any tasks with multiple output streams conform to this requirement.
+        if len(outputStreamNodeIDs) > 1:
+          #TODO ERROR
+          if not isGeneratesMultipleNodes and not isMultipleTaskCalls: print('MULTIPLE OUTPUT STREAM - graph.checkStreams - 2'); exit(1)
+
+        # If the nodes stored in streamNodeIDs can be used as streaming nodes, they must also be inputs to
+        # other tasks in  the pipeline and the have instructions on how the values should be used when the
+        # input is a stream. Check that this is the case.
+        inputStreamNodeIDs = {}
+        for nodeID in outputStreamNodeIDs:
+
+          # If the node has no successors, it cannot be streamed.
+          #TODO ERROR
+          if not self.graph.successors(nodeID): print('ERROR - NO TASK TO STREAM TO. graph.checkStreams - 3'); exit(1)
+
+          # Loop over all tasks that are successors to this node and check that one and only one of these
+          # tasks is marked as accepting a stream as input.
+          for successorTask in self.graph.successors(nodeID):
+            isInputStream      = self.getGraphNodeAttribute(successorTask, 'isInputStream')
+            streamInstructions = self.getArgumentAttribute(nodeID, successorTask, 'inputStreamInstructions')
+
+            # If this task is marked as accepting a stream and the argument has instructions on how to handle a
+            # streaming input, store the task and mark the edge as a stream.
+            if isInputStream and streamInstructions:
+
+              # Each nodeID can only have a single output node to stream to. If the node ID is already in the
+              # inputStreamNodeIDs, this is not the case,
+              if nodeID in inputStreamNodeIDs: print('ERROR - Multiple OUPTUT STREAM - graph.checkStreams - 3b'); exit(1)
+              inputStreamNodeIDs[nodeID] = successorTask
+              self.setArgumentAttribute(nodeID, successorTask, 'isStream', True)
+
+            # If the input is a stream and there are no instructions on how to process the argument, fail.
+            #TODO ERROR
+            if isInputStream and not streamInstructions: print('ERROR - INPUT STREAM INSTRUCTIONS - graph.checkStreams - 3c', task, nodeID); exit(1)
+
+        # If there are no nodes accepting a stream, then the pipeline cannot work.
+        #TODO ERROR. Note that this error could be caused by no tasks in the pipeline being marked as accepting a stream
+        # or because the argument associated with the task marked as accepting a stream has no instructions on how to
+        # handle an input stream. Ensure that the error message reflects this.
+        if not inputStreamNodeIDs: print('NO NODES ACCEPTING STREAM - graph.checkStreams - 4'); exit(1)
+
+        # If there are multiple nodes accepting a stream, this is only allowed if there are multiple subphases and
+        # the original task outputting to the stream itself outputs to multiple streams. If there are multiple
+        # streams, check that each node ID in the outputStreamNodeIDs has an equivalent in the inputStreamNodeIDs.
+        if len(inputStreamNodeIDs) > 1:
+
+          # TODO ERROR
+          if len(inputStreamNodeIDs) != len(outputStreamNodeIDs): print('ERROR - DIFFERENT NUMBER OF NODES - graph.checkStreams - 5') ;exit(1)
+          for nodeID in inputStreamNodeIDs:
+            #TODO ERROR
+            if nodeID not in outputStreamNodeIDs: print('ERROR - INCONSISTENT STREAMS - graph.checkStreams - 6'); exit(1)
+
+        # The topological sort of the pipeline could produce a workflow that is inconsistent with the
+        # streams. For example, there could be two tasks following the task outputting to a stream and
+        # from a topological point of view, neither task is required to come first. The non-uniqueness
+        # of the sort could choose either of these tasks to succeed the task outputting to a stream.
+        # From the point of view of the pipeline operation, however, it is imperative that the task
+        # accepting the stream should follow the task outputting to a stream.
+        for nodeID in outputStreamNodeIDs:
+          successorTask = inputStreamNodeIDs[nodeID]
+
+          # If there are multiple nodes, this is because there are multiple subphases. There is only a need to check the
+          # main node (not all the daughter nodes) since the workflow does not contain the daughter nodes.
+          if not self.getGraphNodeAttribute(nodeID, 'isDaughterNode'):
+            if self.workflow.index(successorTask) != self.workflow.index(task) + 1: print('ERROR - UPDATE WORKFLOW - graph.checkStreams - 7'); exit(1)
+
   # Determine after which task intermediate files should be deleted.
   def deleteFiles(self):
 
@@ -1372,6 +1533,13 @@ class pipelineGraph:
   # Set an attribute for a graph node.
   def setGraphNodeAttribute(self, nodeID, attribute, values):
     try: setattr(self.graph.node[nodeID]['attributes'], attribute, values)
+    except: return False
+
+    return True
+
+  # Set an attribute for a graph edge.
+  def setArgumentAttribute(self, source, target, attribute, value):
+    try: setattr(self.graph[source][target]['attributes'], attribute, value)
     except: return False
 
     return True

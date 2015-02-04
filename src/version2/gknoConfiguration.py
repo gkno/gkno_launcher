@@ -78,3 +78,30 @@ class gknoConfiguration:
       self.options[str(identifier)]                 = gknoArgumentAttributes()
       self.options[identifier].longFormArgument     = attributes.longFormArgument
       self.options[identifier].shortFormArgument    = attributes.shortFormArgument
+
+  ############################################################
+  ## Methods to extract information about the gkno options. ##
+  ############################################################
+
+  def getGknoArgument(self, value, arguments):
+
+    # Get the gkno argument.
+    longFormArgument  = self.options[value].longFormArgument
+    shortFormArgument = self.options[value].shortFormArgument
+
+    # Check if hte argument appears in the list of command line arguments.
+    if longFormArgument in arguments:
+
+       # Check the data type is consistent with the configuration file description.
+       #TODO
+       return arguments[longFormArgument]
+
+    # Repeat for the short form of the argument.
+    if shortFormArgument in arguments:
+
+       # Check the data type is consistent with the configuration file description.
+       #TODO
+       return arguments[shortFormArgument]
+
+    # If the argument was not set, return False.
+    return False

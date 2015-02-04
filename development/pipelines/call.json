@@ -7,11 +7,13 @@
     {
       "task" : "merge",
       "tool" : "bamtools-merge",
+      "output to stream" : true,
       "generate multiple output nodes" : "--out"
     },
     {
       "task" : "call",
       "tool" : "freebayes",
+      "input is stream" : true,
       "multiple task calls" : true,
       "include in reduced plot" : true
     },

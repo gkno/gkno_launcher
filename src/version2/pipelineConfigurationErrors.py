@@ -25,6 +25,19 @@ class pipelineErrors:
     # For a list of all error code values, see adminErrors.py.
     self.errorCode = '7'
 
+  ###################################
+  ## Errors with the tasks section ##
+  ###################################
+
+  # If two tasks have been given the same name.
+  def repeatedTaskName(self, pipeline, task):
+    self.text.append('Repeated task name in pipeline: ' + pipeline + '.')
+    self.text.append('Each task in the pipeline is defined in the \'pipeline tasks\' section of the pipeline configuration file. Each task name must be ' + \
+    'unique so that there is no ambiguity about how to construct the pipeline graph, however, multiple tasks in this section have been given the name \'' + \
+    task + '\'. Please ensure that all task names in the pipeline configuration file are unique.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   # If a configuration file contains has repeated definitions of the same long form argument.
   def repeatedLongFormArgument(self, nodeID, longFormArgument):
     self.text.append('Repeated argument in the pipeline configuration file.')

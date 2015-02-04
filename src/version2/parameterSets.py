@@ -1,6 +1,8 @@
 #!/bin/bash/python
 
 from __future__ import print_function
+
+import fileHandling as fh
 import generalConfigurationFileMethods as methods
 import parameterSetErrors as er
 
@@ -108,6 +110,22 @@ class parameterSets:
   def getDescription(self, name):
     try: return self.sets[name].description
     except: return None
+
+  # Export a parameter set.
+  def export(self, pipeline, setName, arguments):
+
+    # Define the name of the configuration file that holds the parameter set information.
+    filename = str(pipeline + '_parameter-sets.json')
+    print('set:', pipeline, filename, setName)
+
+    # Check that the paramter set name is not already defined for the pipeline.
+    #TODO
+
+    # Open the configuration file for writing.
+    filehandle = fh.fileHandling.openFileForWriting(filename)
+    for argument in arguments:
+      print(argument, arguments[argument])
+    exit(0)
 
   ######################
   ### Static methods ###

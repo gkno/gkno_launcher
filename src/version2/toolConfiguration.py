@@ -33,6 +33,14 @@ class argumentAttributes:
     # the command line can be built accordingly.
     self.isStdout = False
 
+    # Mark the edge as a stream if necessary.
+    self.isStream = False
+
+    # Store instructions on how to modify the argument and the value if the tool is
+    # accepting a stream as input or is outputting to a stream.
+    self.inputStreamInstructions  = {}
+    self.outputStreamInstructions = {}
+
     # Define the extensions allowed for the argument.
     self.extensions = []
 
@@ -223,6 +231,7 @@ class toolConfiguration:
     allowedAttributes['description']             = (str, True, True, 'description')
     allowedAttributes['extensions']              = (list, False, True, 'extensions')
     allowedAttributes['hide in help']            = (bool, False, True, 'hideInHelp')
+    allowedAttributes['if input is stream']      = (dict, False, True, 'inputStreamInstructions')
     allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
     allowedAttributes['is filename stub']        = (bool, False, True, 'isStub')
     allowedAttributes['long form argument']      = (str, True, True, 'longFormArgument')
@@ -253,6 +262,7 @@ class toolConfiguration:
     allowedAttributes['hide in help']          = (bool, False, True, 'hideInHelp')
     allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
     allowedAttributes['is filename stub']      = (bool, False, True, 'isStub')
+    allowedAttributes['if output to stream']   = (dict, False, True, 'outputStreamInstructions')
     allowedAttributes['long form argument']    = (str, True, True, 'longFormArgument')
     allowedAttributes['modify argument']       = (str, False, True, 'modifyArgument')
     allowedAttributes['modify value']          = (str, False, True, 'modifyValue')
@@ -341,7 +351,7 @@ class toolConfiguration:
   def forceAttributes(self):
     for argument in self.arguments:
 
-      # If the 'command line argument' is set to none adn 'modify argument' is unset, force 'modify
+      # If the 'command line argument' is set to none and 'modify argument' is unset, force 'modify
       # argument' to be set to 'omit'.
       if self.getArgumentAttribute(argument, 'commandLineArgument') == 'none' and not self.getArgumentAttribute(argument, 'modifyArgument'):
         self.setArgumentAttribute(argument, 'modifyArgument', 'omit')

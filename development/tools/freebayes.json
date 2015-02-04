@@ -15,6 +15,10 @@
         "required" : true,
         "extensions" : ["bam"],
         "data type" : "string",
+        "if input is stream" : {
+          "argument" : "--stdin",
+          "value" : "omit"
+        },
         "allow multiple values" : true
       },
       {

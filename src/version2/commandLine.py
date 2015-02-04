@@ -106,27 +106,22 @@ class commandLine:
     if isAdmin: return 'admin'
 
     # Check if json files for the web page were requested.
-    if gkno.options['GKNO-WEB'].longFormArgument in self.arguments or gkno.options['GKNO-WEB'].shortFormArgument in self.arguments: return 'web'
+    if gkno.getGknoArgument('GKNO-WEB', self.arguments): return 'web'
 
     # Check if help for gkno specific arguments was requested.
-    if gkno.options['GKNO-ARGUMENTS'].longFormArgument in self.arguments or gkno.options['GKNO-ARGUMENTS'].shortFormArgument in self.arguments:
-      return 'gkno help'
+    if gkno.getGknoArgument('GKNO-ARGUMENTS', self.arguments): return 'gkno help'
 
     # If help is requested, return the mode 'help'.
-    if gkno.options['GKNO-HELP'].longFormArgument in self.arguments or gkno.options['GKNO-HELP'].shortFormArgument in self.arguments: return 'help'
+    if gkno.getGknoArgument('GKNO-HELP', self.arguments): return 'help'
 
     # Check if help categories were requested.
-    if gkno.options['GKNO-CATEGORIES'].longFormArgument in self.arguments or gkno.options['GKNO-CATEGORIES'].shortFormArgument in self.arguments:
-      if gkno.options['GKNO-CATEGORIES'].longFormArgument in self.arguments:
-        self.category = self.arguments[gkno.options['GKNO-CATEGORIES'].longFormArgument][0]
-      elif gkno.options['GKNO-CATEGORIES'].shortFormArgument in self.arguments:
-        self.category = self.arguments[gkno.options['GKNO-CATEGORIES'].shortFormArgument][0]
-
+    category = gkno.getGknoArgument('GKNO-CATEGORIES', self.arguments)
+    if category:
+      self.category = category[0]
       return 'categories'
 
     # Check if a list of all pipeline was requested.
-    if gkno.options['GKNO-ALL-PIPELINES'].longFormArgument in self.arguments: return 'list-all'
-    if gkno.options['GKNO-ALL-PIPELINES'].shortFormArgument in self.arguments: return 'list-all'
+    if gkno.getGknoArgument('GKNO-ALL-PIPELINES', self.arguments): return 'list-all'
 
     # If no information is provided (e.g. no admin, tool or pipeline), return 'help' as the mode.
     if len(self.commands) == 0 and len(self.arguments) == 0: return 'help'
