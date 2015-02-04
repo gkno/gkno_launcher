@@ -216,7 +216,7 @@ def main():
 
   # Check that all of the values associated with all of the nodes are of the correct type (e.g. integer, flag etc)
   # and also that any files also have the correct extension.
-  dc.checkValues(graph, superpipeline, args)
+  dc.checkValues(graph, superpipeline)
 
   # Loop over all of the nodes in the graph and ensure that all required arguments have been set. Any output files
   # for which construction instructions are provided can be omitted from this check. This will ensure that all required
@@ -248,7 +248,7 @@ def main():
   # outputs a file with and extension 'ext1' and the file is then passed to a file that requires files with the
   # extension 'ext2', the pipeline is invalid. The output filename has been constructed as file.ext1 and so the following
   # routine will flag the file as invalid as input to the next task.
-  dc.checkValues(graph, superpipeline, args)
+  dc.checkValues(graph, superpipeline)
 
   # If the user has requested that a parameter set is to be exported, export the parameter set and terminate.
   exportSet = gknoConfiguration.getGknoArgument('GKNO-EXPORT-PARAMETER-SET', command.gknoArguments)

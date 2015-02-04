@@ -11,7 +11,7 @@ import sys
 # Loop over all of the nodes in a graph and check that the values associated with it
 # are of the correct type and have extensions consistent with all of the arguments
 # attached to the node.
-def checkValues(graph, superpipeline, args):
+def checkValues(graph, superpipeline):
 
   # First, loop over all of the option nodes and check that the data types for all values
   # are valid.
@@ -22,12 +22,12 @@ def checkValues(graph, superpipeline, args):
     # Get all of the arguments that use this node and check the data types. Start with all predecessors to this node.
     expectedDataType = None
     for predecessorNodeID in graph.getPredecessors(nodeID):
-      expectedDataType = checkNode(graph, args, predecessorNodeID, nodeID, nodeType, expectedDataType, values, isInput = False)
+      expectedDataType = checkNode(graph, superpipeline, predecessorNodeID, nodeID, nodeType, expectedDataType, values, isInput = False)
     for successorNodeID in graph.getSuccessors(nodeID):
-      expectedDataType = checkNode(graph, args, nodeID, successorNodeID, nodeType, expectedDataType, values, isInput = True)
+      expectedDataType = checkNode(graph, superpipeline, nodeID, successorNodeID, nodeType, expectedDataType, values, isInput = True)
 
 # Check the values for a node.
-def checkNode(graph, args, source, target, nodeType, expectedDataType, values, isInput):
+def checkNode(graph, superpipeline, source, target, nodeType, expectedDataType, values, isInput):
  
   # Define error handling,
   errors = er.consistencyErrors()
@@ -64,11 +64,13 @@ def checkNode(graph, args, source, target, nodeType, expectedDataType, values, i
           # Fail if there was an error.
           if not checkExtensions(value, extensions):
 
+            # Get pipeline configuration data.
+            data = superpipeline.pipelineConfigurationData[superpipeline.pipeline]
+
             # Check if a top level pipeline argument exists.
-            if fileNodeID in args.nodeToArgument:
-              pipelineLongFormArgument  = args.nodeToArgument[fileNodeID]
-              pipelineShortFormArgument = args.arguments[pipelineLongFormArgument].shortFormArgument
-              errors.invalidExtensionPipeline(pipelineLongFormArgument, pipelineShortFormArgument, value, extensions)
+            if longFormArgument in data.longFormArguments.keys():
+              shortFormArgument  = data.longFormArguments[longFormArgument].shortFormArgument
+              errors.invalidExtensionPipeline(longFormArgument, shortFormArgument, value, extensions)
 
             # If no pipeline argument exists for this argument, list the task and argument.
             else:
