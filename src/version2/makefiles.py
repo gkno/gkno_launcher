@@ -789,7 +789,7 @@ class makefiles:
               self.writeStreamingInformation(graph, info, i, filehandle)
 
             # If this does not accept a stream or output to a stream, just write the information to the makefile.
-            else: self.writeStandardInformation(graph, task, i, filehandle)
+            else: self.writeStandardInformation(graph, task, i, makefileName, filehandle)
 
           # Increment the counter.
           i += 1
@@ -853,7 +853,7 @@ class makefiles:
       print(file = filehandle)
 
   # Write information to the makefile for a task with no streaming.
-  def writeStandardInformation(self, graph, task, i, filehandle):
+  def writeStandardInformation(self, graph, task, i, makefileName, filehandle):
     print('### Command line information for the following task:', file = filehandle)
     print('### ', task, ' (', graph.getGraphNodeAttribute(task, 'tool'), ')', sep = '', file = filehandle)
   

@@ -1,5 +1,5 @@
 {
-  "id" : "covert-bedtools-coverage",
+  "id" : "convert-bedtools-coverage",
   "description" : "Convert a bedtools coverage file into a form plottable with R.",
   "categories" : ["Scripts"],
   "tools" : [],

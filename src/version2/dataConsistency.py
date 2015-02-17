@@ -32,6 +32,9 @@ def checkNode(graph, superpipeline, source, target, nodeType, expectedDataType, 
   # Define error handling,
   errors = er.consistencyErrors()
 
+  # Get pipeline configuration data.
+  data = superpipeline.pipelineConfigurationData[superpipeline.pipeline]
+
   # Get the required attributes.
   longFormArgument = graph.CM_getArgumentAttribute(graph.graph, source, target, 'longFormArgument')
   dataType         = graph.CM_getArgumentAttribute(graph.graph, source, target, 'dataType')
@@ -43,6 +46,23 @@ def checkNode(graph, superpipeline, source, target, nodeType, expectedDataType, 
   # arguments using the same values expect different data types. This is clearly impossible, so terminate.
   #TODO ERROR
   elif expectedDataType != dataType: print('dataConsistency.checkNode - 1', dataType, expectedDataType); exit(0)
+
+  # Check if this argument allows multiple values to be set.
+  # TODO REMOVED WHILE TESTING MULTIPLE INPUT DATA SETS. REMOVE OR REINCLUDE.
+#  isMultipleValuesAllowed = graph.CM_getArgumentAttribute(graph.graph, source, target, 'allowMultipleValues')
+#  if not isMultipleValuesAllowed and len(values) > 1:
+#
+#    # Check if this is a top level pipeline argument. Provide the error message dependent on this fact.
+#    if longFormArgument in data.longFormArguments.keys():
+#      shortFormArgument = data.longFormArguments[longFormArgument].shortFormArgument
+#      errors.multipleValues(longFormArgument, shortFormArgument, task = None, isPipeline = True)
+#    else:
+#      shortFormArgument = graph.CM_getArgumentAttribute(graph.graph, source, target, 'shortFormArgument')
+#
+#      # Determine the task receiving the argument.
+#      if graph.CM_getGraphNodeAttribute(graph.graph, source, 'nodeType') == 'task': task = source
+#      else: task = target
+#      errors.multipleValues(longFormArgument, shortFormArgument, task = task, isPipeline = False)
 
   # Loop over each of the values for this node.
   for value in values:
@@ -64,12 +84,9 @@ def checkNode(graph, superpipeline, source, target, nodeType, expectedDataType, 
           # Fail if there was an error.
           if not checkExtensions(value, extensions):
 
-            # Get pipeline configuration data.
-            data = superpipeline.pipelineConfigurationData[superpipeline.pipeline]
-
             # Check if a top level pipeline argument exists.
             if longFormArgument in data.longFormArguments.keys():
-              shortFormArgument  = data.longFormArguments[longFormArgument].shortFormArgument
+              shortFormArgument = data.longFormArguments[longFormArgument].shortFormArgument
               errors.invalidExtensionPipeline(longFormArgument, shortFormArgument, value, extensions)
 
             # If no pipeline argument exists for this argument, list the task and argument.
@@ -276,9 +293,7 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
                 if nodeID not in constructableNodes: constructableNodes.append(nodeID)
 
               # If no instructions are provided check that there are values supplied.
-              # TODO ERROR
-              if not instructions and not graph.getGraphNodeAttribute(nodeID, 'values'):
-                print('dataConsistency - checkRequiredArguments - output error', task, argument); exit(1)
+              if not instructions and not graph.getGraphNodeAttribute(nodeID, 'values'): errors.noConstructionMethod(task, tool, argument)
 
           # If no node exists for this argument, determine the course of action.
           if not foundNode:

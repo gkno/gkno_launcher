@@ -1,0 +1,46 @@
+{
+  "id" : "bamtools-index",
+  "description" : "Index BAM files.",
+  "categories" : ["BAM-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "index",
+      "tool" : "bamtools-index"
+    }
+  ],
+
+  "import arguments" : "index",
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input BAM file(s).",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "bam"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "bam",
+      "task" : "index",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "out",
+      "task" : "index",
+      "task argument" : "--out"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : []
+    }
+  ]
+}

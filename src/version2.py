@@ -188,7 +188,7 @@ def main():
   graph.addPipelineParameterSets(superpipeline, 'default')
 
   # Determine the requested parameter set and add the parameters to the graph.
-  parSet       = ps.parameterSets()
+  parSet = ps.parameterSets()
   graph.parameterSet = command.getParameterSetName(command.gknoArguments, gknoConfiguration)
   if graph.parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, graph.parameterSet)
 
@@ -228,14 +228,17 @@ def main():
   superpipeline.determineFilesToDelete(graph)
 
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
-  # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc.
+  # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc. In addition check
+  # the arguments that have been supplied to each task. In particular, check the number of values given to all
+  # arguments and determine whether tasks need to be defined as generating multiple output nodes, having multiple
+  # task calls or consolidating nodes.
   graph.determineNumberOfTaskExecutions(superpipeline)
-  #for task in graph.workflow:
-  #  print(task)
-  #  print('\tINPUTS')
-  #  for nodeID in graph.graph.predecessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-  #  print('\tOUTPUTS')
-  #  for nodeID in graph.graph.successors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+#  for task in graph.workflow:
+#    print(task)
+#    print('\tINPUTS')
+#    for nodeID in graph.graph.predecessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+#    print('\tOUTPUTS')
+#    for nodeID in graph.graph.successors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
   #exit(0)
 
   # Print the workflow to screen.
@@ -304,12 +307,11 @@ def main():
   make.closeFiles()
 
   # Check that all of the dependent files exist (excluding dependencies that are created by tasks in the pipeline).
-  files.checkFileExistence(requiredInputFiles, resourcesPath, toolsPath)
+  success = files.checkFileExistence(requiredInputFiles, resourcesPath, toolsPath)
 
   # Execute the generated script unless the user has explicitly asked for it not to be run, or if multiple makefiles
   # have been generated.
-  success = 0
-  if gknoConfiguration.options['GKNO-DO-NOT-EXECUTE'].longFormArgument not in command.gknoArguments and not make.isMultipleMakefiles:
+  if gknoConfiguration.options['GKNO-DO-NOT-EXECUTE'].longFormArgument not in command.gknoArguments and not make.isMultipleMakefiles and success:
     makefileName = make.makefileNames[1][1][1]
 
     # Get the number of parallel jobs to be requested.

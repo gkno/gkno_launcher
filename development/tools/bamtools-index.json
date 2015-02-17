@@ -25,9 +25,16 @@
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "-out",
+        "modify argument" : "omit",
+        "modify value" : "omit",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["bam.bai"]
+        "extensions" : ["bam.bai"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace"
+        }
       }
     ],
   

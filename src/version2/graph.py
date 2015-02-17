@@ -915,9 +915,17 @@ class pipelineGraph:
     # Loop over all tasks in the pipeline.
     for i, task in enumerate(self.workflow):
 
+      # Determine the number of defined input and output files as well as the number of option values.
+      self.getNumberOfValues(i, task)
+
+      # Get information on this task.
+      isGenerateMultipleOutputNodes = self.getGraphNodeAttribute(task, 'generateMultipleOutputNodes')
+      isMultipleTaskCalls           = self.getGraphNodeAttribute(task, 'multipleTaskCalls')
+      isConsolidate                 = self.getGraphNodeAttribute(task, 'consolidate')
+
       # If this task needs to be called multiple times for multiple sets of input nodes, create the new task
       # nodes and connect them to the relevant input nodes.
-      if self.getGraphNodeAttribute(task, 'multipleTaskCalls'): self.multipleTaskCalls(superpipeline, task)
+      if isMultipleTaskCalls: self.multipleTaskCalls(superpipeline, task)
 
       # Check the input files. The number of executions has been set by the number of values supplied to the
       # task options, unless this is still set to one. The task can be greedy with respect to input files, so
@@ -932,6 +940,112 @@ class pipelineGraph:
       # as temporary and add a random string to the output filenames to ensure that there are not filename
       # conflicts.
       self.checkOutputFiles(superpipeline, i, task)
+
+  # Determine if any of the tasks need to be run multiple times due to multiple input data sets.
+  # FIXME TESTING OF ALL POSSIBILITIES REQUIRED.
+  def getNumberOfValues(self, i, task):
+
+    # Get information on this task.
+    isGenerateMultipleOutputNodes = self.getGraphNodeAttribute(task, 'generateMultipleOutputNodes')
+    isMultipleTaskCalls           = self.getGraphNodeAttribute(task, 'multipleTaskCalls')
+    isConsolidate                 = self.getGraphNodeAttribute(task, 'consolidate')
+    isGreedy                      = self.getGraphNodeAttribute(task, 'isGreedy')
+
+    # Get information on the previous task in the pipeline.
+    if i > 0:
+      previousTask                          = self.workflow[i - 1]
+      isPreviousGenerateMultipleOutputNodes = self.getGraphNodeAttribute(previousTask, 'generateMultipleOutputNodes')
+      isPreviousMultipleTaskCalls           = self.getGraphNodeAttribute(previousTask, 'multipleTaskCalls')
+      isPreviousConsolidate                 = self.getGraphNodeAttribute(previousTask, 'consolidate')
+    else:
+      previousTask                          = None
+      isPreviousGenerateMultipleOutputNodes = False
+      isPreviousMultipleTaskCalls           = False
+      isPreviousConsolidate                 = False
+
+    # Determine if the task following this task is listed as greedy. If this task is required to be run
+    # multiple times, whether or not the task produces multiple output nodes will depend on whether the next
+    # task us greedy. If it is, then the task will be listed as consolidating output files to a single node.
+    try: nextTask = self.workflow[i + 1]
+    except: nextTask = None
+    isNextTaskGreedy = self.getGraphNodeAttribute(nextTask, 'isGreedy') if nextTask else False
+
+    # Store the number of input files. For each argument corresponding to an input file, determine the number
+    # of files provided. Store the maximum number of files provided to any one argument.
+    noInputs      = 0
+    inputArgument = None
+    for nodeID in self.getInputFileNodes(task):
+      number = len(self.getGraphNodeAttribute(nodeID, 'values'))
+      if number > 1:
+        if noInputs != 0: print('ERROR - getNumberOfValues - only one input can have multiple values.'); exit(1)
+        else:
+          inputArgument = self.getArgumentAttribute(nodeID, task, 'longFormArgument')
+          noInputs      = number
+
+    # Similarly, get the number of output files.
+    noOutputs = 0
+    for nodeID in self.getOutputFileNodes(task):
+      number = len(self.getGraphNodeAttribute(nodeID, 'values'))
+      if number > 1:
+        if noOutputs == 0: noOutputs = number
+        elif noOutputs != number: print('ERROR - getNumberOfValues - 1'); exit(1)
+
+    # Get the number of defined option values.
+    noOptions = 0
+    for nodeID in self.getOptionNodes(task):
+      number = len(self.getGraphNodeAttribute(nodeID, 'values'))
+      if number > 1:
+        if noOptions == 0: noOptions = number
+        elif noOptions != number: print('ERROR - getNumberOfValues - 1'); exit(1)
+
+    # Now that the number of files and options associated with the task are known, determine the behaviour of
+    # the task. If there are multiple input files and the task is not greedy, the task will produce multiple
+    # output files.
+    if noInputs > 1:
+
+      # If the previous task produced multiple output nodes, or was run multiple times, this task should similarly
+      # be run multiple times.
+      if isPreviousGenerateMultipleOutputNodes or isPreviousMultipleTaskCalls:
+
+        # If the next task in the pipeline is greedy, this task should consolidate the output files into a single
+        # node.
+        if isNextTaskGreedy: self.setGraphNodeAttribute(task, 'consolidate', True)
+        else: self.setGraphNodeAttribute(task, 'multipleTaskCalls', True)
+
+      # If the previous task is not executed multiple times (including the case where there is no previous task),
+      # if this task is not greedy, then this task must itself be run multiple times. If the next task is greedy,
+      # then this task can be listed as consolidating the outputs into a single node, otherwise, it must be listed
+      # as generating multiple output nodes.
+      elif not isGreedy:
+        if isNextTaskGreedy: self.setGraphNodeAttribute(task, 'consolidate', True)
+        else:
+
+          # Determine which output argument is associated with the input argument with multiple values. This is the
+          # argument for which multiple output nodes will be generated and must be added to the task node in the
+          # pipeline graph.
+          outputArgument = None
+          for nodeID in self.getOutputFileNodes(task):
+            instructions = self.getArgumentAttribute(task, nodeID, 'constructionInstructions')
+            try: tempArgument = instructions['use argument']
+            except: tempArgument = None
+            if tempArgument == inputArgument:
+              outputArgument = self.getArgumentAttribute(task, nodeID, 'longFormArgument')
+              break
+
+          if outputArgument: self.setGraphNodeAttribute(task, 'generateMultipleOutputNodes', outputArgument)
+
+          #TODO ERROR. Cannot determine the output argument with multiple output nodes.
+          else: print('ERROR - getNumberOfValues - Can\'t find output argument'); exit(1)
+
+    # If the previous task generates multiple output nodes, or is run multiple times, check that this task is set
+    # as either, running multiple times, or is consolidating.
+    elif isPreviousGenerateMultipleOutputNodes or isPreviousMultipleTaskCalls:
+      if not isMultipleTaskCalls and not isConsolidate:
+
+        # Check if the next task is greedy. If it is, this task must consolidate, otherwise it must be run multiple
+        # times.
+        if isNextTaskGreedy: self.setGraphNodeAttribute(task, 'consolidate', True)
+        else: self.setGraphNodeAttribute(task, 'multipleTaskCalls', True)
 
   # If this task needs to be called multiple times for multiple sets of input nodes, create the new task
   # nodes and connect them to the relevant input file nodes. Note that this does not create the output

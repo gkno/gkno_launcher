@@ -25,6 +25,23 @@ class consistencyErrors:
     # For a list of all error code values, see adminErrors.py.
     self.errorCode = '10'
 
+  # Multiple values provided to an argument that does not allow it.
+  def multipleValues(self, longFormArgument, shortFormArgument, task, isPipeline):
+    self.text.append('Multiple values provided when not permitted.')
+
+    # Provide the error if the argument was a top level argument.
+    if isPipeline:
+      self.text.append('The command line argument \'' + longFormArgument + ' (' + shortFormArgument + ')\' was given multiple values on the command line, but this ' + \
+      'argument is only permitted to receive a single value. Please check the command line and ensure that this argument was only specified once.')
+
+    # Otherwise, make it clear that tha argument was not a top level argument.
+    else:
+      self.text.append('The task \'' + task + '\' in the pipeline has been given multiple values for it\'s argument \'' + longFormArgument + ' (' + shortFormArgument + \
+      ')\', but this argument is only permitted to receive a single value. This argument does not have a pipeline argument that can be set on the command line, so was' + \
+      'either specified for the task specifically, or there is an error in the pipeline definition.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   # If a command line argument is given a value with an incorrect extension.
   def invalidExtensionPipeline(self, longFormArgument, shortFormArgument, value, extensions):
     self.text.append('Invalid extension on argument value.')
@@ -92,5 +109,14 @@ class consistencyErrors:
     tool + '\'' + text + '\', the argument \'' + requiredArgument + '\' must be defined, or be constructable. There is no node in the graph for ' + \
     'this argument, so this is not possible. Please modify the pipeline configuration file to provide an argument to set this value, or ensure ' + \
     'that the argument shares a node with another task in the pipeline, allowing the value to be constructed.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # An output file exists with no values and there are no instructions for creating any.
+  def noConstructionMethod(self, task, tool, argument):
+    self.text.append('No method of constructing an output file.')
+    self.text.append('The task \'' + task + '\', using tool \'' + tool + '\' generates an output file using the argument \'' + argument + '\'. This argument has not ' + \
+    'been set using a pipeline argument (if available) and no instructions exist in the tool configuration file for constructing the filename. Please ensure that a ' + \
+    'value is given for this argument, or update the tool configuration file to allow the filenames to be constructed.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)

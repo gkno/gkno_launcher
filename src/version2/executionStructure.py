@@ -45,7 +45,6 @@ class executionStructure():
 
       # Get execution information about this task. Specifically, the number of input and output
       # multinodes and the number of times the task is executed for each set of nodes.
-      #subphases = graph.getGraphNodeAttribute(task, 'subphases')
       isGreedy  = graph.getGraphNodeAttribute(task, 'isGreedy')
   
       # Multinode inputs.
@@ -57,7 +56,7 @@ class executionStructure():
       multinodeOutput     = graph.getGraphNodeAttribute(task, 'multinodeOutput')
       daughterOutputNodes = graph.getGraphNodeAttribute(multinodeOutput, 'daughterNodes')
       numberOutputNodes   = len(daughterOutputNodes) + 1 if daughterOutputNodes else 1
- 
+
       # Calculate the total number of task executions. This is dependent on a number of factors. First
       # consider cases where the node is greedy. If there are multiple input nodes, all the values within
       # each node will be used in a single task execution. Thus the number of executions is equal to the
@@ -68,7 +67,7 @@ class executionStructure():
 
       # If the task isn't greedy, the total number of executions is the maximum of the number of input 
       # and output nodes, multiplied by the number of executions.
-      else: totalExecutions = max(numberInputNodes, numberOutputNodes) * divisions#executionsPerNode
+      else: totalExecutions = max(numberInputNodes, numberOutputNodes) * divisions
 
       # Determine the number of subphases. This is simply the maximum of the number of input or output
       # multinodes. A phase contains a set of tasks that need to be run sequentially. If there are
