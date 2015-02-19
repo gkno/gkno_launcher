@@ -166,10 +166,17 @@ class commandLine:
     return self.commands[0]
 
   # Process the command line arguments.
-  def processArguments(self, superpipeline, gknoLongForms, gknoShortForms):
+  def processArguments(self, superpipeline, args, gknoLongForms, gknoShortForms):
 
     # Get the name of the top level pipeline.
     pipeline = superpipeline.pipeline
+
+    # Get a list of all the allowable long and short form arguments.
+    longFormArguments  = []
+    shortFormArguments = {}
+    for argument in args.arguments.keys():
+      longFormArguments.append(argument)
+      shortFormArguments[args.arguments[argument].shortFormArgument] = argument
 
     # Loop over all of the supplied command line arguments, ensure that they are in their long form
     # versions and consolidate. Check that all of the arguments are valid for the pipeline being run
@@ -198,19 +205,32 @@ class commandLine:
         else: self.gknoArguments[gknoShortForms[argument]] = values
 
       # Check if this is a valid long form pipeline argument.
-      elif argument in superpipeline.pipelineConfigurationData[pipeline].longFormArguments:
+#      elif argument in superpipeline.pipelineConfigurationData[pipeline].longFormArguments:
+#        if argument in self.pipelineArguments:
+#          for value in values: self.pipelineArguments[argument].append(value)
+#        else: self.pipelineArguments[argument] = values
+
+      # Check if this is a valid short form pipeline argument.
+#      elif argument in superpipeline.pipelineConfigurationData[pipeline].shortFormArguments:
+#        if pipelineShortFormArguments[argument] in self.pipelineArguments:
+#          for value in values: self.pipelineArguments[pipelineShortFormArguments[argument]].append(value)
+#        else: self.pipelineArguments[pipelineShortFormArguments[argument]] = values
+
+      # Check if this argument is valid for the pipeline.
+      elif argument in longFormArguments:
         if argument in self.pipelineArguments:
           for value in values: self.pipelineArguments[argument].append(value)
         else: self.pipelineArguments[argument] = values
 
       # Check if this is a valid short form pipeline argument.
-      elif argument in superpipeline.pipelineConfigurationData[pipeline].shortFormArguments:
-        if pipelineShortFormArguments[argument] in self.pipelineArguments:
-          for value in values: self.pipelineArguments[pipelineShortFormArguments[argument]].append(value)
-        else: self.pipelineArguments[pipelineShortFormArguments[argument]] = values
+      elif argument in shortFormArguments:
+        longFormArgument = shortFormArguments[argument]
+        if longFormArgument in self.pipelineArguments:
+          for value in values: self.pipelineArguments[longFormArgument].append(value)
+        else: self.pipelineArguments[longFormArgument] = values
 
       # If the argument is invalid.
-      else:  self.errors.invalidArgument(argument)
+      else: self.errors.invalidArgument(argument)
 
   # Determine the name (if any) of the requested parameter set.
   def getParameterSetName(self, arguments, gkno):

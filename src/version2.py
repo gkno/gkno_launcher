@@ -157,14 +157,14 @@ def main():
     # are listed as required. If so, the node is required and should be marked as such.
     graph.markRequiredNodes(superpipeline)
 
-    # Now that the graph is built, parse all of the arguments in the pipelines and associate them with the
-    # graph nodes and vice versa.
-    args.assignNodesToArguments(graph, superpipeline)
-
     # If the main pipeline lists a tool whose arguments should be imported, check that the listed tool is
     # valid, that none of the arguments conflict with the pipeline and then add the arguments to the
     # allowed arguments.
     args.importArguments(graph, superpipeline)
+
+    # Now that the graph is built, parse all of the arguments in the pipelines and associate them with the
+    # graph nodes and vice versa.
+    args.assignNodesToArguments(graph, superpipeline)
 
     # If web page json files are being created, update the list of categories and the pipeline information.
     if mode == 'web':
@@ -178,7 +178,7 @@ def main():
   workflow = graph.generateWorkflow()
 
   # Process the command line arguments.
-  command.processArguments(superpipeline, gknoConfiguration.arguments, gknoConfiguration.shortForms)
+  command.processArguments(superpipeline, args, gknoConfiguration.arguments, gknoConfiguration.shortForms)
 
   # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
   # the nodes with these task level default parameter sets, creating nodes where necessary.
@@ -188,7 +188,7 @@ def main():
   graph.addPipelineParameterSets(superpipeline, 'default')
 
   # Determine the requested parameter set and add the parameters to the graph.
-  parSet = ps.parameterSets()
+  parSet             = ps.parameterSets()
   graph.parameterSet = command.getParameterSetName(command.gknoArguments, gknoConfiguration)
   if graph.parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, graph.parameterSet)
 

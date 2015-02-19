@@ -13,14 +13,6 @@
   "import arguments" : "index",
 
   "arguments" : {
-    "Inputs" : [
-      {
-        "description" : "The input BAM file(s).",
-        "long form argument" : "--in",
-        "short form argument" : "-i",
-        "node id" : "bam"
-      }
-    ]
   },
 
   "unique graph nodes" : [

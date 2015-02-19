@@ -222,7 +222,13 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
           # line. This means that no values will get assigned to this argument, so terminate.
           if not foundNode:
             instructions = toolData.getArgumentAttribute(argument, 'constructionInstructions')
-            if not instructions: errors.noInputNode(task, tool, argument)
+            if not instructions: 
+
+              # Check if arguments were imported for this task. If so, check to see if this argument is therefore
+              # available on the command line.
+              if task == superpipeline.pipelineConfigurationData[superpipeline.pipeline].importArgumentsFromTool:
+                errors.unsetRequiredArgument(argument, args.arguments[argument].shortFormArgument, args.arguments[argument].description)
+              else: errors.noInputNode(task, tool, argument)
  
             # If there are instructions, but no node, construct the node.
             else:

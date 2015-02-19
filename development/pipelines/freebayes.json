@@ -1,5 +1,5 @@
 {
-  "id" : "freebayes-compress",
+  "id" : "freebayes",
   "description" : "run freebayes",
   "categories" : ["Variant-discovery"],
 
@@ -15,36 +15,26 @@
     }
   ],
 
-  "arguments" : {
-    "Inputs" : [
-      {
-        "description" : "The input BAM file.",
-        "long form argument" : "--in",
-        "short form argument" : "-i",
-        "node id" : "bam"
-      }
-    ],
+  "import arguments" : "call",
 
-    "Options" : [
-      {
-        "description" : "The genomic region.",
-        "long form argument" : "--region",
-        "short form argument" : "-rg",
-        "node id" : "region"
-      }
-    ]
+  "arguments" : {
   },
 
   "unique graph nodes" : [
     {
       "id" : "bam",
       "task" : "call",
-      "task argument" : "-i"
+      "task argument" : "--in"
+    },
+    {
+      "id" : "reference",
+      "task" : "call",
+      "task argument" : "--fasta-reference"
     },
     {
       "id" : "region",
       "task" : "call",
-      "task argument" : "-rg"
+      "task argument" : "--region"
     }
   ],
 
