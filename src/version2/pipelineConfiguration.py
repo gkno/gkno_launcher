@@ -60,8 +60,8 @@ class taskAttributes:
     self.isInputStream  = False
     self.isOutputStream = False
 
-    # Record if the task should be included in any plots.
-    self.includeInReducedPlot = False
+    # Record if the unique node should be included in any plots.
+    self.omitFromReducedPlot = False
 
 # Define a class to hold the pipeline arguments.
 class pipelineArguments:
@@ -153,8 +153,8 @@ class uniqueGraphNodes:
     # all these versions of this node should be consolidated into a single node.
     self.consolidateNodes = False
 
-    # Record if the unique node should be included in the plot.
-    self.includeInReducedPlot = False
+    # Record if the task should be included in the plot.
+    self.omitFromReducedPlot = False
 
 # Define a class to store information on edges to be created. These are defined using the
 # 'connect nodes and edges' section in the pipeline configuration file.
@@ -317,7 +317,7 @@ class pipelineConfiguration:
     # Define the allowed general attributes.
     allowedAttributes                                   = {}
     allowedAttributes['consolidate nodes']              = (str, False, True, 'consolidate')
-    allowedAttributes['include in reduced plot']        = (bool, False, True, 'includeInReducedPlot')
+    allowedAttributes['omit from reduced plot']         = (bool, False, True, 'omitFromReducedPlot')
     allowedAttributes['input is stream']                = (bool, False, True, 'isInputStream')
     allowedAttributes['generate multiple output nodes'] = (str, False, True, 'generateMultipleOutputNodes')
     allowedAttributes['multiple task calls']            = (bool, False, True, 'multipleTaskCalls')
@@ -378,8 +378,8 @@ class pipelineConfiguration:
     # Define the allowed nodes attributes.
     allowedAttributes                             = {}
     allowedAttributes['id']                       = (str, True, True, 'id')
-    allowedAttributes['include in reduced plot']  = (bool, False, True, 'includeInReducedPlot')
     allowedAttributes['is greedy']                = (bool, False, True, 'isGreedy')
+    allowedAttributes['omit from reduced plot']   = (bool, False, True, 'omitFromReducedPlot')
     allowedAttributes['task']                     = (str, True, True, 'task')
     allowedAttributes['task argument']            = (str, False, True, 'taskArgument')
 
@@ -404,7 +404,7 @@ class pipelineConfiguration:
 
       # If the nodeID already exists in the attributes, a node of this name has already been seen. All 
       #nodes must have a unique name.
-      if attributes.id in self.uniqueNodeAttributes: print('pipeline.checkUniqueNodes - 6'); exit(0)
+      if attributes.id in self.uniqueNodeAttributes: self.errors.repeatedNodeID(uniqueNode, helpInfo)
 
       # Also check that the node id is not the name of a task.
       if attributes.id in self.allTasks: print('pipeline.checkUniqueNodes - 7'); exit(0)

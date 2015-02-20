@@ -72,7 +72,7 @@ class taskNodeAttributes:
     self.nodesWithMultipleValues = []
 
     # Record if this node should be included in any graphical output.
-    self.includeInReducedPlot = False
+    self.includeInReducedPlot = True
 
     # If this task is marked as accepting a stream as input or output.
     self.isInputStream  = False
@@ -1660,6 +1660,7 @@ class pipelineGraph:
     # Link this configuration node ID with the created graph node ID.
     if configurationFileNodeID not in self.configurationFileToGraphNodeID:
       self.configurationFileToGraphNodeID[configurationFileNodeID] = [graphNodeID]
+    else: self.configurationFileToGraphNodeID[configurationFileNodeID].append(graphNodeID)
 
   # Add an option node to the graph.
   def addOptionNode(self, graphNodeID):

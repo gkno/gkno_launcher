@@ -1,0 +1,108 @@
+{
+  "id" : "samtools-sort",
+  "description" : "Sort a BAM file.",
+  "categories" : ["BAM-processing", "Samtools"],
+  "tools" : ["samtools"],
+  "path" : "samtools",
+  "executable" : "samtools",
+  "modifier" : "sort",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "Input BAM file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["bam"],
+        "modify argument" : "omit",
+        "if input is stream" : {
+          "argument" : "-",
+          "value" : ""
+        }
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output BAM file prefix.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["bam"],
+        "modify argument" : "omit",
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_sorted"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Use defined name as filename not prefix..",
+        "long form argument" : "--no-prefix",
+        "short form argument" : "-p",
+        "command line argument" : "-f",
+        "data type" : "flag"
+      },
+      {
+        "description" : "Send the final output to stdout.",
+        "long form argument" : "--output-to-stdout",
+        "short form argument" : "-s",
+        "command line argument" : "-o",
+        "data type" : "flag"
+      },
+      {
+        "description" : "Number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
+        "command line argument" : "-@",
+        "data type" : "integer"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--no-prefix",
+    "--output-to-stdout",
+    "--threads",
+    "--in",
+    "--out"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+        {
+          "id" : "prefix",
+          "argument" : "--no-prefix",
+          "values" : ["set"]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "input",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        }
+      ]
+    }
+  ]
+}

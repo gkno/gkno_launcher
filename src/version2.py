@@ -242,7 +242,7 @@ def main():
 #    for nodeID in graph.graph.predecessors(task): print('\t\t', nodeID, graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
 #    print('\tOUTPUTS')
 #    for nodeID in graph.graph.successors(task): print('\t\t', nodeID, graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-  #exit(0)
+#  exit(0)
 
   # Print the workflow to screen.
   write.workflow(superpipeline, workflow)

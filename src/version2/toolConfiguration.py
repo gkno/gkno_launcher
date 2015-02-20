@@ -61,9 +61,6 @@ class argumentAttributes:
     self.isStub = False
     self.stubExtensions = []
 
-    # Record if this argument should be hidden in the help.
-    self.hideInHelp = False
-
     # Record the category to which the argument belongs.
     self.category = None
 
@@ -230,7 +227,6 @@ class toolConfiguration:
     allowedAttributes['data type']               = (str, True, True, 'dataType')
     allowedAttributes['description']             = (str, True, True, 'description')
     allowedAttributes['extensions']              = (list, False, True, 'extensions')
-    allowedAttributes['hide in help']            = (bool, False, True, 'hideInHelp')
     allowedAttributes['if input is stream']      = (dict, False, True, 'inputStreamInstructions')
     allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
     allowedAttributes['is filename stub']        = (bool, False, True, 'isStub')
@@ -242,8 +238,10 @@ class toolConfiguration:
     allowedAttributes['stub extensions']         = (list, False, True, 'stubExtensions')
     allowedAttributes['suggestible']             = (bool, False, True, 'isSuggestible')
 
-    # Return if there are no input arguments.
-    if 'Inputs' not in arguments: return
+    # Fail if there is no input arguments section. This is included since all input arguments
+    # are included in the 'Inputs' section and, if by mistake, the section is named 'inputs' (no
+    # capitalisation), input arguments will be miscategorised.
+    if 'Inputs' not in arguments: self.errors.missingArgumentSection(self.name, 'Inputs')
 
     # Check the arguments.
     self.checkArguments('Inputs', arguments['Inputs'], allowedAttributes, isInput = True, isOutput = False)
@@ -259,7 +257,6 @@ class toolConfiguration:
     allowedAttributes['data type']             = (str, True, True, 'dataType')
     allowedAttributes['description']           = (str, True, True, 'description')
     allowedAttributes['extensions']            = (list, False, True, 'extensions')
-    allowedAttributes['hide in help']          = (bool, False, True, 'hideInHelp')
     allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
     allowedAttributes['is filename stub']      = (bool, False, True, 'isStub')
     allowedAttributes['if output to stream']   = (dict, False, True, 'outputStreamInstructions')
@@ -271,8 +268,10 @@ class toolConfiguration:
     allowedAttributes['short form argument']   = (str, False, True, 'shortFormArgument')
     allowedAttributes['stub extensions']       = (list, False, True, 'stubExtensions')
 
-    # Return if there are no input arguments.
-    if 'Outputs' not in arguments: return
+    # Fail if there is no output arguments section. This is included since all output arguments
+    # are included in the 'Outputs' section and, if by mistake, the section is named 'outputs' (no
+    # capitalisation), output arguments will be miscategorised.
+    if 'Outputs' not in arguments: self.errors.missingArgumentSection(self.name, 'Outputs')
 
     # Check the arguments.
     self.checkArguments('Outputs', arguments['Outputs'], allowedAttributes, isInput = False, isOutput = True)
@@ -287,7 +286,6 @@ class toolConfiguration:
     allowedAttributes['data type']               = (str, True, True, 'dataType')
     allowedAttributes['description']             = (str, True, True, 'description')
     allowedAttributes['extensions']              = (list, False, True, 'extensions')
-    allowedAttributes['hide in help']            = (bool, False, True, 'hideInHelp')
     allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
     allowedAttributes['long form argument']      = (str, True, True, 'longFormArgument')
     allowedAttributes['modify argument']         = (str, False, True, 'modifyArgument')

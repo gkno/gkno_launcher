@@ -1,6 +1,6 @@
 {
   "id" : "bwa-mem",
-  "description" : "Pairwise alignment of anext-generation sequencing reads against a reference genome.",
+  "description" : "Pairwise alignment of next-generation sequencing reads against a reference genome.",
   "categories" : ["Aligners", "BWA"],
   "tools" : ["bwa"],
   "path" : "bwa",
@@ -13,36 +13,35 @@
         "long form argument" : "--fastq",
         "short form argument" : "-q",
         "command line argument" : "none",
+        "modify argument" : "omit",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["fq", "fq.gz", "fastq", "fastq.gz"],
-        "modify argument" : "omit"
+        "extensions" : ["fq", "fq.gz", "fastq", "fastq.gz"]
       },
       {
         "description" : "The second mate FASTQ file.",
         "long form argument" : "--fastq2",
         "short form argument" : "-q2",
         "command line argument" : "none",
+        "modify argument" : "omit",
         "data type" : "string",
-        "extensions" : ["fq", "fq.gz", "fastq", "fastq.gz"],
-        "modify argument" : "omit"
+        "extensions" : ["fq", "fq.gz", "fastq", "fastq.gz"]
       },
       {
         "description" : "FM-index files (prefix).",
-        "long form argument" : "--index",
+        "long form argument" : "--reference-prefix",
         "short form argument" : "-x",
         "command line argument" : "none",
+        "modify argument" : "omit",
         "required" : true,
         "data type" : "string",
-        "modify argument" : "omit",
-        "modify value" : "omit",
         "is filename stub" : true,
-        "filename extensions" : [
-          ".amb",
-          ".ann",
-          ".bwt",
-          ".pac",
-          ".sa"
+        "stub extensions" : [
+          "amb",
+          "ann",
+          "bwt",
+          "pac",
+          "sa"
         ]
       }
     ],
@@ -52,6 +51,7 @@
         "description" : "The output alignment file",
         "long form argument" : "--out",
         "short form argument" : "-o",
+        "command line argument" : "none",
         "output to stdout" : true,
         "required" : true,
         "data type" : "string",
@@ -60,6 +60,10 @@
           "method": "from tool argument",
           "use argument" : "--fastq",
           "modify extension" : "replace"
+        },
+        "if output to stream" : {
+          "argument" : "omit",
+          "value" : "omit"
         }
       }
     ],
@@ -202,7 +206,7 @@
 
     "Input/output options" : [
       {
-        "description" : "Read group header line such as '@RG\tID:foo\tSM:bar' [null].",
+        "description" : "Read group header line such as '@RG\tid:foo\tSM:bar' [null].",
         "long form argument" : "--read-group-header",
         "short form argument" : "-R",
         "command line argument" : "-R",
@@ -296,7 +300,7 @@
     "--use-soft-clipping",
     "--mark-splits",
     "--insert-size-distribution",
-    "--index",
+    "--reference-prefix",
     "--fastq",
     "--fastq2",
     "--sam"

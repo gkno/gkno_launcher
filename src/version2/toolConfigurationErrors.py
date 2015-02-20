@@ -44,3 +44,12 @@ class toolErrors:
     self.text.append('Please modify the the configuration file to only contain valid values for all attributes.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  # If the 'Inputs' or 'Outputs' sections are missing from the arguments.
+  def missingArgumentSection(self, name, section):
+    self.text.append('Missing arguments section.')
+    self.text.append('The configuration file for tool \'' + name + '\' is missing \'' + section + '\' in the arguments section. All tool ' + \
+    'configuration files must include sections titled \'Inputs\' and \'Outputs\' (note the capitalisation) in the argument section, even if ' + \
+    'no actual arguments are included within these sections. Please ensure that these sections are present.') 
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

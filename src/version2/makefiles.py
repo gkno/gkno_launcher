@@ -311,13 +311,20 @@ class makefiles:
   def addOption(self, graph, task, data, nodeID):
 
     # TODO CHECK FOR INFORMATION ON MODIFYING THE ARGUMENT AND THE VALUE.
-    # Get the argument and values for the option node.
+    # Get the argument, values and data type for the option node.
     argument = self.getToolArgument(graph, task, nodeID, isInput = True)
     values   = graph.getGraphNodeAttribute(nodeID, 'values')
+    dataType = graph.getArgumentAttribute(nodeID, task, 'dataType')
 
     # If there is only a single value, apply this to all the command lines.
     if len(values) == 1:
-      lineValue = self.getValue(graph, task, nodeID, values[0], isInput = True)
+
+      # If this is a flag, check if the flag is set or not. If it is, the line should only include the
+      # argument and not the value. If unset, nothing should be included.
+      if dataType == 'flag':
+        lineValue = ''
+        if values[0] != 'set': argument = ''
+      else: lineValue = self.getValue(graph, task, nodeID, values[0], isInput = True)
       line      = self.buildLine(argument, data.delimiter, lineValue)
       if line:
         for i in range(0, data.noCommandLines): data.commands[i].append(line)
@@ -334,8 +341,15 @@ class makefiles:
       i = 0
       for j in range(0, data.noSubphases):
         for value in values:
-          lineValue = self.getValue(graph, task, nodeID, value, isInput = True)
-          line      = self.buildLine(argument, data.delimiter, lineValue)
+
+          # Again, check if this is a flag.
+          if dataType == 'flag':
+            lineValue = ''
+            if value != 'set': updatedArgument = ''
+          else:
+            lineValue       = self.getValue(graph, task, nodeID, value, isInput = True)
+            updatedArgument = argument
+          line = self.buildLine(updatedArgument, data.delimiter, lineValue)
           if line: data.commands[i].append(line)
           i += 1
 

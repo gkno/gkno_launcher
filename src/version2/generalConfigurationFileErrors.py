@@ -96,9 +96,15 @@ class generalConfigurationFileErrors:
 
     # Define the error message if no section or node ID is provided.
     if not section and not id:
-      self.text.append('The top level of the configuration file (' + name + '.json) contains the attribute \'' + attribute + '\'. The data type ' + \
-      'of this attribute is expected to be \'' + dataType + '\', but the value provided has the type \'' + valueType + '\'. Please check the ' + \
-      'configuration file and ensure that all attributes are correctly defined.')
+      self.text.append('The top level of the configuration file \'' + name + '.json\' contains the attribute \'' + attribute + '\'. The data ' + \
+      'type of this attribute is expected to be \'' + dataType + '\', but the value provided has the type \'' + valueType + '\'. Please check ' + \
+      'the configuration file and ensure that all attributes are correctly defined.')
+
+    # If only the id is not set.
+    elif not id:
+      self.text.append('The \'' + section + '\' section of the configuration file \'' + name + '.json\' contains the attribute \'' + attribute + \
+      '\'. The data type of this attribute is expected to be \'' + dataType + '\', but the value provided has the type \'' + valueType + \
+      '\'. Please check the configuration file and ensure that all attributes are correctly defined.')
 
     # TODO FINISH
     else: print('generalConfigurationFileErrors - incorrectType- NOT HANDLED')
