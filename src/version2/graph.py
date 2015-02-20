@@ -978,11 +978,13 @@ class pipelineGraph:
 
     # Get information on the previous task in the pipeline.
     if i > 0:
+      divisions                             = self.getGraphNodeAttribute(self.workflow[i - 1], 'divisions')
       previousTask                          = self.workflow[i - 1]
       isPreviousGenerateMultipleOutputNodes = self.getGraphNodeAttribute(previousTask, 'generateMultipleOutputNodes')
       isPreviousMultipleTaskCalls           = self.getGraphNodeAttribute(previousTask, 'multipleTaskCalls')
       isPreviousConsolidate                 = self.getGraphNodeAttribute(previousTask, 'consolidate')
     else:
+      divisions                             = 1
       previousTask                          = None
       isPreviousGenerateMultipleOutputNodes = False
       isPreviousMultipleTaskCalls           = False
@@ -1028,9 +1030,20 @@ class pipelineGraph:
     # output files.
     if noInputs > 1:
 
+      # If the previous task was broken into divisions, then it would have multiple output files based on the
+      # option arguments supplied to it. This task would then have multiple inputs leading to multiple outputs
+      # without considering breaking the task into subphases.
+      if divisions != 1:
+
+        # If the number of input files is not the same as the number of divisions, there is an error.
+        if noInputs != divisions: print('ERROR - graph.getNumberOfValues - 1a'); exit(1)
+
+        # If this task is already broken into divisions, it cannot currently accept multiple options itself.
+        elif noOptions > 1: print('ERROR - graph.getNumberOfValues - 1b'); exit(1)
+
       # If the previous task produced multiple output nodes, or was run multiple times, this task should similarly
       # be run multiple times.
-      if isPreviousGenerateMultipleOutputNodes or isPreviousMultipleTaskCalls:
+      elif isPreviousGenerateMultipleOutputNodes or isPreviousMultipleTaskCalls:
 
         # If the next task in the pipeline is greedy, this task should consolidate the output files into a single
         # node.
