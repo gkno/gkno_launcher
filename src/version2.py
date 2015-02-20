@@ -227,6 +227,9 @@ def main():
   # Determine which files are marked for deletion.
   superpipeline.determineFilesToDelete(graph)
 
+  # Mark any tasks that have greedy arguments as greedy.
+  graph.markGreedyTasks(superpipeline)
+
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
   # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc. In addition check
   # the arguments that have been supplied to each task. In particular, check the number of values given to all

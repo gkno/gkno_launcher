@@ -138,3 +138,42 @@ class pipelineErrors:
     'in the pipeline configuration file are valid for the tools they are linked to.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  ##################################################
+  ## Errors generated while dealing with streams. ##
+  ##################################################
+
+  # If a task is marked as outputting to a stream, but has no argument marked as
+  # being able to output to a stream.
+  def noOutputStreamArgument(self, task, tool):
+    self.text.append('Error with output stream.')
+    self.text.append('The task \'' + task + '\', using the tool \'' + tool + '\' is marked as outputting to a stream in the \'pipeline ' + \
+    'tasks\' section of the configuration file, but no output arguments are identified with streaming outputs. Please check that this task is ' + \
+    'supposed to be outputting to a stream and if so, ensure that one of the output arguments in the tool configuration file has instructions ' + \
+    'on how to be handled if the output is a stream.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # If a tool is marked as outputting to a stream, but no task in the pipeline is 
+  # marked as accepting a stream.
+  def noStreamInstructions(self, task, tool, inputTask, inputTool):
+    self.text.append('Error with streaming files.')
+    self.text.append('The task \'' + task + '\', using the tool \'' + tool + '\' is marked as outputting to a stream in the \'pipeline ' + \
+    'tasks\' section of the configuration file and the task \'' + inputTask + '\', using the tool \'' + inputTool + '\' accepts the stream as ' + \
+    'input. There are no input arguments for the \'' + inputTask + '\' task that have instructions on how to use a stream as input. Please check ' + \
+    'that the correct task is marked as accepting a stream, and ensure that an input argument in it\'s tool configuration file has instructions ' + \
+    'on how to modify the argument to handle a streaming input.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # If a tool is marked as outputting to a stream, but no task in the pipeline is 
+  # marked as accepting a stream.
+  def noNodeAcceptingStream(self, task, tool):
+    self.text.append('Error with streaming files.')
+    self.text.append('The task \'' + task + '\', using the tool \'' + tool + '\' is marked as outputting to a stream in the \'pipeline ' + \
+    'tasks\' section of the configuration file, but no tasks are marked as accepting a stream. Since a task is outputting to a stream, ' + \
+    'another task (by convention, the next task in the list) must be able to accept the stream as input. This is achieved by including the ' + \
+    '\'"input is stream" : true\' field in the \'pipeline tasks\' section for the task that will accept a streaming input. Please ensure that ' + \
+    'this is the case.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

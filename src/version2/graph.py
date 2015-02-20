@@ -11,6 +11,7 @@ import networkx as nx
 import constructFilenames as construct
 import parameterSets as ps
 import parameterSetErrors as pse
+import pipelineConfigurationErrors as pce
 import stringOperations as stringOps
 import superpipeline as sp
 
@@ -908,6 +909,30 @@ class pipelineGraph:
         # Replace the values with the modifiedValues.
         self.setGraphNodeAttribute(nodeID, 'values', modifiedValues)
 
+  # Loop over all inputs to each task and determine if any of them are listed as greedy. If so, mark the task
+  # as greedy.
+  def markGreedyTasks(self, superpipeline):
+
+    # Loop over all the tasks.
+    for task in self.workflow:
+
+      # Get the tool associated with the task.
+      tool = superpipeline.tasks[task]
+  
+      # Loop over the input files.
+      for fileNodeID in self.getInputFileNodes(task):
+  
+        # Determine the tool argument that uses the values from this node.
+        argument = self.getArgumentAttribute(fileNodeID, task, 'longFormArgument')
+  
+        # Check the greedy attribute for the task and update if necessary.
+        if self.getArgumentAttribute(fileNodeID, task, 'isGreedy'):
+          #TODO ERROR
+          if not superpipeline.toolConfigurationData[tool].getArgumentAttribute(argument, 'allowMultipleValues'): print('ERROR - GREEDY'); exit(0)
+  
+          # Mark the task node to indicate that this task is greedy.
+          self.setGraphNodeAttribute(task, 'isGreedy', True)
+
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
   # a tool could be fed n input files for a single argument and be run n times or once etc.
   def determineNumberOfTaskExecutions(self, superpipeline):
@@ -1489,8 +1514,7 @@ class pipelineGraph:
             self.setArgumentAttribute(task, nodeID, 'isStream', True)
 
         # If no arguments were found that can output to a stream, terminate.
-        #TODO ERROR
-        if not outputStreamNodeIDs: print('NO OUTPUT STREAMS. graph.checkStreams - 1'); exit(1)
+        if not outputStreamNodeIDs: pce.pipelineErrors().noOutputStreamArgument(task, tool)
 
         # Any individual task can only produce a single output stream, however, if this task generates multiple
         # outputs, or is executed multiple times, each of the separate subphases can output to a stream. Check
@@ -1514,6 +1538,7 @@ class pipelineGraph:
           for successorTask in self.graph.successors(nodeID):
             isInputStream      = self.getGraphNodeAttribute(successorTask, 'isInputStream')
             streamInstructions = self.getArgumentAttribute(nodeID, successorTask, 'inputStreamInstructions')
+            successorTool      = self.getGraphNodeAttribute(successorTask, 'tool')
 
             # If this task is marked as accepting a stream and the argument has instructions on how to handle a
             # streaming input, store the task and mark the edge as a stream.
@@ -1526,14 +1551,10 @@ class pipelineGraph:
               self.setArgumentAttribute(nodeID, successorTask, 'isStream', True)
 
             # If the input is a stream and there are no instructions on how to process the argument, fail.
-            #TODO ERROR
-            if isInputStream and not streamInstructions: print('ERROR - INPUT STREAM INSTRUCTIONS - graph.checkStreams - 3c', task, nodeID); exit(1)
+            if isInputStream and not streamInstructions: pce.pipelineErrors().noStreamInstructions(task, tool, successorTask, successorTool)
 
         # If there are no nodes accepting a stream, then the pipeline cannot work.
-        #TODO ERROR. Note that this error could be caused by no tasks in the pipeline being marked as accepting a stream
-        # or because the argument associated with the task marked as accepting a stream has no instructions on how to
-        # handle an input stream. Ensure that the error message reflects this.
-        if not inputStreamNodeIDs: print('NO NODES ACCEPTING STREAM - graph.checkStreams - 4'); exit(1)
+        if not inputStreamNodeIDs: pce.pipelineErrors().noNodeAcceptingStream(task, tool)
 
         # If there are multiple nodes accepting a stream, this is only allowed if there are multiple subphases and
         # the original task outputting to the stream itself outputs to multiple streams. If there are multiple

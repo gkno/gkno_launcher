@@ -7,11 +7,13 @@
     {
       "task" : "call",
       "tool" : "freebayes",
-      "include in reduced plot" : true
+      "include in reduced plot" : true,
+      "output to stream" : true
     },
     {
       "task" : "compress",
-      "tool" : "bgzip"
+      "tool" : "bgzip",
+      "input is stream" : true
     }
   ],
 
@@ -24,7 +26,8 @@
     {
       "id" : "bam",
       "task" : "call",
-      "task argument" : "--in"
+      "task argument" : "--in",
+      "is greedy" : true
     },
     {
       "id" : "reference",
