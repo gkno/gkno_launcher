@@ -29,7 +29,6 @@
         "modify value" : "omit",
         "extensions" : ["bai"],
         "data type" : "string",
-        "hide in help" : true,
         "allow multiple values" : true,
         "construct filename" : {
           "method": "from tool argument",
@@ -55,7 +54,6 @@
         "modify value" : "omit",
         "required" : true,
         "extensions" : ["fai"],
-        "hide in help" : true,
         "data type" : "string",
         "construct filename" : {
           "method": "from tool argument",

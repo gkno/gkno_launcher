@@ -8,20 +8,21 @@
       "task" : "merge",
       "tool" : "bamtools-merge",
       "output to stream" : true,
-      "generate multiple output nodes" : "--out"
+      "generate multiple output nodes" : "--out",
+      "omit from reduced plot" : true
     },
     {
       "task" : "call",
       "tool" : "freebayes",
       "input is stream" : true,
-      "multiple task calls" : true,
-      "include in reduced plot" : true
+      "multiple task calls" : true
     },
     {
       "task" : "combine-vcf",
       "tool" : "vcf-combine",
       "multiple task calls" : true,
-      "consolidate nodes" : "--out"
+      "consolidate nodes" : "--out",
+      "omit from reduced plot" : true
     }
   ],
 

@@ -28,7 +28,6 @@
         "extensions" : ["bai"],
         "required" : true,
         "data type" : "string",
-        "hide in help" : true,
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",

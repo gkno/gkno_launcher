@@ -121,6 +121,11 @@ class dataNodeAttributes:
     # Also store if this node is the daughter of another node.
     self.isDaughterNode = False
 
+    # If the files contained in this node are being streamed from one task to the next, the files
+    # are actually never created. Mark the node as containing streaming files so that attempts to
+    # delete them will not be made, and the files will not be listed as outputs or dependencies.
+    self.isStream = False
+
 # Define a class to store and manipulate the pipeline graph.
 class pipelineGraph:
   def __init__(self):
@@ -1525,6 +1530,9 @@ class pipelineGraph:
             if nodeID not in outputStreamNodeIDs: outputStreamNodeIDs[nodeID] = []
             outputStreamNodeIDs[nodeID].append(streamInstructions)
             self.setArgumentAttribute(task, nodeID, 'isStream', True)
+
+            # Mark the file node which is being streamed.
+            self.setGraphNodeAttribute(nodeID, 'isStream', True)
 
         # If no arguments were found that can output to a stream, terminate.
         if not outputStreamNodeIDs: pce.pipelineErrors().noOutputStreamArgument(task, tool)

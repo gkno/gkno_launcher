@@ -213,7 +213,7 @@ class makefiles:
     elif isInput and nodeID == multinodeInput: self.addSubphaseFiles(graph, task, data, nodeID, isInput)
     elif not isInput and nodeID == multinodeOutput: self.addSubphaseFiles(graph, task, data, nodeID, isInput)
 
-    # If this is a single output node.
+    # If this is a single input or output node.
     else: self.addFiles(graph, task, data, nodeID, isInput)
 
   # Get all the command arguments for subphase input or output files.
@@ -246,6 +246,15 @@ class makefiles:
       # Check if this node contains intermediate files.
       isIntermediate = graph.getGraphNodeAttribute(nodeID, 'isIntermediate')
 
+      # Determine if this argument is for a stream.
+      if isInput: isStream = graph.getArgumentAttribute(nodeID, task, 'isStream')
+      else: isStream = graph.getArgumentAttribute(task, nodeID, 'isStream')
+
+      # Convert the values into the form required on the command line.
+      if isInput and isStream: lineValues = [self.getInputStreamValue(graph, task, nodeID, value) for value in values]
+      elif not isInput and isStream: lineValues = [self.getOutputStreamValue(graph, task, nodeID, value) for value in values]
+      else: lineValues = [self.getValue(graph, task, nodeID, value, isInput) for value in values]
+
       # If there are less values than the number of divisions, there is a problem, unless this is a
       # consolidation node. In this case, all of the inputs files are being used in the same command line
       # and the number of command lines is reduced down to the number of subphases, e.g. the number of
@@ -276,28 +285,19 @@ class makefiles:
         else: taskNode = graph.graph.predecessors(nodeID)[0]
 
       # Loop over the values and update the command lines for the task.
-      for value in values:
-
-        # If this is a streaming input, get the value based on the instructions defined by the tool.
-        if isInput and graph.getArgumentAttribute(nodeID, taskNode, 'isStream'): lineValue = self.getInputStreamValue(graph, taskNode, nodeID, value)
-
-        # Similarly if this is an output stream.
-        elif not isInput and graph.getArgumentAttribute(taskNode, nodeID, 'isStream'): lineValue = self.getOutputStreamValue(graph, taskNode, nodeID, value)
-
-        # If this is not a stream, get the value using the remaining instructions.
-        else: lineValue = self.getValue(graph, taskNode, nodeID, value, isInput)
-
-        #TODO ADD METHODS TO MODIFY VALUE. E,G, STREAMS
+      for value, lineValue in zip(values, lineValues):
         line = self.buildLine(argument, data.delimiter, lineValue)
         if line: data.commands[i].append(line)
 
-        # Add the files to the dependencies or outputs for the command line.
-        if isInput: data.dependencies[i].append(str(value))
-        else: data.outputs[i].append(str(value))
+        # Add the files to the dependencies or outputs for the command line (do not add the values to the list of
+        # inputs and dependencies if the files are being streamed).
+        if not isStream:
+          if isInput: data.dependencies[i].append(str(value))
+          else: data.outputs[i].append(str(value))
 
-        # If this is an intermediate file, add to the list of intermediate files.
-        if isIntermediate:
-          if str(value) not in data.intermediates[i]: data.intermediates[i].append(str(value))
+          # If this is an intermediate file, add to the list of intermediate files.
+          if isIntermediate:
+            if str(value) not in data.intermediates[i]: data.intermediates[i].append(str(value))
 
         # If this is not a consolidation node, increment the counter.
         if not isConsolidate: i += 1
@@ -370,71 +370,68 @@ class makefiles:
     # Determine if the task outputs to stdout.
     isStdout = graph.getArgumentAttribute(task, nodeID, 'isStdout') if not isInput else False
 
+    # Determine if this argument is for a stream.
+    if isInput: isStream = graph.getArgumentAttribute(nodeID, task, 'isStream')
+    else: isStream = graph.getArgumentAttribute(task, nodeID, 'isStream')
+
+    # Convert the values into the form required on the command line.
+    if isInput and isStream: lineValues = [self.getInputStreamValue(graph, task, nodeID, value) for value in values]
+    elif not isInput and isStream: lineValues = [self.getOutputStreamValue(graph, task, nodeID, value) for value in values]
+    else: lineValues = [self.getValue(graph, task, nodeID, value, isInput) for value in values]
+
     # If there is only a single file, attach to all of the command lines.
     if len(values) == 1:
 
-      # Get the value to be used on the command line. This depends on whether the file is streamed or not.
-      if isInput and graph.getArgumentAttribute(nodeID, task, 'isStream'): lineValue = self.getInputStreamValue(graph, task, nodeID, values[0])
-      elif not isInput and graph.getArgumentAttribute(task, nodeID, 'isStream'): lineValue = self.getOutputStreamValue(graph, task, nodeID, values[0])
-      else: lineValue = self.getValue(graph, task, nodeID, values[0], isInput)
-
       # Build the tool specific command line.
-      line = self.buildLine(argument, data.delimiter, lineValue)
+      line = self.buildLine(argument, data.delimiter, lineValues[0])
       for i in range(0, data.noCommandLines):
 
         # If this task outputs to stdout, put the values into a structure to return.
-        if isStdout: data.stdouts[i] = str('\t>> ' + lineValue  + ' \\')
+        if isStdout: data.stdouts[i] = str('\t>> ' + lineValues[0] + ' \\')
         elif line: data.commands[i].append(line)
 
-        # Add the files to the dependencies or outputs for the command line.
-        if isInput: data.dependencies[i].append(str(values[0]))
-        else: data.outputs[i].append(str(values[0]))
+        # Add the files to the dependencies or outputs for the command line, unless this is a stream.
+        if not isStream:
+          if isInput: data.dependencies[i].append(str(values[0]))
+          else: data.outputs[i].append(str(values[0]))
 
-        # Add to the intermediates if necessary.
-        if isIntermediate and str(values[0]) not in data.intermediates[i]: data.intermediates[i].append(str(values[0]))
+          # Add to the intermediates if necessary.
+          if isIntermediate and str(values[0]) not in data.intermediates[i]: data.intermediates[i].append(str(values[0]))
 
     # If this is a greedy task, add all the values to each command line.
     elif isInput and data.isGreedy:
       for i in range(0, data.noCommandLines):
-        for value in values:
-
-          # Get the value to use on the command line (multiple inputs to a greedy node cannot be streamed, so no
-          # check is provided for this.
-          lineValue = self.getValue(graph, task, nodeID, value, isInput)
+        for value, lineValue in zip(values, lineValues):
 
           # Build the tool specific command line.
           line = self.buildLine(argument, data.delimiter, lineValue)
           if line: data.commands[i].append(line)
 
-          # Add the files to the dependencies or outputs for the command line.
-          data.dependencies[i].append(str(value))
+          # Add the files to the dependencies or outputs for the command line (if not being streamed).
+          if not isStream:
+            data.dependencies[i].append(str(value))
 
-          # Add to the intermediates if necessary.
-          if isIntermediate and str(value) not in data.intermediates[i]: data.intermediates[i].append(str(value))
+            # Add to the intermediates if necessary.
+            if isIntermediate and str(value) not in data.intermediates[i]: data.intermediates[i].append(str(value))
 
     # If this is an input for a task that generates multiple nodes, and there are as many values as
     # there are subphases, add the files in the correct order. If there are N divisions, the first
     # file is used for the first subphase and so the first N command lines etc.
     elif isInput and isGeneratesMultipleNode:
       i = 0
-      for value in values:
-
-        # Generate the correct value to use on the command line. Since this task generates multiple output nodes, it
-        # is executed once per input, so the inputs can be streamed in and out of this task. The input value can
-        # therefore, be influenced by streaming instructions.
-        if graph.getArgumentAttribute(nodeID, task, 'isStream'): lineValue = self.getInputStreamValue(graph, task, nodeID, value)
-        else: lineValue = self.getValue(graph, task, nodeID, value, isInput)
+      for value, lineValue in zip(values, lineValues):
 
         # Construct the tool specific command line.
         line = self.buildLine(argument, data.delimiter, lineValue)
         for j in range(0, data.noDivisions):
           if line: data.commands[i].append(line)
 
-          # Add the files to the dependencies or outputs for the command line.
-          data.dependencies[i].append(str(value))
-
-          # Add to the intermediates if necessary.
-          if isIntermediate and str(value) not in data.intermediates[i]: data.intermediates[i].append(str(value))
+          # Add the files to the dependencies or outputs for the command line (if not being streamed).
+          if not isStream:
+            data.dependencies[i].append(str(value))
+  
+            # Add to the intermediates if necessary.
+            if isIntermediate and str(value) not in data.intermediates[i]: data.intermediates[i].append(str(value))
 
           # Increment the counter.
           i += 1
@@ -444,22 +441,22 @@ class makefiles:
     # e.g. the number of divisions is reset to one. If this is the case, consolidate the command lines.
     elif not isInput and isConsolidate:
       i = 0
-      for value in values:
+      for value, lineValue in zip(values, lineValues):
 
         # If there are multiple tasks feeding into a single task to be consolidated, the outputs for this task
         # cannot be streamed.
-        lineValue = self.getValue(graph, task, nodeID, value, isInput)
-        line      = self.buildLine(argument, data.delimiter, lineValue)
+        line = self.buildLine(argument, data.delimiter, lineValue)
 
         # If the task outputs to stdout, store the values to return.
         if isStdout: data.stdouts[i] = str('\t>> ' + lineValue + ' \\')
         elif line: data.commands[i].append(line)
 
-        # Add the files to the dependencies or outputs for the command line.
-        data.outputs[i].append(str(value))
-
-        # Add to the intermediates if necessary.
-        if isIntermediate and str(value) not in data.intermediates[i]: data.intermediates[i].append(str(value))
+        # Add the files to the dependencies or outputs for the command line (if not streamed).
+        if not isStream:
+          data.outputs[i].append(str(value))
+  
+          # Add to the intermediates if necessary.
+          if isIntermediate and str(value) not in data.intermediates[i]: data.intermediates[i].append(str(value))
 
         # Increment the counter.
         i += 1
@@ -467,11 +464,7 @@ class makefiles:
     # If there are as many files as there are divisions, add the files in the correct order.
     elif not isGeneratesMultipleNode and len(values) == data.noDivisions:
       for i, value in enumerate(values):
-
-        # Get the value depending on whether the files are streamed or not.
-        if isInput and graph.getArgumentAttribute(nodeID, task, 'isStream'): lineValue = self.getInputStreamValue(graph, task, nodeID, value)
-        elif not isInput and graph.getArgumentAttribute(task, nodeID, 'isStream'): lineValue = self.getOutputStreamValue(graph, task, nodeID, value)
-        else: lineValue = self.getValue(graph, task, nodeID, value, isInput)
+        lineValue = lineValues[i]
 
         # Build the tool specific command line.
         line = self.buildLine(argument, data.delimiter, lineValue)
@@ -480,12 +473,13 @@ class makefiles:
         if isStdout: data.stdouts[i] = str('\t>> ' + lineValue + ' \\')
         elif line: data.commands[i].append(line)
 
-        # Add the files to the dependencies or outputs for the command line.
-        if isInput: data.dependencies[i].append(str(value))
-        else: data.outputs[i].append(str(value))
-
-        # Add to the intermediates if necessary.
-        if isIntermediate and str(value) not in data.intermediates[i]: data.intermediates[i].append(str(value))
+        # Add the files to the dependencies or outputs for the command line (if not being streamed).
+        if not isStream:
+          if isInput: data.dependencies[i].append(str(value))
+          else: data.outputs[i].append(str(value))
+  
+          # Add to the intermediates if necessary.
+          if isIntermediate and str(value) not in data.intermediates[i]: data.intermediates[i].append(str(value))
 
     # If there are a different number of files to subphases, there is a problem.
     #TODO ERROR
