@@ -318,8 +318,9 @@ class helpInformation:
     for argument in arguments:
 
       # Only process arguments for the top level pipeline (e.g. not for arguments that include
-      # the address of the tool/pipeline that they point to.
-      if '.' not in argument:
+      # the address of the tool/pipeline that they point to). Also, do not include arguments that
+      # have been marked in the configuration file as not to be included in the help message.
+      if '.' not in argument and not arguments[argument].hideInHelp:
         graphNodeIDs      = arguments[argument].graphNodeIDs
         category          = arguments[argument].category
         dataType          = arguments[argument].dataType

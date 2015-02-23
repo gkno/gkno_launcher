@@ -87,6 +87,9 @@ class pipelineArguments:
     # Record if the argument is listed as required in the pipeline configuration file.
     self.isRequired = False
 
+    # Record if the argument should not be shown in the help message.
+    self.hideInHelp = False
+
 # Define a class to store information on shared pipeline nodes.
 class sharedGraphNodes:
   def __init__(self):
@@ -498,6 +501,7 @@ class pipelineConfiguration:
     # Define the allowed nodes attributes.
     allowedAttributes                        = {}
     allowedAttributes['description']         = (str, True, True, 'description')
+    allowedAttributes['hide in help']        = (bool, False, True, 'hideInHelp')
     allowedAttributes['long form argument']  = (str, True, True, 'longFormArgument')
     allowedAttributes['node id']             = (str, True, True, 'nodeID')
     allowedAttributes['required']            = (bool, False, True, 'isRequired')
