@@ -217,7 +217,7 @@ class pipelineGraph:
         if isStub:
 
           # Loop over all of the stub extensions.
-          for extension in stubExtensions:
+          for i, extension in enumerate(stubExtensions):
 
             # Define the name of the new file node.
             fileNodeID = str(graphNodeID + '.' + str(extension))
@@ -230,8 +230,13 @@ class pipelineGraph:
             source = fileNodeID if isInput else taskNodeID
             target = taskNodeID if isInput else fileNodeID
 
+            # Store the extension for this particular node.
+            stubArgumentAttributes                 = deepcopy(argumentAttributes)
+            stubArgumentAttributes.stubExtension   = extension
+            stubArgumentAttributes.primaryStubNode = True if i == 0 else False
+
             # Add the edge to the graph.
-            self.graph.add_edge(source, target, attributes = argumentAttributes)
+            self.graph.add_edge(source, target, attributes = stubArgumentAttributes)
 
         # If this is an input file (not a stub), add the node and join it to the task.
         elif isInput:

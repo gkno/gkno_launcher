@@ -57,9 +57,11 @@ class argumentAttributes:
     self.isRequired = False
 
     # Record id the argument points to a filename stub and store the 
-    # associated extensions.
-    self.isStub = False
-    self.stubExtensions = []
+    # associated extensions. Also, store the extension for this specific node.
+    self.isStub          = False
+    self.primaryStubNode = False
+    self.stubExtension   = None
+    self.stubExtensions  = []
 
     # Record the category to which the argument belongs.
     self.category = None

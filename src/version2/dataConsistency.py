@@ -358,20 +358,33 @@ def setFilePaths(graph, gknoArguments, gknoOptions):
     # into or from multiple tasks, a file is an input, if and only if, the file nodes
     # associated with the option node have no predecessors.
     isInput = False if graph.graph.predecessors(nodeID) else True
+    if isInput:
+      source = nodeID
+      target = graph.graph.successors(nodeID)[0]
+    else:
+      source = graph.graph.predecessors(nodeID)[0]
+      target = nodeID
+
+    # Determine if this is a stub,
+    isStub = graph.getArgumentAttribute(source, target, 'isStub')
+    if isStub: stubExtension = graph.getArgumentAttribute(source, target, 'stubExtension')
 
     # Get the values associated with the node.
     updatedValues = []
     for value in graph.getGraphNodeAttribute(nodeID, 'values'):
+
+      # Update the value to include the extension, if this is a stub.
+      modifiedValue = str(value + '.' + stubExtension) if isStub else value
 
       # Check if the value already has a path. If not, add the input or output path. In addition
       # store all of the input files. Since these are specifically defined as files that are not
       # created by any task in the pipeline, these files need to exist in order for the pipeline
       # to run.
       if isInput:
-        updatedValue = str(value) if '/' in value else str(inputPath + value)
+        updatedValue = str(modifiedValue) if '/' in modifiedValue else str(inputPath + modifiedValue)
         updatedValues.append(updatedValue)
         inputFiles.append(updatedValue)
-      else: updatedValues.append(str(value) if '/' in value else str(outputPath + value))
+      else: updatedValues.append(str(modifiedValue) if '/' in modifiedValue else str(outputPath + modifiedValue))
 
     # Replace the values stored in the node with the values including the absolute path.
     graph.setGraphNodeAttribute(nodeID, 'values', updatedValues)

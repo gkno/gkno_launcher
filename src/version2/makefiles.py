@@ -221,6 +221,12 @@ class makefiles:
 
     # Initialise variables.
     i = 0
+    if isInput:
+      source = nodeID
+      target = task
+    else:
+      source = task
+      target = nodeID
 
     # Get the daughter nodes.
     nodeIDs = [nodeID] + graph.getGraphNodeAttribute(nodeID, 'daughterNodes')
@@ -247,13 +253,11 @@ class makefiles:
       isIntermediate = graph.getGraphNodeAttribute(nodeID, 'isIntermediate')
 
       # Determine if this argument is for a stream.
-      if isInput: isStream = graph.getArgumentAttribute(nodeID, task, 'isStream')
-      else: isStream = graph.getArgumentAttribute(task, nodeID, 'isStream')
+      isStream = graph.getArgumentAttribute(source, target, 'isStream')
 
       # Convert the values into the form required on the command line.
-      if isInput and isStream: lineValues = [self.getInputStreamValue(graph, task, nodeID, value) for value in values]
-      elif not isInput and isStream: lineValues = [self.getOutputStreamValue(graph, task, nodeID, value) for value in values]
-      else: lineValues = [self.getValue(graph, task, nodeID, value, isInput) for value in values]
+      if isStream: lineValues = [self.getStreamValue(graph, source, target, value, isInput, isStub) for value in values]
+      else: lineValues = [self.getValue(graph, source, target, value, isInput, isStub) for value in values]
 
       # If there are less values than the number of divisions, there is a problem, unless this is a
       # consolidation node. In this case, all of the inputs files are being used in the same command line
@@ -324,7 +328,7 @@ class makefiles:
       if dataType == 'flag':
         lineValue = ''
         if values[0] != 'set': argument = ''
-      else: lineValue = self.getValue(graph, task, nodeID, values[0], isInput = True)
+      else: lineValue = self.getValue(graph, nodeID, task, values[0], isInput = True, isStub = False)
       line      = self.buildLine(argument, data.delimiter, lineValue)
       if line:
         for i in range(0, data.noCommandLines): data.commands[i].append(line)
@@ -347,7 +351,7 @@ class makefiles:
             lineValue = ''
             if value != 'set': updatedArgument = ''
           else:
-            lineValue       = self.getValue(graph, task, nodeID, value, isInput = True)
+            lineValue       = self.getValue(graph, nodeID, task, value, isInput = True, isStub = False)
             updatedArgument = argument
           line = self.buildLine(updatedArgument, data.delimiter, lineValue)
           if line: data.commands[i].append(line)
@@ -355,6 +359,15 @@ class makefiles:
 
   # Add input or output files to the command line (this method is only called for nodes that are not multinodes).
   def addFiles(self, graph, task, data, nodeID, isInput):
+
+    # Set the source and target for the edge. This depends on whether the file is an input to or an output from 
+    # the task.
+    if isInput:
+      source = nodeID
+      target = task
+    else:
+      source = task
+      target = nodeID
 
     # Get the argument and values for the file node.
     argument = self.getToolArgument(graph, task, nodeID, isInput)
@@ -371,13 +384,14 @@ class makefiles:
     isStdout = graph.getArgumentAttribute(task, nodeID, 'isStdout') if not isInput else False
 
     # Determine if this argument is for a stream.
-    if isInput: isStream = graph.getArgumentAttribute(nodeID, task, 'isStream')
-    else: isStream = graph.getArgumentAttribute(task, nodeID, 'isStream')
+    isStream = graph.getArgumentAttribute(source, target, 'isStream')
+
+    # Determine if this is a stub.
+    isStub = graph.getArgumentAttribute(source, target, 'isStub')
 
     # Convert the values into the form required on the command line.
-    if isInput and isStream: lineValues = [self.getInputStreamValue(graph, task, nodeID, value) for value in values]
-    elif not isInput and isStream: lineValues = [self.getOutputStreamValue(graph, task, nodeID, value) for value in values]
-    else: lineValues = [self.getValue(graph, task, nodeID, value, isInput) for value in values]
+    if isStream: lineValues = [self.getStreamValue(graph, source, target, value, isInput, isStub) for value in values]
+    else: lineValues = [self.getValue(graph, source, target, value, isInput, isStub) for value in values]
 
     # If there is only a single file, attach to all of the command lines.
     if len(values) == 1:
@@ -392,11 +406,14 @@ class makefiles:
 
         # Add the files to the dependencies or outputs for the command line, unless this is a stream.
         if not isStream:
-          if isInput: data.dependencies[i].append(str(values[0]))
-          else: data.outputs[i].append(str(values[0]))
+
+          # If this is a stub, add the extension to the value prior to inclusion in the outputs/dependencies.
+          modifiedValue = str(values[0] + '.' + graph.getArgumentAttribute(source, target, 'stubExtension')) if isStub else values[0]
+          if isInput: data.dependencies[i].append(str(modifiedValue))
+          else: data.outputs[i].append(str(modifiedValue))
 
           # Add to the intermediates if necessary.
-          if isIntermediate and str(values[0]) not in data.intermediates[i]: data.intermediates[i].append(str(values[0]))
+          if isIntermediate and str(modifiedValue) not in data.intermediates[i]: data.intermediates[i].append(str(modifiedValue))
 
     # If this is a greedy task, add all the values to each command line.
     elif isInput and data.isGreedy:
@@ -991,22 +1008,11 @@ class makefiles:
   ### Static methods for getting makefile information ###
   #######################################################
 
-  # If the input is a stream, determine how the value should be written to the command line.
+  # If the input/output is a stream, determine how the value should be written to the command line.
   @staticmethod
-  def getInputStreamValue(graph, task, nodeID, value):
-    instructions = graph.getArgumentAttribute(nodeID, task, 'inputStreamInstructions')
-
-    # Return the value based on the instructions.
-    if instructions['value'] == 'omit': return None
-
-    # If none of the above instructions are set, return the value supplied in the instructions. This is
-    # what will be used in place of the value.
-    else: return str(instructions['value'])
-
-  # If the output is a stream, determine how the value should be written to the command line.
-  @staticmethod
-  def getOutputStreamValue(graph, task, nodeID, value):
-    instructions = graph.getArgumentAttribute(task, nodeID, 'outputStreamInstructions')
+  def getStreamValue(graph, source, target, value, isInput, isStub):
+    if isInput: instructions = graph.getArgumentAttribute(source, target, 'inputStreamInstructions')
+    else: instructions = graph.getArgumentAttribute(source, target, 'outputStreamInstructions')
 
     # Return the value based on the instructions.
     if instructions['value'] == 'omit': return None
@@ -1017,13 +1023,13 @@ class makefiles:
 
   # Similar method to the getToolArgument except for the associated value.
   @staticmethod
-  def getValue(graph, task, nodeID, value, isInput):
+  def getValue(graph, source, target, value, isInput, isStub):
 
     # If the argument is for an input file.
-    if isInput: modifyValue = graph.getArgumentAttribute(nodeID, task, 'modifyValue')
+    modifyValue = graph.getArgumentAttribute(source, target, 'modifyValue')
 
-    # And if the argument is for an output file.
-    else: modifyValue = graph.getArgumentAttribute(task, nodeID, 'modifyValue')
+    # If this is a stub, add the extension to the value,
+    if isStub and not graph.getArgumentAttribute(source, target, 'primaryStubNode'): modifyValue = 'omit'
 
     # Return the argument to be used on the command line.
     if modifyValue == 'omit': return None
