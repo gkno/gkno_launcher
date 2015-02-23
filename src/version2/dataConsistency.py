@@ -154,6 +154,21 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
   # Keep track of nodes that can have their values constructed.
   constructableNodes = []
 
+  # Loop over the defined pipeline arguments and check that all arguments listed as required have
+  # been set.
+  for argument in args.arguments:
+    if args.arguments[argument].isRequired:
+
+      # Loop over the associated graph nodes and see if the values are set.
+      for nodeID in args.arguments[argument].graphNodeIDs:
+
+        # If the values haven't been set, terminate. This is a pipeline argument listed as required
+        # and so must be set by the user (and not constructed).
+        if not graph.getGraphNodeAttribute(nodeID, 'values'):
+          shortFormArgument = args.arguments[argument].shortFormArgument
+          description       = args.arguments[argument].description
+          errors.unsetRequiredArgument(argument, shortFormArgument, description)
+
   # Loop over all tasks in the workflow
   for task in graph.workflow:
 
