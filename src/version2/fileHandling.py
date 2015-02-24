@@ -13,10 +13,14 @@ import sys
 
 # Define a class for handling all file operations.
 class fileHandling:
-  def __init__(self, toolsPath, pipelinesPath):
+  def __init__(self, toolsPath, pipelinesPath, definedPath):
 
     # Define error handling for file errors.
     self.errors = fileErrors()
+
+    # If a path to configuration files was defined by the used, find the available configuration
+    # files in this directory.
+    self.userConfigurationFiles = self.getValidJsonFiles(os.listdir(definedPath)) if definedPath else []
 
     # Get the names of all available tools and pipelines.
     self.pipelines = self.getValidJsonFiles(os.listdir(pipelinesPath))
@@ -24,10 +28,13 @@ class fileHandling:
 
   # Given the name of the pipeline, determine if the configuration file exists and if the
   # pipeline is a tool.
-  def checkPipeline(self, toolsPath, pipelinesPath, pipeline):
-                                                                             
+  def checkPipeline(self, toolsPath, pipelinesPath, definedPath, pipeline):
+
+    # First check to see if the pipeline is available in the user defined configuration files path (if defined).
+    if pipeline in self.userConfigurationFiles: return definedPath + '/' + pipeline + '.json'
+
     # If the requested pipeline is valid, return the path to the configuration file.
-    if pipeline in self.pipelines: return pipelinesPath + '/' + pipeline + '.json'
+    elif pipeline in self.pipelines: return pipelinesPath + '/' + pipeline + '.json'
 
     # If the requested pipeline is invalid, terminate.
     else:

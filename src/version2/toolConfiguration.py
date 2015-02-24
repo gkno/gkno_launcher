@@ -148,6 +148,18 @@ class toolConfiguration:
     # encountered.
     self.success = True
 
+  # Check that a supplied configuration file is a tool configuration file.
+  def checkConfigurationFile(self, filename):
+
+    # Get the configuration file data.
+    data = fileHandling.fileHandling.readConfigurationFile(filename, True)
+
+    # Check that the configuration file is for a pipeline.
+    try: configurationType = data['configuration type']
+    except: return False
+    if configurationType != 'tool': return False
+    return True
+
   # Open a configuration file, process the data and return.
   def getConfigurationData(self, tool, filename):
 
@@ -162,6 +174,9 @@ class toolConfiguration:
 
   # Process the configuration file.
   def processConfigurationFile(self, data):
+
+    # Check that the configuration file is a pipeline configuration file.
+    self.checkIsTool(data)
 
     # Check the top level information, e.g. pipeline description.
     self.checkTopLevelInformation(data)
@@ -191,6 +206,16 @@ class toolConfiguration:
     # Check the parameter set information and store.
     if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination, self.name, isTool = True)
 
+  # Check that the configuration file is for a tool.
+  def checkIsTool(self, data):
+
+    # Get the configuration type field. If this is not present, terminate, since this is the field that
+    # defines if the configuration file is for a tool or for a pipeline.
+    try: configurationType = data['configuration type']
+    except: self.errors.noConfigurationType(self.name)
+
+    if configurationType != 'tool': self.errors.invalidConfigurationType(self.name, configurationType)
+
   # Process the top level pipeline configuration information.
   def checkTopLevelInformation(self, data):
 
@@ -200,6 +225,7 @@ class toolConfiguration:
     allowedAttributes['argument delimiter'] = (str, False, True, 'delimiter')
     allowedAttributes['argument order']     = (list, False, True, 'argumentOrder')
     allowedAttributes['categories']         = (list, True, True, 'categories')
+    allowedAttributes['configuration type'] = (str, True, False, None)
     allowedAttributes['description']        = (str, True, True, 'description')
     allowedAttributes['developmental']      = (bool, False, True, 'isDevelopmental')
     allowedAttributes['executable']         = (str, True, True, 'executable')

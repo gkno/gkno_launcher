@@ -1,5 +1,6 @@
 {
   "id" : "freebayes",
+  "configuration type" : "pipeline",
   "description" : "run freebayes",
   "categories" : ["Variant-discovery"],
 
@@ -7,12 +8,12 @@
     {
       "task" : "call",
       "tool" : "freebayes",
-      "include in reduced plot" : true,
       "output to stream" : true
     },
     {
       "task" : "compress",
       "tool" : "bgzip",
+      "omit from reduced plot" : true,
       "input is stream" : true
     }
   ],

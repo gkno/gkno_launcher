@@ -1,5 +1,6 @@
 {
   "id" : "bamtools-index",
+  "configuration type" : "tool",
   "description" : "Index a BAM file.",
   "categories" : ["BAM-processing", "Bamtools", "Marthlab-software"],
   "tools" : ["bamtools"],

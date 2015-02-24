@@ -162,9 +162,19 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
       # Loop over the associated graph nodes and see if the values are set.
       for nodeID in args.arguments[argument].graphNodeIDs:
 
+        # Check if this argument was imported from a task in the pipeline. If so, determine if there are
+        # any instructions for constructing the filename (if not an option). Only terminate if the argument
+        # is for an option, or there are no instructions.
+        hasInstructions = False
+        if args.arguments[argument].isImported:
+          task            = args.arguments[argument].importedFromTask
+          tool            = graph.getGraphNodeAttribute(task, 'tool')
+          toolData        = superpipeline.getToolData(tool)
+          hasInstructions = True if toolData.getArgumentAttribute(argument, 'constructionInstructions') else False
+
         # If the values haven't been set, terminate. This is a pipeline argument listed as required
         # and so must be set by the user (and not constructed).
-        if not graph.getGraphNodeAttribute(nodeID, 'values'):
+        if not graph.getGraphNodeAttribute(nodeID, 'values') and not hasInstructions:
           shortFormArgument = args.arguments[argument].shortFormArgument
           description       = args.arguments[argument].description
           errors.unsetRequiredArgument(argument, shortFormArgument, description)

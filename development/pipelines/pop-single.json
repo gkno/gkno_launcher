@@ -1,5 +1,6 @@
 {
   "id" : "pop-single",
+  "configuration type" : "pipeline",
   "description" : "Call multiple BAM files as a population and individually.",
   "categories" : ["Variant-discovery"],
 

@@ -1,5 +1,6 @@
 {
   "id" : "call",
+  "configuration type" : "pipeline",
   "description" : "Feed a merged region of alignments to freebayes and compress the output VCF file.",
   "categories" : ["Variant-discovery"],
 

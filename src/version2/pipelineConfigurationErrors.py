@@ -25,6 +25,28 @@ class pipelineErrors:
     # For a list of all error code values, see adminErrors.py.
     self.errorCode = '7'
 
+  ##################################
+  ## Errors with top level fields ##
+  ##################################
+
+  # If the configuration file type (tool or pipeline) has not been defined.
+  def noConfigurationType(self, name):
+    self.text.append('Error processing configuration file: ' + name + '.json.')
+    self.text.append('All gkno configuration files are required to contain the \'configuration type\' field. This can take the value \'tool\' ' + \
+    'or \'pipeline\' and is used to ensure that it is possible to distinguish between tool and pipeline configuration files.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # If the configuration file type is not set to pipeline.
+  def invalidConfigurationType(self, name, configurationType):
+    self.text.append('Error processing configuration file: ' + name + '.json.')
+    self.text.append('All gkno configuration files are required to contain the \'configuration type\' field. The configuration file \'' + name + \
+    '.json\' is being processed as a pipeline, however, the type is listed as \'' + configurationType + '\'. Please ensure that \'' + name + \
+    '\' is a pipeline and not a tool, and that the configuration file type is correctly defined within the configuration file (i.e. the ' + \
+    'configuration type is set to \'pipeline\').')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   ###################################
   ## Errors with the tasks section ##
   ###################################

@@ -1,5 +1,6 @@
 {
   "id" : "bgzip",
+  "configuration type" : "tool",
   "description" : "Compress a file using bgzip.",
   "categories" : ["General-file-processing"],
   "tools" : ["tabix"],

@@ -131,8 +131,8 @@ class commandLine:
 
   # Determine the path to the configuration files, if set.
   def getConfigurationFilePath(self, options):
-    longFormArgument  = options['GKNO-CONFIGURATION-DIRECTORY'].longFormArgument
-    shortFormArgument = options['GKNO-CONFIGURATION-DIRECTORY'].shortFormArgument
+    longFormArgument  = options['GKNO-CONFIGURATION-PATH'].longFormArgument
+    shortFormArgument = options['GKNO-CONFIGURATION-PATH'].shortFormArgument
 
     # If the path is defined, get the path.
     path = None

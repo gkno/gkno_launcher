@@ -90,6 +90,11 @@ class pipelineArguments:
     # Record if the argument should not be shown in the help message.
     self.hideInHelp = False
 
+    # Record if the argument was defined in the pipeline configuration file, or if it was
+    # imported from a tool. Store information about where the arguments were imported from.
+    self.isImported       = False
+    self.importedFromTask = None
+
 # Define a class to store information on shared pipeline nodes.
 class sharedGraphNodes:
   def __init__(self):
@@ -239,6 +244,21 @@ class pipelineConfiguration:
     # encountered.
     self.success = True
 
+  # Check that a supplied configuration file is a pipeline configuration file.
+  def checkConfigurationFile(self, filename):
+
+    # Get the name of the pipeline.
+    self.name = self.getPipelineName(filename)
+
+    # Get the configuration file data.
+    data = fileHandling.fileHandling.readConfigurationFile(filename, True)
+
+    # Check that the configuration file is for a pipeline.
+    try: configurationType = data['configuration type']
+    except: return False
+    if configurationType != 'pipeline': return False
+    return True
+
   # Open a configuration file, process the data and return.
   def getConfigurationData(self, filename):
 
@@ -257,6 +277,9 @@ class pipelineConfiguration:
 
   # Process the configuration file.
   def processConfigurationFile(self, data):
+
+    # Check that the configuration file is a pipeline configuration file.
+    self.checkIsPipeline(data)
 
     # Check the top level information, e.g. pipeline description.
     self.checkTopLevelInformation(data)
@@ -292,6 +315,16 @@ class pipelineConfiguration:
     # Return whether processing of the file was successful.
     return self.success
 
+  # Check that the configuration file is for a pipeline.
+  def checkIsPipeline(self, data):
+
+    # Get the configuration type field. If this is not present, terminate, since this is the field that
+    # defines if the configuration file is for a tool or for a pipeline.
+    try: configurationType = data['configuration type']
+    except: self.errors.noConfigurationType(self.name)
+
+    if configurationType != 'pipeline': self.errors.invalidConfigurationType(self.name, configurationType)
+
   # Process the top level pipeline configuration information.
   def checkTopLevelInformation(self, data):
 
@@ -301,6 +334,7 @@ class pipelineConfiguration:
     allowedAttributes['arguments']               = (dict, True, False, None)
     allowedAttributes['description']             = (str, True, True, 'description')
     allowedAttributes['categories']              = (list, True, True, 'categories')
+    allowedAttributes['configuration type']      = (str, True, False, None)
     allowedAttributes['connect nodes to tasks' ] = (list, False, False, None)
     allowedAttributes['import arguments']        = (str, False, True, 'importArgumentsFromTool')
     allowedAttributes['parameter sets']          = (list, True, False, None)

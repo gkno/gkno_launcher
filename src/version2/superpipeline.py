@@ -49,7 +49,7 @@ class superpipelineClass:
 
   # Starting from the defined pipeline, process and validate the configuration file contents,
   # then dig down through all the nested pipelines and validate their configuration files.
-  def getNestedPipelineData(self, path, filename):
+  def getNestedPipelineData(self, files, path, userPath, filename):
 
     # Get the top level pipeline configuration file data.
     pipeline = pipelineConfiguration.pipelineConfiguration()
@@ -61,7 +61,7 @@ class superpipelineClass:
     self.pipelinesByTier[1]             = [pipeline.name]
     self.pipeline                       = pipeline.name
 
-    # Now dig into the nested pipeline and build up the super pipeline structure.
+    # Now dig into the nested pipeline and build up the superpipeline structure.
     tier = 2
     checkForNestedPipelines = True
     while checkForNestedPipelines:
@@ -74,8 +74,20 @@ class superpipelineClass:
         if currentPipeline.hasPipelineAsTask:
           tierHasNestedPipeline = True
           for taskPointingToNestedPipeline, nestedPipeline in currentPipeline.requiredPipelines:
-            filename = path + str(nestedPipeline) + '.json'
             pipeline = pipelineConfiguration.pipelineConfiguration()
+
+            # Check that the requried pipeline is available (first check in the user defined configuration
+            # file path if defined).
+            isPipeline = False
+            if nestedPipeline in files.userConfigurationFiles:
+              filename   = str(userPath + '/' + nestedPipeline + '.json')
+              isPipeline = pipeline.checkConfigurationFile(filename)
+
+            # If there is a pipeline configuration file with the given name in the user defined configuration
+            # file directory, use this file. Otherwise, default to the standard gkno configuration files.
+            if not isPipeline: filename = str(path + '/' + nestedPipeline + '.json')
+
+            # Process the configuration file.
             pipeline.getConfigurationData(filename)
   
             # Construct the address of the task.
@@ -187,9 +199,24 @@ class superpipelineClass:
     elif address in self.sharedNodeIDs: return 'shared'
     else: return None
 
-  # Add tool configuration data to the super pipeline.
-  def addTool(self, tool, toolData):
-    self.toolConfigurationData[tool] = toolData
+  # Loop over the list of required tools, open and process their configuration files and store.
+  def addTools(self, files, gknoPath, userPath):
+    for tool in self.getTools():
+      toolData = toolConfiguration.toolConfiguration()
+
+      # First check to see if a configuration file of this name is available in the user defined
+      # configuration files directory, if specified.
+      isTool = False
+      if tool in files.userConfigurationFiles:
+        filename = str(userPath + '/' + tool + '.json')
+        isTool   = toolData.checkConfigurationFile(filename)
+
+      # If the tool is not available in the user defined path, default to the standard gkno path.
+      if not isTool: filename = str(gknoPath + '/' + tool + '.json')
+
+      # Get the configuration file data.
+      toolData.getConfigurationData(tool, filename)
+      self.toolConfigurationData[tool] = toolData
 
   # Check that all tool arguments reference in pipeline configuration files are valid.
   def checkArgumentsInPipeline(self):

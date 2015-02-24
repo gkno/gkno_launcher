@@ -1,5 +1,6 @@
 {
   "id" : "freebayes",
+  "configuration type" : "tool",
   "description" : "Bayesian variant and haplotype calling",
   "categories" : ["Variant-discovery", "Short-variant-discovery", "Marthlab-software"],
   "tools" : ["freebayes"],

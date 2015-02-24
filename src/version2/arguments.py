@@ -112,14 +112,16 @@ class arguments:
             self.errors.importedArgumentShortFormConflict(task, tool, pipeline, argument, shortFormArgument, pipelineArgument)
   
           # Create a pipelineArguments data structure for storing the argument information and add basic information.
-          argumentAttributes = pc.pipelineArguments()
+          argumentAttributes                   = pc.pipelineArguments()
           argumentAttributes.dataType          = superpipeline.getToolArgumentAttribute(tool, argument, 'dataType')
           argumentAttributes.description       = superpipeline.getToolArgumentAttribute(tool, argument, 'description')
           argumentAttributes.isRequired        = superpipeline.getToolArgumentAttribute(tool, argument, 'isRequired')
           argumentAttributes.longFormArgument  = argument
           argumentAttributes.shortFormArgument = shortFormArgument
           argumentAttributes.graphNodeIDs      = [graphNodeID]
-  
+          argumentAttributes.isImported        = True  
+          argumentAttributes.importedFromTask  = task  
+
           # Set the category to which the tool belongs.
           argumentAttributes.category = superpipeline.getToolArgumentAttribute(tool, argument, 'category')
   

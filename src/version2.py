@@ -78,13 +78,11 @@ def main():
 
   # Check to see if the configuration files are to be found in a directory other than the default.
   path = command.getConfigurationFilePath(gknoConfiguration.options)
-  if path:
-    toolConfigurationFilesPath     = path
-    pipelineConfigurationFilesPath = path
+  userConfigurationPath = path if path else None
 
   # Define a class for handling files. In the initialisation, determine the names of all available
   # tools and pipelines.
-  files = fh.fileHandling(toolConfigurationFilesPath, pipelineConfigurationFilesPath)
+  files = fh.fileHandling(toolConfigurationFilesPath, pipelineConfigurationFilesPath, userConfigurationPath)
 
   # If not being run in admin mode, determine the name of the pipeline being run. Note that
   # for the code, a tool is considered a pipeline with a single task, so the terminology
@@ -103,7 +101,7 @@ def main():
   for pipeline in pipelinesList:
   
     # Get the path to the pipeline and configuration file.
-    filename = files.checkPipeline(toolConfigurationFilesPath, pipelineConfigurationFilesPath, pipeline)
+    filename = files.checkPipeline(toolConfigurationFilesPath, pipelineConfigurationFilesPath, userConfigurationPath, pipeline)
 
     # Generate a super pipeline class that holds information about the full collection of all nested
     # pipeline.
@@ -111,7 +109,7 @@ def main():
 
     # Dig down into the pipeline configuration files, validate the contents of the configuration files
     # and build the super pipeline tiered structure.
-    superpipeline.getNestedPipelineData(pipelineConfigurationFilesPath, filename)
+    superpipeline.getNestedPipelineData(files, pipelineConfigurationFilesPath, userConfigurationPath, filename)
   
     # Check that no pipeline arguments conflict with gkno arguments.
     superpipeline.checkForArgumentConflicts(gknoConfiguration.arguments, gknoConfiguration.shortForms)
@@ -128,10 +126,7 @@ def main():
     superpipeline.checkContainedTasks()
     
     # Loop over the list of required tools, open and process their configuration files and store.
-    for tool in superpipeline.getTools():
-      toolData = tc.toolConfiguration()
-      toolData.getConfigurationData(tool, toolConfigurationFilesPath + '/' + str(tool) + '.json')
-      superpipeline.addTool(tool, toolData)
+    superpipeline.addTools(files, toolConfigurationFilesPath, userConfigurationPath)
   
     # Loop over all of the pipeline configuration files and check that all nodes that define a tool
     # argument have valid arguments for the tool.

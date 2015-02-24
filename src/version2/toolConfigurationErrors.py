@@ -25,6 +25,32 @@ class toolErrors:
     # For a list of all error code values, see adminErrors.py.
     self.errorCode = '6'
 
+  ##################################
+  ## Errors with top level fields ##
+  ##################################
+
+  # If the configuration file type (tool or pipeline) has not been defined.
+  def noConfigurationType(self, name):
+    self.text.append('Error processing configuration file: ' + name + '.json.')
+    self.text.append('All gkno configuration files are required to contain the \'configuration type\' field. This can take the value \'tool\' ' + \
+    'or \'pipeline\' and is used to ensure that it is possible to distinguish between tool and pipeline configuration files.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # If the configuration file type is not set to pipeline.
+  def invalidConfigurationType(self, name, configurationType):
+    self.text.append('Error processing configuration file: ' + name + '.json.')
+    self.text.append('All gkno configuration files are required to contain the \'configuration type\' field. The configuration file \'' + name + \
+    '.json\' is being processed as a tool, however, the type is listed as \'' + configurationType + '\'. Please ensure that \'' + name + \
+    '\' is a tool and not a pipeline, and that the configuration file type is correctly defined within the configuration file (i.e. the ' + \
+    'configuration type is set to \'tool\').')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  #######################
+  ## Errors with stubs ##
+  #######################
+
   # If a tool argument is listed as a stub, it must be accompanied by a list of extensions.
   def noExtensionsForStub(self, name, argument):
     self.text.append('Missing data for argument.')
@@ -33,6 +59,10 @@ class toolErrors:
     'required must be listed.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  ###########################
+  ## Errors with arguments ##
+  ###########################
 
   # If the value supplied to a tool attribute is invalid.
   def invalidValues(self, name, argument, attribute, value, validValues):
