@@ -1,6 +1,7 @@
 #!/bin/bash/python
 
 from __future__ import print_function
+from collections import OrderedDict
 
 import fileHandling as fh
 import generalConfigurationFileMethods as methods
@@ -8,6 +9,7 @@ import parameterSetErrors as er
 
 import json
 import os
+import shutil
 import sys
 
 # Define a structure to hold information on parameter sets.
@@ -20,6 +22,9 @@ class parameterSetData:
 
     # Store all of the arguments and values.
     self.data = []
+
+    # Record if the parameter set is held in the external parameter sets file.
+    self.isExternal = False
 
 class parameterSetArguments:
   def __init__(self):
@@ -69,11 +74,11 @@ class parameterSets:
     for parameterSet in data:
 
       # Check that the supplied structure is a dictionary.
-      if not methods.checkIsDictionary(parameterSet, allowTermination): return
+      if not methods.checkIsDictionary(parameterSet, allowTermination): return False
 
       # Check that the node has a valid ID. This is required for help messages.
       id = methods.checkForId(parameterSet, name, 'parameter sets', allowTermination, isTool)
-      if not id: return
+      if not id: return False
 
       # Define a set of information to be used in help messages.
       helpInfo = (name, 'parameter sets', id)
@@ -88,7 +93,7 @@ class parameterSets:
       for dataSet in parameterSet['data']:
 
         # Check that the supplied structure is a dictionary.
-        if not methods.checkIsDictionary(dataSet, allowTermination): return
+        if not methods.checkIsDictionary(dataSet, allowTermination): return False
 
         # Define a structure to hold the information for each argument.
         dataAttributes = parameterSetArguments()
@@ -112,19 +117,79 @@ class parameterSets:
     except: return None
 
   # Export a parameter set.
-  def export(self, pipeline, setName, arguments):
+  def export(self, superpipeline, args, setName, arguments):
+    pipeline = superpipeline.pipeline
 
-    # Define the name of the configuration file that holds the parameter set information.
-    filename = str(pipeline + '_parameter-sets.json')
-    print('set:', pipeline, filename, setName)
+    # Get the configuration file information for the pipeline and the available parameter sets.
+    pipelineConfigurationData = superpipeline.pipelineConfigurationData[pipeline]
+    sets                      = pipelineConfigurationData.parameterSets.sets
 
     # Check that the paramter set name is not already defined for the pipeline.
-    #TODO
+    if setName in sets: self.errors.exportToDefinedSet(pipeline, setName)
+
+    # Define the name of the configuration file that holds the parameter set information.
+    filename = str(pipeline + '-parameter-sets.json')
 
     # Open the configuration file for writing.
     filehandle = fh.fileHandling.openFileForWriting(filename)
-    for argument in arguments:
-      print(argument, arguments[argument])
+
+    # Add the new parameter set information to the parameterSetAttributes.
+    attributes             = parameterSetData()
+    attributes.description = 'User specified parameter set.'
+    attributes.id          = setName
+    attributes.isExternal  = True
+    sets[setName]          = attributes
+
+    # Add the arguments and values to the nodes.
+    for counter, argument in enumerate(arguments):
+      values = arguments[argument]
+
+      # Put all of the values in a list.
+      nodeAttributes           = parameterSetArguments()
+      nodeAttributes.nodeID    = str(args.arguments[argument].nodeID)
+      nodeAttributes.id        = str('node' + str(counter))
+      nodeAttributes.values    = values
+      attributes.data.append(nodeAttributes)
+
+    # Put all of the parameter set information in a dictionary that can be dumped to a json file.
+    jsonParameterSets                  = OrderedDict()
+    jsonParameterSets['parameter sets'] = []
+    for parameterSet in sets:
+
+      # Only include parameterSets that were marked as external.
+      if sets[parameterSet].isExternal:
+        parameterSetInformation                = OrderedDict()
+        parameterSetInformation['id']          = parameterSet
+        parameterSetInformation['description'] = sets[parameterSet].description
+        parameterSetInformation['data']        = []
+
+        # Set the nodes.
+        for data in sets[parameterSet].data:
+          nodeInformation             = OrderedDict()
+          nodeInformation['id']       = data.id
+          nodeInformation['node']     = data.nodeID
+          nodeInformation['values']   = data.values
+          parameterSetInformation['data'].append(nodeInformation)
+
+        # Store this parameterSets data.
+        jsonParameterSets['parameter sets'].append(parameterSetInformation)
+
+    # Dump all the parameterSets to file.
+    json.dump(jsonParameterSets, filehandle, indent = 2)
+    filehandle.close()
+
+    # Move the configuration file.
+    shutil.copy(filename, pipelineConfigurationData.path)
+    os.remove(filename)
+
+    print(file = sys.stdout)
+    print('=' * 66, file = sys.stdout)
+    print('Configuration file generation complete.', file = sys.stdout)
+    print('', file = sys.stdout)
+    print('It is recommended that the new configuration is visually inspected', file = sys.stdout)
+    print('and tested to ensure expected behaviour.', file = sys.stdout)
+    print('=' * 66, file = sys.stdout)
+    sys.stdout.flush()
     exit(0)
 
   ######################

@@ -186,6 +186,9 @@ class pipelineConfiguration:
     # Store the name of the pipeline.
     self.name = None
 
+    # Store the path to the configuration file.
+    self.path = None
+
     # Store the id for this pipeline.
     self.id = None
 

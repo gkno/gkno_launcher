@@ -100,6 +100,10 @@ def checkNode(graph, superpipeline, source, target, nodeType, expectedDataType, 
 # Check a values data type.
 def isCorrectDataType(value, dataType):
 
+  # The value can only be none, if this is a flag.
+  if not value and dataType != 'flag': return False
+  elif not value: return True
+
   # If the expected data type is an integer.
   if dataType == 'integer':
     try: value = int(value)

@@ -173,7 +173,7 @@ def main():
   workflow = graph.generateWorkflow()
 
   # Process the command line arguments.
-  command.processArguments(superpipeline, args, gknoConfiguration.arguments, gknoConfiguration.shortForms)
+  command.processArguments(superpipeline, args, gknoConfiguration)
 
   # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
   # the nodes with these task level default parameter sets, creating nodes where necessary.
@@ -213,11 +213,15 @@ def main():
   # and also that any files also have the correct extension.
   dc.checkValues(graph, superpipeline)
 
+  # Determine if a parameter set is being exported. If so, there is no need to check that all required
+  # arguments are set, since the pipeline is not being executed.
+  isExportSet = gknoConfiguration.getGknoArgument('GKNO-EXPORT-PARAMETER-SET', command.gknoArguments)
+
   # Loop over all of the nodes in the graph and ensure that all required arguments have been set. Any output files
   # for which construction instructions are provided can be omitted from this check. This will ensure that all required
   # input files are set, ensuring that filename construction can proceed. The check will be performed again after
   # filenames have been constructed, without the omission of constructed files.
-  dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = False)
+  if not isExportSet: dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = False)
 
   # Determine which files are marked for deletion.
   superpipeline.determineFilesToDelete(graph)
@@ -252,8 +256,7 @@ def main():
   dc.checkValues(graph, superpipeline)
 
   # If the user has requested that a parameter set is to be exported, export the parameter set and terminate.
-  exportSet = gknoConfiguration.getGknoArgument('GKNO-EXPORT-PARAMETER-SET', command.gknoArguments)
-  if exportSet: parSet.export(superpipeline.pipeline, exportSet[0], command.pipelineArguments)
+  if isExportSet: parSet.export(superpipeline, args, isExportSet[0], command.pipelineArguments)
 
   # Check that all files exist. At this point, all filenames have been constructed, so anything that is required, but
   # is not set will have no opportunity to be set, so gkno should terminate.

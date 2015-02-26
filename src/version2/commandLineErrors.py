@@ -41,6 +41,26 @@ class commandLineErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  # If a value provided on the command line is of the wrong type.
+  def invalidValue(self, longFormArgument, shortFormArgument, value, dataType, isGkno):
+
+    # Add an additional piece of text to distinguish gkno specific arguments.
+    text = 'gkno specific ' if isGkno else ''
+    self.text.append('Invalid value on the command line.')
+
+    # Give an error if no value was provided, where one is necessary.
+    if not value:
+      self.text.append('The ' + text + 'argument \'' + longFormArgument + ' (' + shortFormArgument + ')\' was not given a value. This argument ' + \
+      'expects values with the type \'' + dataType + '\'. Please check the command line and ensure that all arguments are given appropriate values.')
+
+    # If the provided value is of the wrong type.
+    else:
+      self.text.append('The ' + text + 'argument \'' + longFormArgument + ' (' + shortFormArgument + ')\' was given the value \'' + value + \
+      '\', which has the wrong data type. This argument expects values with the type \'' + dataType + '\'. Please check the arguments given on ' + \
+      'command line.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   # Multiple parameter sets are defined.
   def multipleParameterSets(self):
     self.text.append('Multiple parameter set defined')

@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import commandLineErrors
 from commandLineErrors import *
+import dataConsistency
 import graph as gr
 
 import json
@@ -77,12 +78,12 @@ class commandLine:
         # the list in self.arguments for the current argument.
         elif argument and isArgument:
           self.arguments[argument].append(None)
-          argument                 = entry
+          argument = entry
           if argument not in self.arguments: self.arguments[argument] = []
   
         # If this entry is an argument and the previous entry was not, store this entry as an argument.
         elif not argument and isArgument:
-          argument                 = entry
+          argument = entry
           if argument not in self.arguments: self.arguments[argument] = []
 
     # If the end of the command line is reached and argument is still populated, this is assumed
@@ -166,7 +167,7 @@ class commandLine:
     return self.commands[0]
 
   # Process the command line arguments.
-  def processArguments(self, superpipeline, args, gknoLongForms, gknoShortForms):
+  def processArguments(self, superpipeline, args, gkno):
 
     # Get the name of the top level pipeline.
     pipeline = superpipeline.pipeline
@@ -193,41 +194,40 @@ class commandLine:
 
       # If this is a long form argument, check to see if it is a gkno specific argument or a valid pipeline
       # argument.
-      elif argument in gknoLongForms:
-        if argument in self.gknoArguments:
-          for value in values: self.gknoArguments[argument].append(value)
-        else: self.gknoArguments[argument] = values
+      elif argument in gkno.arguments:
+        shortFormArgument = gkno.arguments[argument].shortFormArgument
+        dataType          = gkno.arguments[argument].dataType
+        if argument not in self.gknoArguments: self.gknoArguments[argument] = []
+        for value in values:
+          if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(argument, shortFormArgument, value, dataType, True)
+          self.gknoArguments[argument].append(value)
 
       # Check if this is a valid gkno short form argument.
-      elif argument in gknoShortForms:
-        if gknoShortForms[argument] in self.gknoArguments:
-          for value in values: self.gknoArguments[gknoShortForms[argument]].append(value)
-        else: self.gknoArguments[gknoShortForms[argument]] = values
-
-      # Check if this is a valid long form pipeline argument.
-#      elif argument in superpipeline.pipelineConfigurationData[pipeline].longFormArguments:
-#        if argument in self.pipelineArguments:
-#          for value in values: self.pipelineArguments[argument].append(value)
-#        else: self.pipelineArguments[argument] = values
-
-      # Check if this is a valid short form pipeline argument.
-#      elif argument in superpipeline.pipelineConfigurationData[pipeline].shortFormArguments:
-#        if pipelineShortFormArguments[argument] in self.pipelineArguments:
-#          for value in values: self.pipelineArguments[pipelineShortFormArguments[argument]].append(value)
-#        else: self.pipelineArguments[pipelineShortFormArguments[argument]] = values
+      elif argument in gkno.shortForms:
+        longFormArgument = gkno.shortForms[argument]
+        dataType         = gkno.arguments[longFormArgument].dataType
+        if longFormArgument not in self.gknoArguments: self.gknoArguments[longFormArgument] = []
+        for value in values:
+          if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(longFormArgument, argument, value, dataType, True)
+          self.gknoArguments[longFormArgument].append(value)
 
       # Check if this argument is valid for the pipeline.
       elif argument in longFormArguments:
-        if argument in self.pipelineArguments:
-          for value in values: self.pipelineArguments[argument].append(value)
-        else: self.pipelineArguments[argument] = values
+        shortFormArgument = args.arguments[argument].shortFormArgument
+        dataType          = args.arguments[argument].dataType
+        if argument not in self.pipelineArguments: self.pipelineArguments[argument] = []
+        for value in values:
+          if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(argument, shortFormArgument, value, dataType, False)
+          self.pipelineArguments[argument].append(value)
 
       # Check if this is a valid short form pipeline argument.
       elif argument in shortFormArguments:
         longFormArgument = shortFormArguments[argument]
-        if longFormArgument in self.pipelineArguments:
-          for value in values: self.pipelineArguments[longFormArgument].append(value)
-        else: self.pipelineArguments[longFormArgument] = values
+        dataType         = args.arguments[longFormArgument].dataType
+        if longFormArgument not in self.pipelineArguments: self.pipelineArguments[longFormArgument] = []
+        for value in values:
+          if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(longFormArgument, argument, value, dataType, False)
+          self.pipelineArguments[longFormArgument].append(value)
 
       # If the argument is invalid.
       else: self.errors.invalidArgument(argument)

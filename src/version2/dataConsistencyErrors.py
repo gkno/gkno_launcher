@@ -25,6 +25,10 @@ class consistencyErrors:
     # For a list of all error code values, see adminErrors.py.
     self.errorCode = '10'
 
+  ##################################################
+  ## Errors with the values provided to arguments ##
+  ##################################################
+
   # Multiple values provided to an argument that does not allow it.
   def multipleValues(self, longFormArgument, shortFormArgument, task, isPipeline):
     self.text.append('Multiple values provided when not permitted.')
@@ -68,6 +72,10 @@ class consistencyErrors:
     'data formats.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  ##################################################
+  ## Errors with arguments that have not been set ##
+  ##################################################
 
   # A required argument has not been set.
   def unsetRequiredArgument(self, longFormArgument, shortFormArgument, description):

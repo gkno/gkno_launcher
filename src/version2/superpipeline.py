@@ -3,9 +3,11 @@
 from __future__ import print_function
 from copy import deepcopy
 
-import version2.pipelineConfiguration as pipelineConfiguration
-import version2.toolConfiguration as toolConfiguration
-import version2.pipelineConfigurationErrors as perr
+import fileHandling
+import parameterSets
+import pipelineConfiguration
+import pipelineConfigurationErrors as perr
+import toolConfiguration
 
 import json
 import os
@@ -54,6 +56,7 @@ class superpipelineClass:
     # Get the top level pipeline configuration file data.
     pipeline = pipelineConfiguration.pipelineConfiguration()
     pipeline.getConfigurationData(filename)
+    pipeline.path = filename.rstrip(str(pipeline.name + '.json'))[:-1]
     self.pipelineConfigurationData[pipeline.name] = pipeline
 
     # Store the name of the tier 1 pipeline (e.g. the pipeline selected on the command line).
@@ -68,6 +71,25 @@ class superpipelineClass:
       tierHasNestedPipeline = False
       for currentPipelineName in self.pipelinesByTier[tier - 1]:
         currentPipeline = self.pipelineConfigurationData[currentPipelineName]
+
+        # Check for external parameter sets for this pipeline.
+        externalFilename = str(currentPipeline.path + '/' + currentPipeline.name + '-parameter-sets.json')
+
+        # Get the configuration file data.
+        data                  = fileHandling.fileHandling.readConfigurationFile(externalFilename, False)
+        externalParameterSets = parameterSets.parameterSets()
+
+        # If the external parameter set file exists, copy the parameter sets to the current pipeline configuration
+        # data and mark them as external.
+        try: parameterSetData = data['parameter sets']
+        except: parameterSetData = None
+        if parameterSetData:
+          if externalParameterSets.checkParameterSets(parameterSetData, False, currentPipelineName, False):
+            for parameterSet in externalParameterSets.sets.keys():
+              if parameterSet in currentPipeline.parameterSets.sets.keys():
+                externalParameterSets.errors.externalSetRepeat(currentPipelineName, parameterSet)
+              externalParameterSets.sets[parameterSet].isExternal = True
+              currentPipeline.parameterSets.sets[parameterSet] = externalParameterSets.sets[parameterSet]
   
         # If the pipeline contains a pipeline as a task, process the configuration file for that
         # pipeline and add to the pipelines in the current tier.
@@ -80,16 +102,26 @@ class superpipelineClass:
             # file path if defined).
             isPipeline = False
             if nestedPipeline in files.userConfigurationFiles:
-              filename   = str(userPath + '/' + nestedPipeline + '.json')
-              isPipeline = pipeline.checkConfigurationFile(filename)
+              configurationPath = str(userPath)
+              externalFilename  = str(configurationPath + '/' + nestedPipeline + '-parameters-sets.json')
+              filename          = str(configurationPath + '/' + nestedPipeline + '.json')
+              isPipeline        = pipeline.checkConfigurationFile(filename)
 
             # If there is a pipeline configuration file with the given name in the user defined configuration
             # file directory, use this file. Otherwise, default to the standard gkno configuration files.
-            if not isPipeline: filename = str(path + '/' + nestedPipeline + '.json')
+            if not isPipeline:
+              configurationPath = str(path)
+              externalFilename  = str(path + '/' + nestedPipeline + '-parameters-sets.json')
+              filename          = str(path + '/' + nestedPipeline + '.json')
 
             # Process the configuration file.
             pipeline.getConfigurationData(filename)
+            pipeline.path = configurationPath
   
+            # Get the configuration file data.
+            externalData = fileHandling.fileHandling.readConfigurationFile(externalFilename, True)
+            print('TEST HANDLE EXTERNAL PARAMETER SET FOR NESETD PIPELINE', externalFilename, externalData); exit(0)
+
             # Construct the address of the task.
             pipeline.address = '' if currentPipeline.address == None else str(currentPipeline.address) + '.'
             pipeline.address += str(taskPointingToNestedPipeline)

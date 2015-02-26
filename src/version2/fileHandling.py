@@ -73,7 +73,7 @@ class fileHandling:
   def getValidJsonFiles(files):
     validFiles = []
     for filename in files:
-      if filename.endswith('json') and not filename.endswith('_parameterSets.json'): validFiles.append(filename.rstrip('json')[:-1])
+      if filename.endswith('json') and not filename.endswith('-parameter-sets.json'): validFiles.append(filename.rstrip('json')[:-1])
 
     return validFiles
 
