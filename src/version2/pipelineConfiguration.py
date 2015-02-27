@@ -269,10 +269,13 @@ class pipelineConfiguration:
     self.name = self.getPipelineName(filename)
 
     # Get the configuration file data.
-    data = fileHandling.fileHandling.readConfigurationFile(filename, True)
+    data = fileHandling.fileHandling.readConfigurationFile(filename, self.allowTermination)
 
     # Process the configuration file data.
     success = self.processConfigurationFile(data)
+
+    # Return whether the configuration file was successfully parsed.
+    return success
 
   # Get the pipeline name.
   def getPipelineName(self, filename):
@@ -282,10 +285,10 @@ class pipelineConfiguration:
   def processConfigurationFile(self, data):
 
     # Check that the configuration file is a pipeline configuration file.
-    self.checkIsPipeline(data)
+    self.success = self.checkIsPipeline(data)
 
     # Check the top level information, e.g. pipeline description.
-    self.checkTopLevelInformation(data)
+    if self.success: self.checkTopLevelInformation(data)
 
     # Parse the tasks comprising the pipeline.
     if self.success: self.checkPipelineTasks(data['pipeline tasks'])
@@ -324,9 +327,16 @@ class pipelineConfiguration:
     # Get the configuration type field. If this is not present, terminate, since this is the field that
     # defines if the configuration file is for a tool or for a pipeline.
     try: configurationType = data['configuration type']
-    except: self.errors.noConfigurationType(self.name)
+    except:
+      if self.allowTermination: self.errors.noConfigurationType(self.name)
+      else: return False
 
-    if configurationType != 'pipeline': self.errors.invalidConfigurationType(self.name, configurationType)
+    if configurationType != 'pipeline':
+      if self.allowTermination: self.errors.invalidConfigurationType(self.name, configurationType)
+      else: return False
+
+    # If the configuration file is indeed for a pipeline, return true.
+    return True
 
   # Process the top level pipeline configuration information.
   def checkTopLevelInformation(self, data):

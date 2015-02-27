@@ -188,19 +188,33 @@ class helpInformation:
     print(file = sys.stdout)
 
     # Get the names and descriptions for all the pipelines.
-    descriptions = {}
+    descriptions    = {}
+    failedPipelines = []
     for filename in os.listdir(path):
       if filename.endswith(".json"):
-        pipeline = pc.pipelineConfiguration()
-        pipeline.getConfigurationData(path + '/' + filename)
+        pipeline                  = pc.pipelineConfiguration()
+        pipeline.allowTermination = False
+        success                   = pipeline.getConfigurationData(path + '/' + filename)
 
-        # Get and store the description.
-        descriptions[pipeline.name] = pipeline.description
+        # If the pipeline configuration was successfully parsed, get and store the description.
+        if success: descriptions[pipeline.name] = pipeline.description
+
+        # If there are errors with the pipeline configuration file, mark it as having errors.
+        else: failedPipelines.append(pipeline.name)
 
     # Write out all the pipelines with their descriptions.
     length = len(max(descriptions.keys(), key = len)) + 3
     for pipeline in sorted(descriptions): self.writeComplexLine([pipeline + ':', descriptions[pipeline]], [length, 0], noLeadingTabs = 1)
     print(file = sys.stdout)
+
+    # Now list all of the pipelines for which there exists a configuration file, but it has errors.
+    if failedPipelines:
+      self.writeSimpleLine('Following is a list of pipelines with malformed configuration files. These cannot be executed without first ' + \
+      'fixing the files. The pipeilne can be run to give a detailed description of the errors:', isIndent = False, noLeadingTabs = 0)
+      print(file = sys.stdout)
+      length = len(max(failedPipelines, key = len)) + 3
+      for pipeline in sorted(failedPipelines): self.writeComplexLine([pipeline], [length], noLeadingTabs = 1)
+      #print(file = sys.stdout)
 
   # Print usage information on the admin mode of operation.
   def adminModeUsage(self, admin):

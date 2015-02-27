@@ -695,7 +695,7 @@ class pipelineGraph:
 
               # Reconstruct the workflow.
               updatedWorkflow = []
-              for updateCount in range(0, counter + 1): updatedWorkflow.append(workflow[updateCount])
+              for updateCount in range(0, counter + 1): updatedWorkflow.append(self.workflow[updateCount])
               updatedWorkflow.append(successorTasks[0])
               for updateTask in workflowMiddle: updatedWorkflow.append(updateTask)
               for updateTask in workflowEnd: updatedWorkflow.append(updateTask)
@@ -986,19 +986,14 @@ class pipelineGraph:
     isConsolidate                 = self.getGraphNodeAttribute(task, 'consolidate')
     isGreedy                      = self.getGraphNodeAttribute(task, 'isGreedy')
 
+    # Determine the task that feeds into this task. This is not necessarily the previous task in the workflow.
+    previousTask = self.getPreviousTask(task)
+
     # Get information on the previous task in the pipeline.
-    if i > 0:
-      divisions                             = self.getGraphNodeAttribute(self.workflow[i - 1], 'divisions')
-      previousTask                          = self.workflow[i - 1]
-      isPreviousGenerateMultipleOutputNodes = self.getGraphNodeAttribute(previousTask, 'generateMultipleOutputNodes')
-      isPreviousMultipleTaskCalls           = self.getGraphNodeAttribute(previousTask, 'multipleTaskCalls')
-      isPreviousConsolidate                 = self.getGraphNodeAttribute(previousTask, 'consolidate')
-    else:
-      divisions                             = 1
-      previousTask                          = None
-      isPreviousGenerateMultipleOutputNodes = False
-      isPreviousMultipleTaskCalls           = False
-      isPreviousConsolidate                 = False
+    divisions                             = self.getGraphNodeAttribute(previousTask, 'divisions') if previousTask else 1
+    isPreviousGenerateMultipleOutputNodes = self.getGraphNodeAttribute(previousTask, 'generateMultipleOutputNodes') if previousTask else None
+    isPreviousMultipleTaskCalls           = self.getGraphNodeAttribute(previousTask, 'multipleTaskCalls') if previousTask else None
+    isPreviousConsolidate                 = self.getGraphNodeAttribute(previousTask, 'consolidate') if previousTask else None
 
     # Determine if the task following this task is listed as greedy. If this task is required to be run
     # multiple times, whether or not the task produces multiple output nodes will depend on whether the next
@@ -1009,15 +1004,37 @@ class pipelineGraph:
 
     # Store the number of input files. For each argument corresponding to an input file, determine the number
     # of files provided. Store the maximum number of files provided to any one argument.
-    noInputs      = 0
-    inputArgument = None
+    constructedInputs = []
+    definedInputs     = []
+    inputArgument     = None
+    noInputs          = 0
     for nodeID in self.getInputFileNodes(task):
-      number = len(self.getGraphNodeAttribute(nodeID, 'values'))
+      longFormArgument = self.getArgumentAttribute(nodeID, task, 'longFormArgument')
+      number           = len(self.getGraphNodeAttribute(nodeID, 'values'))
+      isConstructable  = True if self.getArgumentAttribute(nodeID, task, 'constructionInstructions') else False
       if number > 1:
-        if noInputs != 0: print('ERROR - getNumberOfValues - only one input can have multiple values.'); exit(1)
+
+        # If the nodes values were defined (not constructed), add the task argument for this node to the definedInputs list.
+        if not isConstructable: definedInputs.append(longFormArgument)
+
+        # If the number of values for this node is greater than one, and there have already been input nodes
+        # with mulitiple values, check that this is valid.
+        if noInputs != 0:
+
+          # If the values for this input were constructed, get the task argument from which they were constructed. Once all
+          # input nodes have been parsed, these nodes will be checked.
+          if isConstructable:
+            try: usedArgument = self.getArgumentAttribute(nodeID, task, 'constructionInstructions')['use argument']
+            except: usedArgument = None
+            constructedInputs.append((nodeID, longFormArgument, usedArgument, number))
         else:
           inputArgument = self.getArgumentAttribute(nodeID, task, 'longFormArgument')
           noInputs      = number
+
+    # Loop over the constructable inputs and check that theey have the same number of values as the arguments from
+    # which they were constructed.
+    for nodeID, longFormArgument, usedArgument, number in constructedInputs:
+      if number != noInputs: print('ERROR - getNumberOfValues - only one input can have multiple values.'); exit(1)
 
     # Similarly, get the number of output files.
     noOutputs = 0
@@ -1801,6 +1818,33 @@ class pipelineGraph:
   def getSuccessors(self, nodeID):
     try: return self.graph.successors(nodeID)
     except: return False
+
+  # Given a pipeline task, get the previous task in the pipeline. This is not necessarily the task immediately
+  # preceding it in the workflow.
+  def getPreviousTask(self, task):
+    previousTask = False
+
+    # Loop over all input nodes to the task.
+    for nodeID in self.getInputFileNodes(task):
+
+      # Get all tasks feeding into this node.
+      predecessors = self.graph.predecessors(nodeID)
+
+      # If multiple tasks feed into the same node, it is unclear which of these tasks should be selected as the
+      # previous task.
+      #TODO ERROR
+      if len(predecessors) > 1: print('graph.getPreviousTask - can\'t determine previous task - 1'); exit(0)
+
+      # If this input file is generated by a task, but the previous task is already defined, then at least two inputs
+      # to this task are generated by previous tasks and it is again unclear which task is to be chosen.
+      if predecessors and previousTask: print('graph.getPreviousTask - can\'t determine previous task - 2'); exit(0)
+
+      # If the input node is generated by a task (i.e. not user input), set the previous task as the task that generated
+      # this input.
+      if predecessors: previousTask = predecessors[0]
+
+    # Return the previous task.
+    return previousTask
 
   #####################
   ### Class methods ###

@@ -119,8 +119,8 @@ class superpipelineClass:
             pipeline.path = configurationPath
   
             # Get the configuration file data.
-            externalData = fileHandling.fileHandling.readConfigurationFile(externalFilename, True)
-            print('TEST HANDLE EXTERNAL PARAMETER SET FOR NESETD PIPELINE', externalFilename, externalData); exit(0)
+            externalData = fileHandling.fileHandling.readConfigurationFile(externalFilename, False)
+            if externalData: print('TEST HANDLE EXTERNAL PARAMETER SET FOR NESETD PIPELINE', externalFilename, externalData); exit(0)
 
             # Construct the address of the task.
             pipeline.address = '' if currentPipeline.address == None else str(currentPipeline.address) + '.'
