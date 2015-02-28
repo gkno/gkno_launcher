@@ -1,5 +1,6 @@
 {
   "id" : "call",
+  "configuration type" : "pipeline",
   "description" : "Feed a merged region of alignments to freebayes and compress the output VCF file.",
   "categories" : ["Variant-discovery"],
 
@@ -7,25 +8,28 @@
     {
       "task" : "merge",
       "tool" : "bamtools-merge",
-      "output to stream" : true
+      "output to stream" : true,
+      "omit from reduced plot" : true
     },
     {
       "task" : "call",
       "tool" : "freebayes",
-      "input is stream" : true,
-      "include in reduced plot" : true
+      "input is stream" : true
     },
     {
       "task" : "combine-vcf",
-      "tool" : "vcf-combine"
+      "tool" : "vcf-combine",
+      "omit from reduced plot" : true
     },
     {
       "task" : "compress-vcf",
-      "tool" : "bgzip"
+      "tool" : "bgzip",
+      "omit from reduced plot" : true
     },
     {
       "task" : "index-vcf",
-      "tool" : "vcf-index"
+      "tool" : "vcf-index",
+      "omit from reduced plot" : true
     }
   ],
 

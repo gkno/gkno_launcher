@@ -1,5 +1,6 @@
 {
   "id" : "r-plot",
+  "configuration type" : "tool",
   "description" : "Run an R script to plot.",
   "categories" : ["Visualisation"],
   "tools" : [],

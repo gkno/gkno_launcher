@@ -1,26 +1,27 @@
 {
   "id" : "coverage",
+  "configuration type" : "pipeline",
   "description" : "Calculate the genome coverage across reference sequences (usually chromosomes), generating R-plots.",
   "categories" : ["Visualisation"],
 
   "pipeline tasks" : [
     {
       "task" : "calculate-coverage",
-      "tool" : "genome-coverage",
-      "include in reduced plot" : true
+      "tool" : "genome-coverage"
     },
     {
       "task" : "convert-to-txt",
-      "tool" : "convert-bedtools-coverage"
+      "tool" : "convert-bedtools-coverage",
+      "omit from reduced plot" : true
     },
     {
       "task" : "plot-absolute",
-      "tool" : "r-plot",
-      "include in reduced plot" : true
+      "tool" : "r-plot"
     },
     {
       "task" : "plot-proportional",
-      "tool" : "r-plot"
+      "tool" : "r-plot",
+      "omit from reduced plot" : true
     }
   ],
 

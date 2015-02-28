@@ -1,5 +1,6 @@
 {
   "id" : "index-vcf",
+  "configuration type" : "tool",
   "description" : "Index a VCF file using tabix.",
   "categories" : ["VCF-processing"],
   "tools" : ["tabix"],

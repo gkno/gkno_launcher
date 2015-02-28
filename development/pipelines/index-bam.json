@@ -1,5 +1,6 @@
 {
   "id" : "bamtools-index",
+  "configuration type" : "pipeline",
   "description" : "Index BAM files.",
   "categories" : ["BAM-processing"],
 

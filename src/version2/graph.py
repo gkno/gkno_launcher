@@ -1182,7 +1182,7 @@ class pipelineGraph:
     multivalueOptions = []
 
     # Determine the previous task.
-    previousTask          = self.workflow[i - 1] if i > 0 else None
+    previousTask          = self.getPreviousTask(task)
     previousTaskDivisions = self.getGraphNodeAttribute(previousTask, 'divisions') if previousTask else 1
 
     # Record how many times this task is to be executed, based on the supplied option values.
@@ -1264,13 +1264,9 @@ class pipelineGraph:
 
     # Get the number of divisions for this task. This is one unless an option for the task has
     # been given multiple values. In addition, get the number of divisions for the previous task.
-    divisions = self.getGraphNodeAttribute(task, 'divisions')
-    if i > 0:
-      previousTask          = self.workflow[i - 1]
-      previousTaskDivisions = self.getGraphNodeAttribute(previousTask, 'divisions')
-    else:
-      previousTask          = None
-      previousTaskDivisions = 1
+    divisions             = self.getGraphNodeAttribute(task, 'divisions')
+    previousTask          = self.getPreviousTask(task)
+    previousTaskDivisions = self.getGraphNodeAttribute(previousTask, 'divisions') if previousTask else 1
 
     # Determine task properties.
     isConsolidate       = self.getGraphNodeAttribute(task, 'consolidate')

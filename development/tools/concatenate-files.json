@@ -1,0 +1,80 @@
+{
+  "id" : "concatenate-files",
+  "configuration type" : "tool",
+  "description" : "Concatenate multiple files.",
+  "categories" : ["General-file-processing", "Scripts"],
+  "tools" : [],
+  "path" : "no path",
+  "executable" : "cat",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "First file include. All other files will be added to the end of this file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "required" : true,
+        "data type" : "string"
+      },
+      {
+        "description" : "Additional files to be joined whose order is irrelevant.",
+        "long form argument" : "--in2",
+        "short form argument" : "-i2",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "data type" : "string",
+        "allow multiple values" : true
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The concatenated file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "output to stdout" : true
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--in",
+    "--in2",
+    "--out"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "initial",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "id" : "second",
+          "argument" : "--in2",
+          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"]
+        },
+        {
+          "id" : "output",
+          "argument" : "--out",
+          "values" : ["concatenated_file.fa"]
+        }
+      ]
+    }
+  ]
+}

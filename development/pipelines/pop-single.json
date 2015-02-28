@@ -7,7 +7,7 @@
   "pipeline tasks" : [
     {
       "task" : "call-population",
-      "pipeline" : "call"
+      "pipeline" : "call-population"
     },
     {
       "task" : "call-single",
@@ -36,7 +36,7 @@
         "long form argument" : "--region",
         "short form argument" : "-rg",
         "description" : "Genomic region.",
-        "node id" : "call-population.region"
+        "node id" : "region"
       }
     ]
   },
@@ -69,6 +69,19 @@
         {
           "task" : "call-single",
           "node id" : "bam"
+        }
+      ]
+    },
+    {
+      "id" : "region",
+      "arguments sharing node" : [
+        {
+          "task" : "call-population",
+          "node id" : "region"
+        },
+        {
+          "task" : "call-single",
+          "node id" : "region"
         }
       ]
     }

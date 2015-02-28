@@ -81,7 +81,7 @@
       "description" : "Print requested help message.",
       "long form argument" : "--help",
       "short form argument" : "-h",
-      "data type" : "string",
+      "data type" : "flag",
       "values" : ["unset"]
     },
     "GKNO-INPUT-PATH" : {

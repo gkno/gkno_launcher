@@ -31,7 +31,7 @@ class toolErrors:
 
   # If the configuration file type (tool or pipeline) has not been defined.
   def noConfigurationType(self, name):
-    self.text.append('Error processing configuration file: ' + name + '.json.')
+    self.text.append('Error processing tool configuration file: ' + name + '.json.')
     self.text.append('All gkno configuration files are required to contain the \'configuration type\' field. This can take the value \'tool\' ' + \
     'or \'pipeline\' and is used to ensure that it is possible to distinguish between tool and pipeline configuration files.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
@@ -66,9 +66,15 @@ class toolErrors:
 
   # If the value supplied to a tool attribute is invalid.
   def invalidValues(self, name, argument, attribute, value, validValues):
+
+    # Update the attributes to reflect the values in the configuration files.
+    if attribute == 'modifyArgument': attribute = 'modify argument'
+
     self.text.append('Invalid value given to attribute.')
-    self.text.append('The configuration file for tool \'' + name + '\' contains information for the argument \'' + argument + '\'. The attribute \'' + \
-    attribute + '\' for this argument is given the value \'' + value + '\', but this is not a valid value for this attribute. The valid values are:')
+    self.text.append('The configuration file for tool \'' + name + '\' contains information for the argument \'' + argument + '\'. The attribute ' + \
+    '\'' + attribute + '\' for this argument is given the value \'' + value + '\', but this is not a valid value for this attribute. The valid ' + \
+    'values are:')
+    self.text.append('\t')
     for validValue in validValues: self.text.append('\t' + validValue)
     self.text.append('\t')
     self.text.append('Please modify the the configuration file to only contain valid values for all attributes.')

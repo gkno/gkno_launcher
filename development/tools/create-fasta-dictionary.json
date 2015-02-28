@@ -1,33 +1,35 @@
 {
-  "id" : "mosaik-build-reference",
+  "id" : "picard-create-sequence-dictionary",
   "configuration type" : "tool",
-  "description" : "Build a Mosaik format reference file.",
-  "categories" : ["FASTA-processing", "Mosaik", "Marthlab-software"],
-  "tools" : ["mosaik"],
-  "path" : "MOSAIK/bin",
-  "executable" : "MosaikBuild",
+  "description" : "Generate a dictionary containing all of the sequences in the input reference fasta.",
+  "categories" : ["FASTA-processing"],
+  "tools" : ["picard"],
+  "path" : "picard/dist",
+  "executable" : "CreateSequenceDictionary.jar",
+  "precommand" : "java -jar",
+  "argument delimiter" : "=",
   "arguments" : {
     "Inputs" : [
-      {
-        "description" : "The FASTA reference sequence file",
+      {    
+        "description" : "The input reference FASTA file.",
         "long form argument" : "--fasta-reference",
         "short form argument" : "-r",
-        "command line argument" : "-fr",
+        "command line argument" : "REFERENCE",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["fasta", "fa"]
+        "extensions" : ["fa", "fasta"]
       }
     ],
 
     "Outputs" : [
       {    
-        "description" : "The output Mosaik reference file",
+        "description" : "the output sequence dictionary.",
         "long form argument" : "--out",
         "short form argument" : "-o",
-        "command line argument" : "-oa",
+        "command line argument" : "OUTPUT",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["dat"],
+        "extensions" : ["dict"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--fasta-reference",

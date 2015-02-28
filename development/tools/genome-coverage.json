@@ -1,5 +1,6 @@
 {
   "id" : "genome-coverage",
+  "configuration type" : "tool",
   "description" : "Generate genome coverage using bedtools genomecov.",
   "categories" : ["BAM-processing", "Bedtools"],
   "tools" : ["bedtools"],

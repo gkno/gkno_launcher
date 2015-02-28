@@ -400,7 +400,7 @@ class makefiles:
     if len(values) == 1:
 
       # Build the tool specific command line.
-      line = self.buildLine(argument, data.delimiter, lineValues[0])
+      line = self.buildLine(argument, data.delimiter, lineValues[0]) if lineValues[0] else None
       for i in range(0, data.noCommandLines):
 
         # If this task outputs to stdout, put the values into a structure to return.
@@ -411,7 +411,11 @@ class makefiles:
         if not isStream:
 
           # If this is a stub, add the extension to the value prior to inclusion in the outputs/dependencies.
-          modifiedValue = str(values[0] + '.' + graph.getArgumentAttribute(source, target, 'stubExtension')) if isStub else values[0]
+          if isStub:
+            stubExtension = graph.getArgumentAttribute(source, target, 'stubExtension')
+            modifiedValue = str(values[0] + stubExtension) if '.' in stubExtension else str(values[0] + '.' + stubExtension)
+          else: modifiedValue = values[0]
+
           if isInput: data.dependencies[i].append(str(modifiedValue))
           else: data.outputs[i].append(str(modifiedValue))
 

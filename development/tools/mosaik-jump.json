@@ -1,5 +1,6 @@
 {
   "id" : "mosaik-jump",
+  "configuration type" : "tool",
   "description" : "Generate the jump database for a Mosaik reference",
   "categories" : ["FASTA-processing", "Mosaik", "Marthlab-software"],
   "tools" : ["mosaik"],

@@ -31,7 +31,7 @@ class pipelineErrors:
 
   # If the configuration file type (tool or pipeline) has not been defined.
   def noConfigurationType(self, name):
-    self.text.append('Error processing configuration file: ' + name + '.json.')
+    self.text.append('Error processing pipeline configuration file: ' + name + '.json.')
     self.text.append('All gkno configuration files are required to contain the \'configuration type\' field. This can take the value \'tool\' ' + \
     'or \'pipeline\' and is used to ensure that it is possible to distinguish between tool and pipeline configuration files.')
     self.errors.writeFormattedText(self.text, errorType = 'error')

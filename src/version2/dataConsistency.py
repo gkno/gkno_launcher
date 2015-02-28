@@ -1,6 +1,8 @@
 #!/bin/bash/python
 
 from __future__ import print_function
+from copy import deepcopy
+
 import dataConsistencyErrors as er
 import superpipeline
 
@@ -339,8 +341,22 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
             # If there are instructions, but no node, construct the node.
             nodeAddress        = str(task + '.' + argument)
             argumentAttributes = toolData.getArgumentData(argument)
-            graph.addFileNode(nodeAddress, nodeAddress)
-            graph.addEdge(task, nodeAddress, argumentAttributes)
+
+            # Determine if this node is a stub. If so, this is an output that is not shared with any other tasks, so
+            # construct as many nodes as required.
+            if argumentAttributes.isStub: #graph.constructOutputStubs()
+              for i, stubExtension in enumerate(argumentAttributes.stubExtensions):
+                modifiedNodeAddress            = str(nodeAddress + '.' + stubExtension)
+                stubAttributes                 = deepcopy(argumentAttributes)
+                stubAttributes.stubExtension   = stubExtension
+                stubAttributes.primaryStubNode = True if i == 0 else False
+                graph.addFileNode(modifiedNodeAddress, modifiedNodeAddress)
+                graph.addEdge(task, modifiedNodeAddress, stubAttributes)
+
+            # If this is not a stub, add the node and edge.
+            else:
+              graph.addFileNode(nodeAddress, nodeAddress)
+              graph.addEdge(task, nodeAddress, argumentAttributes)
 
 # Purge the graph of nodes with no values.
 def purgeEmptyNodes(graph):
@@ -388,17 +404,19 @@ def setFilePaths(graph, gknoArguments, gknoOptions):
     for value in graph.getGraphNodeAttribute(nodeID, 'values'):
 
       # Update the value to include the extension, if this is a stub.
-      modifiedValue = str(value + '.' + stubExtension) if isStub else value
+      #if isStub:
+      #  modifiedValue = str(value + stubExtension) if '.' in stubExtension else str(value + '.' + stubExtension)
+      #else: modifiedValue = value
 
       # Check if the value already has a path. If not, add the input or output path. In addition
       # store all of the input files. Since these are specifically defined as files that are not
       # created by any task in the pipeline, these files need to exist in order for the pipeline
       # to run.
       if isInput:
-        updatedValue = str(modifiedValue) if '/' in modifiedValue else str(inputPath + modifiedValue)
+        updatedValue = str(value) if '/' in value else str(inputPath + value)
         updatedValues.append(updatedValue)
         inputFiles.append(updatedValue)
-      else: updatedValues.append(str(modifiedValue) if '/' in modifiedValue else str(outputPath + modifiedValue))
+      else: updatedValues.append(str(value) if '/' in value else str(outputPath + value))
 
     # Replace the values stored in the node with the values including the absolute path.
     graph.setGraphNodeAttribute(nodeID, 'values', updatedValues)
