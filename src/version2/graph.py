@@ -550,18 +550,20 @@ class pipelineGraph:
 
         # Loop over the extensions associated with the stub, add nodes for the non-linked nodes and connect
         # all the nodes.
-        for extension in information.stubExtensions:
+        for i, extension in enumerate(information.stubExtensions):
 
           # Add the extension to the attributes.
-          argumentAttributes.extensions = [str(extension)]
+          stubArgumentAttributes                 = deepcopy(argumentAttributes)
+          stubArgumentAttributes.extensions      = [str(extension)]
+          stubArgumentAttributes.stubExtension   = str(extension)
+          stubArgumentAttributes.primaryStubNode = True if i == 0 else False
 
           # Add the nodes associated with the stub that are not being linked to the other tasks,
-          if extension != information.stubExtension:
-            self.addFileNode(str(nodeAddress + '.' + extension), str(nodeAddress))
+          if extension != information.stubExtension: self.addFileNode(str(nodeAddress + '.' + extension), str(nodeAddress))
 
           # Add the edge.
-          if information.isInput: self.addEdge(str(nodeAddress + '.' + extension), information.taskAddress, attributes = argumentAttributes)
-          elif information.isOutput: self.addEdge(information.taskAddress, str(nodeAddress + '.' + extension), attributes = argumentAttributes)
+          if information.isInput: self.addEdge(str(nodeAddress + '.' + extension), information.taskAddress, attributes = stubArgumentAttributes)
+          elif information.isOutput: self.addEdge(information.taskAddress, str(nodeAddress + '.' + extension), attributes = stubArgumentAttributes)
 
           # Add the graph node ID to the list produced by this configuration file node.
           self.configurationFileToGraphNodeID[information.nodeID].append(str(nodeAddress + '.' + extension))

@@ -1,47 +1,67 @@
 {
   "id" : "mosaik",
-  "description" : "ref + align",
+  "configuration type" : "pipeline",
+  "description" : "Align fastq files using Mosaik. In this version additional 'special' reference sequences are included (usually mobile element insertions) in the reference.",
   "categories" : ["Alignment"],
 
   "pipeline tasks" : [
     {
-      "task" : "ref",
-      "tool" : "mosaik-build-reference",
-      "include in reduced plot" : true
-    },
-    {
-      "task" : "jump",
-      "tool" : "mosaik-jump"
+      "task" : "build-read-archive",
+      "tool" : "mosaik-build-fastq"
     },
     {
       "task" : "align",
-      "tool" : "mosaik-aligner-standard",
-      "include in reduced plot" : true
+      "tool" : "mosaik-aligner-special"
+    },
+    {
+      "task" : "sort",
+      "tool" : "bamtools-sort"
+    },
+    {
+      "task" : "index",
+      "tool" : "bamtools-index"
+    },
+    {
+      "task" : "stats",
+      "tool" : "bamtools-stats"
     }
   ],
 
   "arguments" : {
     "Inputs" : [
       {
-        "description" : "The reference FASTA file.",
-        "long form argument" : "--fasta-reference",
-        "short form argument" : "-r",
-        "node id" : "fasta"
+        "description" : "The input fastq file (first mate).",
+        "long form argument" : "--fastq",
+        "short form argument" : "-q",
+        "node id" : "fastq"
       },
       {
-        "description" : "The input read archive.",
-        "long form argument" : "--in",
-        "short form argument" : "-i",
-        "node id" : "archive"
+        "description" : "The input fastq file (second mate).",
+        "long form argument" : "--fastq2",
+        "short form argument" : "-q2",
+        "node id" : "fastq2",
+        "required" : true
       },
       {
-        "description" : "The single end ann file.",
+        "description" : "The Mosaik format reference genome (.dat).",
+        "long form argument" : "--mosaik-reference",
+        "short form argument" : "-m",
+        "node id" : "reference"
+      },
+      {
+        "description" : "The input Mosaik jump database stub.",
+        "long form argument" : "--jump-database",
+        "short form argument" : "-j",
+        "node id" : "jump"
+      },
+      {
+        "description" : "Neural network file for Mosaik mapping quality scores (single end).",
         "long form argument" : "--ann-se",
         "short form argument" : "-as",
         "node id" : "annse"
       },
       {
-        "description" : "The paired end ann file.",
+        "description" : "Neural network file for Mosaik mapping quality scores (paired end).",
         "long form argument" : "--ann-pe",
         "short form argument" : "-ap",
         "node id" : "annpe"
@@ -50,24 +70,131 @@
 
     "Outputs" : [
       {
-        "description" : "The output BAM files.",
-        "long form argument" : "--out",
-        "short form argument" : "-o",
-        "node id" : "bam"
+        "description" : "The output read archive.",
+        "long form argument" : "--read-archive",
+        "short form argument" : "-a",
+        "node id" : "archive"
+      }
+    ],
+
+    "Sequencing information" : [
+      {
+        "description" : "Sequencing technology: '454', 'helicos', 'illumina', 'illumina_long', 'sanger' or 'solid'.",
+        "long form argument" : "--sequencing-technology",
+        "short form argument" : "-st",
+        "node id" : "tech"
+      },
+      {
+        "description" : "The median fragment length.",
+        "long form argument" : "--median-fragment-length",
+        "short form argument" : "-mfl",
+        "node id" : "mfl"
+      },
+      {
+        "description" : "The sample name. e.g. NA12878.",
+        "long form argument" : "--sample-name",
+        "short form argument" : "-sam",
+        "node id" : "sample"
+      },
+      {
+        "description" : "The sequencing center name.",
+        "long form argument" : "--center-name",
+        "short form argument" : "-c",
+        "node id" : "centre"
+      },
+      {
+        "description" : "The read group id. e.g. SRR009060.",
+        "long form argument" : "--read-group-id",
+        "short form argument" : "-id",
+        "node id" : "group"
+      },
+      {
+        "description" : "The library name. e.g. g1k-sc-NA18944-JPT-1.",
+        "long form argument" : "--lane",
+        "short form argument" : "-l",
+        "node id" : "library"
+      },
+      {
+        "description" : "The platform unit. e.g. IL12_490_5.",
+        "long form argument" : "--platform",
+        "short form argument" : "-pu",
+        "node id" : "platform"
+      }
+    ],
+
+    "Alignment options" : [
+      {
+        "description" : "The hash-size used in Mosaik [4 - 32].",
+        "long form argument" : "--hash-size",
+        "short form argument" : "-hs",
+        "node id" : "hash"
+      },
+      {
+        "description" : "The prefix attached to 'special' reference sequences.",
+        "long form argument" : "--special-reference-prefix",
+        "short form argument" : "-s",
+        "node id" : "prefix"
+      },
+      {
+        "description" : "Specifies the maximum number of hashes for the special reference sequences.",
+        "long form argument" : "--special-reference-hashes",
+        "short form argument" : "-sh",
+        "node id" : "sphashes"
+      },
+      {
+        "description" : "Specifies the minimum length of an alignment candidate.",
+        "long form argument" : "--alignment-candidate-threshold",
+        "short form argument" : "-act",
+        "node id" : "threshold"
+      },
+      {
+        "description" : "Specifies the maximum number of positions stored for each hash.",
+        "long form argument" : "--maximum-hashes-per-seed",
+        "short form argument" : "-mhp",
+        "node id" : "seed"
+      }
+    ],
+
+    "General options" : [
+      {
+        "description" : "Specifies the number of threads to use for the aligner.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
+        "node id" : "threads"
       }
     ]
   },
 
   "unique graph nodes" : [
     {
-      "id" : "fasta",
-      "task" : "ref",
-      "task argument" : "-r"
+      "id" : "fastq",
+      "task" : "build-read-archive",
+      "task argument" : "--fastq"
     },
     {
-      "id" : "archive",
+      "id" : "fastq2",
+      "task" : "build-read-archive",
+      "task argument" : "--fastq2"
+    },
+    {
+      "id" : "reference",
       "task" : "align",
-      "task argument" : "--in"
+      "task argument" : "--mosaik-reference"
+    },
+    {
+      "id" : "jump",
+      "task" : "align",
+      "task argument" : "--jump-database"
+    },
+    {
+      "id" : "hash",
+      "task" : "align",
+      "task argument" : "--hash-size"
+    },
+    {
+      "id" : "tech",
+      "task" : "build-read-archive",
+      "task argument" : "--sequencing-technology"
     },
     {
       "id" : "annse",
@@ -80,40 +207,106 @@
       "task argument" : "--ann-paired-end"
     },
     {
-      "id" : "bam",
+      "id" : "mfl",
+      "task" : "build-read-archive",
+      "task argument" : "--median-fragment-length"
+    },
+    {
+      "id" : "sample",
+      "task" : "build-read-archive",
+      "task argument" : "--sample-name"
+    },
+    {
+      "id" : "centre",
+      "task" : "build-read-archive",
+      "task argument" : "--center-name"
+    },
+    {
+      "id" : "group",
+      "task" : "build-read-archive",
+      "task argument" : "--read-group-id"
+    },
+    {
+      "id" : "library",
+      "task" : "build-read-archive",
+      "task argument" : "--lane"
+    },
+    {
+      "id" : "platform",
+      "task" : "build-read-archive",
+      "task argument" : "--platform"
+    },
+    {
+      "id" : "prefix",
       "task" : "align",
-      "task argument" : "--out"
+      "task argument" : "--special-reference-prefix"
+    },
+    {
+      "id" : "sphashes",
+      "task" : "align",
+      "task argument" : "--special-reference-hashes"
+    },
+    {
+      "id" : "threads",
+      "task" : "align",
+      "task argument" : "--threads"
+    },
+    {
+      "id" : "threshold",
+      "task" : "align",
+      "task argument" : "--alignment-candidate-threshold"
+    },
+    {
+      "id" : "seed",
+      "task" : "align",
+      "task argument" : "--maximum-hashes-per-seed"
     }
   ],
 
   "shared graph nodes" : [
     {
-      "id" : "mosaik-ref",
+      "id" : "archive",
+      "delete files" : true,
       "arguments sharing node" : [
         {
-          "task" : "ref",
-          "task argument" : "--mosaik-reference"
-        },
-        {
-          "task" : "jump",
-          "task argument" : "-m"
+          "task" : "build-read-archive",
+          "task argument" : "--out"
         },
         {
           "task" : "align",
-          "task argument" : "--mosaik-reference"
+          "task argument" : "--in"
         }
       ]
     },
     {
-      "id" : "jump-database",
+      "id" : "bam",
+      "delete files" : true,
       "arguments sharing node" : [
         {
-          "task" : "jump",
-          "task argument" : "--jump-database"
+          "task" : "align",
+          "task argument" : "--out",
+          "stub extension" : "bam"
         },
         {
-          "task" : "align",
-          "task argument" : "--jump-database"
+          "task" : "sort",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "output-bam",
+      "arguments sharing node" : [
+        {
+          "task" : "sort",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "index",
+          "task argument" : "--in"
+        },
+        {
+          "task" : "stats",
+          "task argument" : "--in"
         }
       ]
     }
@@ -124,6 +317,167 @@
       "id" : "default",
       "description" : "Default parameter set requires user to input all input filenames.",
       "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "jump",
+          "node" : "jump",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist_10"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.dat"]
+        },
+        {
+          "id" : "fastq",
+          "node" : "fastq",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
+        },
+        {
+          "id" : "fastq mate",
+          "node" : "fastq2",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_2.fq"]
+        },
+        {
+          "id" : "annse",
+          "node" : "annse",
+          "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"]
+        },
+        {
+          "id" : "annpe",
+          "node" : "annpe",
+          "values" : ["$(RESOURCES)/tutorial/current/pe.100.01.ann"]
+        },
+        {
+          "id" : "prefix",
+          "node" : "prefix",
+          "values" : ["moblist"]
+        },
+        {
+          "id" : "special hashes",
+          "node" : "sphashes",
+          "values" : [50]
+        },
+        {
+          "id" : "hash size",
+          "node" : "hash",
+          "values" : [10]
+        },
+        {
+          "id" : "tech",
+          "node" : "tech",
+          "values" : ["illumina"]
+        }
+      ]
+    },
+
+    {
+      "id" : "tutorial",
+      "description" : "Parameter set to be used in conjuction with gkno tutorials.",
+      "data" : [
+        {
+          "id" : "jump",
+          "node" : "jump",
+          "values" : ["./reference/tutorial-reference_8"]
+        },
+        {
+          "id" : "reference",
+          "node" : "--mosaik-reference",
+          "values" : ["./reference/tutorial-reference.dat"]
+        },
+        {
+          "id" : "annse",
+          "node" : "annse",
+          "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"]
+        },
+        {
+          "id" : "annpe",
+          "node" : "annpe",
+          "values" : ["$(RESOURCES)/tutorial/current/pe.100.01.ann"]
+        },
+        {
+          "id" : "prefix",
+          "node" : "prefix",
+          "values" : ["moblist"]
+        },
+        {
+          "id" : "sphash",
+          "node" : "sphash",
+          "values" : [50]
+        },
+        {
+          "id" : "hash",
+          "node" : "hash",
+          "values" : [8]
+        },
+        {
+          "id" : "tech",
+          "node" : "tech",
+          "values" : ["illumina"]
+        },
+        {
+          "id" : "threads",
+          "node" : "threads",
+          "values" : [2]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Pipeline for aligning paired end reads against the human genome reference (requires the human reference to be built for Mosaik in ./references) including the mobile element sequences.",
+      "data" : [
+        {
+          "id" : "jump",
+          "node" : "jump",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_15"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37.dat"]
+        },
+        {
+          "id" : "annse",
+          "node" : "annse",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/se.100.005.ann"]
+        },
+        {
+          "id" : "annpe",
+          "node" : "annpe",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/pe.100.01.ann"]
+        },
+        {
+          "id" : "prefix",
+          "node" : "prefix",
+          "values" : ["moblist"]
+        },
+        {
+          "id" : "sphash",
+          "node" : "sphash",
+          "values" : [50]
+        },
+        {
+          "id" : "hash",
+          "node" : "hash",
+          "values" : [15]
+        },
+        {
+          "id" : "tech",
+          "node" : "tech",
+          "values" : ["illumina"]
+        },
+        {
+          "id" : "threads",
+          "node" : "threads",
+          "values" : [8]
+        }
       ]
     }
   ]

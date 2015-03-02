@@ -235,6 +235,13 @@ def main():
   # arguments and determine whether tasks need to be defined as generating multiple output nodes, having multiple
   # task calls or consolidating nodes.
   graph.determineNumberOfTaskExecutions(superpipeline)
+#  for task in graph.workflow:
+#    print('task:', task)
+#    print('\tinputs:')
+#    for node in graph.graph.predecessors(task): print('\t\t', node, graph.getArgumentAttribute(node, task, 'longFormArgument'), graph.getGraphNodeAttribute(node, 'values'))
+#    print('\toutputs:')
+#    for node in graph.graph.successors(task): print('\t\t', node, graph.getArgumentAttribute(task, node, 'longFormArgument'), graph.getGraphNodeAttribute(node, 'values'))
+#  exit(0)
 
   # Print the workflow to screen.
   write.workflow(superpipeline, workflow)

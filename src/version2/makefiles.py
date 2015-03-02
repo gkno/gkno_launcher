@@ -260,7 +260,7 @@ class makefiles:
 
       # Convert the values into the form required on the command line.
       if isStream: lineValues = [self.getStreamValue(graph, source, target, value, isInput, isStub) for value in values]
-      else: lineValues = [self.getValue(graph, source, target, value, isInput, isStub) for value in values]
+      else: lineValues = [self.getValue(graph, source, target, value, isInput, isStub, stubExtension) for value in values]
 
       # If there are less values than the number of divisions, there is a problem, unless this is a
       # consolidation node. In this case, all of the inputs files are being used in the same command line
@@ -331,7 +331,7 @@ class makefiles:
       if dataType == 'flag':
         lineValue = ''
         if values[0] != 'set': argument = ''
-      else: lineValue = self.getValue(graph, nodeID, task, values[0], isInput = True, isStub = False)
+      else: lineValue = self.getValue(graph, nodeID, task, values[0], isInput = True, isStub = False, stubExtension = None)
       line      = self.buildLine(argument, data.delimiter, lineValue)
       if line:
         for i in range(0, data.noCommandLines): data.commands[i].append(line)
@@ -354,7 +354,7 @@ class makefiles:
             lineValue = ''
             if value != 'set': updatedArgument = ''
           else:
-            lineValue       = self.getValue(graph, nodeID, task, value, isInput = True, isStub = False)
+            lineValue       = self.getValue(graph, nodeID, task, value, isInput = True, isStub = False, stubExtension = None)
             updatedArgument = argument
           line = self.buildLine(updatedArgument, data.delimiter, lineValue)
           if line: data.commands[i].append(line)
@@ -389,12 +389,14 @@ class makefiles:
     # Determine if this argument is for a stream.
     isStream = graph.getArgumentAttribute(source, target, 'isStream')
 
-    # Determine if this is a stub.
-    isStub = graph.getArgumentAttribute(source, target, 'isStub')
+    # Determine if this is a stub and if so, get the extension used for this node.
+    isStub         = graph.getArgumentAttribute(source, target, 'isStub')
+    stubExtension  = graph.getArgumentAttribute(source, target, 'stubExtension')
+    includeStubDot = graph.getArgumentAttribute(source, target, 'includeStubDot')
 
     # Convert the values into the form required on the command line.
     if isStream: lineValues = [self.getStreamValue(graph, source, target, value, isInput, isStub) for value in values]
-    else: lineValues = [self.getValue(graph, source, target, value, isInput, isStub) for value in values]
+    else: lineValues = [self.getValue(graph, source, target, value, isInput, isStub, stubExtension) for value in values]
 
     # If there is only a single file, attach to all of the command lines.
     if len(values) == 1:
@@ -411,9 +413,7 @@ class makefiles:
         if not isStream:
 
           # If this is a stub, add the extension to the value prior to inclusion in the outputs/dependencies.
-          if isStub:
-            stubExtension = graph.getArgumentAttribute(source, target, 'stubExtension')
-            modifiedValue = str(values[0] + stubExtension) if '.' in stubExtension else str(values[0] + '.' + stubExtension)
+          if isStub: modifiedValue = self.addStubExtension(values[0], stubExtension, includeStubDot)
           else: modifiedValue = values[0]
 
           if isInput: data.dependencies[i].append(str(modifiedValue))
@@ -508,6 +508,13 @@ class makefiles:
     # If there are a different number of files to subphases, there is a problem.
     #TODO ERROR
     else: print('ERROR - makefileErrors.addFiles'); exit(1)
+
+  # Check if the value has the given extension and, if not, add it.
+  def addStubExtension(self, value, extension, includeStubDot):
+    if value.endswith(extension): return value
+    else:
+      updatedValue = str(value + '.' + extension) if includeStubDot else str(value + extension)
+      return updatedValue
 
   # Generate the makefiles for this execution of gkno.
   def generateMakefiles(self, struct, pipeline, gknoArguments, arguments):
@@ -1030,15 +1037,21 @@ class makefiles:
 
   # Similar method to the getToolArgument except for the associated value.
   @staticmethod
-  def getValue(graph, source, target, value, isInput, isStub):
+  def getValue(graph, source, target, value, isInput, isStub, stubExtension):
 
     # If the argument is for an input file.
     modifyValue = graph.getArgumentAttribute(source, target, 'modifyValue')
 
-    # If this is a stub, add the extension to the value,
-    if isStub and not graph.getArgumentAttribute(source, target, 'primaryStubNode'): modifyValue = 'omit'
+    # If this is a stub, add the extension to the value and return.
+    if isStub:
+      if not graph.getArgumentAttribute(source, target, 'primaryStubNode'): return None
+      else: 
+        try: updatedValue = value.rstrip(stubExtension)
+        except: updatedValue = value
+        updatedValue = updatedValue.rstrip('.') if updatedValue.endswith('.') else updatedValue
+        return updatedValue
 
-    # Return the argument to be used on the command line.
+    # If this is not a stub, return the argument to be used on the command line.
     if modifyValue == 'omit': return None
     else: return value
 

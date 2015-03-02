@@ -28,6 +28,7 @@
         "required" : true,
         "data type" : "string",
         "is filename stub" : true,
+        "include dot in stub extension" : false,
         "stub extensions" : [
           "_keys.jmp",
           "_meta.jmp",

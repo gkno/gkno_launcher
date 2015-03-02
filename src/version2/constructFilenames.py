@@ -102,7 +102,7 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeID, base
   toolData         = superpipeline.getToolData(tool)
   longFormArgument = toolData.getLongFormArgument(inputArgument)
 
-  # Determine the allowed extensions for the input argument as well as whether this is a stub.
+  # Determine the allowed extensions for the input argument as well as whether it is a stub.
   extensions = toolData.getArgumentAttribute(longFormArgument, 'extensions')
   isStub     = toolData.getArgumentAttribute(longFormArgument, 'isStub')
 
@@ -118,7 +118,9 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeID, base
     # If there are instructions on text to add, add it.
     if 'modify text' in instructions: updatedValue = modifyText(graph, toolData, instructions, task, counter, updatedValue)
 
-    # Determine the extension to place on the filename.
+    # Determine the extension to place on the filename. This does not need to be performed if the file is a stub,
+    # since, the stub should have no extension.
+    #if not isStub:
     newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeID, 'extensions')
     updatedValue  = furnishExtension(instructions, updatedValue, extension, newExtensions)
 

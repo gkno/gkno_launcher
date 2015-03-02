@@ -1,5 +1,6 @@
 {
   "id" : "bamtools-stats",
+  "configuration type" : "tool",
   "description" : "Prints general alignment statistics.",
   "categories" : ["BAM-processing", "Bamtools", "Marthlab-software"],
   "tools" : ["bamtools"],

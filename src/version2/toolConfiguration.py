@@ -62,6 +62,7 @@ class argumentAttributes:
     self.primaryStubNode = False
     self.stubExtension   = None
     self.stubExtensions  = []
+    self.includeStubDot  = True
 
     # Record the category to which the argument belongs.
     self.category = None
@@ -76,6 +77,10 @@ class argumentAttributes:
     # Store whether the argument can be suggested as a possible tool to use in a
     # pipeline builder.
     self.isSuggestible = False
+
+    # Record if the value supplied on the command line should be included in quotations when included
+    # in the command line in the makefile.
+    self.includeInQuotations = False
 
     # Record whether the node associated with this argument should be included in a reduced plot.
     self.includeInReducedPlot = True
@@ -249,22 +254,24 @@ class toolConfiguration:
 
     # Define the allowed input argument attributes.
     allowedAttributes = {}
-    allowedAttributes['allow multiple values']   = (bool, False, True, 'allowMultipleValues')
-    allowedAttributes['command line argument']   = (str, True, True, 'commandLineArgument')
-    allowedAttributes['construct filename']      = (dict, False, True, 'constructionInstructions')
-    allowedAttributes['data type']               = (str, True, True, 'dataType')
-    allowedAttributes['description']             = (str, True, True, 'description')
-    allowedAttributes['extensions']              = (list, False, True, 'extensions')
-    allowedAttributes['if input is stream']      = (dict, False, True, 'inputStreamInstructions')
-    allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
-    allowedAttributes['is filename stub']        = (bool, False, True, 'isStub')
-    allowedAttributes['long form argument']      = (str, True, True, 'longFormArgument')
-    allowedAttributes['modify argument']         = (str, False, True, 'modifyArgument')
-    allowedAttributes['modify value']            = (str, False, True, 'modifyValue')
-    allowedAttributes['required']                = (bool, False, True, 'isRequired')
-    allowedAttributes['short form argument']     = (str, False, True, 'shortFormArgument')
-    allowedAttributes['stub extensions']         = (list, False, True, 'stubExtensions')
-    allowedAttributes['suggestible']             = (bool, False, True, 'isSuggestible')
+    allowedAttributes['allow multiple values']         = (bool, False, True, 'allowMultipleValues')
+    allowedAttributes['command line argument']         = (str, True, True, 'commandLineArgument')
+    allowedAttributes['construct filename']            = (dict, False, True, 'constructionInstructions')
+    allowedAttributes['data type']                     = (str, True, True, 'dataType')
+    allowedAttributes['description']                   = (str, True, True, 'description')
+    allowedAttributes['extensions']                    = (list, False, True, 'extensions')
+    allowedAttributes['if input is stream']            = (dict, False, True, 'inputStreamInstructions')
+    allowedAttributes['include dot in stub extension'] = (bool, False, True, 'includeStubDot')
+    allowedAttributes['include in reduced plot']       = (bool, False, True, 'includeInReducedPlot')
+    allowedAttributes['include value in quotations']   = (bool, False, True, 'includeInQuotations')
+    allowedAttributes['is filename stub']              = (bool, False, True, 'isStub')
+    allowedAttributes['long form argument']            = (str, True, True, 'longFormArgument')
+    allowedAttributes['modify argument']               = (str, False, True, 'modifyArgument')
+    allowedAttributes['modify value']                  = (str, False, True, 'modifyValue')
+    allowedAttributes['required']                      = (bool, False, True, 'isRequired')
+    allowedAttributes['short form argument']           = (str, False, True, 'shortFormArgument')
+    allowedAttributes['stub extensions']               = (list, False, True, 'stubExtensions')
+    allowedAttributes['suggestible']                   = (bool, False, True, 'isSuggestible')
 
     # Fail if there is no input arguments section. This is included since all input arguments
     # are included in the 'Inputs' section and, if by mistake, the section is named 'inputs' (no
@@ -279,22 +286,24 @@ class toolConfiguration:
 
     # Define the allowed input argument attributes.
     allowedAttributes = {}
-    allowedAttributes['allow multiple values'] = (bool, False, True, 'allowMultipleValues')
-    allowedAttributes['command line argument'] = (str, True, True, 'commandLineArgument')
-    allowedAttributes['construct filename']    = (dict, False, True, 'constructionInstructions')
-    allowedAttributes['data type']             = (str, True, True, 'dataType')
-    allowedAttributes['description']           = (str, True, True, 'description')
-    allowedAttributes['extensions']            = (list, False, True, 'extensions')
-    allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
-    allowedAttributes['is filename stub']      = (bool, False, True, 'isStub')
-    allowedAttributes['if output to stream']   = (dict, False, True, 'outputStreamInstructions')
-    allowedAttributes['long form argument']    = (str, True, True, 'longFormArgument')
-    allowedAttributes['modify argument']       = (str, False, True, 'modifyArgument')
-    allowedAttributes['modify value']          = (str, False, True, 'modifyValue')
-    allowedAttributes['output to stdout']      = (bool, False, True, 'isStdout')
-    allowedAttributes['required']              = (bool, False, True, 'isRequired')
-    allowedAttributes['short form argument']   = (str, False, True, 'shortFormArgument')
-    allowedAttributes['stub extensions']       = (list, False, True, 'stubExtensions')
+    allowedAttributes['allow multiple values']         = (bool, False, True, 'allowMultipleValues')
+    allowedAttributes['command line argument']         = (str, True, True, 'commandLineArgument')
+    allowedAttributes['construct filename']            = (dict, False, True, 'constructionInstructions')
+    allowedAttributes['data type']                     = (str, True, True, 'dataType')
+    allowedAttributes['description']                   = (str, True, True, 'description')
+    allowedAttributes['extensions']                    = (list, False, True, 'extensions')
+    allowedAttributes['include dot in stub extension'] = (bool, False, True, 'includeStubDot')
+    allowedAttributes['include in reduced plot']       = (bool, False, True, 'includeInReducedPlot')
+    allowedAttributes['include value in quotations']   = (bool, False, True, 'includeInQuotations')
+    allowedAttributes['is filename stub']              = (bool, False, True, 'isStub')
+    allowedAttributes['if output to stream']           = (dict, False, True, 'outputStreamInstructions')
+    allowedAttributes['long form argument']            = (str, True, True, 'longFormArgument')
+    allowedAttributes['modify argument']               = (str, False, True, 'modifyArgument')
+    allowedAttributes['modify value']                  = (str, False, True, 'modifyValue')
+    allowedAttributes['output to stdout']              = (bool, False, True, 'isStdout')
+    allowedAttributes['required']                      = (bool, False, True, 'isRequired')
+    allowedAttributes['short form argument']           = (str, False, True, 'shortFormArgument')
+    allowedAttributes['stub extensions']               = (list, False, True, 'stubExtensions')
 
     # Fail if there is no output arguments section. This is included since all output arguments
     # are included in the 'Outputs' section and, if by mistake, the section is named 'outputs' (no
@@ -309,17 +318,18 @@ class toolConfiguration:
 
     # Define the allowed input argument attributes.
     allowedAttributes = {}
-    allowedAttributes['allow multiple values']   = (bool, False, True, 'allowMultipleValues')
-    allowedAttributes['command line argument']   = (str, True, True, 'commandLineArgument')
-    allowedAttributes['data type']               = (str, True, True, 'dataType')
-    allowedAttributes['description']             = (str, True, True, 'description')
-    allowedAttributes['extensions']              = (list, False, True, 'extensions')
-    allowedAttributes['include in reduced plot'] = (bool, False, True, 'includeInReducedPlot')
-    allowedAttributes['long form argument']      = (str, True, True, 'longFormArgument')
-    allowedAttributes['modify argument']         = (str, False, True, 'modifyArgument')
-    allowedAttributes['modify value']            = (str, False, True, 'modifyValue')
-    allowedAttributes['required']                = (bool, False, True, 'isRequired')
-    allowedAttributes['short form argument']     = (str, False, True, 'shortFormArgument')
+    allowedAttributes['allow multiple values']       = (bool, False, True, 'allowMultipleValues')
+    allowedAttributes['command line argument']       = (str, True, True, 'commandLineArgument')
+    allowedAttributes['data type']                   = (str, True, True, 'dataType')
+    allowedAttributes['description']                 = (str, True, True, 'description')
+    allowedAttributes['extensions']                  = (list, False, True, 'extensions')
+    allowedAttributes['include in reduced plot']     = (bool, False, True, 'includeInReducedPlot')
+    allowedAttributes['include value in quotations'] = (bool, False, True, 'includeInQuotations')
+    allowedAttributes['long form argument']          = (str, True, True, 'longFormArgument')
+    allowedAttributes['modify argument']             = (str, False, True, 'modifyArgument')
+    allowedAttributes['modify value']                = (str, False, True, 'modifyValue')
+    allowedAttributes['required']                    = (bool, False, True, 'isRequired')
+    allowedAttributes['short form argument']         = (str, False, True, 'shortFormArgument')
 
     # Loop over all the other categories of arguments.
     for category in arguments:

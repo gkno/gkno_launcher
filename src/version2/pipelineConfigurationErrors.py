@@ -133,7 +133,9 @@ class pipelineErrors:
     self.text.append('Invalid node address supplied with argument.')
     self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains information in the \'' + category + '\' section ' + \
     'of \'arguments\' for the argument \'' + argument + '\'. This argument is defined as pointing to the node with address \'' + \
-    address + '\', but this address does not point to a valid node in the pipeline. Please ensure that the node address is correct.')
+    address + '\', but this address does not point to a valid node in the configuration file. Please ensure that the node address provided ' + \
+    'with the argument is the ID of one of the nodes in the unique or shared nodes of the configuration file. Note that if the pipeline contains ' + \
+    'tasks that are themselves pipelines, this address could be pointing to a node in one of the nested configuration files.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
