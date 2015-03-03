@@ -8,6 +8,7 @@ import subprocess
 import sys
 
 import version2.adminUtils as au
+import version2.adminErrors as adminErrors
 import version2.arguments as ag
 import version2.commandLine as cl
 import version2.constructFilenames as construct
@@ -70,8 +71,8 @@ def main():
   gknoConfiguration = gc.gknoConfiguration(configurationFilesPath)
 
   # Determine if gkno is being run in admin mode and then determine the mode.
-  isAdminMode, adminMode = command.isAdmin(admin.allModes)
-  mode                   = command.determineMode(isAdminMode, gknoConfiguration)
+  admin.isRequested, admin.mode = command.isAdmin(admin.allModes)
+  mode                          = command.determineMode(admin.isRequested, gknoConfiguration)
 
   # Print gkno title and version to the screen.
   write.printHeader(__version__, __date__, os.getenv('GKNOCOMMITID'))
@@ -87,10 +88,17 @@ def main():
   # If not being run in admin mode, determine the name of the pipeline being run. Note that
   # for the code, a tool is considered a pipeline with a single task, so the terminology
   # 'pipeline' is used throughout for both cases.
-  if not isAdminMode: pipeline = command.determinePipeline()
+  if not admin.isRequested: pipeline = command.determinePipeline()
 
   # Otherwise, handle the admin functions.
-  else: print('NOT HANDLED ADMIN'); exit(0)
+  else:
+    if admin.run(sys.argv):
+
+      # Check that all of the tools were successfully built. If not, post a warning about which tools cannot
+      # be used.
+      if admin.allBuilt: exit(0)
+      else: adminErrors.adminErrors.failedToolBuilds(admin.builtTools)
+    else: adminErrors.adminErrors.terminate()
 
   # If the pipeline name has not been supplied, general help must be required.
   if not pipeline and mode != 'web': gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
@@ -235,13 +243,6 @@ def main():
   # arguments and determine whether tasks need to be defined as generating multiple output nodes, having multiple
   # task calls or consolidating nodes.
   graph.determineNumberOfTaskExecutions(superpipeline)
-#  for task in graph.workflow:
-#    print('task:', task)
-#    print('\tinputs:')
-#    for node in graph.graph.predecessors(task): print('\t\t', node, graph.getArgumentAttribute(node, task, 'longFormArgument'), graph.getGraphNodeAttribute(node, 'values'))
-#    print('\toutputs:')
-#    for node in graph.graph.successors(task): print('\t\t', node, graph.getArgumentAttribute(task, node, 'longFormArgument'), graph.getGraphNodeAttribute(node, 'values'))
-#  exit(0)
 
   # Print the workflow to screen.
   write.workflow(superpipeline, workflow)

@@ -37,7 +37,7 @@ class adminUtils:
     self.error                          = adminErrors()
     self.isRequested                    = False
     self.isVerbose                      = False
-    self.mode                           = ""
+    self.mode                           = ''
     self.userSettings                   = {}
     self.userSettings['compiled tools'] = []
 
