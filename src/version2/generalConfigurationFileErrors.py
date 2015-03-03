@@ -28,10 +28,18 @@ class generalConfigurationFileErrors:
  # A general entry in the configuration file is invalid.
   def invalidAttribute(self, attribute, allowedAttributes, helpInfo):
 
+    # Determine the configuration type that failed. This is achieved by interrogating the stack to see which
+    # function called the error.
+    callingModule = inspect.stack()[2][1].rsplit('/', 1)[1].rsplit('.py', 1)[0]
+    if callingModule == 'pipelineConfiguration': text = 'pipeline'
+    elif callingModule == 'toolConfiguration': text = 'tool'
+    elif callingModule == 'gknoConfiguration': text = 'gkno'
+    else: text = 'unknown'
+
     # Get the infomation from the helpInfo.
     name, section, id = helpInfo
 
-    self.text.append('Invalid attribute in configuration file: ' + name)
+    self.text.append('Invalid attribute in ' + text + ' configuration file: ' + name)
 
     # Define the error message if no section or node ID is provided.
     if not section and not id:

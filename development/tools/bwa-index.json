@@ -1,0 +1,85 @@
+{
+  "id" : "bwa-index",
+  "configuration type" : "tool",
+  "description" : "Generate the FM-index for use with bwa alignment.",
+  "categories" : ["FASTA-processing", "BWA"],
+  "tools" : ["bwa"],
+  "path" : "bwa",
+  "executable" : "bwa",
+  "modifier" : "index",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The reference FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["fa", "fasta"],
+        "modify argument" : "omit"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output FM index filename stub.",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
+        "command line argument" : "-p",
+        "required" : true,
+        "data type" : "string",
+        "is filename stub" : true,
+        "stub extensions" : [
+          ".amb",
+          ".ann",
+          ".bwt",
+          ".pac",
+          ".sa"
+        ],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "omit"
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "BWT construction algorithm: bwtsw or is [auto].",
+        "long form argument" : "--bwt-algorithm",
+        "short form argument" : "-a",
+        "command line argument" : "-a",
+        "data type" : "string"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--bwt-algorithm",
+    "--index",
+    "--fasta-reference"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "fasta",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        }
+      ]
+    }
+  ]
+}

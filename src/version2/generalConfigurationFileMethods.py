@@ -5,6 +5,7 @@ import generalConfigurationFileErrors as er
 
 import json
 import os
+import inspect
 import sys
 
 # Check that the supplied value is a dictionary.
