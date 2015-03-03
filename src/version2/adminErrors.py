@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import errors
 import inspect
 from inspect import currentframe, getframeinfo
 
@@ -12,6 +13,12 @@ class adminErrors:
 
   # Initialise.
   def __init__(self):
+
+    # Get general error writing and termination methods.
+    self.errors = errors()
+
+    # The error messages are stored in the following list.
+    self.text = []
 
     # Errors encountered with the admin portion of gkno generate an error code of '2'.
     # The error codes associated with other aspects of the code are as follows:
@@ -53,8 +60,8 @@ class adminErrors:
     self.text.append('Invalid arguments for gkno build.')
     self.text.append('The \'--skip-tools (-st)\' argument was set in conjuction with the \'--compile-tools (-ct)\'. These arguments cannot ' + \
     'set simultaneously. Please provide either a list of tools to skip or to compile, but not both')
-    self.writeFormattedText(errorType = 'error')
-    self.terminate()
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
 
   # The user requested that not all tools be built, but failed to provide a list of tools to skip.
   def missingSkipList(self, dest=sys.stderr):
@@ -62,8 +69,8 @@ class adminErrors:
     self.text.append('The \'--skip-tools (-st)\' argument was set when attempting to build gkno. If set, a json format file containing a list ' + \
     'of all the tools to be skipped needs to be supplied. Please either build all tools using \'gkno build\' or remove tools by using the ' + \
     'command \'gkno build --skip-list list.json\'.')
-    self.writeFormattedText(errorType = 'error')
-    self.terminate()
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
 
   # If the specified file containing the list of files to skip is missing.
   def missingSkipListFile(self, filename, dest=sys.stderr):
@@ -71,8 +78,8 @@ class adminErrors:
     self.text.append('The \'--skip-tools (-st)\' argument was set when attempting to build gkno. If set, a json format file containing a list ' + \
     'of all the tools to be skipped needs to be supplied. The specified file \'' + filename + '\' cannot be found. Please check the name of ' + \
     'the supplied file.')
-    self.writeFormattedText(errorType = 'error')
-    self.terminate()
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
 
   # If a tool listed as a tool to skip is not a tool in gkno.
   def invalidToolToSkip(self, filename, tool, availableTools, dest=sys.stdout):
@@ -82,8 +89,8 @@ class adminErrors:
     'is not a tool in gkno. Please ensure that all of the tools listed in the file are present in the following list of available tools:')
     self.text.append('\t')
     for tool in availableTools: self.text.append(tool)
-    self.writeFormattedText(errorType = 'error')
-    self.terminate()
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
 
   # The user requested that not all tools be built, but failed to provide a list of tools to skip.
   def missingCompileList(self, dest=sys.stderr):
@@ -91,8 +98,8 @@ class adminErrors:
     self.text.append('The \'--compile-tools (-ct)\' argument was set when attempting to build gkno. If set, a text file containing a list ' + \
     'of all the tools to be compiled needs to be supplied. Please either build all tools using \'gkno build\' or select the tools to compile ' + \
     'by using the command \'gkno build --compile-list list.json\'.')
-    self.writeFormattedText(errorType = 'error')
-    self.terminate()
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
 
   # If the specified file containing the list of files to skip is missing.
   def missingCompileListFile(self, filename, dest=sys.stderr):
@@ -100,8 +107,8 @@ class adminErrors:
     self.text.append('The \'--compile-tools (-ct)\' argument was set when attempting to build gkno. If set, a text file containing a list ' + \
     'of all the tools to be compiled needs to be supplied. The specified file \'' + filename + '\' cannot be found. Please check the name of ' + \
     'the supplied file.')
-    self.writeFormattedText(errorType = 'error')
-    self.terminate()
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
 
   # If a tool listed as a tool to skip is not a tool in gkno.
   def invalidToolToCompile(self, filename, tool, availableTools, dest=sys.stdout):
@@ -111,8 +118,8 @@ class adminErrors:
     'is not a tool in gkno. Please ensure that all of the tools listed in the file are present in the following list of available tools:')
     self.text.append('\t')
     for tool in availableTools: self.text.append(tool)
-    self.writeFormattedText(errorType = 'error')
-    self.terminate()
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
 
   def gknoAlreadyBuilt(self):
     print("Already built.", file=sys.stdout)
@@ -192,8 +199,8 @@ class adminErrors:
     for tool in tools:
       if not tools[tool]: self.text.append('\t' + str(tool))
     self.text.append('\t')
-    self.writeFormattedText(errorType = 'warning')
-    self.terminate()
+    self.errors.writeFormattedText(self.text, errorType = 'warning')
+    self.errors.terminate(self.errorCode)
 
   # If a tool is added, but the tool name is not provided.
   def noToolNameProvided(self, tools):
@@ -202,8 +209,8 @@ class adminErrors:
     './gkno add-tool <tool name> miust be used, where <tool name> is one of the following tools:')
     for tool in tools: self.text.append('\t' + tool.name)
     self.text.append('\t')
-    self.writeFormattedText(errorType = 'error')
-    self.terminate()
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
 
   # If a tool is added, but the tool added is invalid.
   def invalidToolAdded(self, tools):
@@ -212,13 +219,13 @@ class adminErrors:
     'added must be one of the following:')
     for tool in tools: self.text.append('\t' + tool.name)
     self.text.append('\t')
-    self.writeFormattedText(errorType = 'error')
-    self.terminate()
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
 
   # If a tool is added, but the tool is already available.
   def toolAlreadyBuilt(self):
     self.text.append('Attempt to add a tool that is already present.')
     self.text.append('An attempt to add a tool to the gkno distribution was made, but the requested tool is already available. Only tools that ' + \
     'have previously been omitted from the build can be added.')
-    self.writeFormattedText(errorType = 'error')
-    self.terminate()
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
