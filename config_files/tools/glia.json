@@ -1,25 +1,20 @@
 {
   "id" : "glia",
   "description" : "Perform local graph alignment.",
-  "experimental" : true,
   "categories" : ["BAM-processing", "Aligners", "Variant-graph", "Marthlab-software"],
   "tools" : ["glia"],
   "path" : "glia",
   "executable" : "glia",
-  "input is stream" : true,
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
         "description" : "The input bam.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "--in",
         "required" : true,
-        "if input is stream" : "do not include",
-        "is stream" : true,
         "data type" : "string",
-        "extensions" : [".bam"]
+        "extensions" : ["bam"]
       },
       {
         "description" : "The reference sequence for alignment.",
@@ -28,7 +23,7 @@
         "command line argument" : "--fasta-reference",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fa", ".fasta"]
+        "extensions" : ["fa", "fasta"]
       },
       {
         "description" : "The genome DAG, BGZIP'ed (.vcf.gz) and tabix-indexed (.tbi).",
@@ -37,7 +32,7 @@
         "command line argument" : "--vcf-file",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".vcf.gz"]
+        "extensions" : ["vcf.gz"]
       },
       {
         "description" : "The genome DAG index.",
@@ -46,18 +41,17 @@
         "command line argument" : "--vcf-index",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".tbi"],
-        "hide in help" : true,
-        "modify argument name on command line" : "omit",
+        "extensions" : ["tbi"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--vcf",
           "modify extension" : "append"
-        }
+        },
+        "include in reduced plot" : false
       }
     ],
   
-    "outputs" : [
+    "Outputs" : [
       {
         "description" : "The output file.",
         "long form argument" : "--out",
@@ -65,9 +59,7 @@
         "command line argument" : "-out",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam"],
-        "modify argument name on command line" : "stdout",
-        "if output to stream" : "do not include",
+        "extensions" : ["bam"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -87,32 +79,28 @@
         "long form argument" : "--match",
         "short form argument" : "-m",
         "command line argument" : "--match",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "The alignment mismatch score (default -10).",
         "long form argument" : "--mismatch",
         "short form argument" : "-ms",
         "command line argument" : "--mismatch",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Gap open penalty (default 3).",
         "long form argument" : "--gap-open",
         "short form argument" : "-go",
         "command line argument" : "--gap-open",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Gap extension penalty (default 1).",
         "long form argument" : "--gap-extend",
         "short form argument" : "-ge",
         "command line argument" : "--gap-extend",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       }
     ],
 
@@ -122,48 +110,42 @@
         "long form argument" : "--region",
         "short form argument" : "-rg",
         "command line argument" : "--target",
-        "data type" : "string",
-        "extensions" : ["no extension"]
+        "data type" : "string"
       },
       {
         "description" : "Write DAG generated from variants to stdout.",
         "long form argument" : "--display-dag",
         "short form argument" : "-dd",
         "command line argument" : "--display-dag",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       },
       {
         "description" : "Write alignment matrix results to stdout.",
         "long form argument" : "--display-backtrace",
         "short form argument" : "-dt",
         "command line argument" : "--display-backtrace",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       },
       {
         "description" : "Same as --display-backtrace but also for nodes which are not traced.",
         "long form argument" : "--display-all-nodes",
         "short form argument" : "-dn",
         "command line argument" : "--display-all-nodes",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       },
       {
         "description" : "Enable debugging output.",
         "long form argument" : "--debug-glia",
         "short form argument" : "-dg",
         "command line argument" : "--display-all-nodes",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       },
       {
         "description" : "Report the reverse complement if it provides a better alignment.",
         "long form argument" : "--reverse-complement",
         "short form argument" : "-rc",
         "command line argument" : "--reverse-complement",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       }
     ],
 
@@ -173,88 +155,77 @@
         "long form argument" : "--flat-input-vcf",
         "short form argument" : "-f",
         "command line argument" : "--flat-input-vcf",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       },
       {
         "description" : "Number of bp of window to assemble from VCF for realignment.",
         "long form argument" : "--realignment-window",
         "short form argument" : "-rw",
         "command line argument" : "--realignment-window",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Do not attempt streaming sort of alignments.  This can save memory in high coverage areas, but will require sort of BAM file before it can be used for variant calling.",
         "long form argument" : "--unsorted-output",
         "short form argument" : "-u",
         "command line argument" : "--unsorted-output",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       },
       {
         "description" : "If sum of qualities of soft clipped bases is >= N, realign (default ~inf).",
         "long form argument" : "--soft-clip-qsum-threshold",
         "short form argument" : "-s",
         "command line argument" : "--soft-clip-qsum-threshold",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "If sum of qualities of mismatched bases is >= N, realign (default ~inf).",
         "long form argument" : "--mismatch-qsum-threshold",
         "short form argument" : "-mqt",
         "command line argument" : "--mismatch-qsum-threshold",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "If the count of gaps is >= N, realign (default: ~inf).",
         "long form argument" : "--gap-count-threshold",
         "short form argument" : "-gc",
         "command line argument" : "--gap-count-threshold",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "If the total length of gaps is >= N, realign (default: ~inf).",
         "long form argument" : "--gap-length-threshold",
         "short form argument" : "-gl",
         "command line argument" : "--gap-length-threshold",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Accept realignment if qsum of softclips is < N.",
         "long form argument" : "--soft-clip-qsum-max",
         "short form argument" : "-sc",
         "command line argument" : "--soft-clip-qsum-max",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Accept realignment if qsom of mismatches is < N.",
         "long form argument" : "--mismatch-qsum-max",
         "short form argument" : "-mq",
         "command line argument" : "--mismatch-qsum-max",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Accept realignment if number of gaps is < N.",
         "long form argument" : "--gap-count-max",
         "short form argument" : "-gcm",
         "command line argument" : "--gap-count-max",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Use this many bp of dummy sequence when flattening large insertions into reference coordinates (default: 2)",
         "long form argument" : "--flatten-rank",
         "short form argument" : "-fr",
         "command line argument" : "--flatten-rank",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       }
     ],
 
@@ -265,9 +236,7 @@
         "short form argument" : "-rb",
         "command line argument" : "--realign-bam",
         "required" : true,
-        "data type" : "flag",
-        "hide in help" : true,
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       }
     ]
   },
@@ -304,11 +273,11 @@
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "bam",
+          "id" : "bam",
           "argument" : "--realign-bam",
           "values" : ["set"]
         }
@@ -316,31 +285,31 @@
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "bam",
+          "id" : "bam",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {
-          "ID" : "vcf",
+          "id" : "vcf",
           "argument" : "--vcf",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf.gz"]
         },
         {
-          "ID" : "fasta",
+          "id" : "fasta",
           "argument" : "--fasta-reference",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
         },
         {
-          "ID" : "region",
+          "id" : "region",
           "argument" : "--region",
           "values" : ["20"]
         },
         {
-          "ID" : "unsorted",
+          "id" : "unsorted",
           "argument" : "--unsorted-output",
           "values" : ["set"]
         }

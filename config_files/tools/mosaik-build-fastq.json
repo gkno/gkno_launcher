@@ -1,13 +1,13 @@
 {
   "id" : "mosaik-build-fastq",
-  "description" : "Build the Mosaik read archive",
+  "configuration type" : "tool",
+  "description" : "Construct a Mosaik format read archive from the raw fastq files.",
   "categories" : ["FASTQ-processing", "Mosaik", "Marthlab-software"],
   "tools" : ["mosaik"],
   "path" : "MOSAIK/bin",
   "executable" : "MosaikBuild",
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {    
         "description" : "The FASTQ file.",
         "long form argument" : "--fastq",
@@ -15,27 +15,27 @@
         "command line argument" : "-q",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fastq", ".fq", ".fastq.gz", ".fq.gz"]
+        "extensions" : ["fastq", "fq", "fastq.gz", "fq.gz"]
       },
-      {    
-        "description" : "The FASTQ 2nd mate.",
+      {
+        "description" : "The FASTQ file for the second mate.",
         "long form argument" : "--fastq2",
         "short form argument" : "-q2",
         "command line argument" : "-q2",
         "data type" : "string",
-        "extensions" : [".fastq", ".fq", ".fastq.gz", ".fq.gz"]
+        "extensions" : ["fastq", "fq", "fastq.gz", "fq.gz"]
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {    
-        "description" : "The output read file.",
+        "description" : "The output read read archive.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "-out",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".mkb"],
+        "extensions" : ["mkb"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--fastq",
@@ -44,13 +44,12 @@
       }
     ],
 
-    "read archive metadata" : [
+    "Read archive metadata" : [
       {    
         "description" : "Read group ID. e.g. SRR009060",
         "long form argument" : "--read-group-id",
         "short form argument" : "-id",
         "command line argument" : "-id",
-        "extensions" : ["no extension"],
         "data type" : "string",
         "include value in quotations" : true
       },
@@ -59,15 +58,13 @@
         "long form argument" : "--median-fragment-length",
         "short form argument" : "-mfl",
         "command line argument" : "-mfl",
-        "extensions" : ["no extension"],
         "data type" : "integer"
       },
       {    
-        "description" : "Sample name. e.g. NA12878",
+        "description" : "The sample name. e.g. NA12878",
         "long form argument" : "--sample-name",
         "short form argument" : "-s",
         "command line argument" : "-sam",
-        "extensions" : ["no extension"],
         "data type" : "string",
         "include value in quotations" : true
       },
@@ -76,7 +73,6 @@
         "long form argument" : "--center-name",
         "short form argument" : "-c",
         "command line argument" : "-cn",
-        "extensions" : ["no extension"],
         "data type" : "string",
         "include value in quotations" : true
       },
@@ -85,7 +81,6 @@
         "long form argument" : "--lane",
         "short form argument" : "-l",
         "command line argument" : "-ln",
-        "extensions" : ["no extension"],
         "data type" : "string",
         "include value in quotations" : true
       },
@@ -94,7 +89,6 @@
         "long form argument" : "--platform",
         "short form argument" : "-pu",
         "command line argument" : "-pu",
-        "extensions" : ["no extension"],
         "data type" : "string",
         "include value in quotations" : true
       },
@@ -104,7 +98,6 @@
         "short form argument" : "-st",
         "command line argument" : "-st",
         "required" : true,
-        "extensions" : ["no extension"],
         "data type" : "string",
         "include value in quotations" : true
       }
@@ -113,30 +106,30 @@
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : [
+      "data" : [
       ]
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "fastq",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"],
-          "argument" : "--fastq"
+          "id" : "fastq",
+          "argument" : "--fastq",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
         },
         {
-          "ID" : "fastq2",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_2.fq"],
-          "argument" : "--fastq2"
+          "id" : "fastq2",
+          "argument" : "--fastq2",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_2.fq"]
         },
         {
-          "ID" : "tech",
-          "values" : ["illumina"],
-          "argument" : "--sequencing-technology"
+          "id" : "tech",
+          "argument" : "--sequencing-technology",
+          "values" : ["illumina"]
         }
       ]
     }

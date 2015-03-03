@@ -1,123 +1,208 @@
 {
-  "description" : "Concatenate reference fasta files and generate Mosaik reference and jump database.",
+  "id" : "build-mosaik-reference",
+  "configuration type" : "pipeline",
+  "description" : "Concatenate reference fasta files and generate a Mosaik reference and jump database.",
   "categories" : ["FASTA-processing"],
 
-  "tasks" : {
-    "index-fasta" : {
-      "tool" : "samtools-index-fasta"
+  "pipeline tasks" : [
+    {
+      "task" : "merge",
+      "tool" : "concatenate-files"
     },
-    "create-sequence-dictionary" : {
-      "tool" : "picard-create-sequence-dictionary"
+    {
+      "task" : "index",
+      "tool" : "index-fasta"
     },
-    "build-reference" : {
+    {
+      "task" : "dictionary",
+      "tool" : "create-fasta-dictionary"
+    },
+    {
+      "task" : "reference",
       "tool" : "mosaik-build-reference"
     },
-    "build-jump-database" : {
+    {
+      "task" : "jump-database",
       "tool" : "mosaik-jump"
-    }
-  },
-
-  "nodes" : [
-    {
-      "ID" : "reference",
-      "description" : "The output fasta reference including the moblist.",
-      "long form argument" : "--fasta-reference",
-      "short form argument" : "-r",
-      "tasks" : {
-        "index-fasta" : "--fasta-reference",
-        "create-sequence-dictionary" : "--fasta-reference",
-        "build-reference" : "--fasta-reference"
-      }
-    },
-    {
-      "ID" : "hash size",
-      "description" : "hash-size",
-      "long form argument" : "--hash-size",
-      "short form argument" : "-hs",
-      "tasks" : {
-        "build-jump-database" : "--hash-size"
-      }
-    },
-    {
-      "ID" : "mosaik reference",
-      "description" : "Reference file in native Mosaik format.",
-      "tasks" : {
-        "build-reference" : "--mosaik-reference",
-        "build-jump-database" : "--mosaik-reference"
-      }
     }
   ],
 
-  "parameter sets" : [
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "Reference fasta file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "node id" : "fasta"
+      },
+      {
+        "description" : "The mobile element reference fasta file.",
+        "long form argument" : "--mobile-element-fasta",
+        "short form argument" : "-m",
+        "node id" : "moblist"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output fasta reference including the moblist.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "hash-size",
+        "long form argument" : "--hash-size",
+        "short form argument" : "-hs",
+        "node id" : "hash"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
     {
-      "ID" : "default",
-      "description" : "Default parameter set requires user to input all input filenames.",
-      "nodes" : [
+      "id" : "fasta",
+      "task" : "merge",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "moblist",
+      "task" : "merge",
+      "task argument" : "--in2"
+    },
+    {
+      "id" : "hash",
+      "task" : "jump-database",
+      "task argument" : "--hash-size"
+    }
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "output",
+      "arguments sharing node" : [
+        {
+          "task" : "merge",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "index",
+          "task argument" : "--fasta-reference"
+        },
+        {
+          "task" : "dictionary",
+          "task argument" : "--fasta-reference"
+        },
+        {
+          "task" : "reference",
+          "task argument" : "--fasta-reference"
+        }
       ]
     },
-
     {
-      "ID" : "test",
-      "description" : "Test parameter set for the test harness.",
-      "nodes" : [
+      "id" : "mosaik-reference",
+      "arguments sharing node" : [
         {
-          "ID" : "reference fasta",
-          "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+          "task" : "reference",
+          "task argument" : "--out"
         },
         {
-          "ID" : "hash size",
-          "argument" : "--hash-size",
-          "values" : [10]
-        },
+          "task" : "jump-database",
+          "task argument" : "--mosaik-reference"
+        }
+      ]
+    }
+  ],
+
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
         {
-          "ID" : "output path",
-          "argument" : "--output-path",
-          "values" : ["./"]
+          "id" : "output",
+          "node" : "output",
+          "values" : ["merged_reference.fa"]
         }
       ]
     },
 
     {
-      "ID" : "tutorial",
-      "description" : "Parameter set to be used in conjuction with gkno tutorials.",
-      "nodes" : [
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
         {
-          "ID" : "reference fasta",
-          "argument" : "--fasta-reference",
+          "id" : "fasta",
+          "node" : "fasta",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         },
         {
-          "ID" : "hash size",
-          "argument" : "--hash-size",
+          "id" : "moblist",
+          "node" : "moblist",
+          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"]
+        },
+        {
+          "id" : "hash size",
+          "node" : "hash",
+          "values" : [10]
+        }
+      ]
+    },
+
+    {
+      "id" : "tutorial",
+      "description" : "Parameter set to be used in conjuction with gkno tutorials.",
+      "data" : [
+        {
+          "id" : "fasta",
+          "node" : "fasta",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "id" : "moblist",
+          "node" : "moblist",
+          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"]
+        },
+        {
+          "id" : "hash size",
+          "node" : "hash",
           "values" : [8]
         },
         {
-          "ID" : "output path",
-          "argument" : "--output-path",
-          "values" : ["./reference"]
+          "id" : "output",
+          "node" : "output",
+          "values" : ["tutorial-reference.fa"]
         }
       ]
     },
 
     {
-      "ID" : "human",
+      "id" : "human",
       "description" : "Build Mosaik reference genome including list of mobile element sequences",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "reference fasta",
-          "argument" : "--fasta-reference",
+          "id" : "fasta",
+          "node" : "fasta",
           "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
         },
         {
-          "ID" : "hash size",
-          "argument" : "--hash-size",
+          "id" : "moblist",
+          "node" : "moblist",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/mobile_element_sequences.fa"]
+        },
+        {
+          "id" : "hash size",
+          "node" : "hash",
           "values" : [15]
         },
         {
-          "ID" : "output path",
-          "argument" : "--output-path",
-          "values" : ["./reference"]
+          "id" : "output",
+          "node" : "output",
+          "values" : ["human_reference_v37.fa"]
         }
       ]
     }

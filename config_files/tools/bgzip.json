@@ -1,27 +1,29 @@
 {
   "id" : "bgzip",
+  "configuration type" : "tool",
   "description" : "Compress a file using bgzip.",
   "categories" : ["General-file-processing"],
   "tools" : ["tabix"],
   "path" : "tabix",
   "executable" : "bgzip",
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
         "description" : "The file to be compressed.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "none",
+        "if input is stream" : {
+          "argument" : "omit",
+          "value" : "omit"
+        },
         "required" : true,
         "data type" : "string",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide",
-        "if input is stream" : "do not include"
+        "extensions" : ["no extension"]
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {
         "description" : "The output file.",
         "long form argument" : "--out",
@@ -29,8 +31,7 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".gz"],
-        "modify argument name on command line" : "omit",
+        "extensions" : ["gz"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -47,25 +48,20 @@
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : [
+      "data" : [
       ]
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "vcf",
+          "id" : "vcf",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"],
           "argument" : "--in"
-        },
-        {
-          "ID" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
         }
       ]
     }

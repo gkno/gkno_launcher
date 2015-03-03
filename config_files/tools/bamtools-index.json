@@ -1,14 +1,14 @@
 {
   "id" : "bamtools-index",
+  "configuration type" : "tool",
   "description" : "Index a BAM file.",
   "categories" : ["BAM-processing", "Bamtools", "Marthlab-software"],
   "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "index",
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
         "description" : "The input BAM file.",
         "long form argument" : "--in",
@@ -16,21 +16,21 @@
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam"]
+        "extensions" : ["bam"]
       }
     ],
   
-    "outputs" : [
+    "Outputs" : [
       {
         "description" : "The index file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "-out",
+        "modify argument" : "omit",
+        "modify value" : "omit",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam.bai"],
-        "hide in help" : true,
-        "modify argument name on command line" : "omit",
+        "extensions" : ["bam.bai"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -39,7 +39,7 @@
       }
     ],
   
-    "options" : [
+    "Options" : [
       {
         "description" : "create non-standard (depth based) index file (*.bti). Default behaviour is to create standard BAM index (*.bai)",
         "long form argument" : "--depth-based-index",
@@ -53,17 +53,17 @@
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : []
+      "data" : []
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "Input BAM file",
+          "id" : "Input BAM file",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         }

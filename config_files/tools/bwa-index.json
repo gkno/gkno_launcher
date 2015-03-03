@@ -1,14 +1,14 @@
 {
   "id" : "bwa-index",
+  "configuration type" : "tool",
   "description" : "Generate the FM-index for use with bwa alignment.",
   "categories" : ["FASTA-processing", "BWA"],
   "tools" : ["bwa"],
   "path" : "bwa",
   "executable" : "bwa",
   "modifier" : "index",
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
         "description" : "The reference FASTA file.",
         "long form argument" : "--fasta-reference",
@@ -16,22 +16,21 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fa", ".fasta"],
-        "modify argument name on command line" : "hide"
+        "extensions" : ["fa", "fasta"],
+        "modify argument" : "omit"
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {
-        "description" : "The FM index",
+        "description" : "The output FM index filename stub.",
         "long form argument" : "--index",
         "short form argument" : "-x",
         "command line argument" : "-p",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["no extension"],
         "is filename stub" : true,
-        "filename extensions" : [
+        "stub extensions" : [
           ".amb",
           ".ann",
           ".bwt",
@@ -52,32 +51,31 @@
         "long form argument" : "--bwt-algorithm",
         "short form argument" : "-a",
         "command line argument" : "-a",
-        "data type" : "string",
-        "extensions" : ["no extension"]
+        "data type" : "string"
       }
     ]
   },
 
   "argument order" : [
     "--bwt-algorithm",
-    "--fasta-reference",
-    "--index"
+    "--index",
+    "--fasta-reference"
   ],
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : [
+      "data" : [
       ]
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "fasta",
+          "id" : "fasta",
           "argument" : "--fasta-reference",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         }

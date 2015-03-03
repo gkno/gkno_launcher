@@ -2,548 +2,318 @@
 
 from __future__ import print_function
 
-from copy import deepcopy
 import os.path
 import getpass
 import subprocess
 import sys
 
-import networkx as nx
-
-import gkno.adminUtils
-from gkno.adminUtils import *
-
-import gkno.commandLine
-from gkno.commandLine import *
-
-import gkno.debug
-from gkno.debug import *
-
-import configurationClass.configurationClass
-from configurationClass.configurationClass import *
-
-import gkno.argumentLists
-from gkno.argumentLists import *
-
-import gkno.dataConsistency
-from gkno.dataConsistency import *
-
-import gkno.gknoErrors
-from gkno.gknoErrors import *
-
-import gkno.exportParameterSet
-from gkno.exportParameterSet import *
-
-import gkno.files
-from gkno.files import *
-
-import gkno.gknoConfigurationFiles
-from gkno.gknoConfigurationFiles import *
-
-import gkno.drawGraph
-from gkno.drawGraph import *
-
-import gkno.helpClass
-from gkno.helpClass import *
-
-import gkno.makefileData
-from gkno.makefileData import *
-
-import gkno.status
-from gkno.status import *
-
-import gkno.tracking
-from gkno.tracking import *
-
-import gkno.writeToScreen
-from gkno.writeToScreen import *
+import gkno.adminUtils as au
+import gkno.adminErrors as adminErrors
+import gkno.arguments as ag
+import gkno.commandLine as cl
+import gkno.constructFilenames as construct
+import gkno.dataConsistency as dc
+import gkno.executionStructure as es
+import gkno.fileHandling as fh
+import gkno.gknoConfiguration as gc
+import gkno.graph as gr
+import gkno.helpInformation as hp
+import gkno.makefiles as mk
+import gkno.plotGraph as pg
+import gkno.parameterSets as ps
+import gkno.pipelineConfiguration as pc
+import gkno.superpipeline as sp
+import gkno.toolConfiguration as tc
+import gkno.web as w
+import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "1.42.3"
-__date__ = "October 2014"
+__version__ = "2.0.0"
+__date__ = "January 2015"
 
 def main():
 
-  # Initialise variables:
-  phoneHomeID       = ''
-  generateMakefiles = True
-  hasIsolatedNode   = False
+  # Define a class for processing the command line.
+  command = cl.commandLine()
 
-  # Define the errors class.
-  errors = gknoErrors()
+  # Define a help class.
+  gknoHelp = hp.helpInformation(os.getenv('GKNOCOMMITID'), __date__, __version__)
 
-  # Define the source path of all the gkno machinery.
+  # Define a plotting class for drawing the graph.
+  plot = pg.plotGraph()
+
+  #Define an object to hold information for creating web content.
+  web = w.webContent()
+
+  # Define the source paths of all the gkno machinery.
   sourcePath                     = os.path.abspath(sys.argv[0])[0:os.path.abspath(sys.argv[0]).rfind('/src/gkno.py')]
-  configurationFilesPath         = sourcePath + '/config_files/'
-  gknoConfigurationFilePath      = sourcePath + '/config_files/'
-  pipelineConfigurationFilesPath = sourcePath + '/config_files/pipes/'
-  toolConfigurationFilesPath     = sourcePath + '/config_files/tools/'
-  resourcesPath                  = sourcePath + '/resources/'
-  toolsPath                      = sourcePath + '/tools/'
-
-  # Get the latest commitID for gkno (the environment variable was set up in the shell script).
-  gknoCommitID = os.getenv('GKNOCOMMITID')
+  configurationFilesPath         = sourcePath + '/config_files'
+  pipelineConfigurationFilesPath = sourcePath + '/config_files/pipes'
+  toolConfigurationFilesPath     = sourcePath + '/config_files/tools'
+  resourcesPath                  = sourcePath + '/resources'
+  toolsPath                      = sourcePath + '/tools'
 
   # Define an admin utilities object. This handles all of the build/update steps
   # along with 'resource' management.
-  admin = adminUtils(sourcePath)
+  admin = au.adminUtils(sourcePath)
 
-  # Define a class with debugging routines.
-  db = debug()
+  # Initialise the gkno specific configuration file.
+  gknoConfiguration = gc.gknoConfiguration(configurationFilesPath)
 
-  # Define a configurationClass object.  This is part of the configurationClass library.  Also
-  # define an object that handles finding configuration files for gkno (e.g. gkno specific
-  # configuration file operations.
-  config      = configurationMethods()
-  gknoConfig  = gknoConfigurationFiles()
-  consistency = dataConsistency()
-
-  # Create a graph object.  This is a directed graph consisting of nodes representing the tasks
-  # in the pipeline as well as data being fed into the nodes.  All relevant tool information
-  # will be attached to the task nodes and information about the data is attached to the data
-  # nodes.  The edges between the nodes define the command line argument for the data and tool.
-  pipelineGraph = nx.DiGraph()
-
-  # Define a command line options, get the first command line argument
-  # and proceed as required.
-  commands = commandLine()
-
-  # Define a class for handling lists of arguments.
-  lists = argumentLists()
-
-  # Define a class for outputting graphics.
-  draw = drawGraph()
-
-  # Generate a class for storing details for use in the makefile.
-  make = makefileData()
-
-  # Class for determine status of execution.
-  status = gknoStatus()
-
-  # Define a class for handling the json files.
-  fileMethods = files()
-
-  # Define a help class.  This provides usage information for the user. Also define an object used
-  # for writing to screen.
-  gknoHelp = helpClass()
-  write    = writeToScreen()
-
-  # Get information on the mode being run. The pipelineName is the name of the pipeline
-  # or the tool if being run in tool mode.
-  admin.isRequested, admin.mode = commands.isAdminMode(admin.allModes)
-  isPipeline                    = commands.setMode(admin.isRequested, gknoHelp)
-  config.isPipeline             = isPipeline
-  runName                       = commands.getPipelineName(isPipeline)
-
-  # Read in information from the gkno specific configuration file.
-  gknoConfig.gknoConfigurationData = config.fileOperations.readConfigurationFile(gknoConfigurationFilePath + '/gknoConfiguration.json')
-  gknoConfig.validateConfigurationFile()
-  gknoConfig.addGknoSpecificNodes(pipelineGraph, config, isPipeline)
-  gknoConfig.eraseConfigurationData()
-
-  # Check to see if gkno is being run in verbose mode or debug mode.
-  isVerbose, isDebug    = commands.checkVerbose(pipelineGraph, config, admin)
-  config.errors.isDebug = isDebug
-
-  # Each of the tools available to gkno should have a config file to describe its operation,
-  # purpose etc.  These are contained in config_files/tools.  Find all of the config files
-  # and create a hash table with all available tools.
-  if isDebug: write.writeDebug('Finding all json configuration files.')
-  jsonFiles = fileMethods.getJsonFiles(configurationFilesPath)
-
-  # Check if a parameter set has been selected. If so, store the name of the parameter set.
-  parameterSetName = commands.getParameterSetName(pipelineGraph, config, isPipeline)
-  if isDebug: write.writeDebug('Got parameter set name.')
+  # Determine if gkno is being run in admin mode and then determine the mode.
+  admin.isRequested, admin.mode = command.isAdmin(admin.allModes)
+  mode                          = command.determineMode(admin.isRequested, gknoConfiguration)
 
   # Print gkno title and version to the screen.
-  write.printHeader(__version__, __date__, gknoCommitID)
+  write.printHeader(__version__, __date__, os.getenv('GKNOCOMMITID'))
 
-  # Check if help has been requested on the command line.  Search for the '--help'
-  # or '-h' arguments on the command line. If help has been requested, print out the required
-  # help.
-  gknoHelp.checkForHelp(pipelineGraph, config, jsonFiles, isPipeline, runName, admin, commands.mode, toolConfigurationFilesPath, pipelineConfigurationFilesPath, parameterSetName)
+  # Check to see if the configuration files are to be found in a directory other than the default.
+  path = command.getConfigurationFilePath(gknoConfiguration.options)
+  userConfigurationPath = path if path else None
 
-  # Check if the pipeline/tool name is valid.
-  if commands.mode != 'admin': fileMethods.checkPipelineName(commands.mode, runName)
-  if isDebug: write.writeDebug('Checked pipeline name.')
+  # Define a class for handling files. In the initialisation, determine the names of all available
+  # tools and pipelines.
+  files = fh.fileHandling(toolConfigurationFilesPath, pipelineConfigurationFilesPath, userConfigurationPath)
 
-  # No admin mode requested. Prepare to setup our tool or pipeline run.
-  if not admin.isRequested:
+  # If not being run in admin mode, determine the name of the pipeline being run. Note that
+  # for the code, a tool is considered a pipeline with a single task, so the terminology
+  # 'pipeline' is used throughout for both cases.
+  if not admin.isRequested: pipeline = command.determinePipeline()
 
-    # Make sure we've actually been "built" before doing any real processing.
-    # Skip this requirement if we're only going to be printing a help message later.
-    if not gknoHelp.writeHelp and not admin.isBuilt():
-      errors.gknoNotBuilt()
-      errors.terminate()
-
-    # If a pipeline is being run, check that configuration files exist for the selected
-    # pipeline.  This should be in directory config_files and have the name <$ARGV[1]>.json.
-    # If the file exists, parse the json file.
-    if isPipeline:
-      phoneHomeID               = 'pipes/' + runName
-      filename                  = pipelineConfigurationFilesPath + runName + '.json'
-      pipelineConfigurationData = config.fileOperations.readConfigurationFile(filename)
-      config.pipeline.processConfigurationData(pipelineConfigurationData, runName, jsonFiles['tools'], gknoHelp.allowedPipelineCategories, allowTermination = True)
-      config.parameterSets.checkParameterSets(pipelineGraph, runName, pipelineConfigurationData['parameter sets'], isPipeline, isExternal = False)
-      config.parameterSets.checkExternalParameterSets(pipelineGraph, config.fileOperations, filename, runName, jsonFiles['tools'], isPipeline)
-      config.parameterSets.getLongFormArguments(pipelineGraph, config.edgeMethods, config.tools, config.pipeline, runName, isPipeline)
-      del(pipelineConfigurationData)
-      if isDebug: write.writeDebug('Processed pipeline configuration file.')
-
-    # If gkno is being run in tool mode, set the phoneHomeID.
-    else: phoneHomeID = 'tools/' + runName
-
-  # Process all of the tool configuration files that are used.
-  if commands.mode == 'pipeline':
-
-    # Find all of the tasks to be used in the pipeline. For each tool, store the parameter set
-    # information. Each tool will be given the default parameter set information (unless
-    # overwritten).
-    observedTools = []
-    for task in config.pipeline.taskAttributes:
-      tool = config.pipeline.taskAttributes[task].tool
-
-      # If a tool has already been used in the pipeline, there is no need to parse the
-      # configuration file again.
-      if tool not in observedTools:
-        observedTools.append(tool)
-        toolFile              = toolConfigurationFilesPath + tool + '.json'
-        toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
-  
-        # Ensure that the tool configuration file is well constructed and put all of the data
-        # in data structures.  Each tool in each configuration file gets its own data structure.
-        config.tools.processConfigurationData(tool, toolConfigurationData, gknoHelp.allowedToolCategories, allowTermination = True)
-  
-        # Read the parameter set information for each tool and store in config.parameterSets. Default parameters for all
-        # tools will be used, and then overwritten by pipeline parameter set information, command lined arguments etc.
-        config.parameterSets.checkParameterSets(pipelineGraph, tool, toolConfigurationData['parameter sets'], False, isExternal = False)
-        config.parameterSets.checkExternalParameterSets(pipelineGraph, config.fileOperations, toolFile, tool, jsonFiles['tools'], False)
-        config.parameterSets.getLongFormArguments(pipelineGraph, config.edgeMethods, config.tools, config.pipeline, tool, False)
-        del(toolConfigurationData)
-
-    if isDebug: write.writeDebug('Got parameter set information for pipeline tools.')
-
-    # Check that any argument in a pipeline configuration file node that defines a filename stub
-    # is linked to other stub arguments, or that the desired extension is included in the node.
-    config.pipeline.checkCommonNodes(config.tools)
-    if isDebug: write.writeDebug('Checked common nodes.')
-
-    # For each task in the pipeline, build an individual graph consisting of a task node, input
-    # option nodes (all input and output file arguments are treated as option nodes) and finally
-    # all input and output files are given file nodes.  Nodes are merged later to generate the
-    # final pipeline.
-    config.buildTaskGraph(pipelineGraph, config.pipeline.taskAttributes.keys())
-    if isDebug: write.writeDebug('Built task graphs.')
-
-    # Attach additional information from the pipeline configuration file to the nodes.
-    config.assignPipelineAttributes(pipelineGraph, config.pipeline.taskAttributes.keys())
-    if isDebug: write.writeDebug('Assigned pipeline attributes.')
-
-    # Add the pipeline arguments to the nodeIDs dictionary.
-    config.nodeMethods.getPipelineArgumentNodes(pipelineGraph, config)
-    if isDebug: write.writeDebug('Got pipeline argument nodes.')
-  
-    # Now that every task in the pipeline has an individual graph built, use the information
-    # in the pipeline configuration file to merge nodes and build the final pipeline graph.
-    config.mergeNodes(pipelineGraph)
-    if isDebug: write.writeDebug('Merged nodes.')
-  
-    # Now add any additional edges defined in the configuration file to the graph.
-    config.processOriginatingEdges(pipelineGraph)
-    if isDebug: write.writeDebug('Processed additional edges.')
-
-    # Generate the workflow using a topological sort of the pipeline graph.
-    config.pipeline.workflow = config.generateWorkflow(pipelineGraph)
-    config.pipeline.workflow = config.correctWorkflowForStreams(pipelineGraph, config.pipeline.workflow)
-
-    # Check to see if any tasks in the pipeline are isolated, i.e. they share no files with any other task
-    # in the pipeline.
-    hasIsolatedNode, isolatedNodes = config.checkForIsolatedNodes(pipelineGraph)
-
-    # Loop over all of the nodes and determine which require a value.  Also check to see if there
-    # are missing edges.  For example, if a tool has an argument that is required, but is not included
-    # in the pipeline configuration file (as a pipeline argument or via connections), the graph cannot
-    # be completely defined.
-    config.nodeMethods.setRequiredNodes(pipelineGraph, config.tools, config.pipeline.workflow)
-
-    # If help was requested on this specific pipeline, the information now exists to generate
-    # the help information.
-    if gknoHelp.specificPipelineHelp:
-      gknoHelp.writeSpecificPipelineUsage(pipelineGraph, config, jsonFiles, runName, toolConfigurationFilesPath, parameterSetName)
-
-  # If being run in the tool mode.
-  elif commands.mode == 'tool':
-    toolFile              = toolConfigurationFilesPath + runName + '.json'
-    toolConfigurationData = config.fileOperations.readConfigurationFile(toolFile)
-
-    # Ensure that the tool configuration file is well constructed and put all of the data
-    # in data structures.  Each tool in each configuration file gets its own data structure.
-    config.tools.processConfigurationData(runName, toolConfigurationData, gknoHelp.allowedToolCategories, allowTermination = True)
-    config.parameterSets.checkParameterSets(pipelineGraph, runName, toolConfigurationData['parameter sets'], isPipeline, isExternal = False)
-    config.parameterSets.checkExternalParameterSets(pipelineGraph, config.fileOperations, toolFile, runName, jsonFiles['tools'], isPipeline)
-    config.parameterSets.getLongFormArguments(pipelineGraph, config.edgeMethods, config.tools, config.pipeline, runName, isPipeline)
-    del(toolConfigurationData)
-
-    # Define the tasks structure. Since a single tool is being run, this is simply the name
-    # of the tool. Set the tasks structure in the pipeline configuration object as well.
-    config.pipeline.definePipelineAttributesForTool(runName)
-    config.buildTaskGraph(pipelineGraph, config.pipeline.taskAttributes.keys())
-
-  if isDebug: write.writeDebug('Read configuration files.')
-
-  # Check that none of the arguments for any of the tools conflict with gkno specific arguments.
-  gknoConfig.checkToolArguments(config, pipelineGraph)
-  if isDebug: write.writeDebug('Checked argument conflicts.')
-
-  # Parse the command line and put all of the arguments into a list.
-  if commands.mode != 'admin':
-    write.writeReadingCommandLineArguments()
-    commands.getCommandLineArguments(pipelineGraph, config, gknoConfig, runName, isPipeline)
-    write.writeDone()
-  if isDebug: write.writeDebug('Parsed command line.')
-
-  # Populate the tl.arguments structure with the arguments with defaults from the tool configuration files.
-  # The x.arguments structures for each of the classes used in gkno has the same format (a dictionary whose
-  # keys are the names of tools: each tool is itself a dictionary of command line arguments, the value being
-  # a list of associated parameters/files etc).  The command line in the makefile is then constructed from 
-  # the x.arguments structures in a strict hierarchy.  tl.arguments contains the defaults found in the
-  # configuration file.  These are overwritten (if conflicts occur) by the values in ins.arguments (i.e.
-  # arguments drawn from the specified parameter set). Next, the cl.arguments are the commands defined on the
-  # command line by the user and then finally, mr.arguments pulls information from the given multiple runs
-  # file if one exists.
-
-  # If admin mode requested, then run it & terminate script.
-  # No need to bother with running tools or pipes.
-  if admin.isRequested:
-    success = admin.run(sys.argv)
-    if success:
+  # Otherwise, handle the admin functions.
+  else:
+    if admin.run(sys.argv):
 
       # Check that all of the tools were successfully built. If not, post a warning about which tools cannot
       # be used.
       if admin.allBuilt: exit(0)
-      else: errors.failedToolBuilds(admin.builtTools)
-    else: errors.terminate()
+      else: adminErrors.adminErrors().failedToolBuilds(admin.builtTools)
+    else: adminErrors.adminErrors().errors.terminate(adminErrors.adminErrors().errorCode)
+
+  # If the pipeline name has not been supplied, general help must be required.
+  if not pipeline and mode != 'web': gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
+
+  # If json files for the web page were requested, set the pipelinesList to all pipelines and loop over
+  # them all, generating the required information. Otherwise, set the list to the pipeline to be run.
+  pipelinesList = files.pipelines if mode == 'web' else [pipeline]
+  for pipeline in pipelinesList:
   
-  # Check if the pipeline configuration file contains any 'additional nodes'. If so, build them into the graph.
-  if isPipeline:
-    config.processAdditionalNodes(pipelineGraph)
-    config.connectPipelineArgumentsFromAdditionalNodes(pipelineGraph)
-    if isDebug: write.writeDebug('Processed additional nodes.')
+    # Get the path to the pipeline and configuration file.
+    filename = files.checkPipeline(toolConfigurationFilesPath, pipelineConfigurationFilesPath, userConfigurationPath, pipeline)
 
-  # Check if a parameter set was requested by the user.  If so, get the data and add the values to the data nodes.
-  write.writeCheckingParameterSetInformation()
+    # Generate a super pipeline class that holds information about the full collection of all nested
+    # pipeline.
+    superpipeline = sp.superpipelineClass(filename)
 
-  # Check to see if the requested parameter set is available.
-  config.parameterSets.checkRequestedParameterSet(configurationFilesPath, runName, parameterSetName, jsonFiles, isPipeline)
-
-  # Check to see if any of the parameter set arguments are gkno specific arguments. First check default
-  # arguments, then the specified parameter set.
-  gknoConfig.attachParameterSetArgumentsToNodes(config, pipelineGraph, runName, 'default')
-  gknoConfig.attachParameterSetArgumentsToNodes(config, pipelineGraph, runName, parameterSetName)
-
-  # Now handle the rest of the parameter set arguments. Again, attach default parameter set arguments first. These will
-  # be overwritten if specified in the requested parameter set or the command line.
-  if isPipeline:
-
-    # Attach tool parameter set values to the relevant nodes. These will be overwritten by pipeline parameter sets
-    # if set.
-    for task in config.pipeline.workflow: config.attachToolParameterSetArgumentsToNodes(pipelineGraph, task, 'default')
-
-    # Now attach arguments from the pipeline parameter set.
-    config.attachPipelineParameterSetArgumentsToNodes(pipelineGraph, runName, 'default')
-    config.attachPipelineParameterSetArgumentsToNodes(pipelineGraph, runName, parameterSetName)
-  else:
-    config.attachToolParameterSetArgumentsToNodes(pipelineGraph, runName, 'default')
-    config.attachToolParameterSetArgumentsToNodes(pipelineGraph, runName, parameterSetName)
-  write.writeDone()
-  if isDebug: write.writeDebug('Checked parameter set information.')
-
-  # Check to see if any of the arguments points to lists. If so, open the file list and populate the
-  # argument with all of the values.
-  write.writeCheckingLists()
-  hasMultipleRuns, hasInternalLoop = lists.checkForLists(pipelineGraph, config, gknoConfig, runName, commands.argumentDictionary)
-  write.writeDone()
-
-  # Attach the values of the pipeline arguments to the relevant nodes.
-  write.writeAssignPipelineArgumentsToNodes()
-  if isPipeline: commands.attachPipelineArgumentsToNodes(pipelineGraph, config, gknoConfig)
-  else: commands.attachToolArgumentsToNodes(pipelineGraph, config, gknoConfig)
-  write.writeDone()
-  if isDebug: write.writeDebug('Attached argument values to the nodes.')
-
-  hasMultipleRuns, hasInternalLoop = gknoConfig.loopData.hasLoop(pipelineGraph, config, resourcesPath, isPipeline, runName, hasMultipleRuns, hasInternalLoop)
-  if hasMultipleRuns or hasInternalLoop:
-    write.writeAssignLoopArguments(hasMultipleRuns)
-    gknoConfig.loopData.addLoopValuesToGraph(pipelineGraph, config, isPipeline, runName)
-    write.writeDone()
-    if isDebug: write.writeDebug('Assigned arguments for multiple runs.')
-
-  # Now that the command line argument has been parsed, all of the values supplied have been added to the
-  # option nodes.  All of the file nodes can take their values from their corresponding option nodes.
-  commands.mirrorFileNodeValues(pipelineGraph, config)
-  if isDebug: write.writeDebug('Mirrored file node values.')
-
-  # Not all of the following operation need to be performed if a parameter set is being exported. Since exporting
-  # a parameter set just requires that the supplied values are valid, but not that all values are supplied (since
-  # gkno will not be executed).
-  isExportParameterSet = True if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-EXPORT-PARAMETER-SET', 'values') else False
-  if isDebug: write.writeDebug('Export parameter set: ' + str(isExportParameterSet))
-  if not isExportParameterSet:
-
-    #
-    #isCorrectExtensions = consistency.checkExtensions(pipelineGraph, config)
-
-    # Construct all filenames.  Some output files from a single tool or a pipeline do not need to be
-    # defined by the user.  If there is a required input or output file and it does not have its value set, 
-    # determine how to construct the filename and populate the node with the value.
-    gknoConfig.constructFilenames(pipelineGraph, config, isPipeline)
-    if isDebug: write.writeDebug('Filenames constructed.')
-
-    # Check that all required files and values have been set. All files and parameters that are listed as
-    # required by the individual tools should already have been checked, but if the pipeline has some
-    # additional requirements, these may not yet have been checked.
-    config.checkRequiredFiles(pipelineGraph, gknoConfig)
-    if isDebug: write.writeDebug('Files checked.')
-
-    # If flags are linked in a pipeline configuration file, but none of them were set on the command line,
-    # the nodes will have no values. This will cause problems when generating the makefiles. Search all
-    # option nodes looking for flags and set any unset nodes to 'unset'.
-    config.searchForUnsetFlags(pipelineGraph)
-    if isDebug: write.writeDebug('Searched for unset flags.')
-
-  # Check that all files have a path set.
-  outputPaths = gknoConfig.setFilePaths(pipelineGraph, config)
-  if isDebug: write.writeDebug('Set file paths')
-
-  # Check if there are instructions for evaluating commands and if so, attach them to the required
-  # nodes. Then recalculate the workflow, since some of the tasks may now use outputs from previous
-  # tasks for evaluating these commands, creating new dependencies.
-  write.writeCheckingEvaluateCommands()
-  config.evaluateCommands(pipelineGraph)
-  write.writeDone()
-  if config.hasCommandToEvaluate: config.pipeline.workflow = config.generateWorkflow(pipelineGraph)
-  if isPipeline: write.writePipelineWorkflow(pipelineGraph, config, gknoHelp)
-  if isDebug: write.writeDebug('Identified commands to evaluate')
-
-  # Prior to filling in missing filenames, check that all of the supplied data is consistent with
-  # expectations.  This includes ensuring that the inputted data types are correct (for example, if
-  # an argument expects an integer, check that the values are integers), filename extensions are valid
-  # and that multiple values aren't given to arguments that are only allowed a single value.
-  gknoConfig.checkData(pipelineGraph, config, not isExportParameterSet)
-  if isDebug: write.writeDebug('Checked data')
-
-  # Check that all of the supplied values for the gkno specific nodes are valid.
-  gknoConfig.checkNodeValues(pipelineGraph, config)
-  if isDebug: write.writeDebug('Checked node values')
-
-  # All of the nodes have been checked to ensure that they have data assosciated if required, but this is
-  # not always sufficient. In some cases, more than one pipeline argument can point to the same node. If
-  # both pipeline arguments are required, but only one is set, the node being pointed to will have data, so
-  # no error will be thrown. So, check that all pipeline arguments that are listed as required, have indeed
-  # been set. Do not perform this check if writing out a parameter set.
-  if not isExportParameterSet:
-    config.checkArguments(pipelineGraph, commands, runName, parameterSetName, hasMultipleRuns or hasInternalLoop, gknoConfig.loopData)
-    if isDebug: write.writeDebug('Checked arguments')
-
-  # If the tool/pipeline is being run in multiple-runs or internal loop mode, it is possible that there are
-  # multiple sets of input data and only a single output. This will only occur if the argument being repeated
-  # does not correspond to a file, but an option. Check to see if this is the case, and if so, ensure that there
-  # are as many output files as there are input data sets. If not, modify the outputs to ensure there are and
-  # append integers to the outputs to avoid multiple executions overwriting files (or no execution as the output
-  # file already exists).
-  if hasMultipleRuns or hasInternalLoop: consistency.checkNumberOfOutputFiles(pipelineGraph, config)
-
-  # If the --export-parameter-set argument has been set, then the user is attempting to create a
-  # new configuration file based on the selected tool/pipeline.  This can only be
-  # if multiple runs are NOT being performed.
-  if isExportParameterSet:
-    if hasMultipleRuns: config.errors.exportParameterSetForMultipleRuns()
-    if isPipeline: config.exportParameterSet(pipelineGraph, pipelineConfigurationFilesPath, runName, isPipeline)
-    else: config.exportParameterSet(pipelineGraph, toolConfigurationFilesPath, runName, isPipeline) 
-    config.nodeMethods.addValuesToGraphNode(pipelineGraph, 'GKNO-DO-NOT-EXECUTE', [True], write = 'replace')
-    generateMakefiles = False
-
-  # Find the maximum number of datasets for each task.
-  config.getNumberOfDataSets(pipelineGraph)
-  if isDebug: write.writeDebug('Got number of data sets')
-
-  # Identify file nodes that are streaming.
-  config.identifyStreamingNodes(pipelineGraph)
-  if isDebug: write.writeDebug('Streaming nodes identified')
-
-  # Generate the makefiles.
-  if generateMakefiles:
-
-    # Generate the makefiles. The manner in which the files are created depend on whether there are
-    # multiple runs (and so multiple makefiles) or a single tool/pipeline or an internal loop for
-    # which there is only one makefile.
-    if hasMultipleRuns: make.generateMultipleMakefiles(pipelineGraph, config, runName, sourcePath, toolsPath, resourcesPath, gknoCommitID, outputPaths, __version__, __date__)
-    else: make.generateSingleMakefile(pipelineGraph, config, runName, sourcePath, toolsPath, resourcesPath, gknoCommitID, outputPaths, __version__, __date__)
-    if isDebug: write.writeDebug('Generated makefiles')
-
-    # If there are files required for the makefiles to run and they don't exist, write a warning to the
-    # screen and ensure that the makefiles aren't executed.
-    gknoConfig.writeMissingFiles(pipelineGraph, config, make.missingFiles)
-    if isDebug: write.writeDebug('Missing files written')
+    # Dig down into the pipeline configuration files, validate the contents of the configuration files
+    # and build the super pipeline tiered structure.
+    superpipeline.getNestedPipelineData(files, pipelineConfigurationFilesPath, userConfigurationPath, filename)
   
-    # Check for files/directories that cannot be present for the pipeline to run.
-    gknoConfig.checkForDisallowedFiles(pipelineGraph, config, resourcesPath)
-    if isDebug: write.writeDebug('Disallowed files identified')
+    # Check that no pipeline arguments conflict with gkno arguments.
+    superpipeline.checkForArgumentConflicts(gknoConfiguration.arguments, gknoConfiguration.shortForms)
+  
+    # If help categories were requested, or a list of all available pipelines, print them here.
+    if mode == 'categories' or mode == 'list-all': gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
 
-    # Check that all of the executable files exist.
-    gknoConfig.checkExecutables(config, pipelineGraph, toolsPath)
-    if isDebug: write.writeDebug('Executable check complete')
+    # Generate a list of all tasks, tools, unique and shared node IDs from all pipelines.
+    superpipeline.setTools()
+  
+    # Now that all the tasks are known, check that each pipeline only contains valid tasks. If a 
+    # task in the pipeline addresses a node in a contained pipeline, knowledge of all pipelines is
+    # required to perform this check.
+    superpipeline.checkContainedTasks()
+    
+    # Loop over the list of required tools, open and process their configuration files and store.
+    superpipeline.addTools(files, toolConfigurationFilesPath, userConfigurationPath)
+  
+    # Loop over all of the pipeline configuration files and check that all nodes that define a tool
+    # argument have valid arguments for the tool.
+    superpipeline.checkArgumentsInPipeline()
 
-  # If the pipeline contains any isolated nodes, print a warning to screen.
-  if hasIsolatedNode:
-    errors.isolatedNodes(pipelineGraph, config, isolatedNodes)
+    # Create an arguments object. This will be populated with all of the arguments available for this
+    # pipeline along with associated functions. Add all of the top level pipeline arguments to this
+    # object.
+    args = ag.arguments()
+    args.addPipelineArguments(superpipeline.pipelineConfigurationData[superpipeline.pipeline].longFormArguments)
 
-    # Force the uset to acknowledge that the warning was read,
-    doNotExecute   = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DO-NOT-EXECUTE', 'values')[1][0]
-    noHardWarnings = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-NO-HARD-WARNINGS', 'values')[1][0]
-    if doNotExecute == 'unset' and noHardWarnings == 'unset': raw_input('Press Enter to continue...')
-  if isDebug: write.writeDebug('Isolated nodes handled')
+    # Define the graph object that will contain the pipeline graph and necessary operations and methods
+    # to build and modify it.
+    graph = gr.pipelineGraph()
 
-  # Check if a plotting the pipeline was requested. If so, check that a name for the output file was given and
-  # draw the pipeline.
-  if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DRAW-PIPELINE', 'values'): draw.drawPipeline(pipelineGraph, config)
-  if isDebug: write.writeDebug('Plotting requirements fulfilled')
+    # Loop over the tiers of nested pipelines and build them into the graph.
+    for tier in superpipeline.pipelinesByTier.keys():
+      for pipelineName in superpipeline.pipelinesByTier[tier]:
+        graph.buildPipelineTasks(superpipeline.pipelineConfigurationData[pipelineName], superpipeline)
 
-  # Having established the mode of operation and checked that the command lines are
-  # valid etc., ping the website to log use of gkno.
-  if config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DNL', 'values')[1][0] == 'unset':
-    write.writeTracking(phoneHomeID)
-    phoneHome(sourcePath, phoneHomeID)
-    write.writeDone()
-  write.writeBlankLine()
+    # Determine which graph nodes are required. A node may be used by multiple tasks and may be optional
+    # for some and required by others. For each node, loop over all edges and check if any of the edges
+    # are listed as required. If so, the node is required and should be marked as such.
+    graph.markRequiredNodes(superpipeline)
 
-  # Execute the generated script unless the execute flag has been unset or if multiple runs were used.
-  success = 0
-  isExecute = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-DO-NOT-EXECUTE', 'values')[1][0]
-  if not hasMultipleRuns and isExecute == 'unset':
-    for phaseID in make.structure.makefileNames:
-      for iteration, makefileName in enumerate(make.structure.makefileNames[phaseID]):
+    # If the main pipeline lists a tool whose arguments should be imported, check that the listed tool is
+    # valid, that none of the arguments conflict with the pipeline and then add the arguments to the
+    # allowed arguments.
+    args.importArguments(graph, superpipeline)
 
-        # Check if the '--number-jobs' option is set.  If so, request this number of jobs.
-        numberOfJobs = config.nodeMethods.getGraphNodeAttribute(pipelineGraph, 'GKNO-JOBS', 'values')[1][0]
-        execute      = 'make -j ' + str(numberOfJobs) + ' --file ' + makefileName
-        write.writeExecuting(execute)
-        success = subprocess.call(execute.split())
-        write.writeComplete(success)
+    # Now that the graph is built, parse all of the arguments in the pipelines and associate them with the
+    # graph nodes and vice versa.
+    args.assignNodesToArguments(graph, superpipeline)
 
-  # Store the executed command line in the file gkno-command-lines.txt.
-  commands.storeCommandLine(__date__)
+    # If web page json files are being created, update the list of categories and the pipeline information.
+    if mode == 'web':
+      web.updateCategories(superpipeline.pipelineConfigurationData[superpipeline.pipeline])
+      web.updatePipelineInformation(superpipeline.pipelineConfigurationData[superpipeline.pipeline], args.arguments)
 
-  # Check the status of the pipeline. Look for all makefiles and the corresponding files
-  # indicating succesful completion and give the status of execution.
-  if hasMultipleRuns: status.getStatus(pipelineGraph, config, make.structure.makefileNames)
+  # Write out web content and terminate.
+  if mode == 'web': web.writeContent()
 
-  # If the makefile was succesfully run, finish gkno with the exit condition of 0.
-  # If the makefile failed to run, finish with the exit condition 3.  A failure
-  # prior to execution of the makefile uses the exit condition 2.
-  if success == 0 and not make.missingFiles: exit(0)
-  elif success == 0 and gknoConfig.hasMissingFiles: exit(4)
-  else: exit(3)
+  # Generate the workflow.
+  workflow = graph.generateWorkflow()
+
+  # Process the command line arguments.
+  command.processArguments(superpipeline, args, gknoConfiguration)
+
+  # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
+  # the nodes with these task level default parameter sets, creating nodes where necessary.
+  graph.addTaskParameterSets(superpipeline, 'default')
+
+  # Now add the default parameter set for the pipelines.
+  graph.addPipelineParameterSets(superpipeline, 'default')
+
+  # Determine the requested parameter set and add the parameters to the graph.
+  parSet             = ps.parameterSets()
+  graph.parameterSet = command.getParameterSetName(command.gknoArguments, gknoConfiguration)
+  if graph.parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, graph.parameterSet)
+
+  # If help was requested, print out the relevent help information.
+  # TODO ADMIN HELP
+  if mode == 'help' or mode == 'gkno help':
+
+    # Write out help on gkno specific (e.g. not associated with a specific pipeline) arguments.
+    if mode == 'gkno help': gknoHelp.gknoArgumentHelp(gknoConfiguration.arguments)
+
+    # Otherwise, write out help for the pipeline being run.
+    else: gknoHelp.pipelineHelp(superpipeline, graph, args.arguments)  
+
+  # Parse the command line arguments and associate the supplied command line argument values with the graph node.
+  command.parseTasksAsArguments(superpipeline)
+  associatedNodes = command.associateArgumentsWithGraphNodes(graph.graph, superpipeline)
+
+  # Create nodes for all of the defined arguments for which a node does not already exist and add the
+  # argument values to the node.
+  graph.attachArgumentValuesToNodes(superpipeline, args, command.pipelineArguments, associatedNodes)
+
+  # Loop over all nodes and expand lists of arguments. This is only valid for arguments that are either options,
+  # or inputs to a task that are not simulateously outputs of another task.
+  graph.expandLists()
+
+  # Check that all of the values associated with all of the nodes are of the correct type (e.g. integer, flag etc)
+  # and also that any files also have the correct extension.
+  dc.checkValues(graph, superpipeline)
+
+  # Determine if a parameter set is being exported. If so, there is no need to check that all required
+  # arguments are set, since the pipeline is not being executed.
+  isExportSet = gknoConfiguration.getGknoArgument('GKNO-EXPORT-PARAMETER-SET', command.gknoArguments)
+
+  # Loop over all of the nodes in the graph and ensure that all required arguments have been set. Any output files
+  # for which construction instructions are provided can be omitted from this check. This will ensure that all required
+  # input files are set, ensuring that filename construction can proceed. The check will be performed again after
+  # filenames have been constructed, without the omission of constructed files.
+  if not isExportSet: dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = False)
+
+  # Determine which files are marked for deletion.
+  superpipeline.determineFilesToDelete(graph)
+
+  # Mark any tasks that have greedy arguments as greedy.
+  graph.markGreedyTasks(superpipeline)
+
+  # Check the number of values in each node and determine how many times each task needs to be run. For example,
+  # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc. In addition check
+  # the arguments that have been supplied to each task. In particular, check the number of values given to all
+  # arguments and determine whether tasks need to be defined as generating multiple output nodes, having multiple
+  # task calls or consolidating nodes.
+  graph.determineNumberOfTaskExecutions(superpipeline)
+
+  # Print the workflow to screen.
+  write.workflow(superpipeline, workflow)
+
+  # Having constructed all of the output file names (which may then be linked to other tasks as outputs), rerun the
+  # check of the values to ensure that the data types and the ssociated extensions are valid. This will provide a
+  # check of whether tools can be linked as described in the configuration file. In the previous check, not all of the
+  # filenames were present (but the check ensured that the values provided on the command line were valid). If a task
+  # outputs a file with and extension 'ext1' and the file is then passed to a file that requires files with the
+  # extension 'ext2', the pipeline is invalid. The output filename has been constructed as file.ext1 and so the following
+  # routine will flag the file as invalid as input to the next task.
+  dc.checkValues(graph, superpipeline)
+
+  # If the user has requested that a parameter set is to be exported, export the parameter set and terminate.
+  if isExportSet: parSet.export(superpipeline, args, isExportSet[0], command.pipelineArguments)
+
+  # Check that all files exist. At this point, all filenames have been constructed, so anything that is required, but
+  # is not set will have no opportunity to be set, so gkno should terminate.
+  #FIXME ENSURE THAT AL FILES ARE CHECKED - THE CAN BE CONSTRUCTED CHECK SHOULD BE REMOVED.
+  dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = True)
+
+  # Having reached this point, all of the required values have been checked, are present and have the correct data
+  # type. In the construction of the graph, a number of non-required nodes could have been created and, since they
+  # are not required, they could be unpopoulated. March through the graph and purge any nodes that have no values.
+  dc.purgeEmptyNodes(graph)
+
+  # Check if any tasks have been listed as outputting to a stream. If so, check that the task can output to a
+  # stream and the task it feeds into can accept a stream. If everything is ok, update the graph to reflect
+  # the streaming nodes.
+  graph.checkStreams(superpipeline)
+
+  # TODO SHOULD THIS APPEAR EARLIER?
+  # Determine whether or not to output a visual representation of the pipeline graph.
+  plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
+  if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
+  if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
+
+  # For all files marked as intermediate, determine the latest task in the pipeline that uses them. Ensure that
+  # the data structures inside 'struct' only associate the files to delete with this latest task.
+  graph.deleteFiles()
+  
+  # Set the absolute paths of all the files used in the pipeline.
+  requiredInputFiles = dc.setFilePaths(graph, command.gknoArguments, gknoConfiguration.options)
+
+  # Determine the execution structure of the pipeline.
+  struct = es.executionStructure()
+  struct.determineExecutionStructure(graph)
+
+  # Generate a makefiles object and then build all the command lines for the tasks as well as creating a list of each
+  # tasks dependencies and output.
+  make = mk.makefiles()
+  make.generateCommandLines(graph, superpipeline, struct)
+
+  # Create the makefiles. This could either be a single makefile, or a set of multiple makefiles.
+  make.generateMakefiles(struct, superpipeline.pipeline, gknoConfiguration.options, command.gknoArguments)
+
+  # Open all the makefiles for writing.
+  make.openFiles(graph, struct, os.getenv('GKNOCOMMITID'), __date__, __version__, superpipeline.pipeline, sourcePath, toolsPath, resourcesPath)
+
+  # Add the command lines to the makefiles.
+  make.addCommandLines(graph, struct)
+
+  # Close all of the open makefiles.
+  make.closeFiles()
+
+  # Check that all of the dependent files exist (excluding dependencies that are created by tasks in the pipeline).
+  success = files.checkFileExistence(requiredInputFiles, resourcesPath, toolsPath)
+
+  # Execute the generated script unless the user has explicitly asked for it not to be run, or if multiple makefiles
+  # have been generated.
+  if gknoConfiguration.options['GKNO-DO-NOT-EXECUTE'].longFormArgument not in command.gknoArguments and not make.isMultipleMakefiles and success:
+    makefileName = make.makefileNames[1][1][1]
+
+    # Get the number of parallel jobs to be requested.
+    jobsArgument = gknoConfiguration.options['GKNO-JOBS'].longFormArgument
+    numberJobs   = command.gknoArguments[jobsArgument][0] if jobsArgument in command.gknoArguments else 1
+    print('executing', makefileName, numberJobs)
+
+    # Generate the execution command.
+    execute = 'make -j ' + str(numberJobs) + ' --file ' + makefileName
+    success = subprocess.call(execute.split())
 
 if __name__ == "__main__":
   main()

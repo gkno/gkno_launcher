@@ -1,56 +1,36 @@
 {
   "id" : "vcf-combine",
+  "configuration type" : "tool",
   "description" : "Combine vcf files.",
   "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
   "tools" : ["vcflib"],
   "path" : "vcflib/bin",
   "executable" : "vcfcombine",
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
-        "description" : "The input bgzipped VCF file(s).",
+        "description" : "The input VCF file(s).",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "none",
+        "modify argument" : "omit",
         "required" : true,
-        "extensions" : [".vcf.gz"],
-        "if input is stream" : "do not include",
-        "modify argument name on command line" : "hide",
+        "extensions" : ["vcf"],
         "data type" : "string",
-        "allow multiple values" : true,
-        "allow list of repeated arguments" : true
-      },
-      {
-        "description" : "VCF index file.",
-        "long form argument" : "--index",
-        "short form argument" : "-x",
-        "command line argument" : "--vcf-index",
-        "required" : true,
-        "required if stream" : false,
-        "extensions" : [".tbi"],
-        "data type" : "string",
-        "allow multiple values" : true,
-        "modify argument name on command line" : "omit",
-        "construct filename" : {
-          "method": "from tool argument",
-          "use argument" : "--in",
-          "modify extension" : "append"
-        }
+        "allow multiple values" : true
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {
         "description" : "The output combined VCF file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
-        "command line argument" : "--out",
+        "command line argument" : "none",
+        "output to stdout" : true,
         "required" : true,
         "data type" : "string",
-        "extensions" : [".vcf"],
-        "if output to stream" : "do not include",
-        "modify argument name on command line" : "stdout",
+        "extensions" : ["vcf"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -70,8 +50,7 @@
         "long form argument" : "--region",
         "short form argument" : "-rg",
         "command line argument" : "-r",
-        "data type" : "string",
-        "extensions" : ["no extension"]
+        "data type" : "string"
       }
     ]
   },
@@ -85,22 +64,22 @@
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : []
+      "data" : []
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "vcf",
+          "id" : "vcf",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"],
           "argument" : "--in"
         },
         {
-          "ID" : "output path",
+          "id" : "output path",
           "values" : ["./"],
           "argument" : "--output-path"
         }

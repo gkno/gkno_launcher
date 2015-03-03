@@ -1,23 +1,22 @@
 {
   "id" : "r-plot",
+  "configuration type" : "tool",
   "description" : "Run an R script to plot.",
   "categories" : ["Visualisation"],
   "tools" : [],
-  "path" : "no path",
-  "executable" : "R",
-  "modifier" : "CMD BATCH",
-  "help" : "--help|-h",
+  "path" : "none",
+  "executable" : "Rscript",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
         "description" : "Input data file.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "none",
+        "modify argument" : "omit",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "omit",
+        "extensions" : ["txt"],
         "allow multiple values" : true
       },
       {
@@ -25,45 +24,123 @@
         "long form argument" : "--script",
         "short form argument" : "-s",
         "command line argument" : "none",
+        "modify argument" : "omit",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".r"],
-        "modify argument name on command line" : "hide"
+        "extensions" : ["r"]
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {
         "description" : "The output tab delimited file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "none",
+        "modify argument" : "omit",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".pdf"],
-        "modify argument name on command line" : "omit",
+        "extensions" : ["pdf"],
         "construct filename" : {
-          "method": "define name",
-          "filename" : "Rplots",
-          "for multiple runs connect to" : "--script",
-          "add extension" : true
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace"
         }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The minimum value for the x axis [determined by the data].",
+        "long form argument" : "--x-axis-minimum",
+        "short form argument" : "-xi",
+        "command line argument" : "none",
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The maximum value for the x axis [determined by the data].",
+        "long form argument" : "--x-axis-maximum",
+        "short form argument" : "-xa",
+        "command line argument" : "none",
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The x axis label [bin].",
+        "long form argument" : "--x-label",
+        "short form argument" : "-x",
+        "command line argument" : "none",
+        "data type" : "string",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The y axis label [value].",
+        "long form argument" : "--y-label",
+        "short form argument" : "-y",
+        "command line argument" : "none",
+        "data type" : "string",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The legend title [legend].",
+        "long form argument" : "--legend",
+        "short form argument" : "-l",
+        "command line argument" : "none",
+        "data type" : "string",
+        "modify argument" : "omit"
       }
     ]
   },
 
+  "argument order" : [
+    "--script",
+    "--in",
+    "--out",
+    "--x-label",
+    "--y-label",
+    "--legend",
+    "--x-axis-minimum",
+    "--x-axis-maximum"
+  ],
+
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : [
+      "data" : [
+        {
+          "id" : "xmin",
+          "argument" : "--x-axis-minimum",
+          "values" : [-1]
+        },
+        {
+          "id" : "xmax",
+          "argument" : "--x-axis-maximum",
+          "values" : [-1]
+        },
+        {
+          "id" : "x",
+          "argument" : "--x-label",
+          "values" : ["bin"]
+        },
+        {
+          "id" : "y",
+          "argument" : "--y-label",
+          "values" : ["value"]
+        },
+        {
+          "id" : "legend",
+          "argument" : "--legend",
+          "values" : ["legend"]
+        }
       ]
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
       ]
     }
   ]

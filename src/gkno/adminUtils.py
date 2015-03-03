@@ -12,8 +12,9 @@ import tarfile
 import urllib
 
 import conf
-import gknoErrors
-from gknoErrors import *
+
+import adminErrors
+from adminErrors import *
 
 class adminUtils:
   def __init__(self, sourcePath):
@@ -33,10 +34,10 @@ class adminUtils:
     self.modeDescriptions["update-resource"] = "Update resource data for an organism."
 
     # General data members
-    self.error                          = gknoErrors()
+    self.error                          = adminErrors()
     self.isRequested                    = False
     self.isVerbose                      = False
-    self.mode                           = ""
+    self.mode                           = ''
     self.userSettings                   = {}
     self.userSettings['compiled tools'] = []
 

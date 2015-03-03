@@ -1,46 +1,42 @@
 {
   "id" : "freebayes",
+  "configuration type" : "tool",
   "description" : "Bayesian variant and haplotype calling",
   "categories" : ["Variant-discovery", "Short-variant-discovery", "Marthlab-software"],
   "tools" : ["freebayes"],
   "path" : "freebayes/bin",
   "executable" : "freebayes",
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
         "description" : "Add FILE to the set of BAM files to be analyzed.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "--bam",
         "required" : true,
-        "extensions" : [".bam"],
-        "if input is stream" : "replace",
-        "replace argument with" : {
-          "argument" : "--stdin",
-          "value" : ""
-        },
+        "extensions" : ["bam"],
         "data type" : "string",
-        "allow multiple values" : true,
-        "allow list of repeated arguments" : true
+        "if input is stream" : {
+          "argument" : "--stdin",
+          "value" : "omit"
+        },
+        "allow multiple values" : true
       },
       {
         "description" : "bam index file.",
         "long form argument" : "--index",
         "short form argument" : "-x",
-        "command line argument" : "--bam-index",
-        "required" : true,
-        "required if stream" : false,
-        "extensions" : [".bai"],
+        "command line argument" : "none",
+        "modify value" : "omit",
+        "extensions" : ["bai"],
         "data type" : "string",
-        "hide in help" : true,
         "allow multiple values" : true,
-        "modify argument name on command line" : "omit",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
           "modify extension" : "append"
-        }
+        },
+        "include in reduced plot" : false
       },
       {
         "description" : "Use FILE as the reference sequence for analysis.",
@@ -48,7 +44,7 @@
         "short form argument" : "-r",
         "command line argument" : "--fasta-reference",
         "required" : true,
-        "extensions" : [".fa", ".fasta"],
+        "extensions" : ["fa", "fasta"],
         "data type" : "string"
       },
       {
@@ -56,23 +52,23 @@
         "long form argument" : "--fasta-index",
         "short form argument" : "-fx",
         "command line argument" : "none",
+        "modify value" : "omit",
         "required" : true,
-        "extensions" : [".fai"],
-        "hide in help" : true,
-        "modify argument name on command line" : "omit",
+        "extensions" : ["fai"],
         "data type" : "string",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--fasta-reference",
           "modify extension" : "append"
-        }
+        },
+        "include in reduced plot" : false
       },
       {
         "description" : "Limit analysis to targets listed in the BED-format FILE.",
         "long form argument" : "--targets",
         "short form argument" : "-t",
         "command line argument" : "--targets",
-        "extensions" : [".bed"],
+        "extensions" : ["bed"],
         "data type" : "string"
       },
       {
@@ -88,7 +84,6 @@
         "long form argument" : "--contamination-estimates",
         "short form argument" : "-ce",
         "command line argument" : "--contamination-estimates",
-        "extensions" : ["no extension"],
         "data type" : "string"
       },
       {
@@ -96,25 +91,28 @@
         "long form argument" : "--haplotype-basis-alleles",
         "short form argument" : "-hba",
         "command line argument" : "--haplotype-basis-alleles",
-        "extensions" : [".vcf"],
+        "extensions" : ["vcf"],
         "data type" : "string"
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {
         "description" : "Output VCF-format results to FILE.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "--vcf",
         "required" : true,
-        "extensions" : [".vcf"],
+        "extensions" : ["vcf"],
         "data type" : "string",
-        "if output to stream" : "do not include",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
           "modify extension" : "replace"
+        },
+        "if output to stream" : {
+          "argument" : "omit",
+          "value" : "omit"
         }
       }
     ],
@@ -125,7 +123,6 @@
         "long form argument" : "--no-snps",
         "short form argument" : "-I",
         "command line argument" : "--no-snps",
-        "extensions" : ["no extension"],
         "data type" : "flag"
       },
       {
@@ -133,7 +130,6 @@
         "long form argument" : "--no-indels",
         "short form argument" : "-ni",
         "command line argument" : "--no-indels",
-        "extensions" : ["no extension"],
         "data type" : "flag"
       },
       {
@@ -141,7 +137,6 @@
         "long form argument" : "--no-mnps",
         "short form argument" : "-X",
         "command line argument" : "--no-mnps",
-        "extensions" : ["no extension"],
         "data type" : "flag"
       },
       {
@@ -149,7 +144,6 @@
         "long form argument" : "--no-complex",
         "short form argument" : "-u",
         "command line argument" : "--no-complex",
-        "extensions" : ["no extension"],
         "data type" : "flag"
       },
       {
@@ -157,7 +151,6 @@
         "long form argument" : "--use-best-n-alleles",
         "short form argument" : "-n",
         "command line argument" : "--use-best-n-alleles",
-        "extensions" : ["no extension"],
         "data type" : "integer"
       },
       {
@@ -165,7 +158,6 @@
         "long form argument" : "--max-complex-gap",
         "short form argument" : "-E",
         "command line argument" : "--max-complex-gap",
-        "extensions" : ["no extension"],
         "data type" : "integer"
       },
       {
@@ -173,7 +165,6 @@
         "long form argument" : "--min-repeat-length",
         "short form argument" : "-mrl",
         "command line argument" : "--min-repeat-length",
-        "extensions" : ["no extension"],
         "data type" : "integer"
       },
       {
@@ -181,7 +172,6 @@
         "long form argument" : "--min-repeat-entropy",
         "short form argument" : "-mre",
         "command line argument" : "--min-repeat-entropy",
-        "extensions" : ["no extension"],
         "data type" : "integer"
       }
     ],
@@ -192,7 +182,6 @@
         "long form argument" : "--region",
         "short form argument" : "-rg",
         "command line argument" : "--region",
-        "extensions" : ["no extension"],
         "data type" : "string"
       }
     ],
@@ -203,7 +192,6 @@
         "long form argument" : "--min-alternate-count",
         "short form argument" : "-mac",
         "command line argument" : "--min-alternate-count",
-        "extensions" : ["no extension"],
         "data type" : "integer"
       },
       {
@@ -211,7 +199,6 @@
         "long form argument" : "--min-alternate-qsum",
         "short form argument" : "-maq",
         "command line argument" : "--min-alternate-qsum",
-        "extensions" : ["no extension"],
         "data type" : "integer"
       },
       {
@@ -219,40 +206,35 @@
         "long form argument" : "--use-duplicate-reads",
         "short form argument" : "-ud",
         "command line argument" : "--use-duplicate-reads",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       },
       {
         "description" : "Require at least this fraction of observations supporting an alternate allele within a single individual in the in order to evaluate the position.  default: 0.2",
         "long form argument" : "--min-alternate-fraction",
         "short form argument" : "-maf",
         "command line argument" : "--min-alternate-fraction",
-        "data type" : "float",
-        "extensions" : ["no extension"]
+        "data type" : "float"
       },
       {
         "description" : "Require at least this count of observations supporting an alternate allele within the total population in order to use the allele in analysis.  default: 1",
         "long form argument" : "--min-alternate-total",
         "short form argument" : "-mat",
         "command line argument" : "--min-alternate-total",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Exclude alignments from analysis if they have a mapping quality less than Q.  default: 0",
         "long form argument" : "--min-mapping-quality",
         "short form argument" : "-mmq",
         "command line argument" : "--min-mapping-quality",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Exclude alleles from analysis if their supporting base quality is less than Q.  default: 0",
         "long form argument" : "--min-base-quality",
         "short form argument" : "-mbq",
         "command line argument" : "--min-base-quality",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       }
     ],
 
@@ -260,9 +242,8 @@
       {
         "description" : "Report sites if the probability that there is a polymorphism at the site is greater than N.  default: 0.0001.",
         "long form argument" : "--pvar",
-        "short form argument" : "-P",
+        "short form argument" : "-v",
         "command line argument" : "--pvar",
-        "extensions" : ["no extension"],
         "data type" : "float"
       }
     ],
@@ -273,7 +254,6 @@
         "long form argument" : "--use-mapping-quality",
         "short form argument" : "-j",
         "command line argument" : "--use-mapping-quality",
-        "extensions" : ["no extension"],
         "data type" : "flag"
       },
       {
@@ -281,7 +261,6 @@
         "long form argument" : "--posterior-integration-limits",
         "short form argument" : "-W",
         "command line argument" : "--posterior-integration-limits",
-        "extensions" : ["no extension"],
         "data type" : "string"
       },
       {
@@ -289,7 +268,6 @@
         "long form argument" : "--genotype-variant-threshold",
         "short form argument" : "-S",
         "command line argument" : "--genotype-variant-threshold",
-        "extensions" : ["no extension"],
         "data type" : "integer"
       },
       {
@@ -297,7 +275,6 @@
         "long form argument" : "--genotyping-max-iterations",
         "short form argument" : "-gmi",
         "command line argument" : "--genotyping-max-iterations",
-        "extensions" : ["no extension"],
         "data type" : "integer"
       }
     ],
@@ -308,26 +285,30 @@
         "long form argument" : "--ploidy",
         "short form argument" : "-p",
         "command line argument" : "--ploidy",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       }
     ]
   },
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "test description",
-      "nodes" : [
+      "data" : [
+        {
+          "id" : "pvar",
+          "argument" : "-v",
+          "values" : [0.5]
+        }
       ]
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "BAM1",
+          "id" : "BAM1",
           "argument" : "--in",
           "values" : [
             "$(RESOURCES)/tutorial/current/mutated_genome.bam",
@@ -335,62 +316,9 @@
           ]
         },
         {
-          "ID" : "reference",
+          "id" : "reference",
           "argument" : "--fasta-reference",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
-        },
-        {
-          "ID" : "output path",
-          "argument" : "--output-path",
-          "values" : ["./"]
-        }
-      ]
-    },
-
-    {
-      "ID" : "test-mr",
-      "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
-        {
-          "ID" : "mr",
-          "argument" : "--multiple-runs",
-          "values" : [
-            "$(RESOURCES)/tutorial/current/freebayes-mr.json"
-          ]
-        },
-        {
-          "ID" : "reference",
-          "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
-        },
-        {
-          "ID" : "output path",
-          "argument" : "--output-path",
-          "values" : ["./"]
-        }
-      ]
-    },
-
-    {
-      "ID" : "test-il",
-      "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
-        {
-          "ID" : "il",
-          "argument" : "--internal-loop",
-          "values" : [
-            "$(RESOURCES)/tutorial/current/freebayes-mr.json"
-          ]
-        },
-        {
-          "ID" : "reference",
-          "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
-        },
-        {
-          "ID" : "output path",
-          "argument" : "-op",
-          "values" : ["./"]
         }
       ]
     }

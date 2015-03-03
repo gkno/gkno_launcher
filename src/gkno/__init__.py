@@ -1,1 +1,1 @@
-all = ['adminUtils', 'commandLine', 'constructFilenames', 'dataConsistency', 'debug', 'exportInstance', 'files', 'getParameters', 'gknoConfigurationFiles', 'gknoErrors', 'helpClass', 'loops', 'makefileData', 'pipelineStructure', 'tracking', 'writeToScreen']
+all = ['gknoConfiguration', 'pipelineConfiguration']

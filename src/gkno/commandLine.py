@@ -1,559 +1,354 @@
-#!/usr/bin/python
+#!/bin/bash/python
 
 from __future__ import print_function
-from copy import deepcopy
+
+import commandLineErrors
+from commandLineErrors import *
+import dataConsistency
+import graph as gr
+
+import json
+import os
 import sys
-import time
 
-import gknoErrors
-from gknoErrors import *
-
-import files
-from files import *
-
+# Define a class for handling the command line and operations around it.
 class commandLine:
-
-  # Constructor.
   def __init__(self):
 
-    # Store the command line inputted by the user.
-    self.commandLine = ''
-    for argument in sys.argv: self.commandLine += argument + ' '
+    # Define errors.
+    self.errors = commandLineErrors()
 
-    # Define the errors class.
-    self.errors = gknoErrors()
+    # Store all of the arguments with their values. These will be broken up into arguments that
+    # are for individual tasks within the main pipeline, gkno specific arguments and pipeline
+    # arguments.
+    self.arguments         = {}
+    self.gknoArguments     = {}
+    self.pipelineArguments = {}
 
-    # Record if multiple iterations have been set by virtue of the supplied commands.
-    self.setMultipleIterations = False
+    # For tasks supplied on the command line, store the task and the list of arguments. Also, store
+    # the broken out arguments (e.g. after the string associated with the task is parsed).
+    self.tasksAsArguments = {}
+    self.taskArguments    = {}
 
-    self.arguments          = {}
-    self.argumentDictionary = {}
-    self.argumentList       = []
-    self.argumentsToNodes   = []
-    self.linkedArguments    = {}
-    self.mode               = 'help'
-    self.uniqueArguments    = {}
+    # Store commands. These could be instructions on the mode of usage etc.
+    self.commands = []
 
-  # If an admin operation has been requested, check which admin mode is required.
-  def isAdminMode(self, adminModes):
-    try: isAdmin = sys.argv[1] in adminModes
-    except: return False, None             
-                                                       
-    if isAdmin: return True, sys.argv[1]
-    else: return False, None
+    # Parse the command line and store all the arguments with their values.
+    argument        = None
+    isTaskArguments = False
+    for entry in sys.argv[1:]:
+      isArgument = entry.startswith('-')
 
-  # Check if a mode has been defined.  The mode is either 'pipe', 'run-test' or
-  # a tool name.  If nothing is set, then no mode is chosen and the general help
-  # message will be displayed.
-  def setMode(self, isAdmin, gknoHelp):
+      # If this is a continuation of arguments for a specific task, append the arguments to
+      # the task arguments. If the entry terminates with ']', the task arguments are complete.
+      if isTaskArguments:
+        if entry.endswith(']'):
+          taskArguments += ' ' + entry[:-1]
+          isTaskArguments = False
+          self.arguments[argument].append(taskArguments)
 
-    # If help is requested, a mode isn't set.
-    if isAdmin:
-      self.mode = 'admin'
-      return False
+          # Reset the argument and the taskArguments now the task arguments have been handled.
+          taskArguments = ''
+          argument      = ''
+        else: taskArguments += ' ' + entry
 
-    # If -h or --help appear anywhere on the command line, help is requested.
-    for counter, argument in enumerate(sys.argv):
-      if argument == '--help' or argument == '-h':
-        gknoHelp.writeHelp = True
-        if sys.argv[1] == 'pipe' or sys.argv[1] == 'run-test':
-          self.mode = 'pipeline'
-          return True
-        else:
-          if counter == 1: self.mode = 'help'
-          else: self.mode = 'tool'
-          return False
+      # If the entry starts with a '['. this is the start of a set of arguments to be applied to
+      # a task within in the pipeline. Find all the commands in the square brackets and associate
+      # with the task argument.
+      elif argument and entry.startswith('['):
+        isTaskArguments = True
+        taskArguments   = ''
+        taskArguments  += entry[1:]
 
-    # Get the first entry on the command line.
-    try: argument = sys.argv[1]
-    except:
-      self.mode = 'help'
-      return False
-
-    # If the first entry on the command line begins with '-', this is a command
-    # requesting help.
-    if argument.startswith('-'):
-      self.mode = 'help'
-      return False
-
-    # If this is the test pipeline.
-    if argument == 'run-test':
-      self.mode = 'pipeline'
-      return True
-
-    # If a pipeline is being run:
-    if argument == 'pipe':
-      self.mode  = 'pipeline'
-
-      # If no further information is provided on the command line, help is required.
-      try: pipelineName = sys.argv[2]
-      except: self.mode = 'help'
-      return True
-
-    # Anything else implies a tool name.
-    self.mode = 'tool'
-    return False
-
-  # If gkno is being run in pipeline mode, get the name of the pipeline.
-  def getPipelineName(self, isPipeline):
-    if isPipeline:
-
-      # First check if the 'run-test' pipeline is being run.
-      if sys.argv[1] == 'run-test': return 'run-test'
-
-      # Otherwise, return the name of the pipeline.
-      try: return sys.argv[2]
-      except: return None
-
-    # If running in tool mode, return the name of the tool.
-    else:
-      try: return sys.argv[1]
-      except: return None
-
-  # Check to see if the verbose argument is set.
-  def checkVerbose(self, graph, config, admin):
-    isVerbose = False
-    isDebug   = False
-
-    # Check for verbose.
-    for count, argument in enumerate(sys.argv[1:]):
-      if argument == '--verbose' or argument == '-vb':
-
-        # Set the verbose values.
-        admin.isVerbose = True
-
-        # Update the 'GKNO-VERBOSE' node.
-        config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-VERBOSE', ['set'], 'replace')
-        isVerbose = True
-
-      # Check for debugging.
-      if argument == '--debug' or argument == '-db':
-
-        # Update the 'GKNO-DEBUG' node.
-        config.nodeMethods.addValuesToGraphNode(graph, 'GKNO-DEBUG', ['set'], 'replace')
-        isDebug = True
-
-    return isVerbose, isDebug
-
-  # Parse through the command line and put all of the arguments into a list.
-  def getCommandLineArguments(self, graph, config, gknoConfig, tool, isPipeline):
-    count = 1
-    while True:
-      try: argument = sys.argv[count]
-      except: break
-
-      # The command line will include an instruction on whether to run a pipe or the name of the
-      # tool.  Ignore this argument.
-      if argument != tool and argument != 'pipe' and argument != 'run-test':
-
-        # Check the next argument on the command line.  If it does not begin with a '-', then this
-        # is assumed to be a value that goes with the current arguments.  Add the pair to the list
-        # of arguments as a tuple.
-        try: nextArgument = sys.argv[count + 1]
-        except: nextArgument = '-'
-  
-        # If arguments for a task within the pipeline are being set on the command line, all of the
-        # task specific arguments must be contained within square brackets.  If the nextArgument is
-        # identified as beginning with a square bracket, find the end of the task specific commands.
-        if nextArgument.startswith('['): count, nextArgument = self.checkForTaskCommands(count, nextArgument)
-  
-        # Check if the argument is a gkno specific argument.
-        pipelineArgument = gknoConfig.checkPipelineArgument(graph, config, argument)
-        if pipelineArgument != None:
-          if pipelineArgument not in self.argumentDictionary: self.argumentDictionary[pipelineArgument] = []
-
-          # Check if this is a flag.
-          nodeID = config.nodeMethods.getNodeForTaskArgument(graph, 'gkno', pipelineArgument, 'general')[0]
-          isFlag = True if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag' else False
-          if isFlag: self.argumentDictionary[pipelineArgument].append('set')
-          elif nextArgument.startswith('-'): self.argumentDictionary[pipelineArgument].append('')
-          else:
-            self.argumentDictionary[pipelineArgument].append(nextArgument)
-            count += 1
-
-        else:
-
-          # Check if the next argument starts with a '-'.  If so, the next argument on the command line
-          # is not a value to accompany this argument, but is a new argument.  This is either because
-          # the current argument is a flag or the argument is the name of a task within the pipeline.
-          # If the argument is the name of a task in the workflow, the next entry on the command line
-          # should be the value for this argument.
-          if nextArgument.startswith('-'):
-    
-            # Check if the argument is the name of a task.
-            task = ''
-            if argument.startswith('-'): task = argument[1:]
-            if argument.startswith('--'): task = argument[2:]
-    
-            isTask = False
-            if task in graph.nodes(data = False):
-    
-              # The task is a node in the pipeline, but check that the node is a task node.
-              if config.nodeMethods.getGraphNodeAttribute(graph, task, 'nodeType') == 'task':
-                if argument not in self.argumentDictionary: self.argumentDictionary[argument] = []
-                self.argumentDictionary[argument].append(nextArgument)
-                count += 1
-                isTask = True
-    
-            # Deal with arguments that are not the names of tasks.
-            if not isTask:
-  
-              # If a pipeline is being run, check the arguments against those allowed by the
-              # pipeline confuguration file.
-              if isPipeline: longFormArgument, shortFormArgument = config.pipeline.getLongFormArgument(graph, argument)
-  
-              # If gkno is being run in tool mode, check the arguments against those allowed by
-              # the tool.
-              else: longFormArgument = config.tools.getLongFormArgument(tool, argument)
-  
-              # Update the argumentDictionary.
-              if longFormArgument not in self.argumentDictionary: self.argumentDictionary[longFormArgument] = []
-              self.argumentDictionary[longFormArgument].append('set')
-    
-          else:
-            if isPipeline: longFormArgument, shortFormArgument = config.pipeline.getLongFormArgument(graph, argument, allowTermination = True)
-            else: longFormArgument = config.tools.getLongFormArgument(tool, argument, allowTermination = True)
-  
-            # Update the argumentDictionary.
-            if longFormArgument not in self.argumentDictionary: self.argumentDictionary[longFormArgument] = []
-            self.argumentDictionary[longFormArgument].append(nextArgument)
-            count += 1
-      count += 1
-
-  # Check for arguments for tasks within the pipeline.
-  def checkForTaskCommands(self, count, nextArgument):
-  
-    # First check if nextArgument ends with a ']'.  If there is only a single command in the
-    # square brackets, the command is a flag and no spaces are included, this woule be the case.
-    if nextArgument.endswith(']'):
-      nextArgument = nextArgument[1:len(nextArgument) - 1]
-  
-    else:
-      taskArgumentCounter = 2
-      while True:
-        try: buildTaskArguments = sys.argv[count + taskArgumentCounter]
-        except: self.errors.hasError = True
-    
-        # If the square brackets aren't closed, terminate.
-        if self.errors.hasError:
-          self.errors.unterminatedTaskSpecificOptions(verbose, argument)
-          self.errors.terminate()
-    
-        nextArgument += ' ' + buildTaskArguments
-        if not buildTaskArguments.endswith(']'): taskArgumentCounter += 1
-        else:
-         count += taskArgumentCounter - 1
-    
-         # Strip off the square brackets.
-         nextArgument = nextArgument[1:len(nextArgument) - 1]
-         break
-
-    return count, nextArgument
-
-  # Check if a parameter set was defined and return the parameter set name.  If no parameter set was requested,
-  # return 'default'.
-  def getParameterSetName(self, graph, config, isPipeline):
-    parameterSetName = ''
-    success          = True
-
-    # If the command line contains the parameter set argument, find the name of the parameter set.
-    if '--parameter-set' in sys.argv or '-ps' in sys.argv:
-
-      # Check that the parameter set was only defined once.
-      if sys.argv.count('--parameter-set') + sys.argv.count('-ps') > 1: self.errors.multipleParameterSetsSpecified(graph, config)
-
-      # Find the parameter set name.
-      for counter, value in enumerate(sys.argv):
-        if value == '--parameter-set' or value == '-ps':
-          try: parameterSetName = sys.argv[counter + 1]
-          except: success = False
-
-      # Check trhat the parameter set name was provided (e.g. the next value on the command line cannot start
-      # with a '-'.
-      if parameterSetName.startswith('-'): success = False
-      if success: return parameterSetName
-      else: self.errors.noParameterSetNameProvided(graph, config, isPipeline)
-
-    # If no parameter set was specified, return 'default'.
-    else: return 'default'
-
-  # Attach the values supplied on the command line to the nodes.
-  def attachPipelineArgumentsToNodes(self, graph, config, gknoConfig):
-    for argument in self.argumentDictionary:
-
-      # The argument supplied can either be an argument defined in the pipeline configuration
-      # file, or the name of a task in the pipeline.  First check to see if the argument is
-      # defined in the pipeline configuration, then if it is a task and if neither, fail.
-      nodeID = config.pipeline.isArgumentAPipelineArgument(argument)
-      if nodeID == None:
-
-        # Check if this argument is a gkno argument defined in the gkno configuration file.  If
-        # so, there exists a 'floating' node in the graph for this argument.
-        nodeID = gknoConfig.getNodeForGknoArgument(graph, config, argument)
-
-        if nodeID == None:
-          taskArgument = argument            
-          if taskArgument.startswith('--'): taskArgument = argument[2:len(argument)]
-          if taskArgument.startswith('-'): taskArgument = argument[1:len(argument)]
-          if taskArgument in graph.nodes(data = False): nodeID = taskArgument
-
-      # If the command line argument does not correspond to a node, fail.
-      if nodeID == None:
-        #TODO DEAL WITH ERROR
-        print('unknown command:', argument)
-        print(self.argumentDictionary[argument])
-        exit(0)
+      # Only process the entry if not part of task arguments contained in square brackets.
       else:
 
-        # TODO Deal with multiple runs and parallel execution loops.
-        hasMultipleRuns      = False
-        hasParallelExecution = False
-        if hasMultipleRuns or hasParallelExecution:
-          print('Not yet handled multiple runs or parallel execution.')
-
-        # Handle command line arguments that correspond to a data node first.  Deal with arguments
-        # pointing to a task node afterwards.
-        if not config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'nodeType') == 'task':
-          allowMultipleValues = config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'allowMultipleValues')
-          writeValue          = 'append' if allowMultipleValues else 'replace'
-          config.nodeMethods.addValuesToGraphNode(graph, nodeID, self.argumentDictionary[argument], write = writeValue, iteration = 1)
-
-        # Now deal with arguments pointing to task nodes.
-        else:
-
-          # Join together all of the arguments for this task into a string.
-          argumentString = self.argumentDictionary[argument].pop(0)
-          for argumentList in self.argumentDictionary[argument]: argumentString += ' ' + argumentList
-          taskArguments = argumentString.split(' ')
-          while True:
+        # If this and the previous entry were not arguments, this should be a command and
+        # is stored.
+        if not argument and not isArgument: self.commands.append(entry)
   
-            # Get the first entry in the list.  Terminate the loop if there is nothing left in the list.
-            try: taskArgument = taskArguments.pop(0)
-            except: break
+        # If the previous command line entry was an argument, check if this entry is an argument or
+        # not. If not, store this as the value for the previous argument.
+        elif argument and not isArgument:
+          self.arguments[argument].append(entry)
+          argument = None
   
-            # Get the next value in the list if one exists.
-            try: nextTaskArgument = taskArguments[0]
-            except: nextTaskArgument = '-'
-
-            # Ensure that we are using the long form argument.
-            task              = nodeID
-            associatedTool    = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-            longFormArgument  = config.tools.getLongFormArgument(associatedTool, taskArgument)
-            shortFormArgument = config.tools.getArgumentAttribute(associatedTool, longFormArgument, 'shortFormArgument')
-            isFilenameStub    = config.tools.getArgumentAttribute(associatedTool, longFormArgument, 'isFilenameStub')
-
-            # Determine if this is a flag or a value. If the argument is a flag, the next argument on the
-            # command line will be a '-'
-            if nextTaskArgument.startswith('-'): value = ['set']
-            else: value = [taskArguments.pop(0)]
-
-            # If there is no node available for this task argument, create the node and add the edge.
-            sourceNodeIDs = config.nodeMethods.getNodeForTaskArgument(graph, nodeID, longFormArgument, 'option')
-            if not sourceNodeIDs:
-              sourceNodeID  = 'OPTION_' + str(config.nodeMethods.optionNodeID)
-              attributes    = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longFormArgument)
-              graph.add_node(sourceNodeID, attributes = attributes)
-              config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'replace')
-              config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeID, task, longFormArgument)
-              config.nodeMethods.optionNodeID += 1
-
-            # If there are already nodes for this task argument, determine how to proceed.
-            else:
-
-              # Check if this argument defines a file/files. If so, all of the possible source nodes must be
-              # referencing a file.
-              isFile = config.nodeMethods.getGraphNodeAttribute(graph, sourceNodeIDs[0], 'isFile')
-
-              # For option nodes not corresponding to files, check that there is only a single source node
-              # and set its value.
-              if not isFile:
-                if len(sourceNodeIDs) == 1:
-                  config.nodeMethods.addValuesToGraphNode(graph, sourceNodeIDs[0], value, write = 'replace')
-                  config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeIDs[0], task, longFormArgument)
-                else:
-                  #TODO ERROR
-                  print('MULTIPLE SOURCE NODES FOR NON FILE NODE. - attachPipelineArgumentsToNodes')
-                  self.errors.terminate()
-
-              # Option nodes dealing with files are a little more complex.
-              else:
-                #TODO LOOK INTO THIS.
-                # If the node is connected to a file node, check if the file node has already been created.  If
-                # it has, determine if the file node has any predecessors.  If so, generate a new input node for 
-                # this task that will exist alongside the original node - in effect creating two nodes that both
-                # feed into the task using the same argument.  The reason for this is that it does not make sense
-                # to modify options that act backwards in the pipeline.  For example, the output of a sorting
-                # routine is a file node that feed into a variant calling task (as directed in the pipeline
-                # configuration file). In addition, tha command line might have input bam files defined to feed 
-                # directly into the variant calling task node.  It doesn't make sense to add these files to the
-                # node that has been merged with the sort routine since these input bam files have no connection to
-                # tasks prior to the variant calling.  This is clearly only allowed for options where multiple values
-                # are permitted (there will now be two nodes associated with the same argument, so this argument must
-                # allow multiple definitions.)
+        # If the previous entry was an argument and this is an argument, then the previous entry is
+        # assumed to be a flag. Append None to the list of arguments for the flag and then create
+        # the list in self.arguments for the current argument.
+        elif argument and isArgument:
+          self.arguments[argument].append(None)
+          argument = entry
+          if argument not in self.arguments: self.arguments[argument] = []
   
-                # It is possible that a new node has already been created, in which case sourceNodeIDs will have
-                # multiple values.  Check if any of them are files and have no predecssors.  If there is one such
-                # node, add values to this.  If not, create a new node.
-                availableNodeIDs = []
-                for sourceNodeID in sourceNodeIDs:
-                  if config.nodeMethods.getGraphNodeAttribute(graph, sourceNodeID, 'isFile'):
-                    fileNodeID = sourceNodeID + '_FILE'
-                    if fileNodeID in graph.nodes(data = False):
-                      if not graph.predecessors(fileNodeID): availableNodeIDs.append(sourceNodeID)
+        # If this entry is an argument and the previous entry was not, store this entry as an argument.
+        elif not argument and isArgument:
+          argument = entry
+          if argument not in self.arguments: self.arguments[argument] = []
+
+    # If the end of the command line is reached and argument is still populated, this is assumed
+    # to be a flag and should be added.
+    if argument and not self.arguments[argument]: self.arguments[argument] = [None]
+
+    # If the mode of operation is to provide information on help categories, store the help category.
+    self.category = None
+
+  # Determine if gkno is being run in admin mode.
+  def isAdmin(self, modes):
+    try:
+      if self.commands[0] in modes: return True, self.commands[0]
+    except: return False, None
+    return False, None
+
+  # Determine the mode in which gkno is being run. This is either in 'admin' mode for general gkno
+  # admin (resource management, building, updating etc.), 'help' for different categories of help
+  # or 'run' for running tools or pipelines.
+  def determineMode(self, isAdmin, gkno):
+    if isAdmin: return 'admin'
+
+    # Check if json files for the web page were requested.
+    if gkno.getGknoArgument('GKNO-WEB', self.arguments): return 'web'
+
+    # Check if help for gkno specific arguments was requested.
+    if gkno.getGknoArgument('GKNO-ARGUMENTS', self.arguments): return 'gkno help'
+
+    # If help is requested, return the mode 'help'.
+    if gkno.getGknoArgument('GKNO-HELP', self.arguments): return 'help'
+
+    # Check if help categories were requested.
+    category = gkno.getGknoArgument('GKNO-CATEGORIES', self.arguments)
+    if category:
+      self.category = category[0]
+      return 'categories'
+
+    # Check if a list of all pipeline was requested.
+    if gkno.getGknoArgument('GKNO-ALL-PIPELINES', self.arguments): return 'list-all'
+
+    # If no information is provided (e.g. no admin, tool or pipeline), return 'help' as the mode.
+    if len(self.commands) == 0 and len(self.arguments) == 0: return 'help'
+
+    # If none of the above, return 'run',
+    return 'run'
+
+  # Determine the path to the configuration files, if set.
+  def getConfigurationFilePath(self, options):
+    longFormArgument  = options['GKNO-CONFIGURATION-PATH'].longFormArgument
+    shortFormArgument = options['GKNO-CONFIGURATION-PATH'].shortFormArgument
+
+    # If the path is defined, get the path.
+    path = None
+    if longFormArgument in self.arguments: path = self.arguments[longFormArgument][0]
+    elif shortFormArgument in self.arguments: path = self.arguments[shortFormArgument][0]
+
+    # If the path is defined, check that the path exists.
+    # TODO ERROR
+    if path and not os.path.isdir(path): print('commandLine.getConfigurationFilePath - PATH DOESN\'T EXIST'); exit(1)
+
+    # Remove trailing '/'.
+    if path and path.endswith('/'): path = path.rstrip('/')
+
+    # Return the path.
+    return path
+
+  # Determine the name of the pipeline being run (tools are considered pipelines of a single task).
+  def determinePipeline(self):
+
+    # If no pipeline name was supplied return None. The mode will be help, so a general help message
+    # will be provided to the user.
+    if not self.commands: return None
+
+    # If there are multiple commands from the pipeline, the command line is invalid. If not in admin
+    # mode, the command line can only include a single entry that is not an argument or accompanying
+    # value.
+    # TODO ERROR
+    if len(self.commands) != 1: self.errors.invalidCommandLine()
+
+    # Return the pipeline name.
+    return self.commands[0]
+
+  # Process the command line arguments.
+  def processArguments(self, superpipeline, args, gkno):
+
+    # Get the name of the top level pipeline.
+    pipeline = superpipeline.pipeline
+
+    # Get a list of all the allowable long and short form arguments.
+    longFormArguments  = []
+    shortFormArguments = {}
+    for argument in args.arguments.keys():
+      longFormArguments.append(argument)
+      shortFormArguments[args.arguments[argument].shortFormArgument] = argument
+
+    # Loop over all of the supplied command line arguments, ensure that they are in their long form
+    # versions and consolidate. Check that all of the arguments are valid for the pipeline being run
+    # or are gkno specific arguments.
+    for argument in self.arguments:
+      values                     = self.arguments[argument]
+      pipelineShortFormArguments = superpipeline.pipelineConfigurationData[pipeline].shortFormArguments
+
+      # First check if the argument is the name of a task in the superpipeline.
+      if argument.strip('-') in superpipeline.tasks:
+        if argument.strip('-') in self.tasksAsArguments: 
+          for value in values: self.tasksAsArguments[argument.strip('-')].append(value)
+        else: self.tasksAsArguments[argument.strip('-')] = values
+
+      # If this is a long form argument, check to see if it is a gkno specific argument or a valid pipeline
+      # argument.
+      elif argument in gkno.arguments:
+        shortFormArgument = gkno.arguments[argument].shortFormArgument
+        dataType          = gkno.arguments[argument].dataType
+        if argument not in self.gknoArguments: self.gknoArguments[argument] = []
+        for value in values:
+          if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(argument, shortFormArgument, value, dataType, True)
+          self.gknoArguments[argument].append(value)
+
+      # Check if this is a valid gkno short form argument.
+      elif argument in gkno.shortForms:
+        longFormArgument = gkno.shortForms[argument]
+        dataType         = gkno.arguments[longFormArgument].dataType
+        if longFormArgument not in self.gknoArguments: self.gknoArguments[longFormArgument] = []
+        for value in values:
+          if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(longFormArgument, argument, value, dataType, True)
+          self.gknoArguments[longFormArgument].append(value)
+
+      # Check if this argument is valid for the pipeline.
+      elif argument in longFormArguments:
+        shortFormArgument = args.arguments[argument].shortFormArgument
+        dataType          = args.arguments[argument].dataType
+        if argument not in self.pipelineArguments: self.pipelineArguments[argument] = []
+        for value in values:
+          if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(argument, shortFormArgument, value, dataType, False)
+          self.pipelineArguments[argument].append(value)
+
+      # Check if this is a valid short form pipeline argument.
+      elif argument in shortFormArguments:
+        longFormArgument = shortFormArguments[argument]
+        dataType         = args.arguments[longFormArgument].dataType
+        if longFormArgument not in self.pipelineArguments: self.pipelineArguments[longFormArgument] = []
+        for value in values:
+          if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(longFormArgument, argument, value, dataType, False)
+          self.pipelineArguments[longFormArgument].append(value)
+
+      # If the argument is invalid.
+      else: self.errors.invalidArgument(argument)
+
+  # Determine the name (if any) of the requested parameter set.
+  def getParameterSetName(self, arguments, gkno):
+
+    # Loop over the gkno specific arguments looking for the --parameter-set argument,
+    for argument in arguments:
+      if argument == gkno.options['GKNO-PARAMETER-SET'].longFormArgument:
+
+        # Only one parameter set can be defined.
+        if len(arguments[argument]) != 1: self.errors.multipleParameterSets()
+
+        # Return the name of the parameter set.
+        return arguments[argument][0]
+
+    # If no parameter set was defined, return None.
+    return None
+
+  # For all tasks inputted on the command line, extract all the arguments supplied to the tasks.
+  def parseTasksAsArguments(self, superpipeline):
+
+    # Parse tasksAsNodes. Each entry is a task in the pipeline and has associated with it a list of
+    # arguments to apply to that task. Parse all of these arguments and identify the graph node that
+    # they point to. If there is no associated node, add the argument to a list of nodes that require
+    # creating.
+    for task in self.tasksAsArguments:
+      arguments = {}
+
+      # Get the tool associated with this task.
+      tool = superpipeline.tasks[task]
+
+      # Loop over all arguments supplied to this task (it is allowed that the same task is supplied
+      # on the command line multiple times.
+      for string in self.tasksAsArguments[task]:
+
+        # Break the string associated with the task into a list.
+        argumentList = string.split(' ')
+
+        # Parse all the commands supplied for this task.
+        argument = None
+        for counter, entry in enumerate(argumentList):
+          if entry.startswith('-'):
   
-                # No nodes were found with no predecessors, so a new node should be created.
-                if not availableNodeIDs:
-                  attributes   = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, associatedTool, longFormArgument)
-                  sourceNodeID = config.nodeMethods.buildOptionNode(graph, config.tools, task, associatedTool, longFormArgument, attributes)
-                  config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'replace')
-                  config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeID, task, longFormArgument)
-  
-                # A node was found with no predecssors, so add values to this node.
-                elif len(availableNodeIDs) == 1:
-                  sourceNodeID = availableNodeIDs[0]
-                  config.nodeMethods.addValuesToGraphNode(graph, sourceNodeID, value, write = 'append', iteration = 1)
-                  config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, sourceNodeID, task, longFormArgument)
-  
-                # Multiple previous nodes were found. This should not have occured, so gkno canno proceed.
-                else:
-                  #TODO ERROR
-                  print('too many available nodes, attachPipelineArgumentsToNodes - commandLine.py')
-                  self.errors.terminate()
-  
-              # Check if this option defines a file.  If so, create a file node for this option.
-              if config.tools.getArgumentAttribute(associatedTool, longFormArgument, 'isInput'):
-                config.nodeMethods.buildTaskFileNodes(graph, config.tools, sourceNodeID, task, longFormArgument, shortFormArgument, 'input')
-              elif config.tools.getArgumentAttribute(associatedTool, longFormArgument, 'isOutput'):
-                config.nodeMethods.buildTaskFileNodes(graph, config.tools, sourceNodeID, task, longFormArgument, shortFormArgument, 'output')
+            # If this entry starts with a '-' and isArgument is true, then the previous entry also started
+            # with a '-'. This implies that the previous entry was a flag argument.
+            if argument:
+              arguments[argument] = ['set']
 
-  # Attach the tool arguments to the graph nodes.
-  def attachToolArgumentsToNodes(self, graph, config, gknoConfig):
-
-    # Define the argumentValues structure. The argumentDictionary structure is parsed and
-    # the values for each argument are stored in argumentValues. After all entries in
-    # argumentDictionary have been processed, the values are added to the graph nodes.
-    # The reason for this is that the same argument may appear on the command line multiple
-    # times and these should all be collated before being assigned to the node.
-    argumentValues = {}
-
-    # Get the task node.
-    task = config.nodeMethods.getNodes(graph, 'task')[0]
-
-    # Parse the command line arguments.
-    for argument in self.argumentDictionary:
-      isGknoArgument = False
-
-      # Get the nodeID of the option node for this argument.
-      try: nodeID = config.nodeMethods.getNodeForTaskArgument(graph, task, argument, 'option')[0]
-
-      # If no nodes were found, the argument must be a gkno specific argument or not have
-      # been created in the graph yet,
-      except:
-
-        # See if this is a gkno specific argument.
-        nodeID = gknoConfig.getNodeForGknoArgument(graph, config, argument)
-
-        # If not, this is an argument that hasn't yet had a node created. Before creating a new node,
-        # check to see if this is an input list. If so, determine which argument the values in the list
-        # refer to and add the values to the relevant node.
-        if not nodeID:
-          nodeID     = 'OPTION_' + str(config.nodeMethods.optionNodeID)
-          attributes = config.nodeMethods.buildNodeFromToolConfiguration(config.tools, task, argument)
-          graph.add_node(nodeID, attributes = attributes)
-          config.edgeMethods.addEdge(graph, config.nodeMethods, config.tools, nodeID, task, argument)
-          config.nodeMethods.optionNodeID += 1
-
-          # If the option node corresponds to a file, build a file node.
-          if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isFile'):
-            shortFormArgument = config.edgeMethods.getEdgeAttribute(graph, nodeID, task, 'shortFormArgument')
-            if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'isInput'):
-              config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortFormArgument, 'input')
-            else: config.nodeMethods.buildTaskFileNodes(graph, config.tools, nodeID, task, argument, shortFormArgument, 'output')
-
-        # If the nodeID was set, then this is a gkno specific argument, so record it as such.
-        else: isGknoArgument = True
-
-      # Check if the argument is a flag. If so, the value needs to be set to 'set'.
-      if isGknoArgument:
-        if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag': self.argumentDictionary[argument] = ['set']
-      else:
-        if config.nodeMethods.getGraphNodeAttribute(graph, nodeID, 'dataType') == 'flag': self.argumentDictionary[argument] = ['set']
-
-      if nodeID not in argumentValues: argumentValues[nodeID] = self.argumentDictionary[argument]
-      else:
-        for value in self.argumentDictionary[argument]: argumentValues[nodeID].append(value)
-      
-    for nodeID in argumentValues: config.nodeMethods.addValuesToGraphNode(graph, nodeID, argumentValues[nodeID], write = 'replace')
-
-  # Assign values to the file nodes using the option nodes.
-  def mirrorFileNodeValues(self, graph, config):
-    for task in config.pipeline.workflow:
-
-      # Loop over all option nodes and pick out those that correspond to files.
-      for optionNodeID in config.nodeMethods.getPredecessorOptionNodes(graph, task):
-        if config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'isFile'):
-
-          # Get the file nodes associated with the option node.
-          fileNodeIDs = config.nodeMethods.getAssociatedFileNodeIDs(graph, optionNodeID)
-
-          # Determine if this node refers to an input or output file.
-          isInput = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'isInput')
-
-          # It is possible that not all of the file nodes connect to this task. If there are
-          # multiple file nodes coming from a task and one of those file links into the next
-          # task, only one of the file nodes associated with the option node will feed into
-          # the task. Determine which of these file nodes links into the task.
-          attachedFileNodeIDs = []
-          for fileNodeID in fileNodeIDs:
-            if isInput:
-              if config.edgeMethods.checkIfEdgeExists(graph, fileNodeID, task): attachedFileNodeIDs.append(fileNodeID)
-            else:
-              if config.edgeMethods.checkIfEdgeExists(graph, task, fileNodeID): attachedFileNodeIDs.append(fileNodeID)
-
-          # Determine if the file node is from a filename stub.
-          tool             = config.nodeMethods.getGraphNodeAttribute(graph, task, 'tool')
-          longFormArgument = config.edgeMethods.getEdgeAttribute(graph, optionNodeID, task, 'longFormArgument')
-          isFilenameStub   = config.tools.getArgumentAttribute(tool, longFormArgument, 'isFilenameStub') if longFormArgument != None else False
-
-          # If the file is a filename stub, find the extensions to add to the base value and
-          # define the file node values.
-          if isFilenameStub:
-            extensions = config.tools.getArgumentAttribute(tool, longFormArgument, 'filenameExtensions')
-
-            # Check that the number of file nodes is the same as the number of extensions.
-            if len(extensions) != len(attachedFileNodeIDs):
+              # Check that the argument is a valid argument for this tool and convert to the long form
+              # version if necessary.
+              argument = superpipeline.toolConfigurationData[tool].getLongFormArgument(entry)
               #TODO ERROR
-              print('1 - commands.mirrorFileNodeValues')
-              self.errors.terminate()
+              if argument not in superpipeline.toolConfigurationData[tool].arguments.keys():
+                print('ERROR - parseTasksAsArguments - 1', tool, entry); exit(0)
+              arguments[argument] = []
+  
+            # If isArgument is false, then this is a new argument (either it is the first argument in the
+            # list, or the previous entry was a value associated with a different argument).
+            else:
 
-            for fileNodeID, extension in zip(attachedFileNodeIDs, extensions):
-              values          = config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values')
-              modifiedValues = {}
-              for iteration in values:
-                updatedValues = []
-                for value in values[iteration]: updatedValues.append(str(value) + str(extension))
-                modifiedValues[iteration] = updatedValues
-              config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, modifiedValues)
+              # Check that the argument is a valid argument for this tool and convert to the long form
+              # version if necessary.
+              #TODO ERROR
+              argument = superpipeline.toolConfigurationData[tool].getLongFormArgument(entry)
+              if argument not in superpipeline.toolConfigurationData[tool].arguments.keys():
+                print('ERROR - parseTasksAsArguments - 2', tool, entry); exit(0)
+              if argument not in arguments: arguments[argument] = []
+  
+          # If this entry does not begin with a dash and there is no defined argument, then the previous
+          # entry also did not start with a '-' and so there is a problem with the supplied arguments.
+          elif not argument: print('ERROR - command.associateArgumentsWithGraphNodes - 1'); exit(0)
+  
+          # If this entry does not begin with a '-'. but the argument is set, this is a value for the argument,
+          # so associate the value with the argument.
+          elif argument:
+            arguments[argument].append(entry)
+            argument = None
 
-          # If the file is not a filename stub, just add the values to the node.
-          else:
-            for fileNodeID in attachedFileNodeIDs:
-              values   = deepcopy(config.nodeMethods.getGraphNodeAttribute(graph, optionNodeID, 'values'))
-              hasValue = config.nodeMethods.getGraphNodeAttribute(graph, fileNodeID, 'hasValue')
-              if not hasValue: config.nodeMethods.replaceGraphNodeValues(graph, fileNodeID, values)
+        # If the previous list ended on a flag, the value will not have been set. Set it here.
+        if argument: arguments[argument] = ['set']
 
-  # Store the command line in the file gkno-command-lines.txt.
-  def storeCommandLine(self, date):
+      # Store the list of arguments for each task.
+      self.taskArguments[task] = arguments
 
-    # Open the new file.
-    filename   = 'gkno-command-lines.txt'
-    filehandle = open(filename, 'a')
+  # Associate the command line arguments with the graph nodes.
+  def associateArgumentsWithGraphNodes(self, graph, superpipeline):
+    associatedNodes = []
 
-    # Write the data and time that the command line was written to file.
-    print(date, ' - ', time.localtime()[3], ':', time.localtime()[4], sep = '', file = filehandle)
+    # Loop over all the arguments supplied to individual tasks.
+    for taskAddress in self.taskArguments:
+      for argument in self.taskArguments[taskAddress]:
+        values = self.taskArguments[taskAddress][argument]
 
-    # Write the command line to the file.
-    print('\t', self.commandLine, sep = '', file = filehandle)
+        # Get the tool associated with this task.
+        tool     = superpipeline.tasks[taskAddress]
+        toolData = superpipeline.toolConfigurationData[tool]
 
-    # Close the file.
-    filehandle.close()
+        # Search the successor and predecessor nodes for this task for the argument supplied.
+        foundArgument    = False
+        associatedNodeID = None
+        for nodeID in gr.pipelineGraph.CM_getInputNodes(graph, taskAddress):
+          longFormArgument = gr.pipelineGraph.CM_getArgumentAttribute(graph, nodeID, taskAddress, 'longFormArgument')
+          if longFormArgument == argument:
+            foundArgument    = True
+            associatedNodeID = nodeID
+            break
+
+        # Only check the output nodes if the argument has not already been associated with an input node.
+        if not foundArgument:
+          for nodeID in gr.pipelineGraph.CM_getOutputNodes(graph, taskAddress):
+            longFormArgument = gr.pipelineGraph.CM_getArgumentAttribute(graph.graph, nodeID, taskAddress, 'longFormArgument')
+            if longFormArgument == argument:
+              foundArgument    = True
+              associatedNodeID = nodeID
+              break
+
+        # Add the node to the list.
+        if associatedNodeID: associatedNodes.append((taskAddress, associatedNodeID, tool, argument, values, False))
+        else: associatedNodes.append((taskAddress, str(taskAddress + '.' + argument), tool, argument, values, True))
+
+    # Return the list with information on the nodes to create.
+    return associatedNodes

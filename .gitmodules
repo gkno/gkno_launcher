@@ -40,9 +40,6 @@
 [submodule "tools/libStatGen"]
 	path = tools/libStatGen
         url = https://github.com/gkno/libStatGen.git
-[submodule "configurationClass"]
-    path = src/configurationClass
-    url = https://github.com/gkno/configurationClass.git
 [submodule "tools/blast"]
 	path = tools/blast
 	url = https://github.com/gkno/blast.git

@@ -6,17 +6,16 @@
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "filter",
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
-        "description" : "the input BAM file.",
+        "description" : "The input BAM file.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam"],
+        "extensions" : ["bam"],
         "allow multiple values" : true
       },
       {
@@ -24,12 +23,12 @@
         "long form argument" : "--script",
         "short form argument" : "-s",
         "command line argument" : "-script",
-        "extensions" : [".json"],
+        "extensions" : ["json"],
         "data type" : "string"
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {
         "description" : "the output BAM file.",
         "long form argument" : "--out",
@@ -37,8 +36,7 @@
         "command line argument" : "-out",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam"],
-        "if output to stream" : "do not include",
+        "extensions" : ["bam"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -52,27 +50,13 @@
       }
     ],
 
-    "options" : [
+    "Options" : [
       {
         "description" : "only read data from this genomic region.",
         "long form argument" : "--region",
         "short form argument" : "-rg",
         "command line argument" : "-region",
-        "extensions" : ["no extension"],
-        "data type" : "string",
-        "evaluate command" : {
-          "command" : "$(TOOL_BIN)/genomicRegions/checkRegionFormat.sh ARG1 ARG2",
-          "add values" : [
-            {
-              "ID" : "ARG1",
-              "argument" : "--region"
-            },
-            {
-              "ID" : "ARG2",
-              "argument" : "tool"
-            }
-          ]
-        }
+        "data type" : "string"
       }
     ],
 
@@ -82,7 +66,6 @@
         "long form argument" : "--alignment-flag",
         "short form argument" : "-a",
         "command line argument" : "-alignmentFlag",
-        "extensions" : ["no extension"],
         "data type" : "integer"
       },
       {
@@ -90,54 +73,42 @@
         "long form argument" : "--insert-size",
         "short form argument" : "-z",
         "command line argument" : "-insertSize",
-        "extensions" : ["no extension"],
-        "data type" : "string",
-        "include value in quotations" : true
+        "data type" : "string"
       },
       {
         "description" : "Keep reads with length that matches pattern.",
         "long form argument" : "--length",
         "short form argument" : "-g",
         "command line argument" : "-length",
-        "extensions" : ["no extension"],
-        "data type" : "string",
-        "include value in quotations" : true
+        "data type" : "string"
       },
       {
         "description" : "Keep reads with mapping qualities that match pattern.",
         "long form argument" : "--mapping-quality",
         "short form argument" : "-mq",
         "command line argument" : "-mapQuality",
-        "extensions" : ["no extension"],
-        "data type" : "string",
-        "include value in quotations" : true
+        "data type" : "string"
       },
       {
         "description" : "Keep reads with name that matches pattern.",
         "long form argument" : "--name",
         "short form argument" : "-n",
         "command line argument" : "-name",
-        "extensions" : ["no extension"],
-        "data type" : "string",
-        "include value in quotations" : true
+        "data type" : "string"
       },
       {
         "description" : "Keep reads with motif that matches pattern.",
         "long form argument" : "--query-bases",
         "short form argument" : "-q",
         "command line argument" : "-queryBases",
-        "extensions" : ["no extension"],
-        "data type" : "string",
-        "include value in quotations" : true
+        "data type" : "string"
       },
       {
         "description" : "Keep reads with this key=>value pair.",
         "long form argument" : "--tag",
         "short form argument" : "-t",
         "command line argument" : "-tag",
-        "extensions" : ["no extension"],
-        "data type" : "string",
-        "include value in quotations" : true
+        "data type" : "string"
       }
     ],
 
@@ -147,7 +118,6 @@
         "long form argument" : "--is-duplicate",
         "short form argument" : "-id",
         "command line argument" : "-isDuplicate",
-        "extensions" : ["no extension"],
         "data type" : "bool"
       },
       {
@@ -155,7 +125,6 @@
         "long form argument" : "--is-failed-qc",
         "short form argument" : "-if",
         "command line argument" : "-isFailedQC",
-        "extensions" : ["no extension"],
         "data type" : "bool"
       },
       {
@@ -163,7 +132,6 @@
         "long form argument" : "--is-first-mate",
         "short form argument" : "-ifm",
         "command line argument" : "-isFirstMate",
-        "extensions" : ["no extension"],
         "data type" : "bool"
       },
       {
@@ -171,7 +139,6 @@
         "long form argument" : "--is-mapped",
         "short form argument" : "-im",
         "command line argument" : "-isMapped",
-        "extensions" : ["no extension"],
         "data type" : "bool"
       },
       {
@@ -179,7 +146,6 @@
         "long form argument" : "--is-mate-mapped",
         "short form argument" : "-imm",
         "command line argument" : "-isMateMapped",
-        "extensions" : ["no extension"],
         "data type" : "bool"
       },
       {
@@ -187,7 +153,6 @@
         "long form argument" : "--is-mate-reverse-strand",
         "short form argument" : "-imr",
         "command line argument" : "-isMateReverseStrand",
-        "extensions" : ["no extension"],
         "data type" : "bool"
       },
       {
@@ -195,7 +160,6 @@
         "long form argument" : "--is-paired",
         "short form argument" : "-ipr",
         "command line argument" : "-isPaired",
-        "extensions" : ["no extension"],
         "data type" : "bool"
       },
       {
@@ -203,7 +167,6 @@
         "long form argument" : "--is-primary-alignment",
         "short form argument" : "-ipa",
         "command line argument" : "-isPrimaryAlignment",
-        "extensions" : ["no extension"],
         "data type" : "bool"
       },
       {
@@ -211,7 +174,6 @@
         "long form argument" : "--is-proper-pair",
         "short form argument" : "-ipp",
         "command line argument" : "-isProperPair",
-        "extensions" : ["no extension"],
         "data type" : "bool"
       },
       {
@@ -219,7 +181,6 @@
         "long form argument" : "--is-reverse-strand",
         "short form argument" : "-ir",
         "command line argument" : "-isReverseStrand",
-        "extensions" : ["no extension"],
         "data type" : "bool"
       },
       {
@@ -227,7 +188,6 @@
         "long form argument" : "--is-second-mate",
         "short form argument" : "-ism",
         "command line argument" : "-isSecondMate",
-        "extensions" : ["no extension"],
         "data type" : "bool"
       },
       {
@@ -235,7 +195,6 @@
         "long form argument" : "--is-singleton",
         "short form argument" : "-isi",
         "command line argument" : "-isSingleton",
-        "extensions" : ["no extension"],
         "data type" : "bool"
       }
     ]
@@ -243,18 +202,18 @@
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : [
+      "data" : [
       ]
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "Input BAM file",
+          "id" : "Input BAM file",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         }

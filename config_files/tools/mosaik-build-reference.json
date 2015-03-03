@@ -1,13 +1,13 @@
 {
   "id" : "mosaik-build-reference",
-  "description" : "Build the Mosaik reference",
+  "configuration type" : "tool",
+  "description" : "Build a Mosaik format reference file.",
   "categories" : ["FASTA-processing", "Mosaik", "Marthlab-software"],
   "tools" : ["mosaik"],
   "path" : "MOSAIK/bin",
   "executable" : "MosaikBuild",
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
         "description" : "The FASTA reference sequence file",
         "long form argument" : "--fasta-reference",
@@ -15,19 +15,19 @@
         "command line argument" : "-fr",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fasta", ".fa"]
+        "extensions" : ["fasta", "fa"]
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {    
         "description" : "The output Mosaik reference file",
-        "long form argument" : "--mosaik-reference",
-        "short form argument" : "-m",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
         "command line argument" : "-oa",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".dat"],
+        "extensions" : ["dat"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--fasta-reference",
@@ -39,25 +39,20 @@
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : [
+      "data" : [
       ]
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"],
-          "argument" : "--fasta-reference"
-        },
-        {
-          "ID" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
+          "id" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
         }
       ]
     }

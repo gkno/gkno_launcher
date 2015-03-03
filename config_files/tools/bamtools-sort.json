@@ -1,14 +1,14 @@
 {
   "id" : "bamtools-sort",
+  "configuration type" : "tool",
   "description" : "Sort a BAM file",
   "categories" : ["BAM-processing", "Bamtools", "Marthlab-software"],
   "tools" : ["bamtools"],
   "path" : "bamtools/bin",
   "executable" : "bamtools",
   "modifier" : "sort",
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
         "description" : "The input BAM file.",
         "long form argument" : "--in",
@@ -16,16 +16,11 @@
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam"],
-        "if input is stream" : "replace",
-        "replace argument with" : {
-          "argument" : "-in",
-          "value" : "stdin"
-        }
+        "extensions" : ["bam"]
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {
         "description" : "The output BAM file.",
         "long form argument" : "--out",
@@ -33,8 +28,7 @@
         "command line argument" : "-out",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".bam"],
-        "if output to stream" : "do not include",
+        "extensions" : ["bam"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -48,52 +42,49 @@
       }
     ],
 
-    "options" : [
+    "Options" : [
       {
         "description" : "Sort by alignment name.  Default is to sort by position.",
         "long form argument" : "--sort-by-name",
         "short form argument" : "-s",
         "command line argument" : "-byname",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       },
       {
         "description" : "Max number of alignments per temp file. Default: 500,000",
         "long form argument" : "--number-of-alignments-per-temp-file",
         "short form argument" : "-n",
         "command line argument" : "-n",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Max memory to use. Default: 1,024",
         "long form argument" : "--memory",
         "short form argument" : "-m",
         "command line argument" : "-mem",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       }
     ]
   },
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : []
+      "data" : []
     },
 
     {
-      "ID" : "test" ,
+      "id" : "test" ,
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "BAM1",
+          "id" : "BAM1",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {
-          "ID" : "output path",
+          "id" : "output path",
           "argument" : "--output-path",
           "values" : ["./"]
         }

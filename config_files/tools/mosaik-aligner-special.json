@@ -1,13 +1,13 @@
 {
   "id" : "mosaik-aligner-special",
-  "description" : "Pairwise alignment of a read archive with additional 'special' reference sequences. The special sequences must all have a common prefix and alignment to them will be shown in the ZA tags. No primary alignments to the 'special' sequences will occur.",
+  "configuration type" : "tool",
+  "description" : "Perform pairwise alignment of a read archive with additional 'special' reference sequences included. These special sequences must all have a common prefix and alignment to them will be shown in the ZA tags. No primary alignments to the 'special' sequences will occur.",
   "categories" : ["Aligners", "Mosaik", "Marthlab-software"],
   "tools" : ["mosaik"],
   "path" : "MOSAIK/bin",
   "executable" : "MosaikAligner",
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
         "description" : "The input read file",
         "long form argument" : "--in",
@@ -15,7 +15,7 @@
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".mkb"]
+        "extensions" : ["mkb"]
       },
       {
         "description" : "The input reference file (Mosaik native dat file)",
@@ -24,7 +24,7 @@
         "command line argument" : "-ia",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".dat"]
+        "extensions" : ["dat"]
       },
       {
         "description" : "The Mosaik jump database",
@@ -33,9 +33,9 @@
         "command line argument" : "-j",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["no extension"],
         "is filename stub" : true,
-        "filename extensions" : [
+        "include dot in stub extension" : false,
+        "stub extensions" : [
           "_keys.jmp",
           "_meta.jmp",
           "_positions.jmp"
@@ -48,7 +48,7 @@
         "command line argument" : "-annse",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".ann"]
+        "extensions" : ["ann"]
       },
       {
         "description" : "Neural network file for paired end read mapping qualities",
@@ -57,11 +57,11 @@
         "command line argument" : "-annpe",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".ann"]
+        "extensions" : ["ann"]
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {
         "description" : "The output alignment file",
         "long form argument" : "--out",
@@ -69,102 +69,92 @@
         "command line argument" : "-out",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["no extension"],
         "is filename stub" : true,
-        "filename extensions" : [
-          ".bam",
-          ".special.bam"
+        "stub extensions" : [
+          "bam",
+          "special.bam"
         ],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
-          "modify extension" : "omit"
+          "modify extension" : "replace"
         }
       }
     ],
 
-    "essential parameters" : [
+    "Essential parameters" : [
       {
         "description" : "Alignment algorithm: [fast, single, multi, all]. def: all",
         "long form argument" : "--alignment-algorithm",
         "short form argument" : "-aa",
         "command line argument" : "-a",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       },    
       {
         "description" : "Alignment mode: [unique, all]. def: all",
         "long form argument" : "--alignment-mode",
         "short form argument" : "-am",
         "command line argument" : "-m",
-        "data type" : "string",
-        "extensions" : ["no extension"]
+        "data type" : "string"
       },    
       {
         "description" : "Hash size [4 - 32].",
         "long form argument" : "--hash-size",
         "short form argument" : "-hs",
         "command line argument" : "-hs",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       }
     ],
 
-    "filtering" : [
+    "Filtering parameters" : [
       {
         "description" : "The percentage of mismatches allowed [0.0 - 1.0]",
         "long form argument" : "--mismatch-percentage",
         "short form argument" : "-mmp",
         "command line argument" : "-mmp",
-        "data type" : "float",
-        "extensions" : ["no extension"]
+        "data type" : "float"
       },    
       {
         "description" : "The alignment candidate threshold (length)",
         "long form argument" : "--alignment-candidate-threshold",
         "short form argument" : "-act",
         "command line argument" : "-act",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "The maximum number of positions stored per seed",
         "long form argument" : "--maximum-hashes-per-seed",
         "short form argument" : "-mhp",
         "command line argument" : "-mhp",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       }    
     ],
 
-    "performance" : [
+    "Performance parameters" : [
       {
         "description" : "Specifies the Smith-Waterman bandwidth.  Default: 9",
         "long form argument" : "--bandwidth",
         "short form argument" : "-bw",
         "command line argument" : "-bw",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },    
       {
         "description" : "Uses the specified number of threads.",
         "long form argument" : "--threads",
         "short form argument" : "-t",
         "command line argument" : "-p",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       }
     ],
 
-    "jump database" : [
+    "Jump database parameters" : [
       {
         "description" : "Specifies the prefixes of 'special' reference sequences.",
         "long form argument" : "--special-reference-prefix",
         "short form argument" : "-s",
         "command line argument" : "-sref",
         "required" : true,
-        "data type" : "string",
-        "extensions" : ["no extension"]
+        "data type" : "string"
       },    
       {
         "description" : "Specifies the maximum number of hashes for the special reference sequences.",
@@ -172,63 +162,62 @@
         "short form argument" : "-sh",
         "command line argument" : "-srefn",
         "required" : true,
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       }
     ]
   },
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : [
+      "data" : [
       ]
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.dat"],
-          "argument" : "--mosaik-reference"
+          "id" : "reference",
+          "argument" : "--mosaik-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.dat"]
         },
         {
-          "ID" : "jump-database",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist_10"],
-          "argument" : "--jump-database"
+          "id" : "jump-database",
+          "argument" : "--jump-database",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist_10"]
         },
         {
-          "ID" : "read archive",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.mkb"],
-          "argument" : "--in"
+          "id" : "read archive",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.mkb"]
         },
         {
-          "ID" : "prefix",
-          "values" : ["moblist"],
-          "argument" : "--special-reference-prefix"
+          "id" : "prefix",
+          "argument" : "--special-reference-prefix",
+          "values" : ["moblist"]
         },
         {
-          "ID" : "special hashes",
-          "values" : [50],
-          "argument" : "--special-reference-hashes"
+          "id" : "special hashes",
+          "argument" : "--special-reference-hashes",
+          "values" : [50]
         },
         {
-          "ID" : "hash-size",
-          "values" : [10],
-          "argument" : "--hash-size"
+          "id" : "hash-size",
+          "argument" : "--hash-size",
+          "values" : [10]
         },
         {
-          "ID" : "single end neural net file.",
-          "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"],
-          "argument" : "--ann-single-end"
+          "id" : "single end neural net file.",
+          "argument" : "--ann-single-end",
+          "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"]
         },
         {
-          "ID" : "paired end neural net file.",
-          "values" : ["$(RESOURCES)/tutorial/current/pe.100.01.ann"],
-          "argument" : "--ann-paired-end"
+          "id" : "paired end neural net file.",
+          "argument" : "--ann-paired-end",
+          "values" : ["$(RESOURCES)/tutorial/current/pe.100.01.ann"]
         }
       ]
     }

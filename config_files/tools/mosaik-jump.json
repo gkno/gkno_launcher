@@ -1,13 +1,13 @@
 {
   "id" : "mosaik-jump",
+  "configuration type" : "tool",
   "description" : "Generate the jump database for a Mosaik reference",
   "categories" : ["FASTA-processing", "Mosaik", "Marthlab-software"],
   "tools" : ["mosaik"],
   "path" : "MOSAIK/bin",
   "executable" : "MosaikJump",
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {    
         "description" : "The input MOSAIK reference file.",
         "long form argument" : "--mosaik-reference",
@@ -15,11 +15,11 @@
         "command line argument" : "-ia",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".dat"]
+        "extensions" : ["dat"]
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {    
         "description" : "Output filename stub",
         "long form argument" : "--jump-database",
@@ -28,8 +28,8 @@
         "required" : true,
         "data type" : "string",
         "is filename stub" : true,
-        "extensions" : ["no extension"],
-        "filename extensions" : [
+        "include dot in stub extension" : false,
+        "stub extensions" : [
           "_keys.jmp",
           "_meta.jmp",
           "_positions.jmp"
@@ -50,21 +50,19 @@
       }
     ],
 
-    "options" : [
+    "Options" : [
       {    
         "description" : "Hash size [4 - 32]",
         "long form argument" : "--hash-size",
         "short form argument" : "-hs",
         "command line argument" : "-hs",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {    
         "description" : "Keeps the key database on disk",
         "long form argument" : "--keep-keys-on-disk",
         "short form argument" : "-k",
         "command line argument" : "-kd",
-        "extensions" : ["no extension"],
         "data type" : "flag"
       },
       {    
@@ -72,7 +70,6 @@
         "long form argument" : "--memory",
         "short form argument" : "-e",
         "command line argument" : "-mem",
-        "extensions" : ["no extension"],
         "data type" : "integer"
       },
       {    
@@ -80,7 +77,6 @@
         "long form argument" : "--iupac",
         "short form argument" : "-u",
         "command line argument" : "-iupac",
-        "extensions" : ["no extension"],
         "data type" : "flag"
       }
     ]
@@ -88,30 +84,30 @@
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : [
+      "data" : [
       ]
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.dat"],
-          "argument" : "--mosaik-reference"
+          "id" : "reference",
+          "argument" : "--mosaik-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.dat"]
         },
         {
-          "ID" : "hash size",
-          "values" : ["8"],
-          "argument" : "--hash-size"
+          "id" : "hash size",
+          "argument" : "--hash-size",
+          "values" : ["8"]
         },
         {
-          "ID" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
+          "id" : "output path",
+          "argument" : "--output-path",
+          "values" : ["./"]
         }
       ]
     }
