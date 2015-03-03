@@ -275,7 +275,7 @@ def main():
   graph.deleteFiles()
   
   # Set the absolute paths of all the files used in the pipeline.
-  requiredInputFiles = dc.setFilePaths(graph, command.gknoArguments, gknoConfiguration.options)
+  requiredInputFiles = dc.setFilePaths(graph, command.gknoArguments, gknoConfiguration)
 
   # Determine the execution structure of the pipeline.
   struct = es.executionStructure()
@@ -309,7 +309,6 @@ def main():
     # Get the number of parallel jobs to be requested.
     jobsArgument = gknoConfiguration.options['GKNO-JOBS'].longFormArgument
     numberJobs   = command.gknoArguments[jobsArgument][0] if jobsArgument in command.gknoArguments else 1
-    print('executing', makefileName, numberJobs)
 
     # Generate the execution command.
     execute = 'make -j ' + str(numberJobs) + ' --file ' + makefileName

@@ -182,7 +182,7 @@ class makefiles:
         else:
           data.commands[i].append(data.stdouts[i])
           data.commands[i].append('\t2>> $(STDERR)')
-          data.commands[i].append('\t@echo -e "completed successfully"')
+          data.commands[i].append('\t@echo -e "completed successfully."')
           data.commands[i].append('')
 
       # Store the command lines for the task.
@@ -707,7 +707,7 @@ class makefiles:
     print('### Standard output and error files.', file = filehandle)
     print('STDOUT=$(PWD)/', name, '.stdout', sep = '', file = filehandle)
     print('STDERR=$(PWD)/', name, '.stderr', sep = '', file = filehandle)
-    print('COMPLETE_OK=$(PWD)/', name, '.ok', sep = '', file = filehandle)
+    print('COMPLETE_OK=$(PWD)/', name.replace('.make','.ok'), sep = '', file = filehandle)
     print(file = filehandle)
 
     # Remove file on failed execution.
@@ -779,7 +779,7 @@ class makefiles:
 
     # List all the output files created by this makefile.
     print('### List all of the files that are required outputs of the pipeline.', file = filehandle)
-    print('all: ', end = '', file = filehandle)
+    print('all: $(COMPLETE_OK) ', end = '', file = filehandle)
 
     # Add all the output files to the makefile.
     for output in outputs: print(output, end = ' ', file = filehandle)
@@ -972,6 +972,7 @@ class makefiles:
     # makefile was successfully executed and delete the makefile.
     print('### Generate a file indicating successful execution of makefile', file = filehandle)
     print('$(COMPLETE_OK):', file = filehandle)
+    print('\t@rm -f $(MAKEFILE_ID).make', file = filehandle)
     print('\t@touch $(COMPLETE_OK)', file = filehandle)
 
   # Return the argument to be written to the command line (and consequently, that stored in the commands

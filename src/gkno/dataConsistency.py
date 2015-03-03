@@ -370,12 +370,20 @@ def purgeEmptyNodes(graph):
     if not graph.getGraphNodeAttribute(nodeID, 'values'): graph.graph.remove_node(nodeID)
 
 # Set the aboslute paths of all the files used in the pipeline.
-def setFilePaths(graph, gknoArguments, gknoOptions):
+def setFilePaths(graph, gknoArguments, gkno):
   inputFiles    = []
 
+  # Get the input and output paths as defined by the user.
+  definedInputPath  = gkno.getGknoArgument('GKNO-INPUT-PATH', gknoArguments)
+  definedOutputPath = gkno.getGknoArgument('GKNO-OUTPUT-PATH', gknoArguments)
+
   # Get the path of the input and the output directories.
-  inputPath  = gknoArguments[gknoOptions['GKNO-INPUT-PATH'].longFormArgument][0] if gknoOptions['GKNO-INPUT-PATH'].longFormArgument in gknoArguments else '$(PWD)'
-  outputPath = gknoArguments[gknoOptions['GKNO-OUTPUT-PATH'].longFormArgument][0] if gknoOptions['GKNO-OUTPUT-PATH'].longFormArgument in gknoArguments else '$(PWD)'
+  inputPath  = definedInputPath if definedInputPath else str('$(PWD)')
+  outputPath = definedOutputPath if definedOutputPath else str('$(PWD)')
+
+  # If the path is '.', set to $(PWD).
+  if inputPath == '.': inputPath = '$(PWD)'
+  if outputPath == '.': outputPath = '$(PWD)'
 
   # Ensure that the input and output paths end with /.
   if not inputPath.endswith('/'): inputPath += '/'
@@ -408,15 +416,21 @@ def setFilePaths(graph, gknoArguments, gknoOptions):
       #  modifiedValue = str(value + stubExtension) if '.' in stubExtension else str(value + '.' + stubExtension)
       #else: modifiedValue = value
 
-      # Check if the value already has a path. If not, add the input or output path. In addition
-      # store all of the input files. Since these are specifically defined as files that are not
-      # created by any task in the pipeline, these files need to exist in order for the pipeline
-      # to run.
+      # Check if the value already has a path. If not, add the input or output path. If the path
+      # was defined by the user on the command line, override any path that is already present
+      # with that supplied. In addition, store all of the input files. Since these are specifically
+      # defined as files that are not created by any task in the pipeline, these files need to exist
+      # in order for the pipeline to run.
       if isInput:
-        updatedValue = str(value) if '/' in value else str(inputPath + value)
+
+        # Override the path if necessary.
+        if definedInputPath: updatedValue = str(inputPath + value.split('/')[-1])
+        else: updatedValue = str(value) if '/' in value else str(inputPath + value)
         updatedValues.append(updatedValue)
         inputFiles.append(updatedValue)
-      else: updatedValues.append(str(value) if '/' in value else str(outputPath + value))
+      else:
+        if definedOutputPath: updatedValues.append(str(outputPath + value.split('/')[-1]))
+        else: updatedValues.append(str(value) if '/' in value else str(outputPath + value))
 
     # Replace the values stored in the node with the values including the absolute path.
     graph.setGraphNodeAttribute(nodeID, 'values', updatedValues)
