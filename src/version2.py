@@ -97,8 +97,8 @@ def main():
       # Check that all of the tools were successfully built. If not, post a warning about which tools cannot
       # be used.
       if admin.allBuilt: exit(0)
-      else: adminErrors.adminErrors.failedToolBuilds(admin.builtTools)
-    else: adminErrors.adminErrors.terminate()
+      else: adminErrors.adminErrors().failedToolBuilds(admin.builtTools)
+    else: adminErrors.adminErrors().errors.terminate(adminErrors.adminErrors().errorCode)
 
   # If the pipeline name has not been supplied, general help must be required.
   if not pipeline and mode != 'web': gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)
