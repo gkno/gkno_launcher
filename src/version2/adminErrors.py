@@ -15,7 +15,7 @@ class adminErrors:
   def __init__(self):
 
     # Get general error writing and termination methods.
-    self.errors = errors()
+    self.errors = errors.errors()
 
     # The error messages are stored in the following list.
     self.text = []
