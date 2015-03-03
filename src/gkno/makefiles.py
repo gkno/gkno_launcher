@@ -256,7 +256,8 @@ class makefiles:
       isStream = graph.getArgumentAttribute(source, target, 'isStream')
 
       # Determine if this is a stub.
-      isStub = graph.getArgumentAttribute(source, target, 'isStub')
+      isStub        = graph.getArgumentAttribute(source, target, 'isStub')
+      stubExtension = graph.getArgumentAttribute(source, target, 'stubExtension')
 
       # Convert the values into the form required on the command line.
       if isStream: lineValues = [self.getStreamValue(graph, source, target, value, isInput, isStub) for value in values]
