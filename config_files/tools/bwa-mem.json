@@ -1,5 +1,6 @@
 {
   "id" : "bwa-mem",
+  "configuration type" : "tool",
   "description" : "Pairwise alignment of next-generation sequencing reads against a reference genome.",
   "categories" : ["Aligners", "BWA"],
   "tools" : ["bwa"],
@@ -210,7 +211,8 @@
         "long form argument" : "--read-group-header",
         "short form argument" : "-R",
         "command line argument" : "-R",
-        "data type" : "string"
+        "data type" : "string",
+        "include value in quotations" : true
       },
       {
         "description" : "Verbose level: 1=error, 2=warning, 3=message, 4+=debugging [3].",

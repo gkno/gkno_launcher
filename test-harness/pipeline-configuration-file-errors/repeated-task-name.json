@@ -1,27 +1,26 @@
 {
   "id" : "coverage",
-  "configuration type" : "pipeline",
   "description" : "Calculate the genome coverage across reference sequences (usually chromosomes), generating R-plots.",
   "categories" : ["Visualisation"],
 
   "pipeline tasks" : [
     {
       "task" : "calculate-coverage",
-      "tool" : "genome-coverage"
+      "tool" : "genome-coverage",
+      "include in reduced plot" : true
     },
     {
       "task" : "convert-to-txt",
-      "tool" : "convert-bedtools-coverage",
-      "omit from reduced plot" : true
+      "tool" : "convert-bedtools-coverage"
+    },
+    {
+      "task" : "plot-absolute",
+      "tool" : "r-plot",
+      "include in reduced plot" : true
     },
     {
       "task" : "plot-absolute",
       "tool" : "r-plot"
-    },
-    {
-      "task" : "plot-proportional",
-      "tool" : "r-plot",
-      "omit from reduced plot" : true
     }
   ],
 
@@ -367,11 +366,6 @@
       "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
       "data" : [
-        {
-          "id" : "bam",
-          "node" : "input",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
-        }
       ]
     }
   ]

@@ -412,9 +412,8 @@ def setFilePaths(graph, gknoArguments, gkno):
     for value in graph.getGraphNodeAttribute(nodeID, 'values'):
 
       # Update the value to include the extension, if this is a stub.
-      #if isStub:
-      #  modifiedValue = str(value + stubExtension) if '.' in stubExtension else str(value + '.' + stubExtension)
-      #else: modifiedValue = value
+      if isStub: modifiedValue = str(value + stubExtension) if '.' in stubExtension else str(value + '.' + stubExtension)
+      else: modifiedValue = value
 
       # Check if the value already has a path. If not, add the input or output path. If the path
       # was defined by the user on the command line, override any path that is already present
@@ -424,13 +423,13 @@ def setFilePaths(graph, gknoArguments, gkno):
       if isInput:
 
         # Override the path if necessary.
-        if definedInputPath: updatedValue = str(inputPath + value.split('/')[-1])
-        else: updatedValue = str(value) if '/' in value else str(inputPath + value)
+        if definedInputPath: updatedValue = str(inputPath + modifiedValue.split('/')[-1])
+        else: updatedValue = str(modifiedValue) if '/' in modifiedValue else str(inputPath + modifiedValue)
         updatedValues.append(updatedValue)
         inputFiles.append(updatedValue)
       else:
-        if definedOutputPath: updatedValues.append(str(outputPath + value.split('/')[-1]))
-        else: updatedValues.append(str(value) if '/' in value else str(outputPath + value))
+        if definedOutputPath: updatedValues.append(str(outputPath + modifiedValue.split('/')[-1]))
+        else: updatedValues.append(str(modifiedValue) if '/' in modifiedValue else str(outputPath + modifiedValue))
 
     # Replace the values stored in the node with the values including the absolute path.
     graph.setGraphNodeAttribute(nodeID, 'values', updatedValues)

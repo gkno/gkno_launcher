@@ -1,5 +1,6 @@
 {
   "id" : "samtools-sort",
+  "configuration type" : "tool", 
   "description" : "Sort a BAM file.",
   "categories" : ["BAM-processing", "Samtools"],
   "tools" : ["samtools"],

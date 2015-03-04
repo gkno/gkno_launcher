@@ -108,7 +108,9 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeID, base
 
   # Now loop over each of the values and modify them accoriding to the provided instructions.
   for counter, value in enumerate(baseValues):
-    updatedValue = value
+
+    # If the file being used to construct the output filename already has a path, strip this off.
+    updatedValue = value.rsplit('/')[-1]
 
     # Determine the extension on the input, the create a working version of the new name with the
     # extension removed.

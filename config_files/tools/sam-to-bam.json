@@ -1,5 +1,6 @@
 {
   "id" : "sam-to-bam",
+  "configuration type" : "tool",
   "description" : "Convert a SAM to a BAM file.",
   "categories" : ["BAM-processing", "Samtools"],
   "tools" : ["samtools"],

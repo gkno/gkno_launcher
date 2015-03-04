@@ -118,7 +118,7 @@ class commandLine:
     # Check if help categories were requested.
     category = gkno.getGknoArgument('GKNO-CATEGORIES', self.arguments)
     if category:
-      self.category = category[0]
+      self.category = None if category == True else category
       return 'categories'
 
     # Check if a list of all pipeline was requested.

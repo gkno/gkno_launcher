@@ -106,6 +106,10 @@ class makefiles:
       # Check if the tool arguments need to be included in a defined order.
       argumentOrder = toolData.argumentOrder
 
+      # Determine whether the input or the output from this task are streams.
+      isInputStream  = graph.getGraphNodeAttribute(task, 'isInputStream')
+      isOutputStream = graph.getGraphNodeAttribute(task, 'isOutputStream')
+
       # Loop over all of the nodes and get the arguments that are going to be used and the
       # node IDs to which they connect. This will then be used to allow the arguments to 
       # be parsed in the order specified.
@@ -146,7 +150,13 @@ class makefiles:
       if data.path == 'none': command += str(data.executable)
       else: command += str('$(' + data.toolID + ')/' + data.executable)
       if data.modifier: command += str(' ' + data.modifier)
-      for i in range(0, data.noCommandLines): data.commands.append(['\t@' + command + ' \\'])
+      for i in range(0, data.noCommandLines):
+
+        # Only include the '@' symbol if the input is not a stream. This symbol tells make not to output
+        # the command to the screen, but only needs to occur at the beginning of the rule. If the input
+        # is a stream, this rule had the '@' added when the first task in the pipe was written.
+        if not isInputStream: data.commands.append(['\t@' + command + ' \\'])
+        else: data.commands.append(['\t' + command + ' \\'])
   
       # Initialise the lists of dependencies and outputs to have the same length as the commands.
       for i in range(0, data.noCommandLines):
@@ -178,8 +188,8 @@ class makefiles:
       # Finish the command lines with calls to write to stdout and stdin and indicating that the task is complete.
       # These values are modified based on whether the task is outputting to a stream or not.
       for i in range(0, data.noCommandLines):
-        if graph.getGraphNodeAttribute(task, 'isOutputStream'):
-          data.commands[i].append('\t2>> $(STDERR)')
+        if isOutputStream:
+          data.commands[i].append('\t2>> $(STDERR) \\')
           data.commands[i].append('\t| \\')
 
         else:
@@ -406,7 +416,7 @@ class makefiles:
     if len(values) == 1:
 
       # Build the tool specific command line.
-      line = self.buildLine(argument, data.delimiter, lineValues[0]) if lineValues[0] else None
+      line = self.buildLine(argument, data.delimiter, lineValues[0])
       for i in range(0, data.noCommandLines):
 
         # If this task outputs to stdout, put the values into a structure to return.
@@ -944,8 +954,10 @@ class makefiles:
 
     # If any files are to be deleted after this task, delete them.
     if self.executionInfo[task].intermediates[i]:
-      print('\t### Delete intermediate files that are no longer required.', file = filehandle)
+      print('### Delete intermediate files that are no longer required.', file = filehandle)
+      print('\t@echo -e "Deleting temporary files...\\c"', file = filehandle)
       for intermediate in self.executionInfo[task].intermediates[i]: print('\t@rm -f ', intermediate, sep = '', file = filehandle)
+      print('\t@echo -e "complete."', file = filehandle)
       print(file = filehandle)
 
   # Write an additional rule in the makefile to check for outputs from a task. Only a single
@@ -1020,6 +1032,7 @@ class makefiles:
     inputInstructions  = graph.getArgumentAttribute(nodeID, task, 'inputStreamInstructions')
     outputInstructions = graph.getArgumentAttribute(task, nodeID, 'outputStreamInstructions')
 
+
     # Determine streaming instructions, beginning with if this is an input accepting a stream.
     if graph.getGraphNodeAttribute(task, 'isInputStream') and inputInstructions:
 
@@ -1082,6 +1095,9 @@ class makefiles:
     # If the argument is for an input file.
     modifyValue = graph.getArgumentAttribute(source, target, 'modifyValue')
 
+    # Check if the value should be included in quotation marks.
+    inQuotations = graph.getArgumentAttribute(source, target, 'includeInQuotations')
+
     # If this is a stub, add the extension to the value and return.
     if isStub:
       if not graph.getArgumentAttribute(source, target, 'primaryStubNode'): return None
@@ -1089,10 +1105,12 @@ class makefiles:
         try: updatedValue = value.rstrip(stubExtension)
         except: updatedValue = value
         updatedValue = updatedValue.rstrip('.') if updatedValue.endswith('.') else updatedValue
-        return updatedValue
+        if inQuotations: return str('"' + updatedValue + '"')
+        else: return updatedValue
 
     # If this is not a stub, return the argument to be used on the command line.
     if modifyValue == 'omit': return None
+    elif inQuotations: return str('"' + value + '"')
     else: return value
 
   # Build a line of the command line.

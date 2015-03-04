@@ -99,6 +99,19 @@
       "id" : "test",
       "description" : "Test parameter set.",
       "data" : [
+        {
+          "id" : "input",
+          "node" : "bam",
+          "values" : [
+            "$(RESOURCES)/tutorial/current/mutated_genome.bam",
+            "$(RESOURCES)/tutorial/current/mutated_genome_set2.bam"
+          ]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        }
       ]
     }
   ]

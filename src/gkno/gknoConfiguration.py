@@ -94,14 +94,16 @@ class gknoConfiguration:
 
        # TODO Check the data type is consistent with the configuration file description.
        # TODO Check that therei s only a single value. No gkno options allow multiple values.
-       return arguments[longFormArgument][0]
+       if arguments[longFormArgument][0] == None: return True
+       else: return arguments[longFormArgument][0]
 
     # Repeat for the short form of the argument.
     if shortFormArgument in arguments:
 
        # Check the data type is consistent with the configuration file description.
        #TODO
-       return arguments[shortFormArgument][0]
+       if arguments[shortFormArgument][0] == None: return True
+       else: return arguments[shortFormArgument][0]
 
     # If the argument was not set, return False.
     return False

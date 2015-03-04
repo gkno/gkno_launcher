@@ -191,9 +191,24 @@
       "description" : "Test parameter set for the test harness.",
       "data" : [
         {
+          "id" : "fastq",
+          "node" : "fastq",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
+        },
+        {
+          "id" : "fastq2",
+          "node" : "fastq2",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_2.fq"]
+        },
+        {
           "id" : "reference-prefix",
           "node" : "reference",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment"]
+        },
+        {
+          "id" : "reag-group",
+          "node" : "read-group",
+          "values" : ["@RG\tID:test\tSM:test"]
         }
       ]
     },
