@@ -118,6 +118,10 @@ class GknoTool(object):
   # Build-system helper methods
   # --------------------------------------------
 
+  # Check out the requested commit or branch from the git repository.
+  def checkoutGitVersion(self, version):
+    return self.runCommand("git checkout " + version)
+
   def ant(self, optionString=""):
     return self.runCommand("ant " + optionString)
 
@@ -177,6 +181,21 @@ class BamUtil(GknoTool):
   # $ make -j N   
   def doUpdate(self):
     return self.make(cpus = 1)
+
+# bedtools
+class BedTools(GknoTool):
+  def __init__(self):
+    super(BedTools, self).__init__()
+    self.name       = "bedtools"
+    self.installDir = "bedtools"
+
+  # Initial tool build.
+  def doBuild(self): return self.make()
+
+  # Update the tool.
+  def doUpdate(self):
+    if not self.makeClean(): return False
+    return self.make()
 
 # NCBI BLAST
 class Blast(GknoTool):
@@ -303,6 +322,24 @@ class Glia(GknoTool):
   def doUpdate(self):
     if not self.makeClean(): 
       return False 
+    return self.make()
+
+# Htslib  
+class Htslib(GknoTool):
+  def __init__(self):
+    super(Htslib, self).__init__()
+    self.name       = "htslib"
+    self.installDir = "htslib"
+
+  # $ make clean
+  # $ make -j N
+  def doBuild(self):
+    if not self.makeClean():
+      return False
+    return self.make()
+
+  # $ make -j N
+  def doUpdate(self):
     return self.make()
 
 # Jellyfish
@@ -545,21 +582,23 @@ class Rufus(GknoTool):
     return self.make()
 
 # samtools
-class SamTools(GknoTool):
+class Samtools(GknoTool):
   def __init__(self):
-    super(SamTools, self).__init__()
+    super(Samtools, self).__init__()
     self.name       = "samtools"
     self.installDir = "samtools"
  
   # $ make clean
   # $ make -j N
   def doBuild(self):
-    if not self.makeClean():
-      return False
+    if not self.makeClean(): return False
+    if not self.checkoutGitVersion('48b4b70a480f9e79f623bea3ca4731ae7e511175'): return False
     return self.make()
 
   # $ make -j N
   def doUpdate(self):
+    if not self.makeClean(): return False
+    if not self.checkoutGitVersion('48b4b70a480f9e79f623bea3ca4731ae7e511175'): return False
     return self.make()
 
 # Scissors,
@@ -747,10 +786,12 @@ class Wham(GknoTool):
 
 List = [ 
         BamTools(),
+        Bedtools(),
         Blast(),
         Bwa(),
         Freebayes(),
         Glia(),
+        Htslib(), Samtools(), Pindel(), # <-- Keep this order
         Jellyfish(),
         LibStatGen(), BamUtil(), FastQValidator(), Qplot(), VerifyBamID(), # <-- Keep this order
         Mosaik(),
@@ -760,7 +801,6 @@ List = [
         Picard(),
         Premo(),
         Rufus(),
-        SamTools(), Pindel(), # <-- Keep this order
         Scissors(),
         Seqan(),       
         SnpEff(),
