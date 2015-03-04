@@ -183,9 +183,9 @@ class BamUtil(GknoTool):
     return self.make(cpus = 1)
 
 # bedtools
-class BedTools(GknoTool):
+class BetTools(GknoTool):
   def __init__(self):
-    super(BedTools, self).__init__()
+    super(Bedtools, self).__init__()
     self.name       = "bedtools"
     self.installDir = "bedtools"
 
