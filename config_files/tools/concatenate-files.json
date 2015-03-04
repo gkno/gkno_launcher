@@ -4,7 +4,7 @@
   "description" : "Concatenate multiple files.",
   "categories" : ["General-file-processing", "Scripts"],
   "tools" : [],
-  "path" : "no path",
+  "path" : "none",
   "executable" : "cat",
   "arguments" : {
     "Inputs" : [

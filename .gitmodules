@@ -94,3 +94,9 @@
 [submodule "tools/wham"]
 	path = tools/wham
 	url = https://github.com/gkno/wham.git
+[submodule "tools/bedtools"]
+	path = tools/bedtools
+	url = https://github.com/gkno/bedtools2.git
+[submodule "tools/htslib"]
+	path = tools/htslib
+	url = https://github.com/gkno/htslib.git
