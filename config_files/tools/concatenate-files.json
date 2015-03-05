@@ -35,8 +35,8 @@
         "short form argument" : "-o",
         "command line argument" : "none",
         "required" : true,
-        "data type" : "string",
-        "output to stdout" : true
+        "data type" : "string"
+        "modify argument" : "stdout"
       }
     ]
   },

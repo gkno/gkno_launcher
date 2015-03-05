@@ -14,6 +14,11 @@
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "--in",
+        "modify argument" : "omit",
+        "if input is stream" : {
+          "argument" : "omit",
+          "value" : "omit"
+        },
         "required" : true,
         "data type" : "string",
         "extensions" : ["vcf.gz"]
@@ -26,6 +31,8 @@
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "--out",
+        "modify argument" : "omit",
+        "modify value" : "omit",
         "required" : true,
         "data type" : "string",
         "extensions" : ["tbi"],

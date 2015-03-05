@@ -42,7 +42,7 @@
           "use argument" : "--in",
           "modify extension" : "replace"
         },
-        "output to stdout" : true
+        "modify argument" : "stdout"
       }
     ],
   

@@ -227,6 +227,11 @@ def main():
   # Mark any tasks that have greedy arguments as greedy.
   graph.markGreedyTasks(superpipeline)
 
+  # Determine whether or not to output a visual representation of the pipeline graph.
+  plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
+  if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
+  if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
+
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
   # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc. In addition check
   # the arguments that have been supplied to each task. In particular, check the number of values given to all
@@ -264,18 +269,20 @@ def main():
   # the streaming nodes.
   graph.checkStreams(superpipeline)
 
-  # TODO SHOULD THIS APPEAR EARLIER?
-  # Determine whether or not to output a visual representation of the pipeline graph.
-  plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
-  if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
-  if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
-
   # For all files marked as intermediate, determine the latest task in the pipeline that uses them. Ensure that
   # the data structures inside 'struct' only associate the files to delete with this latest task.
   graph.deleteFiles()
   
   # Set the absolute paths of all the files used in the pipeline.
   requiredInputFiles = dc.setFilePaths(graph, command.gknoArguments, gknoConfiguration)
+#  for task in graph.workflow:
+#    print('task:', task)
+#    print('\tinputs:')
+#    for nodeID in graph.graph.predecessors(task):
+#      print('\t\t', graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+#    print('\toutputs:')
+#    for nodeID in graph.graph.successors(task):
+#      print('\t\t', graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
 
   # Determine the execution structure of the pipeline.
   struct = es.executionStructure()

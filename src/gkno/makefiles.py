@@ -350,19 +350,21 @@ class makefiles:
       if line:
         for i in range(0, data.noCommandLines): data.commands[i].append(line)
 
-    # If there is more than one values, ensure that the number of values is consistent with the
+    # If there is more than one value, ensure that the number of values is consistent with the
     # pipeline execution structure.
     else:
 
+      # Check if this option allows multiple values.
+      allowMultipleValues = graph.getArgumentAttribute(nodeID, task, 'allowMultipleValues')
+
       # Ensure that there as many values as there are divisions.
       #TODO ERROR
-      if len(values) != data.noDivisions: print('ERROR - makefiles.addOption - 1:', nodeID, values, data.noDivisions); exit(1)
+      if len(values) != data.noDivisions and not allowMultipleValues: print('ERROR - makefiles.addOption - 1:', nodeID, values, data.noDivisions); exit(1)
 
-      # Loop over the subphases and divisions and update the command lines.
-      i = 0
-      for j in range(0, data.noSubphases):
+      # If the option can take multiple values, add all the values to each makefile in each subphase and division.
+      if allowMultipleValues:
         for value in values:
-
+  
           # Again, check if this is a flag.
           if dataType == 'flag':
             lineValue = ''
@@ -371,8 +373,27 @@ class makefiles:
             lineValue       = self.getValue(graph, nodeID, task, value, isInput = True, isStub = False, stubExtension = None)
             updatedArgument = argument
           line = self.buildLine(updatedArgument, data.delimiter, lineValue)
-          if line: data.commands[i].append(line)
-          i += 1
+
+          # Add this line to all the makefiles.
+          if line:
+            for i in range(0, data.noCommandLines): data.commands[i].append(line)
+
+      # Loop over the subphases and divisions and update the command lines.
+      else:
+        i = 0
+        for j in range(0, data.noSubphases):
+          for value in values:
+  
+            # Again, check if this is a flag.
+            if dataType == 'flag':
+              lineValue = ''
+              if value != 'set': updatedArgument = ''
+            else:
+              lineValue       = self.getValue(graph, nodeID, task, value, isInput = True, isStub = False, stubExtension = None)
+              updatedArgument = argument
+            line = self.buildLine(updatedArgument, data.delimiter, lineValue)
+            if line: data.commands[i].append(line)
+            i += 1
 
   # Add input or output files to the command line (this method is only called for nodes that are not multinodes).
   def addFiles(self, graph, task, data, nodeID, isInput):
@@ -397,9 +418,6 @@ class makefiles:
     # Check if this node is associated with intermediate files.
     isIntermediate = True if graph.getGraphNodeAttribute(nodeID, 'deleteAfterTask') == task else False
 
-    # Determine if the task outputs to stdout.
-    isStdout = graph.getArgumentAttribute(task, nodeID, 'isStdout') if not isInput else False
-
     # Determine if this argument is for a stream.
     isStream = graph.getArgumentAttribute(source, target, 'isStream')
 
@@ -413,15 +431,16 @@ class makefiles:
     else: lineValues = [self.getValue(graph, source, target, value, isInput, isStub, stubExtension) for value in values]
 
     # If there is only a single file, attach to all of the command lines.
-    if len(values) == 1:
+    if len(lineValues) == 1:
 
       # Build the tool specific command line.
       line = self.buildLine(argument, data.delimiter, lineValues[0])
       for i in range(0, data.noCommandLines):
 
         # If this task outputs to stdout, put the values into a structure to return.
-        if isStdout: data.stdouts[i] = str('\t>> ' + lineValues[0] + ' \\')
-        elif line: data.commands[i].append(line)
+        if line:
+          if line.startswith('\t>>'): data.stdouts[i] = str(line)
+          else: data.commands[i].append(line)
 
         # Add the files to the dependencies or outputs for the command line, unless this is a stream.
         if not isStream:
@@ -486,8 +505,9 @@ class makefiles:
         line = self.buildLine(argument, data.delimiter, lineValue)
 
         # If the task outputs to stdout, store the values to return.
-        if isStdout: data.stdouts[i] = str('\t>> ' + lineValue + ' \\')
-        elif line: data.commands[i].append(line)
+        if line:
+          if line.startswith('\t>>'): data.stdouts[i] = str(line)
+          else: data.commands[i].append(line)
 
         # Add the files to the dependencies or outputs for the command line (if not streamed).
         if not isStream:
@@ -508,8 +528,9 @@ class makefiles:
         line = self.buildLine(argument, data.delimiter, lineValue)
 
         # If the task outputs to stdout, store the values to return.
-        if isStdout: data.stdouts[i] = str('\t>> ' + lineValue + ' \\')
-        elif line: data.commands[i].append(line)
+        if line:
+          if line.startswith('\t>>'):  data.stdouts[i] = str(line)
+          else: data.commands[i].append(line)
 
         # Add the files to the dependencies or outputs for the command line (if not being streamed).
         if not isStream:
@@ -1032,7 +1053,6 @@ class makefiles:
     inputInstructions  = graph.getArgumentAttribute(nodeID, task, 'inputStreamInstructions')
     outputInstructions = graph.getArgumentAttribute(task, nodeID, 'outputStreamInstructions')
 
-
     # Determine streaming instructions, beginning with if this is an input accepting a stream.
     if graph.getGraphNodeAttribute(task, 'isInputStream') and inputInstructions:
 
@@ -1069,6 +1089,9 @@ class makefiles:
   
       # Return the argument to be used on the command line.
       if modifyArgument == 'omit': return None
+
+      # If the output should be redirected to stdout, there should be no command, just the redirection.
+      elif modifyArgument == 'stdout': return '>>'
       else: return commandLineArgument
 
   #######################################################
@@ -1110,7 +1133,11 @@ class makefiles:
 
     # If this is not a stub, return the argument to be used on the command line.
     if modifyValue == 'omit': return None
+
+    # Include the value in quotations, if requested.
     elif inQuotations: return str('"' + value + '"')
+
+    # Otherwise, just return the original value.
     else: return value
 
   # Build a line of the command line.

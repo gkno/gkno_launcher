@@ -29,10 +29,6 @@ class argumentAttributes:
     self.modifyArgument = None
     self.modifyValue    = None
 
-    # Some tools output files to stdout. If this is the case, record that fact so that
-    # the command line can be built accordingly.
-    self.isStdout = False
-
     # Mark the edge as a stream if necessary.
     self.isStream = False
 
@@ -300,7 +296,6 @@ class toolConfiguration:
     allowedAttributes['long form argument']            = (str, True, True, 'longFormArgument')
     allowedAttributes['modify argument']               = (str, False, True, 'modifyArgument')
     allowedAttributes['modify value']                  = (str, False, True, 'modifyValue')
-    allowedAttributes['output to stdout']              = (bool, False, True, 'isStdout')
     allowedAttributes['required']                      = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']           = (str, False, True, 'shortFormArgument')
     allowedAttributes['stub extensions']               = (list, False, True, 'stubExtensions')
@@ -404,7 +399,8 @@ class toolConfiguration:
   
         # Define the valid values.
         validValues = [
-                        'omit'
+                        'omit',
+                        'stdout'
                       ]
   
         # Check that the supplied value is valid.

@@ -1,0 +1,325 @@
+{
+  "id" : "gatk-gvcf",
+  "configuration type" : "pipeline",
+  "description" : "Prepare the BAM file for the haplotype caller by realigning indels and recalibrating the base qualities and generate gvcf files for each sample.",
+  "categories" : ["BAM-processing", "Variant-discovery"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "create-target-intervals",
+      "tool" : "gatk-realigner-target-creator"
+    },
+    {
+      "task" : "realign-indels",
+      "tool" : "gatk-indel-realigner"
+    },
+    {
+      "task" : "index-realigned",
+      "tool" : "bamtools-index",
+      "omit from reduced plot" : true
+    },
+    {
+      "task": "recalibrate",
+      "tool" : "gatk-recalibrate-bq"
+    },
+    {
+      "task" : "index-recalibrated",
+      "tool" : "bamtools-index",
+      "omit from reduced plot" : true
+    },
+    {
+      "task" : "print-reads",
+      "tool" : "gatk-print-reads"
+    },
+    {
+      "task" : "single-sample-call",
+      "tool" : "gatk-haplotype-caller"
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input bam file(s).",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "bam"
+      },
+      {
+        "description" : "The FASTA reference.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "node id" : "reference"
+      },
+      {
+        "description" : "A VCF file containing known variant alleles.",
+        "long form argument" : "--known-sites",
+        "short form argument" : "-k",
+        "node id" : "known"
+      },
+      {
+        "description" : "The dbSNP database VCF file.",
+        "long form argument" : "--dbsnp",
+        "short form argument" : "-d",
+        "node id" : "dbsnp"
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The genomic regions to analyze.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "node id" : "region"
+      },
+      {
+        "description" : "The number of threads to use.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
+        "node id" : "threads"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "dbsnp",
+      "task" : "recalibrate",
+      "task argument" : "--known-sites"
+    }
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "bam",
+      "arguments sharing node" : [
+        {
+          "task" : "create-target-intervals",
+          "task argument" : "--in"
+        },
+        {
+          "task" : "realign-indels",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "reference",
+      "arguments sharing node" : [
+        {
+          "task" : "create-target-intervals",
+          "task argument" : "--fasta-reference"
+        },
+        {
+          "task" : "realign-indels",
+          "task argument" : "--fasta-reference"
+        },
+        {
+          "task" : "recalibrate",
+          "task argument" : "--fasta-reference"
+        },
+        {
+          "task" : "print-reads",
+          "task argument" : "--fasta-reference"
+        },
+        {
+          "task" : "single-sample-call",
+          "task argument" : "--fasta-reference"
+        }
+      ]
+    },
+    {
+      "id" : "threads",
+      "arguments sharing node" : [
+        {
+          "task" : "create-target-intervals",
+          "task argument" : "--threads"
+        },
+        {
+          "task" : "recalibrate",
+          "task argument" : "--threads"
+        },
+        {
+          "task" : "print-reads",
+          "task argument" : "--threads"
+        },
+        {
+          "task" : "single-sample-call",
+          "task argument" : "--threads"
+        }
+      ]
+    },
+    {
+      "id" : "known",
+      "arguments sharing node" : [
+        {
+          "task" : "create-target-intervals",
+          "task argument" : "--known-sites"
+        },
+        {
+          "task" : "realign-indels",
+          "task argument" : "--known-sites"
+        },
+        {
+          "task" : "recalibrate",
+          "task argument" : "--known-sites"
+        }
+      ]
+    },
+    {
+      "id" : "region",
+      "arguments sharing node" : [
+        {
+          "task" : "create-target-intervals",
+          "task argument" : "--region"
+        },
+        {
+          "task" : "single-sample-call",
+          "task argument" : "--region"
+        }
+      ]
+    },
+    {
+      "id" : "intervals",
+      "arguments sharing node" : [
+        {
+          "task" : "create-target-intervals",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "realign-indels",
+          "task argument" : "--intervals"
+        }
+      ]
+    },
+    {
+      "id" : "indel",
+      "arguments sharing node" : [
+        {
+          "task" : "realign-indels",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "index-realigned",
+          "task argument" : "--in"
+        },
+        {
+          "task" : "recalibrate",
+          "task argument" : "--in"
+        },
+        {
+          "task" : "print-reads",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "indel-index",
+      "arguments sharing node" : [
+        {
+          "task" : "index-realigned",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "recalibrate",
+          "task argument" : "--in-index"
+        },
+        {
+          "task" : "print-reads",
+          "task argument" : "--in-index"
+        }
+      ]
+    },
+    {
+      "id" : "recalibration-output",
+      "arguments sharing node" : [
+        {
+          "task" : "recalibrate",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "print-reads",
+          "task argument" : "--recalibration-table"
+        }
+      ]
+    },
+    {
+      "id" : "index-recalibrated-bam",
+      "arguments sharing node" : [
+        {
+          "task" : "print-reads",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "index-recalibrated",
+          "task argument" : "--in"
+        },
+        {
+          "task" : "single-sample-call",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "single-index",
+      "arguments sharing node" : [
+        {
+          "task" : "index-recalibrated",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "single-sample-call",
+          "task argument" : "--in-index"
+        }
+      ]
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "bam",
+          "node" : "bam",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_set2.bam"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "id" : "known",
+          "node" : "known",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
+        },
+        {
+          "id" : "dbsnp",
+          "node" : "dbsnp",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Human instance uses resources for the human genome.",
+      "data" : [
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        }
+      ]
+    }
+  ]
+}

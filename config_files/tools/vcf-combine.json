@@ -27,7 +27,7 @@
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "none",
-        "output to stdout" : true,
+        "modify argument" : "stdout",
         "required" : true,
         "data type" : "string",
         "extensions" : ["vcf"],
