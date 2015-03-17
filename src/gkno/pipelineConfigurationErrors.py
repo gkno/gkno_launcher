@@ -124,6 +124,25 @@ class pipelineErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  # If a task argument is listed as greedy, but the argument is not a valid argument for the tool that the task uses.
+  def invalidGreedyArgument(self, name, task, tool, argument):
+    self.text.append('Invalid greedy argument.')
+    self.text.append('The configuration file for the \'' + name + '\' pipeline contains information for the task \'' + task + '\', which ' + \
+    'uses the tool \'' + tool + '\'. The configuration file identifies the argument \'' + argument + '\' as being greedy, but this argument ' + \
+    'is not a valid argument for the tool. Please ensure that the correct argument has been supplied as a greedy argument.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # If a task argument is listed as greedy, but the argument is not identified as accepting multiple values.
+  def greedySingleValueArgument(self, name, task, tool, argument):
+    self.text.append('Invalid greedy argument.')
+    self.text.append('The configuration file for the \'' + name + '\' pipeline contains information for the task \'' + task + '\', which ' + \
+    'uses the tool \'' + tool + '\'. The configuration file identifies the argument \'' + argument + '\' as being greedy, but this argument ' + \
+    'is not listed as accepting multiple values in the tool configuration file. Please ensure that the correct argument has been supplied as ' + \
+    'a greedy argument.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   #####################################
   ## Errors in the arguments section ##
   #####################################

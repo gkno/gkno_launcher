@@ -308,7 +308,9 @@ class makefiles:
       # Loop over the values and update the command lines for the task.
       for value, lineValue in zip(values, lineValues):
         line = self.buildLine(argument, data.delimiter, lineValue)
-        if line: data.commands[i].append(line)
+        if line:
+          if line.startswith('\t>>'): data.stdouts[i] = str(line)
+          else: data.commands[i].append(line)
 
         # Add the files to the dependencies or outputs for the command line (do not add the values to the list of
         # inputs and dependencies if the files are being streamed).

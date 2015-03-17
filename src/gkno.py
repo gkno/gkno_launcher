@@ -13,6 +13,7 @@ import gkno.arguments as ag
 import gkno.commandLine as cl
 import gkno.constructFilenames as construct
 import gkno.dataConsistency as dc
+import gkno.debug as debug
 import gkno.executionStructure as es
 import gkno.fileHandling as fh
 import gkno.gknoConfiguration as gc
@@ -232,6 +233,11 @@ def main():
   if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
   if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
 
+  # TODO
+  graph.constructFiles(superpipeline)
+  debug.debug().allTasks(graph)
+  exit(0)
+
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
   # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc. In addition check
   # the arguments that have been supplied to each task. In particular, check the number of values given to all
@@ -275,14 +281,6 @@ def main():
   
   # Set the absolute paths of all the files used in the pipeline.
   requiredInputFiles = dc.setFilePaths(graph, command.gknoArguments, gknoConfiguration)
-#  for task in graph.workflow:
-#    print('task:', task)
-#    print('\tinputs:')
-#    for nodeID in graph.graph.predecessors(task):
-#      print('\t\t', graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
-#    print('\toutputs:')
-#    for nodeID in graph.graph.successors(task):
-#      print('\t\t', graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
 
   # Determine the execution structure of the pipeline.
   struct = es.executionStructure()

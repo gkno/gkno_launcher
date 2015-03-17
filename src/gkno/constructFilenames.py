@@ -132,54 +132,32 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeID, base
   # Return the values.
   return updatedValues
 
-# Construct the filenames from a set of base values, only appending information from the tool option
-# argument that has been repeated.
-def constructDivisions(graph, superpipeline, instructions, task, nodeID, baseValues):
+# Given the base value from which to construct filenames, add
+def addDivisionToValue(graph, superpipeline, task, nodeID, instructions, baseValues, argument, optionValue):
 
-  # Define a list of updated values.
-  updatedValues = []
-
-  # Get the input file from which the filenames should be built. This will be used for determining
-  # the extensions on the files.
-  try: inputArgument = instructions['use argument']
-  except: print('constructFilenames.constructDivisions - no \'use argument\' field'); exit(1)
-  
-  # Get the configuration data for this tool and get the long form version of the argument that has
-  # been given multiple values.
-  tool                  = superpipeline.tasks[task]
-  toolData              = superpipeline.getToolData(tool)
-  multinodeID           = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'multivalueOptions')[0]
-  longFormArgument      = gr.pipelineGraph.CM_getArgumentAttribute(graph, multinodeID, task, 'longFormArgument')
-  longFormInputArgument = toolData.getLongFormArgument(inputArgument)
-
-  # Get the values given to the option argument that will be used in the filenames.
-  optionValues = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, multinodeID, 'values')
+  # Get tool information for this task.
+  tool     = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'tool')
+  toolData = superpipeline.getToolData(tool)
 
   # Determine the allowed extensions for the input argument as well as whether this is a stub.
-  extensions = toolData.getArgumentAttribute(longFormInputArgument, 'extensions')
-  isStub     = toolData.getArgumentAttribute(longFormInputArgument, 'isStub')
+  inputExtensions = toolData.getArgumentAttribute(argument, 'extensions')
+  isStub          = toolData.getArgumentAttribute(argument, 'isStub')
+
+  # Determine the extension to place on the filename.
+  outputExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeID, 'extensions')
 
   # FIXME HANDLE STUBS
   if isStub: print('NOT HANDLED STUBS FOR DIVISIONS: constructFilenames.constructDivisions'); exit(1)
 
-  # Now loop over each of the values and modify them accoriding to the provided instructions.
-  for counter, value in enumerate(baseValues):
-    updatedValue = value
+  # Loop over all the values associated with the division and add the argument and value to the filename.
+  updatedValues = []
+  for value in baseValues:
 
-    # Determine the extension on the input, the create a working version of the new name with the
-    # extension removed.
-    extension = getExtension(value, extensions)
-    if extension: updatedValue = updatedValue.replace('.' + str(extension), '')
-
-    # Add the option argument and value to the filename.
-    updatedValue += str('_' + longFormArgument.strip('-') + optionValues[counter])
-
-    # Determine the extension to place on the filename.
-    newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeID, 'extensions')
-    updatedValue  = furnishExtension(instructions, updatedValue, extension, newExtensions)
-
-    # Add the updated value to the modifiedValues list.
-    updatedValues.append(updatedValue)
+    # Get the extension on this value and remove it.
+    extension = getExtension(value, inputExtensions)
+    if extension: updatedValue = value.replace('.' + str(extension), '')
+    updatedValue = str(updatedValue + '_' + argument.strip('-') + optionValue)
+    updatedValues.append(furnishExtension(instructions, updatedValue, extension, outputExtensions))
 
   # Return the values.
   return updatedValues
