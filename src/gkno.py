@@ -233,17 +233,18 @@ def main():
   if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
   if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
 
-  # TODO
+  # Loop over the tasks in the pipeline and construct filenames for arguments that require them, but weren't given
+  # any on the command line. In addition, if multiple options are given to a task, this routine will generate new
+  # nodes for the task and files and link them together as necessary.
   graph.constructFiles(superpipeline)
-  debug.debug().allTasks(graph)
-  exit(0)
 
+  #TODO REMOVE OLD ROUTINE
   # Check the number of values in each node and determine how many times each task needs to be run. For example,
   # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc. In addition check
   # the arguments that have been supplied to each task. In particular, check the number of values given to all
   # arguments and determine whether tasks need to be defined as generating multiple output nodes, having multiple
   # task calls or consolidating nodes.
-  graph.determineNumberOfTaskExecutions(superpipeline)
+  #graph.determineNumberOfTaskExecutions(superpipeline)
 
   # Print the workflow to screen.
   write.workflow(superpipeline, workflow)

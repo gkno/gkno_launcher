@@ -117,9 +117,9 @@ class toolConfiguration:
 
     # The tool executable, its path and any modifiers.
     self.executable = None
-    self.modifier   = None
+    self.modifier   = ''
     self.path       = None
-    self.precommand = None
+    self.precommand = ''
 
     # Record if this tool is hidden in the help.
     self.isHidden = False
