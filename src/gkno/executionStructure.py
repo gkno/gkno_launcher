@@ -66,36 +66,6 @@ class executionStructure():
       # each subphase, so the number of output files determines the number of subphases.
       if isGreedy: numberSubphases = 1
       else: numberSubphases = numberOutputs
-      # Calculate the total number of task executions. This is dependent on a number of factors. First
-      # consider cases where the node is greedy. If there are multiple input nodes, all the values within
-      # each node will be used in a single task execution. Thus the number of executions is equal to the
-      # number of input nodes. If there is only a single input file node, there is only a single execution
-      # of the task, since all values are used in a single greedy execution. Thus, either way, the total
-      # number of executions is equal to the number of input nodes.
-      #if isGreedy: totalExecutions = numberInputNodes
-
-#      # If the task isn't greedy, the total number of executions is the maximum of the number of input 
-#      # and output nodes, multiplied by the number of executions.
-#      else: totalExecutions = max(numberInputNodes, numberOutputNodes) * divisions
-#
-#      # Determine the number of subphases. This is simply the maximum of the number of input or output
-#      # multinodes. A phase contains a set of tasks that need to be run sequentially. If there are
-#      # multiple values associated with the nodes for the task, there can be multiple jobs in a phase
-#      # that can be run in parallel. Subphases result from the case where tasks can produce multiple
-#      # output nodes, each of which has multiple values associated with it. In this case, within the
-#      # phase there are subphases and each subphase is itself divided up into divisions. The divisions
-#      # are dictated by the number of options provided to the task.
-#      subphases = max(numberInputNodes, numberOutputNodes)
-#
-#      # If this task has one division and the previous task has multiple, reset the number of divisions
-#      # for this task, to the same number as the previous unless this task is greedy. If this task is
-#      # greedy, there should only be one division and a new phase will be generated.
-#      divisionsInPreviousTask = self.phaseInformation[self.numberOfPhases].divisions if self.numberOfPhases in self.phaseInformation else 1
-#      if (divisions == 1) and (divisionsInPreviousTask != 1) and not isGreedy: divisions = divisionsInPreviousTask
-#
-      # If this is the first task in the pipeline, start a new phase and define the number of subphases
-      # and divisions in the phase and append the task to the phase.
-      #if i == 0: self.defineNewPhase(numberSubphases, numberDivisions)
 
       # If this is the first task in the pipeline, or the task is greedy or is consolidating files from
       # multiple divisions, a new phase is required.

@@ -652,9 +652,74 @@ class pipelineGraph:
   def generateWorkflow(self):
 
     # Perform a topological sort of the graph.
+    tempWorkflow = []
     for nodeID in nx.topological_sort(self.graph):
       nodeType = getattr(self.graph.node[nodeID]['attributes'], 'nodeType')
-      if nodeType == 'task': self.workflow.append(nodeID)
+      if nodeType == 'task': tempWorkflow.append(nodeID)
+
+    # The topological sort is non-unique and so the order is not necessarily the desirable order. A task
+    # can be separated from a set of tasks with which it logically belongs and still be topologically
+    # sorted. Loop over the tasks and try to keep connected tasks together.
+    task = tempWorkflow.pop(0)
+    self.workflow.append(task)
+
+    # Tasks will be removed from the tempWorkflow and placed in the final workflow. Continue working until
+    # all tasks in the pipeline have been moved to the new workflow.
+    while tempWorkflow:
+
+      # Get all of the tasks that are succeed this task by one level. This means any task that takes as input
+      # a task outputted by this task.
+      successorTasks = []
+      for successor in self.graph.successors(task):
+        for successorTask in self.graph.successors(successor): successorTasks.append(successorTask)
+ 
+      # If there are multiple successor tasks, loop over the tasks and check if any of these tasks depend on
+      # each other.
+      i = 0
+      while len(successorTasks) > 1:
+        successorTask = successorTasks[i]
+
+        # For this successor task, find all tasks on which it depends.
+        isDependent      = False
+        predecessorTasks = []
+        for predecessor in self.graph.predecessors(successorTask):
+          for predecessorTask in self.graph.predecessors(predecessor): predecessorTasks.append(predecessorTask)
+
+        # Check if any of these tasks on which the successor task depends appear in the list of successor tasks.
+        # If they do, this means that this task cannot be next in the workflow.
+        for predecessorTask in predecessorTasks:
+          if predecessorTask in successorTasks:
+            isDependent = True
+            break
+
+        # If this successor task is dependent on other tasks in the list of successor tasks, move to the next task
+        # in this list.
+        if isDependent: i += 1
+
+        # Otherwise, this task can be added to the workflow and removed from the list of successor tasks and the
+        # tempWorkflow.
+        else:
+          self.workflow.append(successorTask)
+          tempWorkflow.remove(successorTask)
+          successorTasks.remove(successorTask)
+          i = 0
+                
+      # If there is a only a single successor task, or all but one of the multiple successor tasks have already been
+      # added to the workflow, add this task to the workflow and remove from the tempWorkflow.
+      if len(successorTasks) == 1:
+        task = successorTasks[0]
+        self.workflow.append(successorTasks[0])
+        tempWorkflow.remove(successorTasks[0])
+
+      # If the successor task has no successors of its own, it can be added to the workflow as the end of a set of
+      # connected tasks. Then the first task in the original topologically sorted list can be added to the workflow
+      # and its successors investigated.
+      else:
+        task = tempWorkflow.pop(0)
+        self.workflow.append(task)
+
+    # Sanity check.
+    assert len(tempWorkflow) == 0
 
     # The topological sort does not always generate the correct order. In this routine, check for
     # cases where a task is outputting to the stream. It is possible that after this task, the
@@ -699,8 +764,7 @@ class pipelineGraph:
               # Update the workflow.
               self.workflow = updatedWorkflow
 
-              # Reset the startCount. There is no need to loop over the entire workflow on the next
-              # pass.
+              # Reset the startCount. There is no need to loop over the entire workflow on the next pass.
               startCount = counter
               break
 

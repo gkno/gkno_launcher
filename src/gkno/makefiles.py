@@ -157,6 +157,7 @@ class makefiles:
       # Loop over the argument order for the tool, getting information from the nodes in the correct
       # order. The argument order is populated with the arguments in random order if the order wasn't
       # specified in the configuration file.
+      print(task, 'subphases:', data.numberSubphases, 'divisions:', data.numberDivisions, 'command lines:', data.numberCommandLines)
       for argument in argumentOrder:
         if argument in optionArguments:
           for nodeID in optionArguments[argument]: self.addOption(graph, task, data, nodeID)
@@ -165,7 +166,6 @@ class makefiles:
         if argument in outputArguments:
           for nodeID in outputArguments[argument]: self.addOutput(graph, task, data, nodeID)
 
-      print(task, 'subphases:', data.numberSubphases, 'divisions:', data.numberDivisions, 'command lines:', data.numberCommandLines)
       for i in range(1, data.numberSubphases + 1):
         for j in range(1, data.numberDivisions + 1):
           print('\t', 'subphase:', i, 'division:', j)
@@ -326,18 +326,39 @@ class makefiles:
     isParent = graph.getGraphNodeAttribute(nodeID, 'isParent')
     children = graph.getGraphNodeAttribute(nodeID, 'children')
 
+    # Check if this node contains intermediate files.
+    isIntermediate = graph.getGraphNodeAttribute(nodeID, 'isIntermediate')
+
+    # Determine if this argument is for a stream.
+    isStream = graph.getArgumentAttribute(task, nodeID, 'isStream')
+
+    # Determine if this is a stub.
+    isStub        = graph.getArgumentAttribute(task, nodeID, 'isStub')
+    stubExtension = graph.getArgumentAttribute(task, nodeID, 'stubExtension')
+
     # If this is a parent node, then the task has been split into divisions. The parent file node and it's children each
     # correspond to a division. Thus the values contained in them are for each subphase with the division. Begin by looping
     # over the values in the parent node. This corresponds to the first division, then each value is for each of the
     # subphases. Then loop over the children and populate the subphase outputs for each division.
-    #if isParent:
-
+    #
     # Deal with the first division. If there are multiple divisions, this is the values from the parent node. If there is
     # only a single division, this is the only node that exists.
     for subphase, value in enumerate(values):
       lineValue = self.getValue(graph, task, nodeID, value, isInput = False, isStub = False, stubExtension = None)
       line      = self.buildLine(argument, data.delimiter, lineValue)
-      if line: data.commands[subphase + 1][1].append(line)
+      if line:
+        data.commands[subphase + 1][1].append(line)
+
+        # If this task outputs to stdout, update the stdouts data structure,
+        if line.startswith('\t>>'): data.stdouts[subphase + 1][1] = str(line)
+
+      # Add the files to the dependencies or outputs for the command line (do not add the values to the list of
+      # inputs and dependencies if the files are being streamed).
+      if not isStream:
+        data.outputs[subphase + 1][1].append(str(value))
+
+        # If this is an intermediate file, add to the list of intermediate files.
+        if isIntermediate and str(value) not in data.intermediates[subphase + 1][1]: data.intermediates[subphase + 1][1].append(str(value))
 
     # If there are multiple divisions, values for division 2 onwards are stored in the child nodes which are dealt with here.
     if isParent:
