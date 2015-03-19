@@ -1052,6 +1052,9 @@ class pipelineGraph:
             if len(values[argument].nodeIDs) != 1: print('ERROR - graph.constructFiles - division error 2', values[argument].nodeIDs); exit(1)
             else: divisionNode = values[argument].nodeIDs[0]
 
+      # If the task only has a single division, there are no files to consolidate, so set consolidate to False.
+      if divisions == 1: consolidate = False
+
       # Set the graph node divisions value. Note that if this task consolidates divisions, then there should only be a
       # single division. All of the outputs from the previous divisions are used in a greedy fashion by this task and so
       # the divisions are ended.
@@ -1065,7 +1068,7 @@ class pipelineGraph:
       self.checkInputFiles(superpipeline, task)
 
       # If this task consolidates the divisions, perform the necessary joining of data.
-      if consolidate: self.consolidateDivisions(superpipeline, task)
+      if consolidate and divisions > 1: self.consolidateDivisions(superpipeline, task)
 
       # If this task has multiple divisions and it isn't greedy (i.e. the task is not being run once using values from 
       # all divisions on the command line), the task node needs to duplicated so that there are as many task nodes as

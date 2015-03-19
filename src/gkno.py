@@ -336,14 +336,13 @@ def main():
   # Execute the generated script unless the user has explicitly asked for it not to be run, or if multiple makefiles
   # have been generated.
   if gknoConfiguration.options['GKNO-DO-NOT-EXECUTE'].longFormArgument not in command.gknoArguments and not make.isMultipleMakefiles and success:
-    makefileName = make.makefileNames[1][1][1]
 
     # Get the number of parallel jobs to be requested.
     jobsArgument = gknoConfiguration.options['GKNO-JOBS'].longFormArgument
     numberJobs   = command.gknoArguments[jobsArgument][0] if jobsArgument in command.gknoArguments else 1
 
     # Generate the execution command.
-    execute = 'make -j ' + str(numberJobs) + ' --file ' + makefileName
+    execute = 'make -j ' + str(numberJobs) + ' --file ' + make.singleFilename
     success = subprocess.call(execute.split())
 
 if __name__ == "__main__":
