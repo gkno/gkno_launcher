@@ -54,6 +54,9 @@ def main():
   resourcesPath                  = sourcePath + '/resources'
   toolsPath                      = sourcePath + '/tools'
 
+  # Define the commit id of the this version of gkno.
+  commitId = os.getenv('GKNOCOMMITID')
+
   # Define an admin utilities object. This handles all of the build/update steps
   # along with 'resource' management.
   admin = au.adminUtils(sourcePath)
@@ -292,17 +295,40 @@ def main():
   make = mk.makefiles()
   make.generateCommandLines(graph, superpipeline, struct)
 
+  # Determine if multiple makefiles have been requested and whether to add a unique id to the makefiles.
+  make.isMultipleMakefiles, make.makefileId = command.checkMakefiles(gknoConfiguration.options)
+
+  # If a single makefile is being generated, open the file and add header information.
+  if not make.isMultipleMakefiles:
+    make.openSingleMakefile(superpipeline.pipeline)
+    make.addHeader(make.singleFilehandle, commitId, __date__, __version__, superpipeline.pipeline, sourcePath, toolsPath, resourcesPath, make.singleFilename)
+    make.addUniqueExecutables(make.singleFilehandle, graph, struct)
+    make.addPhony(make.singleFilehandle, make.singleFilename)
+
+    # Get the intermediate and output files for the whole pipeline.
+    outputs = make.getAllOutputs(make.singleFilehandle, make.singleFilename, struct)
+
+    # Remove the 'ok' file used to indicated successful execution.
+    make.removeOk(make.singleFilehandle)
+
+    # Add the command lines to the makefiles.
+    for phase in struct.phaseInformation:
+      for subphase in range(1, struct.phaseInformation[phase].numberSubphases + 1):
+        for division in range(1, struct.phaseInformation[phase].numberDivisions + 1):
+          make.addCommandLines(make.singleFilehandle, make.singleFilename, graph, struct, phase, subphase, division)
+
+    # Write final information to the makefile, then close the file.
+    make.completeFile(make.singleFilehandle, outputs)
+    fh.fileHandling.closeFile(make.singleFilehandle)
+  else: print('NOT HANDLED MULTIPLE MAKEFILES')
+
   # Create the makefiles. This could either be a single makefile, or a set of multiple makefiles.
-  make.generateMakefiles(struct, superpipeline.pipeline, gknoConfiguration.options, command.gknoArguments)
+  #make.generateMakefiles(struct, superpipeline.pipeline, gknoConfiguration.options, command.gknoArguments)
 
-  # Open all the makefiles for writing.
-  make.openFiles(graph, struct, os.getenv('GKNOCOMMITID'), __date__, __version__, superpipeline.pipeline, sourcePath, toolsPath, resourcesPath)
-
-  # Add the command lines to the makefiles.
-  make.addCommandLines(graph, struct)
+  #make.openFiles(graph, struct, os.getenv('GKNOCOMMITID'), __date__, __version__, superpipeline.pipeline, sourcePath, toolsPath, resourcesPath)
 
   # Close all of the open makefiles.
-  make.closeFiles()
+  #make.closeFiles()
 
   # Check that all of the dependent files exist (excluding dependencies that are created by tasks in the pipeline).
   success = files.checkFileExistence(requiredInputFiles, resourcesPath, toolsPath)

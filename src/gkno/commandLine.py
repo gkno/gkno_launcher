@@ -352,3 +352,13 @@ class commandLine:
 
     # Return the list with information on the nodes to create.
     return associatedNodes
+
+  # Check if multiple makefiles were requested and if an id is to be added to any makefiles.
+  def checkMakefiles(self, gknoArguments):
+    multiple   = gknoArguments['GKNO-MULTIPLE-MAKEFILES'].longFormArgument
+    idArgument = gknoArguments['GKNO-MAKEFILE-ID'].longFormArgument
+
+    isMultipleMakefiles = True if multiple in self.gknoArguments else False
+    makefileId          = self.gknoArguments[idArgument][0] if idArgument in self.gknoArguments else None
+
+    return isMultipleMakefiles, makefileId
