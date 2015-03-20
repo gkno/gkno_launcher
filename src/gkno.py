@@ -322,14 +322,6 @@ def main():
     fh.fileHandling.closeFile(make.singleFilehandle)
   else: print('NOT HANDLED MULTIPLE MAKEFILES')
 
-  # Create the makefiles. This could either be a single makefile, or a set of multiple makefiles.
-  #make.generateMakefiles(struct, superpipeline.pipeline, gknoConfiguration.options, command.gknoArguments)
-
-  #make.openFiles(graph, struct, os.getenv('GKNOCOMMITID'), __date__, __version__, superpipeline.pipeline, sourcePath, toolsPath, resourcesPath)
-
-  # Close all of the open makefiles.
-  #make.closeFiles()
-
   # Check that all of the dependent files exist (excluding dependencies that are created by tasks in the pipeline).
   success = files.checkFileExistence(requiredInputFiles, resourcesPath, toolsPath)
 

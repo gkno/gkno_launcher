@@ -10,7 +10,7 @@ import os
 import sys
 
 # Construct the filenames for an input node.
-def constructInputNode(graph, superpipeline, task, argument, nodeID, baseValues):
+def constructInputNode(graph, superpipeline, task, argument, nodeId, baseValues):
 
   #TODO ERROR
   if not baseValues: print('constructFilenames.constructInputNodes - no values'); exit(0)
@@ -20,7 +20,7 @@ def constructInputNode(graph, superpipeline, task, argument, nodeID, baseValues)
   toolData = superpipeline.toolConfigurationData[tool]
 
   # Get the construction instructions.
-  instructions = gr.pipelineGraph.CM_getArgumentAttribute(graph, nodeID, task, 'constructionInstructions')
+  instructions = gr.pipelineGraph.CM_getArgumentAttribute(graph, nodeId, task, 'constructionInstructions')
 
   # Get the long form of the argument whose values are being used for construction, as well as
   # the extensions associated with the argument.
@@ -41,7 +41,7 @@ def constructInputNode(graph, superpipeline, task, argument, nodeID, baseValues)
     if 'modify text' in instructions: updatedValue = modifyText(graph, toolData, instructions, task, updatedValue)
 
     # Determine the extension to place on the filename.
-    newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, nodeID, task, 'extensions')
+    newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, nodeId, task, 'extensions')
     updatedValue  = furnishExtension(instructions, updatedValue, extension, newExtensions)
 
     # Add the updated value to the modifiedValues list.
@@ -88,7 +88,7 @@ def updateArgumentsInInstructions(graph, instructions, task):
       instructions['modify text'].append(block)
 
 # Construct the filename from an input file from the same task.
-def constructFromFilename(graph, superpipeline, instructions, task, nodeID, baseValues):
+def constructFromFilename(graph, superpipeline, instructions, task, nodeId, baseValues):
 
   # Define a list of updated values.
   updatedValues = []
@@ -114,7 +114,7 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeID, base
   randomText    = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, inputNodeId, 'randomText')
 
   # Determine if this is an intermediate file.
-  isIntermediate = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, nodeID, 'isIntermediate')
+  isIntermediate = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, nodeId, 'isIntermediate')
 
   # Now loop over each of the values and modify them accoriding to the provided instructions.
   for counter, value in enumerate(baseValues):
@@ -132,32 +132,17 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeID, base
 
     # Check if there are instructions from the pipeline configuration file to add an extra text field
     # to the filename.
-    addText = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, nodeID, 'addTextToFilename')
+    addText = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, nodeId, 'addTextToFilename')
     if addText: updatedValue += str('_' + addText)
 
     # If this is an intermediate file and random text has not already been added, add a segment of random text
     # to the filename to ensure that there are no conflicts.
-    if isIntermediate:
-      if not hasRandomText:
-        randomText    = strOps.getRandomString(8)
-        updatedValue += str('_' + randomText)
-        gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeID, 'hasRandomText', True)
-        gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeID, 'randomText', randomText)
-
-      # If this is an intermediate file and random text has been added, just mark the node.
-      else: 
-        gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeID, 'hasRandomText', True)
-        gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeID, 'randomText', randomText)
-
-    # If this is not an intermediate file and random text has been added, remove the text.
-    elif hasRandomText:
-      updatedValue = updatedValue.replace(str('_' + randomText), '')
-      gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeID, 'hasRandomText', False)
+    updatedValue = handleRandomText(graph, updatedValue, isIntermediate, hasRandomText, randomText, nodeId)
 
     # Determine the extension to place on the filename. This does not need to be performed if the file is a stub,
     # since, the stub should have no extension.
     if not isStub:
-      newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeID, 'extensions')
+      newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeId, 'extensions')
       updatedValue  = furnishExtension(instructions, updatedValue, extension, newExtensions)
 
     # Add the updated value to the modifiedValues list.
@@ -167,7 +152,7 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeID, base
   return updatedValues
 
 # Given the base value from which to construct filenames, add
-def addDivisionToValue(graph, superpipeline, task, nodeID, instructions, baseValues, argument, optionValue):
+def addDivisionToValue(graph, superpipeline, task, nodeId, instructions, baseValues, argument, optionValue, randomText):
 
   # Get tool information for this task.
   tool     = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'tool')
@@ -178,7 +163,10 @@ def addDivisionToValue(graph, superpipeline, task, nodeID, instructions, baseVal
   isStub          = toolData.getArgumentAttribute(argument, 'isStub')
 
   # Determine the extension to place on the filename.
-  outputExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeID, 'extensions')
+  outputExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeId, 'extensions')
+
+  # Determine if this is an intermediate file.
+  isIntermediate = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, nodeId, 'isIntermediate')
 
   # FIXME HANDLE STUBS
   if isStub: print('NOT HANDLED STUBS FOR DIVISIONS: constructFilenames.constructDivisions'); exit(1)
@@ -191,6 +179,16 @@ def addDivisionToValue(graph, superpipeline, task, nodeID, instructions, baseVal
     extension = getExtension(value, inputExtensions)
     if extension: updatedValue = value.replace('.' + str(extension), '')
     updatedValue = str(updatedValue + '_' + argument.strip('-') + optionValue)
+
+    # Check if there are instructions from the pipeline configuration file to add an extra text field
+    # to the filename.
+    addText = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, nodeId, 'addTextToFilename')
+    if addText: updatedValue += str('_' + addText)
+
+    # If the file is an intermediate file, add a string of random text (already supplied).
+    if isIntermediate: updatedValue += str('_' + randomText)
+
+    # Add the updated value to the list of updated values.
     updatedValues.append(furnishExtension(instructions, updatedValue, extension, outputExtensions))
 
   # Return the values.
@@ -313,20 +311,20 @@ def constructInputNodes(graph, superpipeline):
     toolData = superpipeline.toolConfigurationData[tool]
 
     # Loop over inputs to this task.
-    for nodeID in graph.CM_getInputFileNodes(graph.graph, task):
+    for nodeId in graph.CM_getInputFileNodes(graph.graph, task):
 
       # If the node has no values and has a link to a node from which filenames can be constructed,
       # contruct the filenames.
-      if graph.getGraphNodeAttribute(nodeID, 'constructUsingNode') and not graph.getGraphNodeAttribute(nodeID, 'values'):
+      if graph.getGraphNodeAttribute(nodeId, 'constructUsingNode') and not graph.getGraphNodeAttribute(nodeId, 'values'):
 
         # Get the values from the connected node. If none exist, the filenames cannot be constructed, so
         # terminate.
-        connectedValues = graph.getGraphNodeAttribute(graph.getGraphNodeAttribute(nodeID, 'constructUsingNode'), 'values')
+        connectedValues = graph.getGraphNodeAttribute(graph.getGraphNodeAttribute(nodeId, 'constructUsingNode'), 'values')
         #TODO ERROR
         if not connectedValues: print('constructFilenames.constructInputNodes - no values'); exit(0)
 
         # Get the construction instructions.
-        instructions = graph.getArgumentAttribute(nodeID, task, 'constructionInstructions')
+        instructions = graph.getArgumentAttribute(nodeId, task, 'constructionInstructions')
 
         # Get the long form of the argument whose values are being used for construction, as well as
         # the extensions associated with the argument.
@@ -347,11 +345,36 @@ def constructInputNodes(graph, superpipeline):
           if 'modify text' in instructions: modifiedValue = modifyText(graph, toolData, instructions, task, modifiedValue)
 
           # Determine the extension to place on the filename.
-          newExtensions = graph.getArgumentAttribute(nodeID, task, 'extensions')
+          newExtensions = graph.getArgumentAttribute(nodeId, task, 'extensions')
           modifiedValue = furnishExtension(instructions, modifiedValue, extension, newExtensions)
 
           # Add the updated value to the modifiedValues list.
           values.append(modifiedValue)
 
         # Update the graph node with the new values.
-        graph.setGraphNodeAttribute(nodeID, 'values', values)
+        graph.setGraphNodeAttribute(nodeId, 'values', values)
+
+# If this is an intermediate file and random text has not already been added, add a segment of random text
+# to the filename to ensure that there are no conflicts. If this isn't a intermediate file and random text
+# has been added, remove it.
+def handleRandomText(graph, value, isIntermediate, hasRandomText, randomText, nodeId):
+  updatedValue = value
+  if isIntermediate:
+    if not hasRandomText:
+      randomText   = strOps.getRandomString(8)
+      updatedValue = str(value + '_' + randomText)
+      gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeId, 'hasRandomText', True)
+      gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeId, 'randomText', randomText)
+
+    # If this is an intermediate file and random text has been added, just mark the node.
+    else: 
+      gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeId, 'hasRandomText', True)
+      gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeId, 'randomText', randomText)
+
+  # If this is not an intermediate file and random text has been added, remove the text.
+  elif hasRandomText:
+    updatedValue = value.replace(str('_' + randomText), '')
+    gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeId, 'hasRandomText', False)
+
+  # Return the updated value.
+  return updatedValue

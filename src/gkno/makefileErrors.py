@@ -32,5 +32,8 @@ class makefileErrors:
     'used to execute the tasks as multiple rules have the same output. In addition, since multiple tasks write to the same ' + \
     'file, all desired results will not be produced. Either specify output file names on the command line, if possible, or update ' + \
     'the pipeline configuration file to append provide distinguishing text to files.')
+    self.text.append('\t')
+    self.text.append('The following files were identified as duplicated:')
+    for filename in duplicates: self.text.append('\t' + filename)
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
