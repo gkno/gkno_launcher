@@ -1,8 +1,9 @@
 #!/bin/bash/python
 
 from __future__ import print_function
-import superpipeline
 import graph as gr
+import superpipeline
+import stringOperations as strOps
 
 import json
 import os
@@ -106,6 +107,15 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeID, base
   extensions = toolData.getArgumentAttribute(longFormArgument, 'extensions')
   isStub     = toolData.getArgumentAttribute(longFormArgument, 'isStub')
 
+  # Get the node corresponding to the input argument and determine if any random text has been added
+  # to the filename. If so, get the text.
+  inputNodeId   = gr.pipelineGraph.CM_getNodeForInputArgument(graph, task, inputArgument)
+  hasRandomText = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, inputNodeId, 'hasRandomText')
+  randomText    = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, inputNodeId, 'randomText')
+
+  # Determine if this is an intermediate file.
+  isIntermediate = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, nodeID, 'isIntermediate')
+
   # Now loop over each of the values and modify them accoriding to the provided instructions.
   for counter, value in enumerate(baseValues):
 
@@ -120,11 +130,35 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeID, base
     # If there are instructions on text to add, add it.
     if 'modify text' in instructions: updatedValue = modifyText(graph, toolData, instructions, task, counter, updatedValue)
 
+    # Check if there are instructions from the pipeline configuration file to add an extra text field
+    # to the filename.
+    addText = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, nodeID, 'addTextToFilename')
+    if addText: updatedValue += str('_' + addText)
+
+    # If this is an intermediate file and random text has not already been added, add a segment of random text
+    # to the filename to ensure that there are no conflicts.
+    if isIntermediate:
+      if not hasRandomText:
+        randomText    = strOps.getRandomString(8)
+        updatedValue += str('_' + randomText)
+        gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeID, 'hasRandomText', True)
+        gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeID, 'randomText', randomText)
+
+      # If this is an intermediate file and random text has been added, just mark the node.
+      else: 
+        gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeID, 'hasRandomText', True)
+        gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeID, 'randomText', randomText)
+
+    # If this is not an intermediate file and random text has been added, remove the text.
+    elif hasRandomText:
+      updatedValue = updatedValue.replace(str('_' + randomText), '')
+      gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeID, 'hasRandomText', False)
+
     # Determine the extension to place on the filename. This does not need to be performed if the file is a stub,
     # since, the stub should have no extension.
-    #if not isStub:
-    newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeID, 'extensions')
-    updatedValue  = furnishExtension(instructions, updatedValue, extension, newExtensions)
+    if not isStub:
+      newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeID, 'extensions')
+      updatedValue  = furnishExtension(instructions, updatedValue, extension, newExtensions)
 
     # Add the updated value to the modifiedValues list.
     updatedValues.append(updatedValue)

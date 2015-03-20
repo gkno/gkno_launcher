@@ -25,11 +25,12 @@ class makefileErrors:
     # For a list of all error code values, see adminErrors.py.
     self.errorCode = '13'
 
-  # A general entry in the configuration file is invalid.
-#  def missingStubExtensionForSharedNode(self, task, argument):
-#    self.text.append('Cannot construct shared graph nodes.')
-#    self.text.append('The task \'' + task + '\', argument \'' + argument + '\' is defined as being shared with other nodes in the pipeline. ' + \
-#    'At least one of the nodes that this is being shared with is a stub, and since this argument is not a stub, the extension associated with ' + \
-#    'the stub must be included in the pipeline configuration file.')
-#    self.errors.writeFormattedText(self.text, errorType = 'error')
-#    self.errors.terminate(self.errorCode)
+  # The pipeline generates multiple output files with the same name.
+  def duplicateOutputFiles(self, duplicates):
+    self.text.append('Pipeline produces duplicate output files.')
+    self.text.append('Different tasks in the pipeline produce output files that have the same name. This confuses the makefile ' + \
+    'used to execute the tasks as multiple rules have the same output. In addition, since multiple tasks write to the same ' + \
+    'file, all desired results will not be produced. Either specify output file names on the command line, if possible, or update ' + \
+    'the pipeline configuration file to append provide distinguishing text to files.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

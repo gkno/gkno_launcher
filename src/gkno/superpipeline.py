@@ -297,10 +297,17 @@ class superpipelineClass:
 
         # Loop over all of the shared nodes.
         for nodeID in self.pipelineConfigurationData[pipeline].getSharedNodeIDs():
+          address     = self.pipelineConfigurationData[pipeline].address
+          nodeAddress = str(address + '.' + nodeID) if address else str(nodeID)
+
+          # Check if the file is marked for deletion.
           if self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeID, 'isDelete'):
-            address     = self.pipelineConfigurationData[pipeline].address
-            nodeAddress = str(address + '.' + nodeID) if address else str(nodeID)
             for graphNodeID in graph.configurationFileToGraphNodeID[nodeAddress]: graph.setGraphNodeAttribute(graphNodeID, 'isIntermediate', True)
+
+          # Check if the file is marked as having additional text to add when filenames are constructed.
+          text = self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeID, 'addTextToFilename')
+          if text:
+            for graphNodeID in graph.configurationFileToGraphNodeID[nodeAddress]: graph.setGraphNodeAttribute(graphNodeID, 'addTextToFilename', text)
 
   #######################################################
   ## Methods to get information from the superpipeline ##

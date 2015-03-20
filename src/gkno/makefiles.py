@@ -1,8 +1,8 @@
 #!/bin/bash/python
 
 from __future__ import print_function
-from collections import deque
 from copy import deepcopy
+import collections
 
 import fileHandling as fh
 import makefileErrors
@@ -636,9 +636,9 @@ class makefiles:
             allOutputs.extend(self.executionInfo[task].outputs[subphase][division])
             allIntermediates.extend(self.executionInfo[task].intermediates[subphase][division])
 
-    # Remove duplicates from the lists.
-    allIntermediates = list(set(allIntermediates))
-    allOutputs       = list(set(allOutputs))
+    # Determine if there are duplicate output files.
+    duplicates = [x for x, y in collections.Counter(allOutputs).items() if y > 1]
+    if len(duplicates) != 0: self.errors.duplicateOutputFiles(duplicates)
 
     # Remove output files that are also marked as intermediates.
     allOutputs = list(set(allOutputs) - set(allIntermediates))

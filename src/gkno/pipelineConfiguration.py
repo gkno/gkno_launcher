@@ -121,6 +121,10 @@ class sharedGraphNodes:
     # to.
     self.sharedNodeTasks = []
 
+    # The configuration file can specify a text string that should be applied to filenames for this
+    # node (if the filenames are constructed).
+    self.addTextToFilename = None
+
 # Define a class to hold information for shared nodes.
 class nodeTaskAttributes:
   def __init__(self):
@@ -371,13 +375,9 @@ class pipelineConfiguration:
   def checkPipelineTasks(self, data):
 
     # Define the allowed general attributes.
-    # TODO CLEAN OUT OLD VARIABLES.
     allowedAttributes                                   = {}
-    #allowedAttributes['consolidate nodes']              = (str, False, True, 'consolidate')
     allowedAttributes['consolidate divisions']          = (bool, False, True, 'consolidate')
     allowedAttributes['input is stream']                = (bool, False, True, 'isInputStream')
-    #allowedAttributes['generate multiple output nodes'] = (str, False, True, 'generateMultipleOutputNodes')
-    #allowedAttributes['multiple task calls']            = (bool, False, True, 'multipleTaskCalls')
     allowedAttributes['greedy argument']                = (str, False, True, 'greedyArgument')
     allowedAttributes['omit from reduced plot']         = (bool, False, True, 'omitFromReducedPlot')
     allowedAttributes['output to stream']               = (bool, False, True, 'isOutputStream')
@@ -479,6 +479,7 @@ class pipelineConfiguration:
 
     # Defin the allowed nodes attributes.
     allowedAttributes                           = {}
+    allowedAttributes['add text to filename']   = (str, False, True, 'addTextToFilename')
     allowedAttributes['arguments sharing node'] = (list, True, True, 'nodes')
     allowedAttributes['delete files']           = (bool, False, True, 'isDelete')
     allowedAttributes['id']                     = (str, True, True, 'id')

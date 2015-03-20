@@ -120,6 +120,14 @@ class dataNodeAttributes:
     # delete them will not be made, and the files will not be listed as outputs or dependencies.
     self.isStream = False
 
+    # The configuration file can specify a text string that should be applied to filenames for this
+    # node (if the filenames are constructed).
+    self.addTextToFilename = None
+
+    # Random text is added to intermediate files to avoid conflicts.
+    self.hasRandomText = False
+    self.randomText    = None
+
 # Define a class to store and manipulate the pipeline graph.
 class pipelineGraph:
   def __init__(self):
@@ -1818,6 +1826,14 @@ class pipelineGraph:
     try: return getattr(graph.node[nodeID]['attributes'], attribute)
     except: return None
 
+  # Set an attribute for a graph node.
+  @classmethod
+  def CM_setGraphNodeAttribute(cls, graph, nodeID, attribute, values):
+    try: setattr(graph.node[nodeID]['attributes'], attribute, values)
+    except: return False
+
+    return True
+
   # Return a list of all nodes of the a requested type.
   @classmethod
   def CM_getNodes(cls, graph, nodeType):
@@ -1868,3 +1884,13 @@ class pipelineGraph:
     # Get the argument attributes from the edge.
     try: return getattr(graph[source][target]['attributes'], attribute)
     except: return False
+
+  # Find the node id for an input argument.
+  @classmethod
+  def CM_getNodeForInputArgument(cls, graph, task, inputArgument):
+    for predecessor in graph.predecessors(task):
+      argument = cls.CM_getArgumentAttribute(graph, predecessor, task, 'longFormArgument')
+      if argument == inputArgument: return predecessor
+  
+    # If no node with the correct argument was found, return None.
+    return None
