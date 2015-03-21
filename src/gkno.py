@@ -298,29 +298,36 @@ def main():
   # Determine if multiple makefiles have been requested and whether to add a unique id to the makefiles.
   make.isMultipleMakefiles, make.makefileId = command.checkMakefiles(gknoConfiguration.options)
 
-  # If a single makefile is being generated, open the file and add header information.
-  if not make.isMultipleMakefiles:
-    make.openSingleMakefile(superpipeline.pipeline)
-    make.addHeader(make.singleFilehandle, commitId, __date__, __version__, superpipeline.pipeline, sourcePath, toolsPath, resourcesPath, make.singleFilename)
-    make.addUniqueExecutables(make.singleFilehandle, graph, struct)
-    make.addPhony(make.singleFilehandle, make.singleFilename)
+  # Open the required makefiles. This is either a single makefile that will run all tasks, or a set of makefiles broken
+  # up by the phase, subphase and division
+  make.openMakefiles(superpipeline.pipeline, struct)
 
-    # Get the intermediate and output files for the whole pipeline.
-    outputs = make.getAllOutputs(make.singleFilehandle, make.singleFilename, struct)
+  # Add the header text to the file(s).
+  make.addHeader(commitId, __date__, __version__, superpipeline.pipeline, sourcePath, toolsPath, resourcesPath)
 
-    # Remove the 'ok' file used to indicated successful execution.
-    make.removeOk(make.singleFilehandle)
+  # Include the paths of all the required executables.
+  make.addUniqueExecutables(graph, struct)
 
-    # Add the command lines to the makefiles.
-    for phase in struct.phaseInformation:
-      for subphase in range(1, struct.phaseInformation[phase].numberSubphases + 1):
-        for division in range(1, struct.phaseInformation[phase].numberDivisions + 1):
-          make.addCommandLines(make.singleFilehandle, make.singleFilename, graph, struct, phase, subphase, division)
+  # Add phony information.
+  make.addPhony()
 
-    # Write final information to the makefile, then close the file.
-    make.completeFile(make.singleFilehandle, outputs)
-    fh.fileHandling.closeFile(make.singleFilehandle)
-  else: print('NOT HANDLED MULTIPLE MAKEFILES')
+  # Get the intermediate and output files for the whole pipeline.
+  outputs = make.getAllOutputs(struct)
+
+  # Remove the 'ok' file used to indicated successful execution.
+  make.removeOk()
+
+  # Add the command lines to the makefiles.
+  for phase in struct.phaseInformation:
+    for subphase in range(1, struct.phaseInformation[phase].numberSubphases + 1):
+      for division in range(1, struct.phaseInformation[phase].numberDivisions + 1):
+        make.addCommandLines(graph, struct, phase, subphase, division)
+
+  # Write final information to the makefile, then close the file.
+  make.completeFile(outputs)
+
+  # Close the makefiles.
+  make.closeFiles()
 
   # Check that all of the dependent files exist (excluding dependencies that are created by tasks in the pipeline).
   success = files.checkFileExistence(requiredInputFiles, resourcesPath, toolsPath)
