@@ -111,6 +111,7 @@ class dataNodeAttributes:
     self.children         = []
     self.divisions        = 0
     self.divisionID       = None
+    self.divisionText     = None
     self.isChild          = False
     self.isCreateDivision = False
     self.parent           = None
@@ -1392,7 +1393,7 @@ class pipelineGraph:
 
           # Get the argument and values associated with the node that has forced the divisions.
           argument       = self.getArgumentAttribute(divisionNode, task, 'longFormArgument')
-          divisionValues = self.getGraphNodeAttribute(divisionNode, 'values')
+          divisionValues = self.getDivisionValues(divisionNode)
           assert len(divisionValues) == divisions
           self.setGraphNodeAttribute(nodeId, 'divisions', divisions)
 
@@ -1455,6 +1456,22 @@ class pipelineGraph:
         # If the construction method is unknown, terminate.
         # TODO ERROR
         else: print('constructFilenames.constructFilenames - unknown method', instructions.method); exit(0)
+
+  # Update the values supplied to the option argument to ensure that they do not contain any special
+  # characters.
+  def getDivisionValues(self, nodeId):
+    updatedValues = []
+
+    # If the option value contains a special character. If so, replace them with '.'. This will ensure
+    # that there aren't conflicts with the makefile.
+    for value in self.getGraphNodeAttribute(nodeId, 'values'):
+      optionValue = value.replace(':', '.')
+      optionValue = optionValue.replace('>', '.')
+      optionValue = optionValue.replace('<', '.')
+      optionValue = optionValue.replace('|', '.')
+      updatedValues.append(optionValue)
+
+    return updatedValues
 
   # Loop over all output file nodes (for tasks with divisions), checking that all of the filenames are
   # defined. If not, construct them if instructions are provided.

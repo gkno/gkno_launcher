@@ -277,12 +277,16 @@ class makefiles:
     #isIntermediate = graph.getGraphNodeAttribute(nodeId, 'isIntermediate')
     isIntermediate = True if graph.getGraphNodeAttribute(nodeId, 'deleteAfterTask') == task else False
 
-    # Determine if this argument is for a stream.
-    isStream = graph.getArgumentAttribute(nodeId, task, 'isStream')
-
     # Determine if this is a stub.
     isStub        = graph.getArgumentAttribute(nodeId, task, 'isStub')
     stubExtension = graph.getArgumentAttribute(nodeId, task, 'stubExtension')
+
+    # Determine if this argument is for a stream.
+    isStream = graph.getArgumentAttribute(nodeId, task, 'isStream')
+
+    # Convert the values into the form required on the command line.
+    if isStream: lineValues = [self.getStreamValue(graph, nodeId, task, value, True, isStub) for value in values]
+    else: lineValues = [self.getValue(graph, nodeId, task, value, True, isStub, stubExtension) for value in values]
 
     # If this task is greedy, check that the argument allows multiple values to be set and that there is only a single
     # subphase. Then create the command line.
@@ -301,18 +305,17 @@ class makefiles:
 
       # If this task is greedy, check that the argument allows multiple values to be set and that there is only a single
       # subphase. Then create the command line.
-      if isGreedy or len(values) == 1:
+      if isGreedy or len(lineValues) == 1:
 
         # Loop over the values and add to the command line.
-        #TODO HANDLE STUBS
-        for value in values:
+        for value in lineValues:
           lineValue = self.getValue(graph, nodeId, task, value, isInput = True, isStub = isStub, stubExtension = stubExtension)
           line      = self.buildLine(argument, data.delimiter, lineValue)
           if line: lines.append(line)
 
       # If the task isn't greedy and has multiple values, each value is used for a seperate subphase.
-      elif len(values) > 1:
-        lineValue = self.getValue(graph, nodeId, task, values[subphase - 1], isInput = True, isStub = isStub, stubExtension = stubExtension)
+      elif len(lineValues) > 1:
+        lineValue = self.getValue(graph, nodeId, task, lineValues[subphase - 1], isInput = True, isStub = isStub, stubExtension = stubExtension)
         line      = self.buildLine(argument, data.delimiter, lineValue)
         if line: lines.append(line)
 
@@ -322,7 +325,7 @@ class makefiles:
 
         # Add the files to the dependencies or outputs for the command line (if not being streamed).
         if not isStream:
-          if isGreedy and len(values) > 1:
+          if isGreedy and len(lineValues) > 1:
             for value in values: data.dependencies[subphase][division].append(str(value))
           elif len(values) > 1: data.dependencies[subphase][division].append(str(values[subphase - 1]))
           else: data.dependencies[subphase][division].append(str(values[0]))
@@ -353,14 +356,18 @@ class makefiles:
     #isIntermediate = graph.getGraphNodeAttribute(nodeId, 'isIntermediate')
     isIntermediate = True if graph.getGraphNodeAttribute(nodeId, 'deleteAfterTask') == task else False
 
-    # Determine if this argument is for a stream.
-    isStream = graph.getArgumentAttribute(task, nodeId, 'isStream')
-
     # Determine if this is a stub.
     isStub         = graph.getArgumentAttribute(task, nodeId, 'isStub')
     stubExtension  = graph.getArgumentAttribute(task, nodeId, 'stubExtension')
     includeStubDot = graph.getArgumentAttribute(task, nodeId, 'includeStubDot')
     isPrimaryNode  = graph.getArgumentAttribute(task, nodeId, 'primaryStubNode')
+
+    # Determine if this argument is for a stream.
+    isStream = graph.getArgumentAttribute(task, nodeId, 'isStream')
+
+    # Convert the values into the form required on the command line.
+    if isStream: lineValues = [self.getStreamValue(graph, task, nodeID, value, False, isStub) for value in values]
+    else: lineValues = [self.getValue(graph, task, nodeId, value, False, isStub, stubExtension) for value in values]
 
     # If this is a parent node, then the task has been split into divisions. The parent file node and it's children each
     # correspond to a division. Thus the values contained in them are for each subphase with the division. Begin by looping
@@ -754,33 +761,32 @@ class makefiles:
   def writeStreamingInformation(self, filehandle, graph, info, subphase, division):
     print('### Command line information for the following piped tasks:', file = filehandle)
     print('### ', end = '', file = filehandle)
-    print("FINISH"); exit(0)
-#    for j in range(0, len(info.tasks) - 1): print(info.tasks[j], end = ', ', file = filehandle)
-#    print(info.tasks[-1], '...', sep = '', file = filehandle)
-#
-#    # Only include the first output in the rule. If there are additional outputs, these are handled after
-#    # the rule in the makefile.
-#    print(info.outputs[0], ':', sep = '', end = ' ', file = filehandle)
-#    for dependency in info.dependencies: print(dependency, end = ' ', file = filehandle)
-#    print(file = filehandle)
-#  
-#    # Print to screen the tasks being executed.
-#    print('\t@echo -e "Executing tasks: ', end = '', file = filehandle)
-#    for j in range(0, len(info.tasks) - 1): print(info.tasks[j], end = ', ', file = filehandle)
-#    print(info.tasks[-1], '...\c"', sep = '', file = filehandle)
-#  
-#    # Print the command line.
-#    for line in info.commands: print(line, file = filehandle)
+    for i in range(0, len(info.tasks) - 1): print(info.tasks[i], end = ', ', file = filehandle)
+    print(info.tasks[-1], '...', sep = '', file = filehandle)
+
+    # Only include the first output in the rule. If there are additional outputs, these are handled after
+    # the rule in the makefile.
+    print(info.outputs[0], ':', sep = '', end = ' ', file = filehandle)
+    for dependency in info.dependencies: print(dependency, end = ' ', file = filehandle)
+    print(file = filehandle)
+  
+    # Print to screen the tasks being executed.
+    print('\t@echo -e "Executing tasks: ', end = '', file = filehandle)
+    for i in range(0, len(info.tasks) - 1): print(info.tasks[i], end = ', ', file = filehandle)
+    print(info.tasks[-1], '...\c"', sep = '', file = filehandle)
+  
+    # Print the command line.
+    for line in info.commands: print(line, file = filehandle)
   
     # Include an additional rule if the task created multiple output files.
     # FIXME
-    #if len(info.outputs) > 1: self.multipleOutputFiles(info, i, makefileName, filehandle)
+    if len(info.outputs) > 1: self.multipleOutputFiles(filehandle, filename, info, subphase, division)
 
     # If any files are to be deleted after this task, delete them.
-#    if info.intermediates:
-#      print('\t### Delete intermediate files that are no longer required.', file = filehandle)
-#      for intermediate in info.intermediates: print('\t@rm -f ', intermediate, sep = '', file = filehandle)
-#      print(file = filehandle)
+    if info.intermediates:
+      print('\t### Delete intermediate files that are no longer required.', file = filehandle)
+      for intermediate in info.intermediates: print('\t@rm -f ', intermediate, sep = '', file = filehandle)
+      print(file = filehandle)
 
   # Write information to the makefile for a task with no streaming.
   def writeStandardInformation(self, filehandle, filename, graph, task, subphase, division):
