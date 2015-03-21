@@ -168,6 +168,13 @@ def addDivisionToValue(graph, superpipeline, task, nodeId, instructions, baseVal
   # Determine if this is an intermediate file.
   isIntermediate = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, nodeId, 'isIntermediate')
 
+  # If the option value contains a special character. If so, replace them with '.'. This will ensure
+  # that there aren't conflicts with the makefile.
+  optionValue = optionValue.replace(':', '.')
+  optionValue = optionValue.replace('>', '.')
+  optionValue = optionValue.replace('<', '.')
+  optionValue = optionValue.replace('|', '.')
+
   # FIXME HANDLE STUBS
   if isStub: print('NOT HANDLED STUBS FOR DIVISIONS: constructFilenames.constructDivisions'); exit(1)
 

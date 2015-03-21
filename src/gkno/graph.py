@@ -1655,7 +1655,6 @@ class pipelineGraph:
     # Loop over all file nodes looking for those marked as intermediate.
     for nodeId in self.getNodes('file'):
       if self.getGraphNodeAttribute(nodeId, 'isIntermediate'):
-        print('TEST', nodeId)
 
         # If this node is the child of another node (e.g. the task has been split into multiple tasks for
         # each of a set of inputs), the task nodes associated with it will not be in the workflow. If this is
@@ -1665,7 +1664,6 @@ class pipelineGraph:
         if self.getGraphNodeAttribute(nodeId, 'isChild'):
           useNodeId = self.getGraphNodeAttribute(nodeId, 'parent')
           extension = nodeId.replace(useNodeId, '')
-          print('\tchild', useNodeId, extension)
         else: useNodeId = nodeId
 
         # Get all the task nodes that use this node.
@@ -1677,7 +1675,7 @@ class pipelineGraph:
         task = self.workflow[index]
 
         # Append the original extension and check if the task exists.
-        if self.getGraphNodeAttribute(nodeId, 'isDaughterNode'): task = str(task + extension) if str(task + extension) in self.graph else task
+        if self.getGraphNodeAttribute(nodeId, 'isChild'): task = str(task + extension) if str(task + extension) in self.graph else task
 
         # Set the 'deleteAfterTask' value for the node to the task after whose execution the file should
         # be deleted.

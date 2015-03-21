@@ -153,20 +153,17 @@ class makefiles:
         for j in range(1, data.numberDivisions + 1):
           if not isInputStream: data.commands[i][j].append('\t@' + command + ' \\')
           else: data.commands[i][j].append('\t' + command + ' \\')
-          #data.dependencies[i][j].append([])
-          #data.intermediates[i][j].append([])
-          #data.outputs[i][j].append([])
 
       # Loop over the argument order for the tool, getting information from the nodes in the correct
       # order. The argument order is populated with the arguments in random order if the order wasn't
       # specified in the configuration file.
       for argument in argumentOrder:
         if argument in optionArguments:
-          for nodeID in optionArguments[argument]: self.addOption(graph, task, data, nodeID)
+          for nodeId in optionArguments[argument]: self.addOption(graph, task, data, nodeId)
         if argument in inputArguments:
-          for nodeID in inputArguments[argument]: self.addInput(graph, task, data, nodeID)
+          for nodeId in inputArguments[argument]: self.addInput(graph, task, data, nodeId)
         if argument in outputArguments:
-          for nodeID in outputArguments[argument]: self.addOutput(graph, task, data, nodeID)
+          for nodeId in outputArguments[argument]: self.addOutput(graph, task, data, nodeId)
 
       # Finish the command lines with calls to write to stdout and stdin and indicating that the task is complete.
       # These values are modified based on whether the task is outputting to a stream or not.
@@ -186,38 +183,38 @@ class makefiles:
       self.executionInfo[task] = data
 
   # Find all the arguments for a task.
-  def getArguments(self, graph, task, nodeIDs, isInput):
+  def getArguments(self, graph, task, nodeIds, isInput):
     arguments = {}
-    for nodeID in nodeIDs:
+    for nodeId in nodeIds:
 
       # If the node is a child, ignore it. In order to ensure that filenames will appear in the correct order of divisions,
       # the parent node must appear first in the list, followed by the children in division order.
-      if not graph.getGraphNodeAttribute(nodeID, 'isChild'):
-        if isInput: argument = graph.getArgumentAttribute(nodeID, task, 'longFormArgument')
-        else: argument = graph.getArgumentAttribute(task, nodeID, 'longFormArgument')
+      if not graph.getGraphNodeAttribute(nodeId, 'isChild'):
+        if isInput: argument = graph.getArgumentAttribute(nodeId, task, 'longFormArgument')
+        else: argument = graph.getArgumentAttribute(task, nodeId, 'longFormArgument')
   
-        if argument in arguments: arguments[argument].append(nodeID)
-        else: arguments[argument] = [nodeID]
+        if argument in arguments: arguments[argument].append(nodeId)
+        else: arguments[argument] = [nodeId]
 
         # If this is an input and a parent node, add the children to the list in the correct order.
-        if isInput and graph.getGraphNodeAttribute(nodeID, 'isParent'):
-          for child in graph.getGraphNodeAttribute(nodeID, 'children'): arguments[argument].append(child)
+        if isInput and graph.getGraphNodeAttribute(nodeId, 'isParent'):
+          for child in graph.getGraphNodeAttribute(nodeId, 'children'): arguments[argument].append(child)
 
     # Return the arguments.
     return arguments
 
   # Add option values to the command lines.
-  def addOption(self, graph, task, data, nodeID):
+  def addOption(self, graph, task, data, nodeId):
 
     # Get the argument, values and data type for the option node.
-    argument = self.getToolArgument(graph, task, nodeID, isInput = True)
-    values   = graph.getGraphNodeAttribute(nodeID, 'values')
-    dataType = graph.getArgumentAttribute(nodeID, task, 'dataType')
+    argument = self.getToolArgument(graph, task, nodeId, isInput = True)
+    values   = graph.getGraphNodeAttribute(nodeId, 'values')
+    dataType = graph.getArgumentAttribute(nodeId, task, 'dataType')
 
     # Determine if this option can be specified multiple times on the command line, or if this
     # option is used to create divisions..
-    isAllowMultipleValues = graph.getArgumentAttribute(nodeID, task, 'allowMultipleValues')
-    isCreateDivision      = graph.getGraphNodeAttribute(nodeID, 'isCreateDivision')
+    isAllowMultipleValues = graph.getArgumentAttribute(nodeId, task, 'allowMultipleValues')
+    isCreateDivision      = graph.getGraphNodeAttribute(nodeId, 'isCreateDivision')
 
     # If the argument is a flag, it cannot be given multiple values.
     if dataType == 'flag' and len(values) > 1: print('ERROR - makefiles.addOption - 3'); exit(1)
@@ -232,7 +229,7 @@ class makefiles:
       if isCreateDivision:
         #TODO ERROR
         if len(values) != data.numberDivisions: print('ERROR - makefiles.addOption - 1'); exit(1)
-        lineValue = self.getValue(graph, nodeID, task, values[i - 1], isInput = True, isStub = False, stubExtension = None)
+        lineValue = self.getValue(graph, nodeId, task, values[i - 1], isInput = True, isStub = False, stubExtension = None)
         lines.append(self.buildLine(argument, data.delimiter, lineValue))
 
       # If this option does not create the divisions, but there are multiple values, they must all be applied on the
@@ -242,7 +239,7 @@ class makefiles:
         # Check that the option is permitted to be applied multiple times.
         if not isAllowMultipleValues: print('ERROR - makefiles.addOption - 2', argument, len(values)); exit(1)
         for value in values:
-          lineValue = self.getValue(graph, nodeID, task, value, isInput = True, isStub = False, stubExtension = None)
+          lineValue = self.getValue(graph, nodeId, task, value, isInput = True, isStub = False, stubExtension = None)
           lines.append(self.buildLine(argument, data.delimiter, lineValue))
 
       # If there is only a single value, build the line considering if this is a flag.
@@ -254,7 +251,7 @@ class makefiles:
           if values[0] != 'set': argument = ''
 
         # If the value is set, the flag should be set on the command line, otherwise, this should be left blank.
-        else: lineValue = self.getValue(graph, nodeID, task, values[0], isInput = True, isStub = False, stubExtension = None)
+        else: lineValue = self.getValue(graph, nodeId, task, values[0], isInput = True, isStub = False, stubExtension = None)
 
         # Only add the line to the lines if the flag is set.
         line = self.buildLine(argument, data.delimiter, lineValue)
@@ -264,27 +261,28 @@ class makefiles:
       for j in range(1, data.numberSubphases + 1): data.commands[j][i].extend(lines)
 
   # Add input files to the command line.
-  def addInput(self, graph, task, data, nodeID):
+  def addInput(self, graph, task, data, nodeId):
 
     # Get the argument, values and data type for the option node.
-    argument = self.getToolArgument(graph, task, nodeID, isInput = True)
-    values   = graph.getGraphNodeAttribute(nodeID, 'values')
-    dataType = graph.getArgumentAttribute(nodeID, task, 'dataType')
+    argument = self.getToolArgument(graph, task, nodeId, isInput = True)
+    values   = graph.getGraphNodeAttribute(nodeId, 'values')
+    dataType = graph.getArgumentAttribute(nodeId, task, 'dataType')
 
     # Determine if this option can be specified multiple times on the command line and if the task is listed
     # as being greedy.
-    isAllowMultipleValues = graph.getArgumentAttribute(nodeID, task, 'allowMultipleValues')
+    isAllowMultipleValues = graph.getArgumentAttribute(nodeId, task, 'allowMultipleValues')
     isGreedy              = graph.getGraphNodeAttribute(task, 'isGreedy')
 
     # Check if this node contains intermediate files.
-    isIntermediate = graph.getGraphNodeAttribute(nodeID, 'isIntermediate')
+    #isIntermediate = graph.getGraphNodeAttribute(nodeId, 'isIntermediate')
+    isIntermediate = True if graph.getGraphNodeAttribute(nodeId, 'deleteAfterTask') == task else False
 
     # Determine if this argument is for a stream.
-    isStream = graph.getArgumentAttribute(nodeID, task, 'isStream')
+    isStream = graph.getArgumentAttribute(nodeId, task, 'isStream')
 
     # Determine if this is a stub.
-    isStub        = graph.getArgumentAttribute(nodeID, task, 'isStub')
-    stubExtension = graph.getArgumentAttribute(nodeID, task, 'stubExtension')
+    isStub        = graph.getArgumentAttribute(nodeId, task, 'isStub')
+    stubExtension = graph.getArgumentAttribute(nodeId, task, 'stubExtension')
 
     # If this task is greedy, check that the argument allows multiple values to be set and that there is only a single
     # subphase. Then create the command line.
@@ -298,7 +296,7 @@ class makefiles:
     # Each subphase operates on either all the input files, or a subset, but if there are divisions,
     # each division has the same input files. The differences in the divisions come from different
     # supplied options.
-    for i in range(1, data.numberSubphases + 1):
+    for subphase in range(1, data.numberSubphases + 1):
       lines = []
 
       # If this task is greedy, check that the argument allows multiple values to be set and that there is only a single
@@ -308,50 +306,61 @@ class makefiles:
         # Loop over the values and add to the command line.
         #TODO HANDLE STUBS
         for value in values:
-          lineValue = self.getValue(graph, nodeID, task, value, isInput = True, isStub = False, stubExtension = None)
+          lineValue = self.getValue(graph, nodeId, task, value, isInput = True, isStub = isStub, stubExtension = stubExtension)
           line      = self.buildLine(argument, data.delimiter, lineValue)
           if line: lines.append(line)
 
       # If the task isn't greedy and has multiple values, each value is used for a seperate subphase.
       elif len(values) > 1:
-        lineValue = self.getValue(graph, nodeID, task, values[i - 1], isInput = True, isStub = False, stubExtension = None)
+        lineValue = self.getValue(graph, nodeId, task, values[subphase - 1], isInput = True, isStub = isStub, stubExtension = stubExtension)
         line      = self.buildLine(argument, data.delimiter, lineValue)
         if line: lines.append(line)
 
       # Add the options to the command lines for each subphase.
-      for j in range(1, data.numberDivisions + 1):
-        data.commands[i][j].extend(lines)
+      for division in range(1, data.numberDivisions + 1):
+        data.commands[subphase][division].extend(lines)
 
         # Add the files to the dependencies or outputs for the command line (if not being streamed).
         if not isStream:
-          for value in values: data.dependencies[i][j].append(str(value))
+          if isGreedy and len(values) > 1:
+            for value in values: data.dependencies[subphase][division].append(str(value))
+          elif len(values) > 1: data.dependencies[subphase][division].append(str(values[subphase - 1]))
+          else: data.dependencies[subphase][division].append(str(values[0]))
     
           # Add to the intermediates if necessary.
           if isIntermediate:
-            for value in values:
-              if str(value) not in data.intermediates[i][j]: data.intermediates[i][j].append(str(value))
+            if isGreedy and len(values) > 1:
+              for value in values:
+                if str(value) not in data.intermediates[subphase][division]: data.intermediates[subphase][division].append(str(value))
+            elif len(values) > 1:
+              if str(values[subphase - 1]) not in data.intermediates[subphase][division]: data.intermediates[subphase][division].append(str(values[subphase - 1]))
+            else:
+              if str(values[0]) not in data.intermediates[subphase][division]: data.intermediates[subphase][division].append(str(values[0]))
 
   # Add input files to the command line.
-  def addOutput(self, graph, task, data, nodeID):
+  def addOutput(self, graph, task, data, nodeId):
 
     # Get the argument, values and data type for the option node.
-    argument = self.getToolArgument(graph, task, nodeID, isInput = False)
-    values   = graph.getGraphNodeAttribute(nodeID, 'values')
-    dataType = graph.getArgumentAttribute(task, nodeID, 'dataType')
+    argument = self.getToolArgument(graph, task, nodeId, isInput = False)
+    values   = graph.getGraphNodeAttribute(nodeId, 'values')
+    dataType = graph.getArgumentAttribute(task, nodeId, 'dataType')
 
     # Check if this task has children. If so, the outputs for the different subphases will be attached to the child nodes.
-    isParent = graph.getGraphNodeAttribute(nodeID, 'isParent')
-    children = graph.getGraphNodeAttribute(nodeID, 'children')
+    isParent = graph.getGraphNodeAttribute(nodeId, 'isParent')
+    children = graph.getGraphNodeAttribute(nodeId, 'children')
 
     # Check if this node contains intermediate files.
-    isIntermediate = graph.getGraphNodeAttribute(nodeID, 'isIntermediate')
+    #isIntermediate = graph.getGraphNodeAttribute(nodeId, 'isIntermediate')
+    isIntermediate = True if graph.getGraphNodeAttribute(nodeId, 'deleteAfterTask') == task else False
 
     # Determine if this argument is for a stream.
-    isStream = graph.getArgumentAttribute(task, nodeID, 'isStream')
+    isStream = graph.getArgumentAttribute(task, nodeId, 'isStream')
 
     # Determine if this is a stub.
-    isStub        = graph.getArgumentAttribute(task, nodeID, 'isStub')
-    stubExtension = graph.getArgumentAttribute(task, nodeID, 'stubExtension')
+    isStub         = graph.getArgumentAttribute(task, nodeId, 'isStub')
+    stubExtension  = graph.getArgumentAttribute(task, nodeId, 'stubExtension')
+    includeStubDot = graph.getArgumentAttribute(task, nodeId, 'includeStubDot')
+    isPrimaryNode  = graph.getArgumentAttribute(task, nodeId, 'primaryStubNode')
 
     # If this is a parent node, then the task has been split into divisions. The parent file node and it's children each
     # correspond to a division. Thus the values contained in them are for each subphase with the division. Begin by looping
@@ -361,8 +370,10 @@ class makefiles:
     # Deal with the first division. If there are multiple divisions, this is the values from the parent node. If there is
     # only a single division, this is the only node that exists.
     for subphase, value in enumerate(values):
-      lineValue = self.getValue(graph, task, nodeID, value, isInput = False, isStub = False, stubExtension = None)
-      line      = self.buildLine(argument, data.delimiter, lineValue)
+      if isStub and not isPrimaryNode: line = None
+      else:
+        lineValue = self.getValue(graph, task, nodeId, value, isInput = False, isStub = isStub, stubExtension = stubExtension)
+        line      = self.buildLine(argument, data.delimiter, lineValue)
       if line:
 
         # If this task outputs to stdout, update the stdouts data structure,
@@ -383,8 +394,10 @@ class makefiles:
         division = graph.getGraphNodeAttribute(child, 'divisionID') + 1
         lines    = []
         for subphase, value in enumerate(graph.getGraphNodeAttribute(child, 'values')):
-          lineValue = self.getValue(graph, task, nodeID, value, isInput = False, isStub = False, stubExtension = None)
-          line      = self.buildLine(argument, data.delimiter, lineValue)
+          if isStub and not isPrimaryNode: line = None
+          else:
+            lineValue = self.getValue(graph, task, nodeId, value, isInput = False, isStub = isStub, stubExtension = stubExtension)
+            line      = self.buildLine(argument, data.delimiter, lineValue)
           if line: data.commands[subphase + 1][division].append(line)
 
           # Add the files to the dependencies or outputs for the command line (do not add the values to the list of
@@ -397,27 +410,27 @@ class makefiles:
 
 #FIXME REMOVE WHEN STUBS ARE HANDLED. USE THIS TO FIGURE OUT HOW TO USED THEM.
 #  # Add input or output files to the command line (this method is only called for nodes that are not multinodes).
-#  def addFiles(self, graph, task, data, nodeID, isInput):
+#  def addFiles(self, graph, task, data, nodeId, isInput):
 #
 #    # Set the source and target for the edge. This depends on whether the file is an input to or an output from 
 #    # the task.
 #    if isInput:
-#      source = nodeID
+#      source = nodeId
 #      target = task
 #    else:
 #      source = task
-#      target = nodeID
+#      target = nodeId
 #
 #    # Get the argument and values for the file node.
-#    argument = self.getToolArgument(graph, task, nodeID, isInput)
-#    values   = graph.getGraphNodeAttribute(nodeID, 'values')
+#    argument = self.getToolArgument(graph, task, nodeId, isInput)
+#    values   = graph.getGraphNodeAttribute(nodeId, 'values')
 #
 #    # Check if this task generates multiple nodes.
 #    isGeneratesMultipleNode = graph.getGraphNodeAttribute(task, 'generateMultipleOutputNodes')
 #    isConsolidate           = graph.getGraphNodeAttribute(task, 'consolidate')
 #
 #    # Check if this node is associated with intermediate files.
-#    isIntermediate = True if graph.getGraphNodeAttribute(nodeID, 'deleteAfterTask') == task else False
+#    isIntermediate = True if graph.getGraphNodeAttribute(nodeId, 'deleteAfterTask') == task else False
 #
 #    # Determine if this argument is for a stream.
 #    isStream = graph.getArgumentAttribute(source, target, 'isStream')
@@ -799,7 +812,7 @@ class makefiles:
       print(file = filehandle)
 
   # output is included in the rule for the additional task.
-  def multipleOutputFiles(self, filehandle, filename, subphase, division, data):
+  def multipleOutputFiles(self, filehandle, filename, data, subphase, division):
     print('### Rule for checking that all outputs of previous task exist.', file = filehandle)
     for counter in range(1, len(data.outputs[subphase][division]) - 1):
       print(data.outputs[subphase][division][counter], end = ' ', file = filehandle)
@@ -817,7 +830,7 @@ class makefiles:
     print('\t  touch $@; \\', file = filehandle)
     print('\telse \\', file = filehandle)
     print('\t  rm -f ', data.outputs[subphase][division][0], "; \\", sep = '', file = filehandle)
-    print('\t  $(MAKE) --no-print-directory -f $(PWD)/', makefileName, ' ', data.outputs[subphase][division][0], '; \\', sep = '', file = filehandle)
+    print('\t  $(MAKE) --no-print-directory -f $(PWD)/', filename, ' ', data.outputs[subphase][division][0], '; \\', sep = '', file = filehandle)
     print('\tfi', file = filehandle)
     print(file = filehandle)
 
@@ -1079,36 +1092,36 @@ class makefiles:
 #    return files
 
 
-  # Close all the open makefiles.
-  def closeFiles(self):
-
-    # If only a single makefile was created, only a single file needs to be closed.
-    if not self.isMultipleMakefiles:
-      filehandle = self.makefilehandles[1][1][1]
-      filename   = self.makefileNames[1][1][1]
-      self.completeFile(filename, filehandle)
-
-      # Close the file.
-      fh.fileHandling.closeFile(filehandle)
-
-    # If multiple files were opened, close them all.
-    else:
-      for phase in self.makefilehandles:
-        for subphase in self.makefilehandles[phase]:
-          for division in self.makefilehandles[phase][subphase]:
-            filehandle = self.makefilehandles[phase][subphase][division]
-            filename   = self.makefileNames[1][1][1]
-            self.completeFile(filename, filehandle)
-
-            # Close the file.
-            fh.fileHandling.closeFile(filehandle)
+#  # Close all the open makefiles.
+#  def closeFiles(self):
+#
+#    # If only a single makefile was created, only a single file needs to be closed.
+#    if not self.isMultipleMakefiles:
+#      filehandle = self.makefilehandles[1][1][1]
+#      filename   = self.makefileNames[1][1][1]
+#      self.completeFile(filename, filehandle)
+#
+#      # Close the file.
+#      fh.fileHandling.closeFile(filehandle)
+#
+#    # If multiple files were opened, close them all.
+#    else:
+#      for phase in self.makefilehandles:
+#        for subphase in self.makefilehandles[phase]:
+#          for division in self.makefilehandles[phase][subphase]:
+#            filehandle = self.makefilehandles[phase][subphase][division]
+#            filename   = self.makefileNames[1][1][1]
+#            self.completeFile(filename, filehandle)
+#
+#            # Close the file.
+#            fh.fileHandling.closeFile(filehandle)
 
   # Return the argument to be written to the command line (and consequently, that stored in the commands
   # data structure). It is usually the case that the gkno argument does not correspond to the tool
   # argument.
-  def getToolArgument(self, graph, task, nodeID, isInput):
-    inputInstructions  = graph.getArgumentAttribute(nodeID, task, 'inputStreamInstructions')
-    outputInstructions = graph.getArgumentAttribute(task, nodeID, 'outputStreamInstructions')
+  def getToolArgument(self, graph, task, nodeId, isInput):
+    inputInstructions  = graph.getArgumentAttribute(nodeId, task, 'inputStreamInstructions')
+    outputInstructions = graph.getArgumentAttribute(task, nodeId, 'outputStreamInstructions')
 
     # Determine streaming instructions, beginning with if this is an input accepting a stream.
     if graph.getGraphNodeAttribute(task, 'isInputStream') and inputInstructions:
@@ -1136,13 +1149,13 @@ class makefiles:
   
       # If the argument is for an input file.
       if isInput:
-        commandLineArgument = graph.getArgumentAttribute(nodeID, task, 'commandLineArgument')
-        modifyArgument      = graph.getArgumentAttribute(nodeID, task, 'modifyArgument')
+        commandLineArgument = graph.getArgumentAttribute(nodeId, task, 'commandLineArgument')
+        modifyArgument      = graph.getArgumentAttribute(nodeId, task, 'modifyArgument')
   
       # And if the argument is for an output file.
       else: 
-        commandLineArgument = graph.getArgumentAttribute(task, nodeID, 'commandLineArgument')
-        modifyArgument      = graph.getArgumentAttribute(task, nodeID, 'modifyArgument')
+        commandLineArgument = graph.getArgumentAttribute(task, nodeId, 'commandLineArgument')
+        modifyArgument      = graph.getArgumentAttribute(task, nodeId, 'modifyArgument')
   
       # Return the argument to be used on the command line.
       if modifyArgument == 'omit': return None

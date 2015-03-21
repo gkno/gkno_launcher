@@ -396,6 +396,7 @@ class pipelineConfiguration:
 
       # Check all the supplied attributes.
       self.success, attributes = methods.checkAttributes(taskInformation, allowedAttributes, attributes, self.allowTermination, helpInfo)
+      if not self.success: return False
 
       # Check that the task name is unique.
       if attributes.task in self.pipelineTasks:
