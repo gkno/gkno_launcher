@@ -681,6 +681,19 @@ class pipelineGraph:
       successorTasks = []
       for successor in self.graph.successors(task):
         for successorTask in self.graph.successors(successor): successorTasks.append(successorTask)
+
+      # If there is a single task marked as a successor task, but this is not the task that is already indicated
+      # as the next task, check that the task can be moved. This means that the successor task needs to be checked
+      # to ensure that it does not depend on any of the intervening tasks.
+      isDescendant = False
+      if len(successorTasks) == 1:
+        testTasks = []
+        for testTask in tempWorkflow:
+          if testTask != successorTasks[0]: testTasks.append(testTask)
+        for testTask in testTasks:
+          if successorTasks[0] in nx.descendants(self.graph, testTask):
+            isDescendant = True
+            break
  
       # If there are multiple successor tasks, loop over the tasks and check if any of these tasks depend on
       # each other.
@@ -713,19 +726,19 @@ class pipelineGraph:
           successorTasks.remove(successorTask)
           i = 0
                 
-      # If there is a only a single successor task, or all but one of the multiple successor tasks have already been
-      # added to the workflow, add this task to the workflow and remove from the tempWorkflow.
-      if len(successorTasks) == 1:
-        task = successorTasks[0]
-        self.workflow.append(successorTasks[0])
-        tempWorkflow.remove(successorTasks[0])
-
       # If the successor task has no successors of its own, it can be added to the workflow as the end of a set of
       # connected tasks. Then the first task in the original topologically sorted list can be added to the workflow
       # and its successors investigated.
-      else:
+      if isDescendant or len(successorTasks) != 1:
         task = tempWorkflow.pop(0)
         self.workflow.append(task)
+
+      # If there is a only a single successor task, or all but one of the multiple successor tasks have already been
+      # added to the workflow, add this task to the workflow and remove from the tempWorkflow.
+      else:
+        task = successorTasks[0]
+        if task not in self.workflow: self.workflow.append(task)
+        if task in tempWorkflow: tempWorkflow.remove(task)
 
     # Sanity check.
     assert len(tempWorkflow) == 0
@@ -828,6 +841,9 @@ class pipelineGraph:
         toolData         = superpipeline.getToolData(tool)
         longFormArgument = toolData.getLongFormArgument(argument)
 
+        # If the argument supplied in the parameter set is invalid for the specified tool, throw an error.
+        if not longFormArgument: pse.parameterSetErrors().invalidArgumentInTool(task, tool, setName, argument)
+
         # Determine if this argument is an input or output file.
         isInput  = toolData.getArgumentAttribute(longFormArgument, 'isInput')
         isOutput = toolData.getArgumentAttribute(longFormArgument, 'isOutput')
@@ -875,7 +891,7 @@ class pipelineGraph:
     parameterSet = superpipeline.getPipelineParameterSet(pipelineName, setName)
 
     # If the parameter set is not available, there is a problem.
-    if not parameterSet: print('addPipelineParameterSets - no set:', setName); exit(0)
+    if not parameterSet: pse.parameterSetErrors().invalidParameterSet(setName, superpipeline.getAvailablePipelineParameterSets(pipelineName))
 
     # Loop over the nodes in the parameter set.
     nodeIds = ps.parameterSets.SM_getNodeIDs(parameterSet)

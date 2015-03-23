@@ -341,6 +341,11 @@ class superpipelineClass:
     try: return self.pipelineConfigurationData[pipeline]
     except: return False
 
+  # Get a list of available parameter sets.
+  def getAvailablePipelineParameterSets(self, pipeline):
+    try: return self.pipelineConfigurationData[pipeline].parameterSets.sets.keys()
+    except: return [None]
+
   # Get a parameter set for a pipeline.
   def getPipelineParameterSet(self, pipeline, parameterSet):
     try: return self.pipelineConfigurationData[pipeline].parameterSets.sets[parameterSet]

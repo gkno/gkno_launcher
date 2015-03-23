@@ -25,6 +25,34 @@ class parameterSetErrors:
     # For a list of all error code values, see adminErrors.py.
     self.errorCode = '14'
 
+  ##################################
+  ## General parameter set errors ##
+  ##################################
+
+  # An invalid parameter set name was specified on the command line.
+  def invalidParameterSet(self, name, available):
+    self.text.append('Unknown parameter set.')
+    self.text.append('The parameter set \'' + name + '\' was requested on the command line, but this is not a valid parameter set for this ' + \
+    'pipeline. Please ensure that either no parameter set, or a set from the following list is requested.')
+    self.text.append('\t')
+    for parameterSet in available: self.text.append('\t' + parameterSet)
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # Invalid argument in the parameter set.
+  def invalidArgumentInTool(self, task, tool, name, argument):
+    self.text.append('Invalid argument in tool parameter set.')
+    self.text.append('As part of the pipeline, the task \'' + task + '\' uses the tool \'' + tool + '\'. In the configuration file ' + \
+    'for this tool, the parameter set \'' + name + '\' has a value set for the argument \'' + argument + '\', but this is not a ' + \
+    'valid argument for this tool. Please check the tool configuration file and ensure that all the arguments in the parameters ' + \
+    'sets are valid.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  ########################################
+  ## Errors with defined parameter sets ##
+  ########################################
+
   # If a parameter set includes an invalid node ID.
   def invalidNodeInPipelineParameterSet(self, pipeline, pSet, nodeID, ID):
     self.text.append('Invalid node ID in parameter set.')
