@@ -71,7 +71,6 @@
         "long form argument" : "--region",
         "short form argument" : "-rg",
         "command line argument" : "-region",
-        "extensions" : ["no extension"],
         "data type" : "string"
       }
     ]

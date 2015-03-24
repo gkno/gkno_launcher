@@ -290,17 +290,12 @@
         {
           "id" : "bam",
           "node" : "bam",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_set2.bam"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
         },
         {
           "id" : "reference",
           "node" : "reference",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
-        },
-        {
-          "id" : "known",
-          "node" : "known",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
         },
         {
           "id" : "dbsnp",

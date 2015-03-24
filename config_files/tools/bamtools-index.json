@@ -45,8 +45,7 @@
         "long form argument" : "--depth-based-index",
         "short form argument" : "-b",
         "command line argument" : "-bti",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       }
     ]
   },

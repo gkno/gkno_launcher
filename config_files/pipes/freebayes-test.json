@@ -1,0 +1,204 @@
+{
+  "id" : "freebayes",
+  "configuration type" : "pipeline",
+  "description" : "run freebayes",
+  "categories" : ["Variant-discovery"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "call",
+      "tool" : "freebayes"
+    },
+    {
+      "task" : "combine",
+      "tool" : "vcf-combine",
+      "consolidate divisions" : true
+    },
+    {
+      "task" : "compress",
+      "tool" : "bgzip"
+    },
+    {
+      "task" : "index",
+      "tool" : "vcf-index",
+      "omit from reduced plot" : true
+    },
+    {
+      "task" : "call-pop",
+      "tool" : "freebayes",
+      "greedy argument" : "--in"
+    },
+    {
+      "task" : "combine-pop",
+      "tool" : "vcf-combine",
+      "consolidate divisions" : true
+    },
+    {
+      "task" : "compress-pop",
+      "tool" : "bgzip"
+    },
+    {
+      "task" : "index-pop",
+      "tool" : "vcf-index",
+      "omit from reduced plot" : true
+    }
+  ],
+
+  "import arguments" : "call",
+
+  "arguments" : {
+  },
+
+  "unique graph nodes" : [
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "bam",
+      "arguments sharing node" : [
+        {
+          "task" : "call",
+          "task argument" : "--in"
+        },
+        {
+          "task" : "call-pop",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "reference",
+      "arguments sharing node" : [
+        {
+          "task" : "call",
+          "task argument" : "--fasta-reference"
+        },
+        {
+          "task" : "call-pop",
+          "task argument" : "--fasta-reference"
+        }
+      ]
+    },
+    {
+      "id" : "region",
+      "arguments sharing node" : [
+        {
+          "task" : "call",
+          "task argument" : "--region"
+        },
+        {
+          "task" : "call-pop",
+          "task argument" : "--region"
+        }
+      ]
+    },
+    {
+      "id" : "out",
+      "delete files" : true,
+      "arguments sharing node" : [
+        {
+          "task" : "call",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "combine",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "out-pop",
+      "delete files" : true,
+      "add text to filename" : "pop",
+      "arguments sharing node" : [
+        {
+          "task" : "call-pop",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "combine-pop",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "compress-vcf",
+      "delete files" : true,
+      "arguments sharing node" : [
+        {
+          "task" : "combine",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "compress",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "compress-vcf-pop",
+      "delete files" : true,
+      "arguments sharing node" : [
+        {
+          "task" : "combine-pop",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "compress-pop",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "index-vcf",
+      "arguments sharing node" : [
+        {
+          "task" : "compress",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "index",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "index-vcf-pop",
+      "arguments sharing node" : [
+        {
+          "task" : "compress-pop",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "index-pop",
+          "task argument" : "--in"
+        }
+      ]
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : []
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "bam",
+          "node" : "bam",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        }
+      ]
+    }
+  ]
+}

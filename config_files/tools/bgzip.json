@@ -18,8 +18,7 @@
           "value" : "omit"
         },
         "required" : true,
-        "data type" : "string",
-        "extensions" : ["no extension"]
+        "data type" : "string"
       }
     ],
 

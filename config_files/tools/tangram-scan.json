@@ -1,0 +1,130 @@
+{
+  "id" : "tangram-scan",
+  "configuration type" : "tool",
+  "description" : "Generate a histogram of the fragment length distributions of the input libraries.",
+  "categories" : ["BAM-processing", "Tangram", "Marthlab-software"],
+  "tools" : ["tangram"],
+  "path" : "Tangram/bin",
+  "executable" : "tangram_scan",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "An input file containing a list of BAM files.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "-in",
+        "required" : true,
+        "data type" : "string"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "Automatically generated file.",
+        "long form argument" : "--library-file",
+        "short form argument" : "-lf",
+        "command line argument" : "--library-file",
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["dat"],
+        "construct filename" : {
+          "method": "define name",
+          "path argument" : "--path",
+          "filename" : "lib_table.dat"
+        }
+      },
+      {
+        "description" : "Automatically generated file.",
+        "long form argument" : "--histogram-file",
+        "short form argument" : "-hf",
+        "command line argument" : "--histogram-file",
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["dat"],
+        "construct filename" : {
+          "method": "define name",
+          "path argument" : "--path",
+          "filename" : "hist.dat"
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Path of the output directory.  This must be empty or non-existent.",
+        "long form argument" : "--path",
+        "short form argument" : "-p",
+        "command line argument" : "-dir",
+        "required" : true,
+        "data type" : "string"
+      },
+      {
+        "description" : "Threshold for determining consistency with the fragment length distribution [0.01]",
+        "long form argument" : "--fragment-length-consistency",
+        "short form argument" : "-f",
+        "command line argument" : "-cf",
+        "data type" : "float"
+      },
+      {
+        "description" : "Trim rate for the fragment length distribution [0.02]",
+        "long form argument" : "--trim-rate",
+        "short form argument" : "-t",
+        "command line argument" : "-tr",
+        "data type" : "float"
+      },
+      {
+        "description" : "Minimum mapping quality for a normal read pair",
+        "long form argument" : "--min-mapping-quality",
+        "short form argument" : "-mq",
+        "command line argument" : "-mq",
+        "data type" : "integer"
+      },
+      {
+        "description" : "The minimum number of normal fragments in a library [10000].",
+        "long form argument" : "--minimum-fragments",
+        "short form argument" : "-mf",
+        "command line argument" : "-mf",
+        "data type" : "integer"
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : []
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "list",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/tangram-bam-list.txt"]
+        },
+        {
+          "id" : "output",
+          "argument" : "--path",
+          "values" : ["tangram-files"]
+        },
+        {
+          "id" : "fragments",
+          "argument" : "--minimum-fragments",
+          "values" : ["0"]
+        },
+        {
+          "id" : "output path",
+          "argument" : "--output-path",
+          "values" : ["./"]
+        }
+      ]
+    }
+  ]
+}

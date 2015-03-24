@@ -64,7 +64,6 @@
         "long form argument" : "--known-sites",
         "short form argument" : "-k",
         "command line argument" : "--knownSites",
-        "required" : true,
         "data type" : "string",
         "extensions" : ["vcf", "vcf.gz"],
         "allow multiple values" : true

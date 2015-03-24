@@ -137,7 +137,8 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeId, base
 
     # If this is an intermediate file and random text has not already been added, add a segment of random text
     # to the filename to ensure that there are no conflicts.
-    updatedValue = handleRandomText(graph, updatedValue, isIntermediate, hasRandomText, randomText, nodeId)
+    updatedValue, randomText = handleRandomText(graph, updatedValue, isIntermediate, hasRandomText, randomText, nodeId)
+    if randomText: hasRandomText = True
 
     # Determine the extension to place on the filename. This does not need to be performed if the file is a stub,
     # since, the stub should have no extension.
@@ -377,7 +378,7 @@ def handleRandomText(graph, value, isIntermediate, hasRandomText, randomText, no
     gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeId, 'hasRandomText', False)
 
   # Return the updated value.
-  return updatedValue
+  return updatedValue, randomText
 
 # Construct a file of known name.
 def constructKnownFilename(graph, superpipeline, instructions, task, nodeId):

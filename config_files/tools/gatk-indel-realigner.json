@@ -64,7 +64,6 @@
         "long form argument" : "--known-sites",
         "short form argument" : "-k",
         "command line argument" : "--knownAlleles",
-        "required" : true,
         "data type" : "string",
         "extensions" : ["vcf", "vcf.gz"]
       },

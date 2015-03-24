@@ -1,0 +1,103 @@
+{
+  "id" : "tangram-bam",
+  "configuration type" : "tool",
+  "description" : "Add ZA tags (see Mosaik documentation) to BAM files. This ensures compatibility between Tangram and all alignment tools - not just Mosaik.",
+  "categories" : ["Tangram", "BAM-processing", "Marthlab-software"],
+  "tools" : ["tangram"],
+  "path" : "Tangram/bin",
+  "executable" : "tangram_bam",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input BAM file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--input",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["bam"],
+        "if input is stream" : {
+          "argument" : "--input",
+          "value" : "stdin"
+        }
+      },
+      {
+        "description" : "The 'special' reference sequences (corresponding to MEIs for MEI detection).",
+        "long form argument" : "--special-reference",
+        "short form argument" : "-s",
+        "command line argument" : "--ref",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["fa", "fasta"]
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output BAM file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--output",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["bam"],
+        "if output to stream" : {
+          "argument" : "--output",
+          "value" : "stdout"
+        },
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_ZA"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The target genomic region.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "command line argument" : "--target-ref-name",
+        "data type" : "string"
+      },
+      {
+        "description" : "The number of required matches between the read and special references [50].",
+        "long form argument" : "--required-matches",
+        "short form argument" : "-m",
+        "command line argument" : "--required-match",
+        "data type" : "integer"
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : []
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "bam",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_noZA.bam"]
+        },
+        {
+          "id" : "ref",
+          "argument" : "--special-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"]
+        }
+      ]
+    }
+  ]
+}

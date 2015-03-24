@@ -76,7 +76,6 @@
         "long form argument" : "--cnv-map",
         "short form argument" : "-cnv",
         "command line argument" : "--cnv-map",
-        "extensions" : ["no extension"],
         "data type" : "string"
       },
       {
