@@ -14,6 +14,7 @@ import parameterSetErrors as pse
 import pipelineConfigurationErrors as pce
 import stringOperations as strOps
 import superpipeline as sp
+import toolConfigurationErrors as tce
 
 import json
 import os
@@ -1381,9 +1382,15 @@ class pipelineGraph:
           # Having constructed the output filenames, add them to the node.
           self.setGraphNodeAttribute(nodeId, 'values', values)
 
+        # If the method is 'define name', construct the values.
+        elif instructions['method'] == 'define name':
+          values = construct.constructKnownFilename(self.graph, superpipeline, instructions, task, nodeId)
+
         # If the construction method is unknown, terminate.
-        # TODO ERROR
-        else: print('constructFilenames.constructFilenames - unknown method', instructions.method); exit(0)
+        else:
+          argument = self.getArgumentAttribute(task, nodeId, 'longFormArgument')
+          tool     = self.getGraphNodeAttribute(task, 'tool')
+          tce.toolErrors().invalidConstructionMethod(task, tool, argument, instructions['method'])
 
   # Loop over all output file nodes (for tasks with divisions), checking that all of the filenames are
   # defined. If not, construct them if instructions are provided.
@@ -1470,8 +1477,10 @@ class pipelineGraph:
             self.setGraphNodeAttribute(nodeId, 'randomText', randomText)
 
         # If the construction method is unknown, terminate.
-        # TODO ERROR
-        else: print('constructFilenames.constructFilenames - unknown method', instructions.method); exit(0)
+        else:
+          argument = self.getArgumentAttribute(task, nodeId, 'longFormArgument')
+          tool     = self.getGraphNodeAttribute(task, 'tool')
+          tce.toolErrors().invalidConstructionMethod(task, tool, argument, instructions['method'])
 
   # Update the values supplied to the option argument to ensure that they do not contain any special
   # characters.

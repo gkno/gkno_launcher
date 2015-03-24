@@ -204,6 +204,10 @@ class toolConfiguration:
     # Check the values supplied to attributes.
     if self.success: self.checkAttributeValues()
 
+    # If any of the arguments have instructions on how to construct filenames, check
+    # that the values are valid.
+    if self.success: self.checkConstructionInstructions()
+
     # Check the parameter set information and store.
     if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination, self.name, isTool = True)
 
@@ -410,6 +414,57 @@ class toolConfiguration:
           else:
             self.success = False
             return False
+
+  # Check values supplied to construction instructions.
+  def checkConstructionInstructions(self):
+    success = True
+
+    # Define a list of allowed construction methods.
+    allowedMethods = []
+    allowedMethods.append('from tool argument')
+    allowedMethods.append('define name')
+
+    # Loop over all the arguments set for the pipeline and find ones with construction instructions.
+    for argument in self.arguments:
+      instructions = self.getArgumentAttribute(argument, 'constructionInstructions')
+      category     = self.getArgumentAttribute(argument, 'category')
+      if instructions:
+
+        # Check that there is a method described and if so, that it is valid.
+        if 'method' not in instructions: self.errors.missingMethod(self.name, category, argument, allowedMethods)
+        elif instructions['method'] not in allowedMethods:
+          self.errors.invalidMethod(self.name, category, argument, instructions['method'], allowedMethods)
+
+        # Depending on the selected method, check that all accompanying values are valid.
+        if instructions['method'] == 'from tool argument': success = self.checkFromArgument(category, argument, instructions)
+        elif instructions['method'] == 'define name': success = self.checkDefineName(category, argument, instructions)
+
+    return success
+
+  # TODO
+  # FIXME Perform checks.
+  # Check 'from tool argument' construction instructions.
+  def checkFromArgument(self, category, argument, instructions):
+    pass
+
+  # Check 'define name' construction instructions.
+  def checkDefineName(self, category, argument, instructions):
+    allowedFields = []
+    allowedFields.append('filename')
+    allowedFields.append('method')
+    allowedFields.append('path argument')
+
+    # Loop over the arguments and check if there are any invalid fields supplied.
+    for field in instructions:
+      if field not in allowedFields: self.errors.invalidConstructionField(self.name, category, argument, 'define name', field, allowedFields)
+
+    # Check for required fields.
+    if 'filename' not in instructions: self.errors.missingConstructionField(self.name, category, argument, 'filename', 'define name')
+
+    # If a path argument is supplied, ensure that the supplied argument is valid for the tool.
+    if 'path argument' in instructions:
+      pathArgument = instructions['path argument']
+      if pathArgument not in self.arguments: self.errors.invalidPathArgument(self.name, category, argument, pathArgument, 'define name')
 
   ##############################
   ### Get and set attributes ###

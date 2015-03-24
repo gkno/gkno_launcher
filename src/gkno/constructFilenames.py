@@ -378,3 +378,31 @@ def handleRandomText(graph, value, isIntermediate, hasRandomText, randomText, no
 
   # Return the updated value.
   return updatedValue
+
+# Construct a file of known name.
+def constructKnownFilename(graph, superpipeline, instructions, task, nodeId):
+  tool     = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'tool')
+  argument = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeId, 'longFormArgument')
+
+  # Get the filename to use.
+  filename = instructions['filename']
+
+  # Check if the 'directory argument' field is set. This will determine if the filename should be
+  # prepended with a path defined by a tool argument.
+  pathValues = []
+  pathNodeId = None
+  pathArgument = None
+  if 'path argument' in instructions:
+    pathArgument = instructions['path argument'] 
+    pathNodeId   = gr.pipelineGraph.CM_getNodeForInputArgument(graph, task, pathArgument)
+    for value in gr.pipelineGraph.CM_getGraphNodeAttribute(graph, pathNodeId, 'values'): pathValues.append(value.rstrip('/'))
+  else: pathValues = ['.']
+
+  # Generate the values.
+  values = [str(value + '/' + filename) for value in pathValues]
+
+  # Set the values.
+  gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeId, 'values', values)
+
+  # Return the constructed values.
+  return values

@@ -89,3 +89,66 @@ class toolErrors:
     'no actual arguments are included within these sections. Please ensure that these sections are present.') 
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  ###########################################
+  ## Errors with construction instrictions ##
+  ###########################################
+
+  # If the supplied construction instructions do not include a method.
+  def missingMethod(self, tool, category, argument, methods):
+    self.text.append('Missing filename construction method.')
+    self.text.append('The tool \'' + tool + '\' has information on the argument \'' + argument + '\' in the category \'' + category + \
+    '\'. This argument has instructions on how to construct the filename in the absence of user supplied values. The field ' + \
+    '\'method\' is used to describe the method to use when constructing the filenames, but this field is missing. Please ensure ' + \
+    'that the configuration file contains one of the following methods:')
+    self.text.append('\t')
+    for method in methods: self.text.append('\t' + method)
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # If the supplied construction instructions include an unknown method.
+  def invalidMethod(self, tool, category, argument, method, methods):
+    self.text.append('Invalid filename construction method.')
+    self.text.append('The tool \'' + tool + '\' has information on the argument \'' + argument + '\' in the category \'' + category + \
+    '\'. This argument has instructions on how to construct the filename in the absence of user supplied values. The field ' + \
+    '\'method\' is used to describe the method to use when constructing the filenames. The method defined by this field is \'' + \
+    method + '\', but this is not a valid construction method. Please ensure that the configuration file contains one of the ' + \
+    'following methods:')
+    self.text.append('\t')
+    for method in methods: self.text.append('\t' + method)
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # A construction method contains an invalid field.
+  def invalidConstructionField(self, tool, category, argument, method, field, allowedFields):
+    self.text.append('Invalid field in construction instructions.')
+    self.text.append('The tool \'' + tool + '\' has information on the argument \'' + argument + '\' in the category \'' + category + \
+    '\'. This argument has instructions on how to construct the filename in the absence of user supplied values. This argument is ' + \
+    'using the method \'' + method + '\', which allows a number of other fields to be set. The supplied field \'' + field + '\' is ' + \
+    'not a valid field for this method. Please ensure that only the following fields are included in the \'' + method + \
+    '\' construction instructions:')
+    self.text.append('\t')
+    for field in allowedFields: self.text.append('\t' + field)
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # A construction method is missing a required field.
+  def missingConstructionField(self, tool, category, argument, field, method):
+    self.text.append('Missing information in construction method.')
+    self.text.append('The tool \'' + tool + '\' has information on the argument \'' + argument + '\' in the category \'' + category + \
+    '\'. This argument has instructions on how to construct the filename in the absence of user supplied values. This argument is ' + \
+    'using the method \'' + method + '\', which requires a number of other fields to be defined. In this instance, the field \'' + \
+    field + '\' is missing. Please ensure that all necessary instructions for filename construction are provided.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # The argument supplied as a path argument is not valid.
+  def invalidPathArgument(self, tool, category, argument, pathArgument, method):
+    self.text.append('Invalid argument in construction instructions.')
+    self.text.append('The tool \'' + tool + '\' has information on the argument \'' + argument + '\' in the category \'' + category + \
+    '\'. This argument has instructions on how to construct the filename in the absence of user supplied values. This argument is ' + \
+    'using the method \'' + method + '\', which allows a number of other fields to be set. The field \'path argument\' defines an ' + \
+    'argument in the tool that specifies a path to be added to the filename. The argument supplied with this (' + pathArgument + \
+    ') is not a valid argument for this tool. Please update the configuration file to include only valid arguments.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

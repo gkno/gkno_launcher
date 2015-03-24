@@ -103,7 +103,7 @@ def checkNode(graph, superpipeline, source, target, nodeType, expectedDataType, 
 def isCorrectDataType(value, dataType):
 
   # The value can only be none, if this is a flag.
-  if not value and dataType != 'flag': return False
+  if not value and value != 0 and dataType != 'flag': return False
   elif not value: return True
 
   # If the expected data type is an integer.
@@ -191,7 +191,6 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
     # Get the tool for the task.
     tool     = superpipeline.tasks[task]
     toolData = superpipeline.getToolData(tool)
-    print('TEST', task, tool)
 
     # Loop over all of the arguments for the tool and check that all required arguments have a node
     # and that the node has values.
@@ -213,7 +212,6 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
         # for these input files.
 
         # Start with input files and options.
-        print('\t', argument, isInput, isOutput)
         if not isOutput:
 
           # Loop over all input nodes looking for edges that use this argument.
@@ -232,7 +230,6 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
                   # Check to see if this node can have it's values set with a top level pipeline argument (e.g. can
                   # be set without defining the task on the command line).
                   longFormArgument = graph.getGraphNodeAttribute(nodeID, 'longFormArgument')
-                  print('\t\t', nodeID, edgeArgument, argument, constructableNodes, graph.getGraphNodeAttribute(nodeID, 'values'), longFormArgument)
                   if longFormArgument and '.' not in longFormArgument:
 
                     # Get the short form of the pipeline argument and the argument description.

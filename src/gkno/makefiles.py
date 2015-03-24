@@ -178,6 +178,7 @@ class makefiles:
             data.commands[i][j].append(data.stdouts[i][j])
             data.commands[i][j].append('\t2>> $(STDERR)')
             data.commands[i][j].append('\t@echo -e "completed successfully."')
+            data.commands[i][j].append('\t@touch $(EXECUTED)')
             data.commands[i][j].append('')
 
       # Store the command lines for the task.
@@ -515,6 +516,7 @@ class makefiles:
       print('STDOUT=$(PWD)/$(MAKEFILE_ID).stdout', sep = '', file = filehandle)
       print('STDERR=$(PWD)/$(MAKEFILE_ID).stderr', sep = '', file = filehandle)
       print('COMPLETE_OK=$(PWD)/$(MAKEFILE_ID).ok', sep = '', file = filehandle)
+      print('EXECUTED=$(PWD)/$(MAKEFILE_ID).executed', sep = '', file = filehandle)
       print(file = filehandle)
   
       # Remove file on failed execution.
@@ -645,7 +647,7 @@ class makefiles:
 
     # List all the output files created by this makefile.
     print('### List all of the files that are required outputs of the pipeline.', file = filehandle)
-    print('all: $(COMPLETE_OK) ', end = '', file = filehandle)
+    print('all: DELETE_COMPLETE_OK $(COMPLETE_OK) ', end = '', file = filehandle)
 
     # Add all the output files to the makefile.
     for output in outputs: print(output, end = ' ', file = filehandle)
@@ -659,6 +661,7 @@ class makefiles:
       print('### Remove the file indicating successful completion of the pipeline. This file needs', file = filehandle)
       print('### to be recreated if the pipeline is rerun to indicate successful completion.', file = filehandle)
       print('DELETE_COMPLETE_OK:', file = filehandle)
+      print('\t@rm -f $(EXECUTED)', file = filehandle)
       print('\t@rm -f $(COMPLETE_OK)', file = filehandle)
       print(file = filehandle)
 
@@ -825,280 +828,27 @@ class makefiles:
       for filename in outputs[key]: print(filename, end = ' ', file = filehandle)
       print(file = filehandle)
       print('\t@rm -f $(MAKEFILE_ID).make', file = filehandle)
-      print('\t@touch $(COMPLETE_OK)', file = filehandle)
+
+      # If any of the rules were executed, the file defined by $(EXECUTED) will have been created. If this
+      # file does not exist, nothing was executed. This will result if all the files already existed and
+      # make determined that there was no need to execute any rules. If this is the case, inform the user.
+      print('\t@if test ! -f $(EXECUTED); then \\', file = filehandle)
+      print('\t  echo \'===================================\'; \\', file = filehandle)
+      print('\t  echo \'  WARNING: No new files generated.\'; \\', file = filehandle)
+      print('\t  echo \'===================================\'; \\', file = filehandle)
+      print('\t  echo ; \\', file = filehandle)
+      print('\t  echo \'All required output files already exist, so none of the tasks in the pipeline were executed.\'; \\', file = filehandle)
+      print('\t  echo \'To force execution of the pipeline remove output files prior to execution of gkno.\'; \\', file = filehandle)
+      print('\telse \\', file = filehandle)
+      print('\t  touch $(COMPLETE_OK); \\', file = filehandle)
+      print('\tfi', file = filehandle)
+      print('\t@rm -f $(EXECUTED)', file = filehandle)
 
   # Close the makefiles.
   def closeFiles(self):
     for filename in self.filenamesList:
       filehandle = self.filehandles[filename]
       fh.fileHandling.closeFile(filehandle)
-
-#  # Add the command lines to the makefiles.
-#  def addCommandLines(self, graph, struct):
-#
-#    # Loop over the phases, subphases and divisions. By looping over the makefiles in reverse order, any files
-#    # marked as intermediate can be deleted as soon as they are seen, as this will be the last task in the
-#    # pipeline in which they are used.
-#    for phase in self.makefileNames.keys():
-#      i = 0
-#      for subphase in self.makefileNames[phase].keys():
-#        for division in self.makefileNames[phase][subphase].keys():
-#
-#          # Get the makefile name and filehandle.
-#          makefileName = self.makefileNames[phase][subphase][division]
-#          filehandle   = self.makefilehandles[phase][subphase][division]
-#
-#          # Loop over the tasks for this makefile adding the command lines.
-#          for task in struct.phaseInformation[phase].tasks:
-#            isInputStream  = graph.getGraphNodeAttribute(task, 'isInputStream')
-#            isOutputStream = graph.getGraphNodeAttribute(task, 'isOutputStream')
-#
-#            # If this task outputs to a stream, no information should be written to the makefiles at this point.
-#            # All of the tasks that are part of the stream should be processed, so that the list of dependencies
-#            # and outputs can be constructed properly. If the task does not accept an input stream, then this is
-#            # the first task in the set of piped tools, so a data structure should be initialised.
-#            if isOutputStream:
-#              if not isInputStream: info = streamingInformation()
-#              self.storeStreamingTaskInformation(info, task, i, isLast = False)
-#
-#            # If this task accepts an input stream and isn't outputting to a stream, all of the stored information
-#            # as well as the information for this task can be written to file.
-#            elif isInputStream:
-#              self.storeStreamingTaskInformation(info, task, i, isLast = True)
-#              self.writeStreamingInformation(graph, info, i, filehandle)
-#
-#            # If this does not accept a stream or output to a stream, just write the information to the makefile.
-#            else: self.writeStandardInformation(graph, task, i, makefileName, filehandle)
-#
-#          # Increment the counter.
-#          i += 1
-
-  # Generate the makefiles for this execution of gkno.
-#  def generateMakefiles(self, struct, pipeline, gknoArguments, arguments):
-#
-#    # Check if multiple makefiles were requested.
-#    mm = gknoArguments['GKNO-MULTIPLE-MAKEFILES'].longFormArgument
-#    self.isMultipleMakefiles = True if mm in arguments else False
-#
-#    # Check if a makefile ID was supplied.
-#    mid = gknoArguments['GKNO-MAKEFILE-ID'].longFormArgument
-#    if mid in arguments: self.makefileID = arguments[mid][0]
-#
-#    # Define the baseName for the makefiles.
-#    baseName = str(pipeline + '-' + self.makefileID) if self.makefileID else str(pipeline)
-#
-#    # Loop over all the phases and set the names of all of the makefiles. Also link each
-#    # phase/subphase/division to the makefile.
-#    if self.isMultipleMakefiles:
-#      for phase in struct.phaseInformation:
-#  
-#        # Add the phase to the makefile name (if there are multiple phases).
-#        if phase not in self.makefileNames: self.makefileNames[phase] = {}
-#        if len(struct.phaseInformation.keys()) == 1: phaseName = baseName
-#        else: phaseName = str(baseName + '-phase' + str(phase))
-#  
-#        for subphase in range(1, struct.phaseInformation[phase].numberSubphases + 1):
-#  
-#          # Add the subphase to the makefile name (if there are multiple subphases).
-#          if subphase not in self.makefileNames[phase]: self.makefileNames[phase][subphase] = {}
-#          if struct.phaseInformation[phase].numberSubphases == 1: name = phaseName
-#          else: name = str(phaseName + '-subphase' + str(subphase))
-#
-#          # Add a set of random characters to the makefile name. After execution the makefile will be deleted, but
-#          # by appending random characters, if gkno is run multiple times, any existing makefiles will not be
-#          # overwritten.
-#          name += str('-' + stringOps.getRandomString(8))
-#  
-#          # Add the makefile names.
-#          if struct.phaseInformation[phase].numberDivisions == 1: self.makefileNames[phase][subphase][1] = str(name + '.make')
-#          else:
-#            for division in range(1, struct.phaseInformation[phase].numberDivisions + 1):
-#              self.makefileNames[phase][subphase][division] = str(name + '-division' + str(division) + '.make')
-#
-#    # If only a single makefile is being produced, everything links to the same makefile.
-#    else:
-#      for phase in struct.phaseInformation:
-#        if phase not in self.makefileNames: self.makefileNames[phase] = {}
-#        for subphase in range(1, struct.phaseInformation[phase].numberSubphases + 1):
-#          if subphase not in self.makefileNames[phase]: self.makefileNames[phase][subphase] = {}
-#
-#          # Add random characters to the makefile name (see above).
-#          baseName += str('.' + stringOps.getRandomString(8))
-#          if struct.phaseInformation[phase].numberDivisions == 1: self.makefileNames[phase][subphase][1] = str(baseName + '.make')
-#          else:
-#            for division in range(1, struct.phaseInformation[phase].numberDivisions + 1):
-#              self.makefileNames[phase][subphase][division] = str(baseName + '.make')
-
-#  # Get the makefile name for a given phase, subphase and division.
-#  def getMakefileName(self, phase, subphase, division):
-#    return self.makefileNames[phase][subphase][division]
-
-  # Open all of the required makefiles.
-#  def openFiles(self, graph, struct, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath):
-#
-#    # If there are not multiple makefiles being made, then there is no need to loop over all the
-#    # phases etc, as all phases point to the same makefile. In this event, just open the single
-#    # makefile.
-#    if not self.isMultipleMakefiles: self.singleFileHeader(graph, struct, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath)
-#    else: self.multifileHeader(graph, struct, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath)
-
-#  # Write the header text to a single makefile.
-#  def singleFileHeader(self, graph, struct, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath):
-#
-#    # Define the filehandle.
-#    filename   = self.makefileNames[1][1][1]
-#    filehandle = fh.fileHandling.openFileForWriting(filename)
-#
-#    # Add header text to the file.
-#    self.addHeader(graph, struct, filehandle, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath, self.makefileNames[1][1][1], 1)
-#
-#    # Loop over all the phases, subphases and divisions.
-#    allIntermediates = []
-#    allOutputs       = []
-#    tempOutputs      = []
-#    for phase in self.makefileNames:
-#      subphases = struct.phaseInformation[phase].numberSubphases
-#      divisions = struct.phaseInformation[phase].numberDivisions
-#      for task in struct.phaseInformation[phase].tasks:
-#        for subphase in range(1, subphases + 1):
-#          for division in range(1, divisions + 1):
-#            allOutputs.extend(self.executionInfo[task].outputs[subphase][division])
-#            allIntermediates.extend(self.executionInfo[task].intermediates[subphase][division])
-#
-#    # Remove duplicates from the lists.
-#    allIntermediates = list(set(allIntermediates))
-#    allOutputs       = list(set(allOutputs))
-#
-#    # Remove output files that are also marked as intermediates.
-#    allOutputs = list(set(allOutputs) - set(allIntermediates))
-#
-#    # Add the intermediate and output files.
-#    self.addIntermediateFiles(allIntermediates, filename, filehandle)
-#    self.addOutputFiles(allOutputs, filehandle)
-#
-#    # Remove the file created on successful execution of the makefile.
-#    self.removeOk(filehandle)
-#
-#    # Return the list of outputs generated by this makefile.
-#    return allOutputs
-#
-#  # Write header text to multiple makefiles.
-#  def multifileHeader(self, graph, struct, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath):
-#    print('NOT HANDLED MULTIPLE MAKEFILES'); exit(0)
-
-#    # Loop over all the phases, subphases and divisions.
-#    for phase in self.makefileNames:
-#      i = 0
-#
-#      # Initialise arrays.
-#      if phase not in self.makefilehandles:
-#        self.makefilehandles[phase] = {}
-#        self.makefileOutputs[phase] = {}
-#
-#      for subphase in self.makefileNames[phase]:
-#
-#        # Initialise arrays.
-#        if subphase not in self.makefilehandles[phase]:
-#          self.makefilehandles[phase][subphase] = {}
-#          self.makefileOutputs[phase][subphase] = {}
-#
-#        for division in self.makefileNames[phase][subphase]:
-#
-#          # Create a new filehandle and add the header text.
-#          filename   = self.makefileNames[phase][subphase][division]
-#          filehandle = fh.fileHandling.openFileForWriting(filename)
-#
-#          # Add the header, intermediate files and all output files for the phase.
-#          self.addHeader(graph, struct, filehandle, commitID, date, version, pipeline, sourcePath, toolPath, resourcePath, filename, phase)
-#          tempIntermediates = self.getFiles(struct, phase, 'intermediates', i)
-#          tempOutputs       = self.getFiles(struct, phase, 'outputs', i)
-#
-#          # If this is the final task in the makefile, all output files should be included as outputs, not
-#          # intermediates, even if so marked. If this is not followed, there could be phases that produce
-#          # no output files, which would ensure that the makefile would not execute.
-#          finalOutputs = self.getFinalTaskOutputs(struct, phase, i)
-#
-#          # Remove final outputs from the intermediates.
-#          intermediates = []
-#          for intermediate in tempIntermediates:
-#            if intermediate not in finalOutputs: intermediates.append(intermediate)
-#
-#          # Remove intermediate files from the outputs.
-#          outputs = []
-#          for output in tempOutputs:
-#            if output not in intermediates: outputs.append(output)
-#
-#          # Add the intermediate and output files.
-#          self.addIntermediateFiles(intermediates, filename, filehandle)
-#          self.addOutputFiles(outputs, filehandle)
-#
-#          # Remove the file created on successful execution of the makefile.
-#          self.removeOk(filehandle)
-#
-#          # Add the makefile handle to the data structure.
-#          self.makefilehandles[phase][subphase][division] = filehandle
-#
-#          # Store the list of output files generated by this makefile.
-#          self.makefileOutputs[phase][subphase][division] = finalOutputs
-#
-#          # Increment the counter.
-#          i += 1
-#
-#  # Get files for the task and phase.
-#  def getFiles(self, struct, phase, fileType, i):
-#    files = []
-#
-#    # Loop over the tasks for this phase.
-#    for task in struct.phaseInformation[phase].tasks:
-#
-#      # Define the files to loop over.
-#      print('\t', task,fileType, self.executionInfo[task].intermediates)
-#      if fileType == 'intermediates': fileList = self.executionInfo[task].intermediates
-#      elif fileType == 'outputs': fileList = self.executionInfo[task].outputs
-#
-#      # Get the files. If there are multiple makefiles, only take the values from the current phase, subphase
-#      # and division.
-#      for value in fileList[i]:
-#        if value not in files: files.append(value)
-#
-#    # Return the files.
-#    return files
-#
-#  # Return the output files from the final task in this phase.
-#  def getFinalTaskOutputs(self, struct, phase, i):
-#    files = []
-#
-#    # Get the files.
-#    for value in self.executionInfo[struct.phaseInformation[phase].tasks[-1]].outputs[i]:
-#      if value not in files: files.append(value)
-#
-#    # Return the files.
-#    return files
-
-
-#  # Close all the open makefiles.
-#  def closeFiles(self):
-#
-#    # If only a single makefile was created, only a single file needs to be closed.
-#    if not self.isMultipleMakefiles:
-#      filehandle = self.makefilehandles[1][1][1]
-#      filename   = self.makefileNames[1][1][1]
-#      self.completeFile(filename, filehandle)
-#
-#      # Close the file.
-#      fh.fileHandling.closeFile(filehandle)
-#
-#    # If multiple files were opened, close them all.
-#    else:
-#      for phase in self.makefilehandles:
-#        for subphase in self.makefilehandles[phase]:
-#          for division in self.makefilehandles[phase][subphase]:
-#            filehandle = self.makefilehandles[phase][subphase][division]
-#            filename   = self.makefileNames[1][1][1]
-#            self.completeFile(filename, filehandle)
-#
-#            # Close the file.
-#            fh.fileHandling.closeFile(filehandle)
 
   # Return the argument to be written to the command line (and consequently, that stored in the commands
   # data structure). It is usually the case that the gkno argument does not correspond to the tool
@@ -1197,16 +947,17 @@ class makefiles:
   # Build a line of the command line.
   @staticmethod
   def buildLine(argument, delimiter, value):
+    hasValue = False if not value and value != 0 else True
 
     # If neither the argument or the value are populated, return None.
-    if not argument and not value: return None
+    if not argument and not hasValue: return None
 
     # If the value is defined, but the argument is not, this is a tool that does not use arguments on the
     # command line and so the command should be the value only.
     elif not argument: return '\t' + str(value) + ' \\'
 
     # If only the argument is defined, this is a flag, so only the argument is returned.
-    elif not value: return '\t' + str(argument) + ' \\'
+    elif not hasValue: return '\t' + str(argument) + ' \\'
 
     # Finally, if both are defined, return the correctly delimited argument, value pair.
     else: return '\t' + str(argument) + str(delimiter) + str(value) + ' \\'
