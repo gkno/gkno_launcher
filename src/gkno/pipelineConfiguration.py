@@ -30,30 +30,6 @@ class taskAttributes:
     # Mark if this task should consolidate divisions if any exist.
     self.consolidate = False
 
-    #TODO CLEAN
-    # If a task is allowed to generate multiple output file nodes, set this flag. This can be used
-    # when a task may have multiple input files and the input files are processed separately, but are
-    # divided into segments for processing, e.g. splitting a BAM file into regions. Each BAM file can
-    # be split into multiple regions, each of which are processed seperately, generating N nodes (one
-    # for each BAM file), each containing M values (the number of genomic regions).
-    #self.generateMultipleOutputNodes = None
-
-    # Related to the above, the task following that creating multiple output file nodes, can be run
-    # multiple times (M times for each of the N inputs). If the following flag is set, multiple task
-    # nodes will be generated, one task node for each of the N files.
-    #self.multipleTaskCalls = False
-
-    # Following the above example, after the M regions have been called for each of the N samples, the
-    # VCF files are combined. The 'combine' task will be run multiple times and each of the 'combine'
-    # task nodes will generate a single output node. If the following flag is set, the output nodes
-    # for each of the N 'combine' calls are consolidated into a single node with N values.
-    #self.consolidate = None
-
-    # Identify any daughterer tasks. If the task is listed as being having multiple task calls, the same
-    # task in the pipeline will appear as multiple nodes to handle different sets of data. Any task
-    # that gets duplicated for this purpose has the IDs of the daughter tasks stored in this list.
-    self.daughterTasks = []
-
     # Keep track of input and output nodes that have multiple nodes.
     self.multinodeInput  = None
     self.multinodeOutput = None
@@ -438,7 +414,6 @@ class pipelineConfiguration:
     # Define the allowed nodes attributes.
     allowedAttributes                             = {}
     allowedAttributes['id']                       = (str, True, True, 'id')
-    allowedAttributes['is greedy']                = (bool, False, True, 'isGreedy')
     allowedAttributes['omit from reduced plot']   = (bool, False, True, 'omitFromReducedPlot')
     allowedAttributes['task']                     = (str, True, True, 'task')
     allowedAttributes['task argument']            = (str, False, True, 'taskArgument')
@@ -521,7 +496,6 @@ class pipelineConfiguration:
 
     # Define the allowed nodes attributes.
     allowedAttributes                        = {}
-    allowedAttributes['is greedy']           = (bool, False, True, 'isGreedy')
     allowedAttributes['node id']             = (str, False, True, 'externalNodeID')
     allowedAttributes['stub extension']      = (str, False, True, 'stubExtension')
     allowedAttributes['task']                = (str, True, True, 'task')

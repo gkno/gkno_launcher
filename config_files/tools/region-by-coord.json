@@ -1,0 +1,113 @@
+{
+  "id" : "region-by-coordinate",
+  "configuration type" : "tool",
+  "description" : "Given a chromosome and a list of integers, a set of regions are generated.",
+  "categories" : ["Genome-regions", "Scripts"],
+  "tools" : [],
+  "path" : "genomicRegions",
+  "executable" : "byCoordinate.sh",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "A file containing a list of genomic positions around which to generate windows (chromosome entered with --chromosome).",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--coordinate-list",
+        "required" : true,
+        "data type" : "string",
+        "modify argument" : "omit"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "A list of region windows.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["list"],
+        "modify argument" : "stdout",
+        "construct filename" : {
+          "method": "define name",
+          "filename" : "region-windows.list"
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The chromosome on which the windows are to be applied.",
+        "long form argument" : "--chromosome",
+        "short form argument" : "-c",
+        "command line argument" : "--chromosome",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The value to subtract from each given coordinate to define the lower value of the window.",
+        "long form argument" : "--minimum",
+        "short form argument" : "-m",
+        "command line argument" : "--minimum",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The value to add to each given coordinate to define the upper value of the window.",
+        "long form argument" : "--maximum",
+        "short form argument" : "-x",
+        "command line argument" : "--maximum",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--in",
+    "--chromosome",
+    "--minimum",
+    "--maximum",
+    "--out"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "input",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/genomic-positions.txt"]
+        },
+        {
+          "id" : "chromosome",
+          "argument" : "--chromosome",
+          "values" : [20]
+        },
+        {
+          "id" : "min",
+          "argument" : "--minimum",
+          "values" : [1000]
+        },
+        {
+          "id" : "max",
+          "argument" : "--maximum",
+          "values" : [2000]
+        }
+      ]
+    }
+  ]
+}

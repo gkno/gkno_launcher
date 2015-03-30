@@ -43,6 +43,22 @@
           "use argument" : "--fasta-reference",
           "modify extension" : "append"
         }
+      },
+      {
+        "description" : "The reference FASTA dictionary file.",
+        "long form argument" : "--fasta-dictionary",
+        "short form argument" : "-d",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "extensions" : ["dict"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "replace"
+        }
       }
     ],
 

@@ -228,9 +228,9 @@ class makefiles:
       lines = []
 
       # If the option creates the divisions, create the line based on the ith value. 
-      if isCreateDivision:
+      if isCreateDivision and not isAllowMultipleValues:
         #TODO ERROR
-        if len(values) != data.numberDivisions: print('ERROR - makefiles.addOption - 1'); exit(1)
+        if len(values) != data.numberDivisions: print('ERROR - makefiles.addOption - 1', task, nodeId); exit(1)
         lineValue = self.getValue(graph, nodeId, task, values[i - 1], isInput = True, isStub = False, stubExtension = None)
         lines.append(self.buildLine(argument, data.delimiter, lineValue))
 
@@ -379,10 +379,9 @@ class makefiles:
     # Deal with the first division. If there are multiple divisions, this is the values from the parent node. If there is
     # only a single division, this is the only node that exists.
     for subphase, value in enumerate(values):
+      lineValue = lineValues[subphase]
       if isStub and not isPrimaryNode: line = None
-      else:
-        lineValue = self.getValue(graph, task, nodeId, value, isInput = False, isStub = isStub, stubExtension = stubExtension)
-        line      = self.buildLine(argument, data.delimiter, lineValue)
+      else: line = self.buildLine(argument, data.delimiter, lineValue)
       if line:
 
         # If this task outputs to stdout, update the stdouts data structure,
@@ -402,11 +401,16 @@ class makefiles:
       for child in children:
         division = graph.getGraphNodeAttribute(child, 'divisionID') + 1
         lines    = []
-        for subphase, value in enumerate(graph.getGraphNodeAttribute(child, 'values')):
+
+        # Convert the values into the form required on the command line.
+        values = graph.getGraphNodeAttribute(child, 'values')
+        if isStream: lineValues = [self.getStreamValue(graph, task, nodeId, value, False, isStub) for value in values]
+        else: lineValues = [self.getValue(graph, task, nodeId, value, False, isStub, stubExtension) for value in values]
+
+        for subphase, value in enumerate(values):
+          lineValue = lineValues[subphase]
           if isStub and not isPrimaryNode: line = None
-          else:
-            lineValue = self.getValue(graph, task, nodeId, value, isInput = False, isStub = isStub, stubExtension = stubExtension)
-            line      = self.buildLine(argument, data.delimiter, lineValue)
+          else: line = self.buildLine(argument, data.delimiter, lineValue)
           if line: data.commands[subphase + 1][division].append(line)
 
           # Add the files to the dependencies or outputs for the command line (do not add the values to the list of
@@ -685,7 +689,7 @@ class makefiles:
       # as well as the information for this task can be written to file.
       elif isInputStream:
         self.storeStreamingTaskInformation(info, subphase, division, task, isLast = True)
-        self.writeStreamingInformation(graph, info, phase, subphase, division)
+        self.writeStreamingInformation(graph, info, phase, subphase, division, task)
 
       # If this does not accept a stream or output to a stream, just write the information to the makefile.
       else: self.writeStandardInformation(graph, phase, subphase, division, task)

@@ -1065,7 +1065,8 @@ class pipelineGraph:
         # If this task is already part of a division, it is not permitted for any option nodes to have multiple
         # values, unless these options are all to be applied to the same command line.
         if values[argument].type == 'option':
-          if divisions > 1 and not toolData.getArgumentAttribute(argument, 'allowMultipleValues'): print('ERROR - graph.constructFiles - division error', task, argument); exit(1)
+          isAllowMultipleValues = toolData.getArgumentAttribute(argument, 'allowMultipleValues')
+          if divisions > 1 and not isAllowMultipleValues: print('ERROR - graph.constructFiles - division error', task, argument); exit(1)
           else:
 
             # If this task is split into divisions, set the number of divisions and mark this task as the task that
@@ -1073,10 +1074,12 @@ class pipelineGraph:
             # the divisions, or act on the divisions already defined.
             # 
             # Note that only a single node can be supplied.
-            divisions             = values[argument].noValues
-            isFirstTaskInDivision = True
-            if len(values[argument].nodeIds) != 1: print('ERROR - graph.constructFiles - division error 2', values[argument].nodeIds); exit(1)
-            else: divisionNode = values[argument].nodeIds[0]
+            if isAllowMultipleValues: divisions = 1
+            else:
+              divisions             = values[argument].noValues
+              isFirstTaskInDivision = True
+              if len(values[argument].nodeIds) != 1: print('ERROR - graph.constructFiles - division error 2', values[argument].nodeIds); exit(1)
+              else: divisionNode = values[argument].nodeIds[0]
 
       # If the task only has a single division, there are no files to consolidate, so set consolidate to False.
       if divisions == 1: consolidate = False

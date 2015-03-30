@@ -1,0 +1,68 @@
+{
+  "id" : "bgzip",
+  "configuration type" : "tool",
+  "description" : "Compress a streaming file using bgzip.",
+  "categories" : ["General-file-processing"],
+  "tools" : ["tabix"],
+  "path" : "tabix",
+  "executable" : "bgzip",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The file to be compressed.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "if input is stream" : {
+          "argument" : "omit",
+          "value" : "omit"
+        },
+        "required" : true,
+        "data type" : "string"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "modify argument" : "stdout",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["gz"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "append"
+        }
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--in",
+    "--out"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : []
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "vcf",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"],
+          "argument" : "--in"
+        }
+      ]
+    }
+  ]
+}

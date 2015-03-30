@@ -6,19 +6,13 @@
 
   "pipeline tasks" : [
     {
-      "task" : "merge",
-      "tool" : "bamtools-merge",
-      "output to stream" : true,
-      "omit from reduced plot" : true
-    },
-    {
       "task" : "call",
-      "tool" : "freebayes",
-      "input is stream" : true
+      "tool" : "freebayes"
     },
     {
       "task" : "combine-vcf",
       "tool" : "vcf-combine",
+      "greedy argument" : "--in",
       "omit from reduced plot" : true
     }
   ],
@@ -62,12 +56,12 @@
   "unique graph nodes" : [
     {
       "id" : "bam",
-      "task" : "merge",
+      "task" : "call",
       "task argument" : "--in"
     },
     {
       "id" : "region",
-      "task" : "merge",
+      "task" : "call",
       "task argument" : "--region"
     },
     {
@@ -84,31 +78,16 @@
 
   "shared graph nodes" : [
     {
-      "id" : "call-in",
-      "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "merge",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "call",
-          "task argument" : "--in"
-        }
-      ]
-    },
-    {
       "id" : "combine",
       "delete files" : true,
       "arguments sharing node" : [
         {
           "task" : "call",
-          "task argument" : "-o"
+          "task argument" : "--out"
         },
         {
           "task" : "combine-vcf",
-          "task argument" : "--in",
-          "is greedy" : true
+          "task argument" : "--in"
         }
       ]
     }
@@ -123,6 +102,23 @@
           "id" : "region",
           "node" : "region",
           "values" : [20]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "bam",
+          "node" : "bam",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         }
       ]
     }

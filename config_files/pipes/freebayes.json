@@ -8,11 +8,12 @@
     {
       "task" : "call",
       "tool" : "freebayes",
+      "greedy argument" : "--in",
       "output to stream" : true
     },
     {
       "task" : "compress",
-      "tool" : "bgzip",
+      "tool" : "bgzip-stream",
       "input is stream" : true
     },
     {
@@ -31,8 +32,7 @@
     {
       "id" : "bam",
       "task" : "call",
-      "task argument" : "--in",
-      "is greedy" : true
+      "task argument" : "--in"
     },
     {
       "id" : "reference",

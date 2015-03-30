@@ -1,0 +1,119 @@
+{
+  "id" : "region-by-dict",
+  "configuration type" : "tool",
+  "description" : "Given a reference dictionary and (optionally) a list of reference sequences, a set of regions are generated.",
+  "categories" : ["Genome-regions", "Scripts"],
+  "tools" : [],
+  "path" : "genomicRegions",
+  "executable" : "byDictionary.sh",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "A reference fasta dictionary.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["dict"],
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "Only regions from the reference sequence in this file will be output. If --invert-sequences is also set, the sequences not contained in the file will be output.",
+        "long form argument" : "--reference-sequences",
+        "short form argument" : "-s",
+        "command line argument" : "none",
+        "data type" : "string",
+        "modify argument" : "omit"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "A list of genomic regions.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["list"],
+        "modify argument" : "stdout",
+        "construct filename" : {
+          "method": "define name",
+          "filename" : "region-windows.list"
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Generate regions only for the reference sequences contained in the file specified with --reference-sequences.",
+        "long form argument" : "--invert-sequences",
+        "short form argument" : "-v",
+        "command line argument" : "none",
+        "data type" : "bool",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The size of the genomic regions.",
+        "long form argument" : "--window-size",
+        "short form argument" : "-w",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--in",
+    "--window-size",
+    "--reference-sequences",
+    "--invert-sequences",
+    "--out"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+        {
+          "id" : "invert",
+          "argument" : "--invert-sequences",
+          "values" : [false]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "dictionary",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dict"]
+        },
+        {
+          "id" : "window",
+          "argument" : "--window-size",
+          "values" : [10000]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for the human genome.",
+      "data" : [
+        {
+          "id" : "dictionary",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.dict"]
+        }
+      ]
+    }
+  ]
+}

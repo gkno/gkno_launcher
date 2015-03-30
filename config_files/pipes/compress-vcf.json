@@ -1,0 +1,66 @@
+{
+  "id" : "freebayes",
+  "configuration type" : "pipeline",
+  "description" : "run freebayes",
+  "categories" : ["Variant-discovery"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "compress",
+      "tool" : "bgzip-file"
+    },
+    {
+      "task" : "index",
+      "tool" : "vcf-index"
+    }
+  ],
+
+  "import arguments" : "compress",
+
+  "arguments" : {
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "vcf",
+      "task" : "compress",
+      "task argument" : "--in"
+    }
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "out",
+      "arguments sharing node" : [
+        {
+          "task" : "compress",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "index",
+          "task argument" : "--in"
+        }
+      ]
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : []
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "vcf",
+          "node" : "vcf",
+          "values" : ["mutated_genome.vcf"]
+        }
+      ]
+    }
+  ]
+}

@@ -16,7 +16,7 @@
     },
     {
       "task" : "compress",
-      "tool" : "bgzip"
+      "tool" : "bgzip-stream"
     },
     {
       "task" : "index",
@@ -35,7 +35,7 @@
     },
     {
       "task" : "compress-pop",
-      "tool" : "bgzip"
+      "tool" : "bgzip-stream"
     },
     {
       "task" : "index-pop",
