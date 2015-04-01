@@ -1,5 +1,6 @@
 {
   "id" : "vcf-filter",
+  "configuration type" : "tool",
   "description" : "Filter vcf files on a variety of parameters.",
   "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
   "tools" : ["vcflib"],
@@ -12,9 +13,14 @@
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "--in",
+        "modify argument" : "omit",
         "required" : true,
         "extensions" : ["vcf", "vcf.gz"],
-        "data type" : "string"
+        "data type" : "string",
+        "if input is stream" : {
+          "argument" : "omit",
+          "value" : "omit"
+        }
       }
     ],
 
@@ -36,6 +42,10 @@
               "add text" : ["_filtered"]
             }
           ]
+        },
+        "if output to stream" : {
+          "argument" : "omit",
+          "value" : "omit"
         }
       }
     ],
@@ -47,6 +57,7 @@
         "short form argument" : "-f",
         "command line argument" : "--info-filter",
         "allow multiple values" : true,
+        "include value in quotations" : true,
         "data type" : "string"
       },
       {
@@ -59,7 +70,7 @@
       {
         "description" : "Tag vcf records as filtered with this tag instead of suppressing them.",
         "long form argument" : "--tag-pass",
-        "short form argument" : "-t",
+        "short form argument" : "-tp",
         "command line argument" : "--tag-pass",
         "data type" : "string"
       },

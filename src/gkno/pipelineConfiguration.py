@@ -442,7 +442,7 @@ class pipelineConfiguration:
       if attributes.id in self.uniqueNodeAttributes: self.errors.repeatedNodeID(uniqueNode, helpInfo)
 
       # Also check that the node id is not the name of a task.
-      if attributes.id in self.allTasks: print('pipeline.checkUniqueNodes - 7'); exit(0)
+      if attributes.id in self.allTasks: self.errors.nodeIdIsTaskId('unique', helpInfo)
 
       # Store the attributes.
       self.uniqueNodeAttributes[attributes.id] = attributes

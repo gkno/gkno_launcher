@@ -294,11 +294,6 @@
       "id" : "default",
       "description" : "test description",
       "data" : [
-        {
-          "id" : "pvar",
-          "argument" : "-v",
-          "values" : [0.5]
-        }
       ]
     },
 

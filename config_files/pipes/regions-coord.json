@@ -1,0 +1,90 @@
+{
+  "id" : "regions-coord",
+  "configuration type" : "pipeline",
+  "description" : "Generate a list of regions based on a list of chromosome coordinates.",
+  "categories" : ["Scripts"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "regions",
+      "tool" : "region-by-coord"
+    }
+  ],
+
+  "import arguments" : "regions",
+
+  "arguments" : {
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "coords",
+      "task" : "regions",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "chromosome",
+      "task" : "regions",
+      "task argument" : "--chromosome"
+    },
+    {
+      "id" : "min",
+      "task" : "regions",
+      "task argument" : "--minimum"
+    },
+    {
+      "id" : "max",
+      "task" : "regions",
+      "task argument" : "--maximum"
+    },
+    {
+      "id" : "output",
+      "task" : "regions",
+      "task argument" : "--out"
+    }
+  ],
+
+  "shared graph nodes" : [
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+        {
+          "id" : "out",
+          "node" : "output",
+          "values" : ["regions.list"]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "list",
+          "node" : "coords",
+          "values" : ["$(RESOURCES)/tutorial/current/coords.txt"]
+        },
+        {
+          "id" : "chromosome",
+          "node" : "chromosome",
+          "values" : [20]
+        },
+        {
+          "id" : "min",
+          "node" : "min",
+          "values" : [100]
+        },
+        {
+          "id" : "max",
+          "node" : "max",
+          "values" : [100]
+        }
+      ]
+    }
+  ]
+}

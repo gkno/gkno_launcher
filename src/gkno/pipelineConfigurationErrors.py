@@ -187,7 +187,17 @@ class pipelineErrors:
     self.text.append('Repeated pipeline node ID.')
     self.text.append('The configuration file for the pipeline \'' + helpInfo[0] + '\' contains at least two nodes in the \'' + helpInfo[1] + \
     '\' section with the same ID (' + helpInfo[2] + '). All nodes must have unique IDs in order to construct the pipeline graph. Please ' + \
-    'ensure that all nodes defined in the configuration file are unique')
+    'ensure that all nodes defined in the configuration file are unique.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # If a node has the same id as a task.
+  def nodeIdIsTaskId(self, nodeType, helpInfo):
+    self.text.append('Configuration file node has the same id as a task.')
+    self.text.append('A node in the \'' + helpInfo[1] + '\' section of the pipeline configuration file for pipeline \'' + helpInfo[0] + \
+    '\' has the id \'' + helpInfo[2] + '\'. This is the same id as a task defined in the \'pipeline tasks\' section. All the node ids ' + \
+    'in the configuration file (across all task, unique nodes and shared nodes) must be unique. Please update the ids to ensure that they ' + \
+    'are all unique.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 

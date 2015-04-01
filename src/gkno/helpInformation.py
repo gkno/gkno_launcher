@@ -29,6 +29,7 @@ class helpInformation:
     self.helpCategories['Alignment']         = 'Read alignment tasks are performed as part of the pipeline.'
     self.helpCategories['FASTA-processing']  = 'Pipelines involving manipulation of reference FASTA files.'
     self.helpCategories['Reference-free']    = 'Analysis of genomes without use of the genome reference.'
+    self.helpCategories['Scripts']           = 'Scripts to perform many commonly performed tasks.'
     self.helpCategories['Simulation']        = 'Simulation-based pipelines.'
     self.helpCategories['SV-discovery']      = 'Pipelines including detection of structural variations.'
     self.helpCategories['Variant-discovery'] = 'Pipelines including variant discovery tasks.'

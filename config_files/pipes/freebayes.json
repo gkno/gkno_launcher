@@ -1,14 +1,24 @@
 {
   "id" : "freebayes",
   "configuration type" : "pipeline",
-  "description" : "run freebayes",
+  "description" : "Population call variants using Freebayes, filtering the results with standard filtering methods.",
   "categories" : ["Variant-discovery"],
 
   "pipeline tasks" : [
     {
       "task" : "call",
       "tool" : "freebayes",
-      "greedy argument" : "--in",
+      "greedy argument" : "--in"
+    },
+    {
+      "task" : "combine-vcf",
+      "tool" : "vcf-combine",
+      "consolidate divisions" : true,
+      "omit from reduced plot" : true
+    },
+    {
+      "task" : "filter",
+      "tool" : "vcf-filter",
       "output to stream" : true
     },
     {
@@ -26,6 +36,29 @@
   "import arguments" : "call",
 
   "arguments" : {
+    "Outputs" : [
+      {
+        "description" : "The output filtered VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ],
+
+    "Filtering options" : [
+      {
+        "description" : "Specifies a filter to apply to the info fields of records, removes alleles which do not pass the filter.",
+        "long form argument" : "--info-filter",
+        "short form argument" : "-f",
+        "node id" : "info-filter"
+      },
+      {
+        "description" : "Tag vcf records as filtered with this tag instead of suppressing them.",
+        "long form argument" : "--tag-pass",
+        "short form argument" : "-tp",
+        "node id" : "tag"
+      }
+    ]
   },
 
   "unique graph nodes" : [
@@ -43,15 +76,53 @@
       "id" : "region",
       "task" : "call",
       "task argument" : "--region"
+    },
+    {
+      "id" : "info-filter",
+      "task" : "filter",
+      "task argument" : "--info-filter"
+    },
+    {
+      "id" : "tag",
+      "task" : "filter",
+      "task argument" : "--tag-pass"
     }
   ],
 
   "shared graph nodes" : [
     {
-      "id" : "out",
+      "id" : "pass-to-combine",
+      "delete files" : true,
       "arguments sharing node" : [
         {
           "task" : "call",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "combine-vcf",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "pass-to-filter",
+      "delete files" : true,
+      "arguments sharing node" : [
+        {
+          "task" : "combine-vcf",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "filter",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "output",
+      "arguments sharing node" : [
+        {
+          "task" : "filter",
           "task argument" : "--out"
         },
         {
@@ -79,7 +150,18 @@
     {
       "id" : "default",
       "description" : "Default parameter set requires user to input all input filenames.",
-      "data" : []
+      "data" : [
+        {
+          "id" : "filter",
+          "node" : "info-filter",
+          "values" : ["QUAL > 1 & QUAL / AO > 1 & SAF > 0 & SAR > 0"]
+        },
+        {
+          "id" : "tag",
+          "node" : "tag",
+          "values" : ["PASS"]
+        }
+      ]
     },
 
     {

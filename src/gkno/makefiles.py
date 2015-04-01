@@ -689,7 +689,7 @@ class makefiles:
       # as well as the information for this task can be written to file.
       elif isInputStream:
         self.storeStreamingTaskInformation(info, subphase, division, task, isLast = True)
-        self.writeStreamingInformation(graph, info, phase, subphase, division, task)
+        self.writeStreamingInformation(graph, info, phase, subphase, division)
 
       # If this does not accept a stream or output to a stream, just write the information to the makefile.
       else: self.writeStandardInformation(graph, phase, subphase, division, task)
@@ -722,7 +722,7 @@ class makefiles:
     for line in self.executionInfo[task].commands[subphase][division]: info.commands.append(line)
 
   # Write information to the makefile for a set of piped tasks.
-  def writeStreamingInformation(self, graph, info, phase, subphase, division, task):
+  def writeStreamingInformation(self, graph, info, phase, subphase, division):
 
     # Get the filename and filehandle.
     filename   = self.filenames[str(phase) + str(subphase) + str(division)]
@@ -753,7 +753,7 @@ class makefiles:
 
     # If any files are to be deleted after this task, delete them.
     if info.intermediates:
-      print('\t### Delete intermediate files that are no longer required.', file = filehandle)
+      print('### Delete intermediate files that are no longer required.', file = filehandle)
       for intermediate in info.intermediates: print('\t@rm -f ', intermediate, sep = '', file = filehandle)
       print(file = filehandle)
 

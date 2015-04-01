@@ -4,6 +4,7 @@ from __future__ import print_function
 import graph as gr
 import superpipeline
 import stringOperations as strOps
+import constructFilenameErrors as errors
 
 import json
 import os
@@ -35,6 +36,7 @@ def constructInputNode(graph, superpipeline, task, argument, nodeId, baseValues)
     # Determine the extension on the input, the create a working version of the new name with the
     # extension removed.
     extension = getExtension(value, extensions)
+    if extension == False: print('ERROR WITH EXTENSION - constructFilenames'); exit(1)
     if extension: updatedValue = updatedValue.replace('.' + str(extension), '')
 
     # If there are instructions on text to add, add it.
@@ -122,9 +124,10 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeId, base
     # If the file being used to construct the output filename already has a path, strip this off.
     updatedValue = value.rsplit('/')[-1]
 
-    # Determine the extension on the input, the create a working version of the new name with the
+    # Determine the extension on the input, then create a working version of the new name with the
     # extension removed.
     extension = getExtension(value, extensions)
+    if extension == False: print('ERROR WITH EXTENSION - constructFilenames'); exit(1)
     if extension: updatedValue = updatedValue.replace('.' + str(extension), '')
 
     # If there are instructions on text to add, add it.
@@ -178,6 +181,7 @@ def addDivisionToValue(graph, superpipeline, task, nodeId, instructions, baseVal
 
     # Get the extension on this value and remove it.
     extension = getExtension(value, inputExtensions)
+    if extension == False: print('ERROR WITH EXTENSION - constructFilenames'); exit(1)
     if extension: updatedValue = value.replace('.' + str(extension), '')
     updatedValue = str(updatedValue + '_' + argument.strip('-') + optionValue)
 
@@ -215,9 +219,8 @@ def getExtension(value, extensions):
     for extension in extensions:
       if value.endswith(extension): return str(extension)
 
-    # Just for completeness, if the value did not have any of the allowed extensions, fail.
-    # TODO ERROR
-    print('constructFilenames.getExtension - Unable to identify extension'); exit(1)
+    # Just for completeness, if the value did not have any of the allowed extensions, return False.
+    return False
 
 # Modify the text in a filename.
 def modifyText(graph, toolData, instructions, task, counter, value):
@@ -340,6 +343,7 @@ def constructInputNodes(graph, superpipeline):
           # Determine the extension on the input, the create a working version of the new name with the
           # extension removed.
           extension = getExtension(value, extensions)
+          if extension == False: print('ERROR WITH EXTENSION - constructFilenames'); exit(1)
           if extension: modifiedValue = modifiedValue.replace('.' + str(extension), '')
 
           # If there are instructions on text to add, add it.

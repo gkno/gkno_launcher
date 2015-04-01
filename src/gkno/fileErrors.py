@@ -47,3 +47,12 @@ class fileErrors:
     self.text.append('\t')
     for filename in fileList: self.text.append('\t' + filename)
     self.errors.writeFormattedText(self.text, errorType = 'warning')
+
+  # A list was provided, but does not exist.
+  def missingList(self, argument, value):
+    self.text.append('Missing list.')
+    self.text.append('The argument \'' + argument + '\' was supplied with a file with the extension \'.list\', which implies that the values to be ' + \
+    'used for this argument are to be extracted from this file. The file does not exist, however. Please ensure that the file exists, or, if this ' + \
+    'is not intended to be a list of values, but a single file, that the extension for the file is not \'.list\'.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

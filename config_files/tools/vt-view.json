@@ -4,7 +4,7 @@
   "description" : "View and filter variants in a VCF file.",
   "categories" : ["VCF-processing"],
   "tools" : ["vt"],
-  "path" : "vt",
+  "path" : "vt/",
   "executable" : "vt",
   "modifier" : "view",
   "arguments" : {
@@ -18,10 +18,10 @@
         "modify argument" : "omit",
         "data type" : "string",
         "if input is stream" : {
-          "argument" : "omit",
+          "argument" : "",
           "value" : "-"
         },
-        "extensions" : ["vcf.gz"]
+        "extensions" : ["vcf", "vcf.gz"]
       },
       {
         "description" : "A file containing list of intervals.",
@@ -64,6 +64,7 @@
         "long form argument" : "--filter",
         "short form argument" : "-f",
         "command line argument" : "-f",
+        "include value in quotations" : true,
         "data type" : "string"
       },
       {
@@ -86,6 +87,13 @@
         "short form argument" : "-v",
         "command line argument" : "-i",
         "data type" : "string"
+      },
+      {
+        "description" : "Include header in stdout",
+        "long form argument" : "--header",
+        "short form argument" : "-e",
+        "command line argument" : "-h",
+        "data type" : "flag"
       }
     ]
   },
@@ -96,6 +104,7 @@
     "--window",
     "--sites-only",
     "--intervals",
+    "--header",
     "--out",
     "--in"
   ],
@@ -104,17 +113,11 @@
     {
       "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "data" : []
-    },
-
-    {
-      "id" : "test",
-      "description" : "Parameter set for use with the test-harness.",
       "data" : [
         {
-          "id" : "vcf",
-          "argument" : "--in",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
+          "id" : "header",
+          "argument" : "--header",
+          "values" : ["set"]
         }
       ]
     }

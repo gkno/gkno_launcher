@@ -1,0 +1,70 @@
+{
+  "id" : "regions-dict",
+  "configuration type" : "pipeline",
+  "description" : "Generate a list of genomic regions based on a FASTA dictionary file.",
+  "categories" : ["Scripts"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "regions",
+      "tool" : "region-by-dict"
+    }
+  ],
+
+  "import arguments" : "regions",
+
+  "arguments" : {
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "dict",
+      "task" : "regions",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "window",
+      "task" : "regions",
+      "task argument" : "--window-size"
+    },
+    {
+      "id" : "output",
+      "task" : "regions",
+      "task argument" : "--out"
+    }
+  ],
+
+  "shared graph nodes" : [
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+        {
+          "id" : "out",
+          "node" : "output",
+          "values" : ["region-windows.list"]
+        },
+        {
+          "id" : "window",
+          "node" : "window",
+          "values" : [1000000]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "dict",
+          "node" : "dict",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dict"]
+        }
+      ]
+    }
+  ]
+}

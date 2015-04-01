@@ -4,11 +4,12 @@ from __future__ import print_function
 from collections import deque
 from copy import deepcopy
 
-import fileHandling as fh
-import graphErrors
 import networkx as nx
 
 import constructFilenames as construct
+import fileHandling as fh
+import fileErrors as fe
+import graphErrors
 import parameterSets as ps
 import parameterSetErrors as pse
 import pipelineConfigurationErrors as pce
@@ -994,8 +995,10 @@ class pipelineGraph:
   
             # Open the file and terminate if it doesn't exist.
             data = fh.fileHandling.openFileForReading(value)
-            #TODO ERROR
-            if not data: print('graph.expandLists - FILE DOESN\'T EXIST', value); exit(0)
+            if not data:
+              task     = self.graph.successors(nodeId)[0]
+              argument = self.getArgumentAttribute(nodeId, task, 'longFormArgument')
+              fe.fileErrors().missingList(task, value)
   
             # Loop over the values in the file, stripping off whitespace.
             for dataValue in [name.strip() for name in data]: modifiedValues.append(dataValue)
