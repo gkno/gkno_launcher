@@ -241,14 +241,6 @@ def main():
   # nodes for the task and files and link them together as necessary.
   graph.constructFiles(superpipeline)
 
-  #TODO REMOVE OLD ROUTINE
-  # Check the number of values in each node and determine how many times each task needs to be run. For example,
-  # a tool could be fed 'n' input files for a single argument and be run 'n' times or once etc. In addition check
-  # the arguments that have been supplied to each task. In particular, check the number of values given to all
-  # arguments and determine whether tasks need to be defined as generating multiple output nodes, having multiple
-  # task calls or consolidating nodes.
-  #graph.determineNumberOfTaskExecutions(superpipeline)
-
   # Print the workflow to screen.
   write.workflow(superpipeline, workflow)
 

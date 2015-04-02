@@ -155,7 +155,8 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeId, base
   # Return the values.
   return updatedValues
 
-# Given the base value from which to construct filenames, add
+# Given the base value from which to construct filenames, add the argument with multiple values and
+# the specific value for this division to the filename.
 def addDivisionToValue(graph, superpipeline, task, nodeId, instructions, baseValues, argument, optionValue, randomText):
 
   # Get tool information for this task.
@@ -179,10 +180,13 @@ def addDivisionToValue(graph, superpipeline, task, nodeId, instructions, baseVal
   updatedValues = []
   for value in baseValues:
 
+    # If the file being used to construct the output filename already has a path, strip this off.
+    updatedValue = value.rsplit('/')[-1]
+
     # Get the extension on this value and remove it.
-    extension = getExtension(value, inputExtensions)
+    extension = getExtension(updatedValue, inputExtensions)
     if extension == False: print('ERROR WITH EXTENSION - constructFilenames'); exit(1)
-    if extension: updatedValue = value.replace('.' + str(extension), '')
+    if extension: updatedValue = updatedValue.replace('.' + str(extension), '')
     updatedValue = str(updatedValue + '_' + argument.strip('-') + optionValue)
 
     # Check if there are instructions from the pipeline configuration file to add an extra text field

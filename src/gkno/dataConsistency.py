@@ -17,16 +17,16 @@ def checkValues(graph, superpipeline):
 
   # First, loop over all of the option nodes and check that the data types for all values
   # are valid.
-  for nodeID in graph.getNodes(['option', 'file']):
-    values   = graph.getGraphNodeAttribute(nodeID, 'values')
-    nodeType = graph.getGraphNodeAttribute(nodeID, 'nodeType')
+  for nodeId in graph.getNodes(['option', 'file']):
+    values   = graph.getGraphNodeAttribute(nodeId, 'values')
+    nodeType = graph.getGraphNodeAttribute(nodeId, 'nodeType')
 
     # Get all of the arguments that use this node and check the data types. Start with all predecessors to this node.
     expectedDataType = None
-    for predecessorNodeID in graph.getPredecessors(nodeID):
-      expectedDataType = checkNode(graph, superpipeline, predecessorNodeID, nodeID, nodeType, expectedDataType, values, isInput = False)
-    for successorNodeID in graph.getSuccessors(nodeID):
-      expectedDataType = checkNode(graph, superpipeline, nodeID, successorNodeID, nodeType, expectedDataType, values, isInput = True)
+    for predecessorNodeID in graph.getPredecessors(nodeId):
+      expectedDataType = checkNode(graph, superpipeline, predecessorNodeID, nodeId, nodeType, expectedDataType, values, isInput = False)
+    for successorNodeID in graph.getSuccessors(nodeId):
+      expectedDataType = checkNode(graph, superpipeline, nodeId, successorNodeID, nodeType, expectedDataType, values, isInput = True)
 
 # Check the values for a node.
 def checkNode(graph, superpipeline, source, target, nodeType, expectedDataType, values, isInput):
@@ -166,7 +166,7 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
     if args.arguments[argument].isRequired:
 
       # Loop over the associated graph nodes and see if the values are set.
-      for nodeID in args.arguments[argument].graphNodeIDs:
+      for nodeId in args.arguments[argument].graphNodeIDs:
 
         # Check if this argument was imported from a task in the pipeline. If so, determine if there are
         # any instructions for constructing the filename (if not an option). Only terminate if the argument
@@ -180,7 +180,7 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
 
         # If the values haven't been set, terminate. This is a pipeline argument listed as required
         # and so must be set by the user (and not constructed).
-        if not graph.getGraphNodeAttribute(nodeID, 'values') and not hasInstructions:
+        if not graph.getGraphNodeAttribute(nodeId, 'values') and not hasInstructions:
           shortFormArgument = args.arguments[argument].shortFormArgument
           description       = args.arguments[argument].description
           errors.unsetRequiredArgument(argument, shortFormArgument, description)
@@ -215,8 +215,8 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
         if not isOutput:
 
           # Loop over all input nodes looking for edges that use this argument.
-          for nodeID in graph.CM_getInputNodes(graph.graph, task):
-            edgeArgument = graph.getArgumentAttribute(nodeID, task, 'longFormArgument')
+          for nodeId in graph.CM_getInputNodes(graph.graph, task):
+            edgeArgument = graph.getArgumentAttribute(nodeId, task, 'longFormArgument')
 
             # If this node uses the required argument.
             if edgeArgument == argument:
@@ -224,18 +224,18 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
 
               # If this node is marked as constructable, no check is required. Only proceed with checks
               # if this node has not been added to the constructableNodes list. 
-              if nodeID not in constructableNodes: 
-                if not graph.getGraphNodeAttribute(nodeID, 'values'):
+              if nodeId not in constructableNodes: 
+                if not graph.getGraphNodeAttribute(nodeId, 'values'):
 
                   # Check to see if this node can have it's values set with a top level pipeline argument (e.g. can
                   # be set without defining the task on the command line).
-                  longFormArgument = graph.getGraphNodeAttribute(nodeID, 'longFormArgument')
+                  longFormArgument = graph.getGraphNodeAttribute(nodeId, 'longFormArgument')
                   if longFormArgument and '.' not in longFormArgument:
 
                     # Get the short form of the pipeline argument and the argument description.
                     #shortFormArgument = args.arguments[longFormArgument].shortFormArgument
-                    shortFormArgument = graph.getGraphNodeAttribute(nodeID, 'shortFormArgument')
-                    description       = graph.getGraphNodeAttribute(nodeID, 'description')
+                    shortFormArgument = graph.getGraphNodeAttribute(nodeId, 'shortFormArgument')
+                    description       = graph.getGraphNodeAttribute(nodeId, 'description')
                     errors.unsetRequiredArgument(longFormArgument, shortFormArgument, description)
 
                   # If this is not a top level argument, provide a different error.
@@ -244,8 +244,8 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
 
                     # Get the short form version of the argument as well as the argument description. This is as defined
                     # for the tool, so if this argument can be set using a pipeline argument, these values are incorrect.
-                    shortFormArgument = graph.getArgumentAttribute(nodeID, task, 'shortFormArgument')
-                    description       = graph.getArgumentAttribute(nodeID, task, 'description')
+                    shortFormArgument = graph.getArgumentAttribute(nodeId, task, 'shortFormArgument')
+                    description       = graph.getArgumentAttribute(nodeId, task, 'description')
                     errors.unsetRequiredNestedArgument(task, argument, shortFormArgument, description, superpipeline.pipeline)
 
           # If there is no node for this argument, this means that the pipeline configuration file does not contain
@@ -293,8 +293,8 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
           instructions = toolData.getArgumentAttribute(argument, 'constructionInstructions')
 
           # Loop over all output nodes looking for edges that use this argument.
-          for nodeID in graph.CM_getOutputNodes(graph.graph, task):
-            edgeArgument = graph.getArgumentAttribute(task, nodeID, 'longFormArgument')
+          for nodeId in graph.CM_getOutputNodes(graph.graph, task):
+            edgeArgument = graph.getArgumentAttribute(task, nodeId, 'longFormArgument')
 
             # If this node uses the required argument.
             if edgeArgument == argument:
@@ -327,10 +327,10 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
                       #print('dataConsistency - checkRequiredArguments - cannot construct output', task, argument); exit(1)
 
                 # Add the node to the list of nodes that have the potential to be constructed.
-                if nodeID not in constructableNodes: constructableNodes.append(nodeID)
+                if nodeId not in constructableNodes: constructableNodes.append(nodeId)
 
               # If no instructions are provided check that there are values supplied.
-              if not instructions and not graph.getGraphNodeAttribute(nodeID, 'values'): errors.noConstructionMethod(task, tool, argument)
+              if not instructions and not graph.getGraphNodeAttribute(nodeId, 'values'): errors.noConstructionMethod(task, tool, argument)
 
           # If no node exists for this argument, determine the course of action.
           if not foundNode:
@@ -362,12 +362,12 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
 def purgeEmptyNodes(graph):
 
   # Loop over all the option nodes in the graph.
-  for nodeID in graph.getNodes('option'):
-    if not graph.getGraphNodeAttribute(nodeID, 'values'): graph.graph.remove_node(nodeID)
+  for nodeId in graph.getNodes('option'):
+    if not graph.getGraphNodeAttribute(nodeId, 'values'): graph.graph.remove_node(nodeId)
 
   # Then loop over all file nodes, removing valueless nodes.
-  for nodeID in graph.getNodes('file'):
-    if not graph.getGraphNodeAttribute(nodeID, 'values'): graph.graph.remove_node(nodeID)
+  for nodeId in graph.getNodes('file'):
+    if not graph.getGraphNodeAttribute(nodeId, 'values'): graph.graph.remove_node(nodeId)
 
 # Set the aboslute paths of all the files used in the pipeline.
 def setFilePaths(graph, gknoArguments, gkno):
@@ -390,18 +390,18 @@ def setFilePaths(graph, gknoArguments, gkno):
   if not outputPath.endswith('/'): outputPath += '/'
 
   # Parse all of the file nodes.
-  for nodeID in graph.getNodes('file'):
+  for nodeId in graph.getNodes('file'):
 
     # Determine if the file is an input or output file. Since the node could be feeding
     # into or from multiple tasks, a file is an input, if and only if, the file nodes
     # associated with the option node have no predecessors.
-    isInput = False if graph.graph.predecessors(nodeID) else True
+    isInput = False if graph.graph.predecessors(nodeId) else True
     if isInput:
-      source = nodeID
-      target = graph.graph.successors(nodeID)[0]
+      source = nodeId
+      target = graph.graph.successors(nodeId)[0]
     else:
-      source = graph.graph.predecessors(nodeID)[0]
-      target = nodeID
+      source = graph.graph.predecessors(nodeId)[0]
+      target = nodeId
 
     # Determine if this is a stub,
     isStub = graph.getArgumentAttribute(source, target, 'isStub')
@@ -409,7 +409,7 @@ def setFilePaths(graph, gknoArguments, gkno):
 
     # Get the values associated with the node.
     updatedValues = []
-    for value in graph.getGraphNodeAttribute(nodeID, 'values'):
+    for value in graph.getGraphNodeAttribute(nodeId, 'values'):
 
       # Update the value to include the extension, if this is a stub.
       if isStub: modifiedValue = str(value + stubExtension) if '.' in stubExtension else str(value + '.' + stubExtension)
@@ -432,7 +432,7 @@ def setFilePaths(graph, gknoArguments, gkno):
         else: updatedValues.append(str(modifiedValue) if '/' in modifiedValue else str(outputPath + modifiedValue))
 
     # Replace the values stored in the node with the values including the absolute path.
-    graph.setGraphNodeAttribute(nodeID, 'values', updatedValues)
+    graph.setGraphNodeAttribute(nodeId, 'values', updatedValues)
 
   # Return the list of all required input files.
   return inputFiles

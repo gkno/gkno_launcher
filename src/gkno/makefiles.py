@@ -270,25 +270,36 @@ class makefiles:
     values   = graph.getGraphNodeAttribute(nodeId, 'values')
     dataType = graph.getArgumentAttribute(nodeId, task, 'dataType')
 
+    # Determine the division to which these values belong, or if this is an argument that should be applied to all
+    # divisions. Also, determine the parent node if this is a child and use the parent to determine all information,
+    # e.g. streaming etc.
+    divisionId   = 1
+    isGlobal     = False
+    parentNodeId = nodeId
+    if graph.getGraphNodeAttribute(nodeId, 'isChild'):
+      divisionId   = graph.getGraphNodeAttribute(nodeId, 'divisionID') + 1
+      parentNodeId = graph.getGraphNodeAttribute(nodeId, 'parent')
+    else:
+      if not graph.getGraphNodeAttribute(nodeId, 'children'): isGlobal = True
+
     # Determine if this option can be specified multiple times on the command line and if the task is listed
     # as being greedy.
-    isAllowMultipleValues = graph.getArgumentAttribute(nodeId, task, 'allowMultipleValues')
+    isAllowMultipleValues = graph.getArgumentAttribute(parentNodeId, task, 'allowMultipleValues')
     isGreedy              = graph.getGraphNodeAttribute(task, 'isGreedy')
 
     # Check if this node contains intermediate files.
-    #isIntermediate = graph.getGraphNodeAttribute(nodeId, 'isIntermediate')
-    isIntermediate = True if graph.getGraphNodeAttribute(nodeId, 'deleteAfterTask') == task else False
+    isIntermediate = True if graph.getGraphNodeAttribute(parentNodeId, 'deleteAfterTask') == task else False
 
     # Determine if this is a stub.
-    isStub        = graph.getArgumentAttribute(nodeId, task, 'isStub')
-    stubExtension = graph.getArgumentAttribute(nodeId, task, 'stubExtension')
+    isStub        = graph.getArgumentAttribute(parentNodeId, task, 'isStub')
+    stubExtension = graph.getArgumentAttribute(parentNodeId, task, 'stubExtension')
 
     # Determine if this argument is for a stream.
-    isStream = graph.getArgumentAttribute(nodeId, task, 'isStream')
+    isStream = graph.getArgumentAttribute(parentNodeId, task, 'isStream')
 
     # Convert the values into the form required on the command line.
-    if isStream: lineValues = [self.getStreamValue(graph, nodeId, task, value, True, isStub) for value in values]
-    else: lineValues = [self.getValue(graph, nodeId, task, value, True, isStub, stubExtension) for value in values]
+    if isStream: lineValues = [self.getStreamValue(graph, parentNodeId, task, value, True, isStub) for value in values]
+    else: lineValues = [self.getValue(graph, parentNodeId, task, value, True, isStub, stubExtension) for value in values]
 
     # If this task is greedy, check that the argument allows multiple values to be set and that there is only a single
     # subphase. Then create the command line.
@@ -298,10 +309,8 @@ class makefiles:
         if not isAllowMultipleValues: print('ERROR - makefiles.addInput - 1'); exit(1)
         if data.numberSubphases > 1: print('ERROR - makefiles.addInput - 2'); exit(1)
 
-    # Regardless of the number of values supplied, each division needs to receive the same values.
-    # Each subphase operates on either all the input files, or a subset, but if there are divisions,
-    # each division has the same input files. The differences in the divisions come from different
-    # supplied options.
+    # Loop over the subphases and add the input files to the correct data structures. If this node is part of a division,
+    # the divisionId has already been determined, so the values will be placed with the correct division.
     for subphase in range(1, data.numberSubphases + 1):
       lines = []
 
@@ -321,26 +330,38 @@ class makefiles:
         line      = self.buildLine(argument, data.delimiter, lineValue)
         if line: lines.append(line)
 
-      # Add the options to the command lines for each subphase.
-      for division in range(1, data.numberDivisions + 1):
-        data.commands[subphase][division].extend(lines)
+      # If this is a file(s) that feeds into all divisions, loop over the divsions and add the files to
+      # each division.
+      if isGlobal: 
+        for division in range(1, data.numberDivisions + 1):
+          self.addDivisionInputs(data, subphase, division, values, lines, lineValues, isIntermediate, isStream, isGreedy)
 
-        # Add the files to the dependencies or outputs for the command line (if not being streamed).
-        if not isStream:
-          if isGreedy and len(lineValues) > 1:
-            for value in values: data.dependencies[subphase][division].append(str(value))
-          elif len(values) > 1: data.dependencies[subphase][division].append(str(values[subphase - 1]))
-          else: data.dependencies[subphase][division].append(str(values[0]))
-    
-          # Add to the intermediates if necessary.
-          if isIntermediate:
-            if isGreedy and len(values) > 1:
-              for value in values:
-                if str(value) not in data.intermediates[subphase][division]: data.intermediates[subphase][division].append(str(value))
-            elif len(values) > 1:
-              if str(values[subphase - 1]) not in data.intermediates[subphase][division]: data.intermediates[subphase][division].append(str(values[subphase - 1]))
-            else:
-              if str(values[0]) not in data.intermediates[subphase][division]: data.intermediates[subphase][division].append(str(values[0]))
+      # If this node is a child, then the files are only to be used for this specific division. In this case
+      # do not loop over the divisions, just add the files to the divisionId already determined.
+      else: self.addDivisionInputs(data, subphase, divisionId, values, lines, lineValues, isIntermediate, isStream, isGreedy)
+
+  # Add input files to the relevant structures.
+  def addDivisionInputs(self, data, subphase, division, values, lines, lineValues, isIntermediate, isStream, isGreedy):
+
+    # Add the inputs to the command lines for each subphase.
+    data.commands[subphase][division].extend(lines)
+
+    # Add the files to the dependencies or outputs for the command line (if not being streamed).
+    if not isStream:
+      if isGreedy and len(lineValues) > 1:
+        for value in values: data.dependencies[subphase][division].append(str(value))
+      elif len(values) > 1: data.dependencies[subphase][division].append(str(values[subphase - 1]))
+      else: data.dependencies[subphase][division].append(str(values[0]))
+
+      # Add to the intermediates if necessary.
+      if isIntermediate:
+        if isGreedy and len(values) > 1:
+          for value in values:
+            if str(value) not in data.intermediates[subphase][division]: data.intermediates[subphase][division].append(str(value))
+        elif len(values) > 1:
+          if str(values[subphase - 1]) not in data.intermediates[subphase][division]: data.intermediates[subphase][division].append(str(values[subphase - 1]))
+        else:
+          if str(values[0]) not in data.intermediates[subphase][division]: data.intermediates[subphase][division].append(str(values[0]))
 
   # Add input files to the command line.
   def addOutput(self, graph, task, data, nodeId):
@@ -411,7 +432,9 @@ class makefiles:
           lineValue = lineValues[subphase]
           if isStub and not isPrimaryNode: line = None
           else: line = self.buildLine(argument, data.delimiter, lineValue)
-          if line: data.commands[subphase + 1][division].append(line)
+          if line:
+            if line.startswith('\t>>'): data.stdouts[subphase + 1][division] = str(line)
+            else: data.commands[subphase + 1][division].append(line)
 
           # Add the files to the dependencies or outputs for the command line (do not add the values to the list of
           # inputs and dependencies if the files are being streamed).
