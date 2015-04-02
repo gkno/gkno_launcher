@@ -282,6 +282,9 @@ class makefiles:
     else:
       if not graph.getGraphNodeAttribute(nodeId, 'children'): isGlobal = True
 
+    # If this task consolidates files then it should be treated as global.
+    if graph.getGraphNodeAttribute(task, 'consolidate'): isGlobal = True
+
     # Determine if this option can be specified multiple times on the command line and if the task is listed
     # as being greedy.
     isAllowMultipleValues = graph.getArgumentAttribute(parentNodeId, task, 'allowMultipleValues')
