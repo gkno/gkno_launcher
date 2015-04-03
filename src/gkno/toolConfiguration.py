@@ -63,6 +63,9 @@ class argumentAttributes:
     # Record the category to which the argument belongs.
     self.category = None
 
+    # If the argument should be hidden from the user in help messages.
+    self.hideInHelp = False
+
     # Record if the argument is for an input or output file.
     self.isInput  = False
     self.isOutput = False
@@ -260,6 +263,7 @@ class toolConfiguration:
     allowedAttributes['data type']                     = (str, True, True, 'dataType')
     allowedAttributes['description']                   = (str, True, True, 'description')
     allowedAttributes['extensions']                    = (list, False, True, 'extensions')
+    allowedAttributes['hide argument in help']         = (bool, False, True, 'hideInHelp')
     allowedAttributes['if input is stream']            = (dict, False, True, 'inputStreamInstructions')
     allowedAttributes['include dot in stub extension'] = (bool, False, True, 'includeStubDot')
     allowedAttributes['include in reduced plot']       = (bool, False, True, 'includeInReducedPlot')
@@ -292,6 +296,7 @@ class toolConfiguration:
     allowedAttributes['data type']                     = (str, True, True, 'dataType')
     allowedAttributes['description']                   = (str, True, True, 'description')
     allowedAttributes['extensions']                    = (list, False, True, 'extensions')
+    allowedAttributes['hide argument in help']         = (bool, False, True, 'hideInHelp')
     allowedAttributes['include dot in stub extension'] = (bool, False, True, 'includeStubDot')
     allowedAttributes['include in reduced plot']       = (bool, False, True, 'includeInReducedPlot')
     allowedAttributes['include value in quotations']   = (bool, False, True, 'includeInQuotations')
@@ -319,9 +324,11 @@ class toolConfiguration:
     allowedAttributes = {}
     allowedAttributes['allow multiple values']       = (bool, False, True, 'allowMultipleValues')
     allowedAttributes['command line argument']       = (str, True, True, 'commandLineArgument')
+    allowedAttributes['construct filename']          = (dict, False, True, 'constructionInstructions')
     allowedAttributes['data type']                   = (str, True, True, 'dataType')
     allowedAttributes['description']                 = (str, True, True, 'description')
     allowedAttributes['extensions']                  = (list, False, True, 'extensions')
+    allowedAttributes['hide argument in help']       = (bool, False, True, 'hideInHelp')
     allowedAttributes['include in reduced plot']     = (bool, False, True, 'includeInReducedPlot')
     allowedAttributes['include value in quotations'] = (bool, False, True, 'includeInQuotations')
     allowedAttributes['long form argument']          = (str, True, True, 'longFormArgument')
@@ -452,6 +459,7 @@ class toolConfiguration:
     allowedFields = []
     allowedFields.append('filename')
     allowedFields.append('method')
+    allowedFields.append('modify text')
     allowedFields.append('path argument')
 
     # Loop over the arguments and check if there are any invalid fields supplied.

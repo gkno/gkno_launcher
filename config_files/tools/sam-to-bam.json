@@ -61,6 +61,13 @@
     ]
   },
 
+  "argument order" : [
+    "--output-bam",
+    "--input-is-sam",
+    "--in",
+    "--out"
+  ],
+
   "parameter sets" : [
     {
       "id" : "default",

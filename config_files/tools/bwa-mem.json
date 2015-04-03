@@ -207,12 +207,44 @@
 
     "Input/output options" : [
       {
+        "description" : "The read group id.",
+        "long form argument" : "--read-group-id",
+        "short form argument" : "-id",
+        "command line argument" : "none",
+        "data type" : "string",
+        "required" : true
+      },
+      {
+        "description" : "The sample id.",
+        "long form argument" : "--sample-id",
+        "short form argument" : "-s",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string"
+      },
+      {
         "description" : "Read group header line such as '@RG\tid:foo\tSM:bar' [null].",
         "long form argument" : "--read-group-header",
         "short form argument" : "-R",
         "command line argument" : "-R",
         "data type" : "string",
-        "include value in quotations" : true
+        "include value in quotations" : true,
+        "hide argument in help" : true,
+        "construct filename" : {
+          "method" : "define name",
+          "filename" : "@RG\\tID:",
+          "modify text" : [
+            {
+              "add argument values" : ["--read-group-id"]
+            },
+            {
+              "add text" : ["\\tSM:"]
+            },
+            {
+              "add argument values" : ["--sample-id"]
+            }
+          ]
+        }
       },
       {
         "description" : "Verbose level: 1=error, 2=warning, 3=message, 4+=debugging [3].",

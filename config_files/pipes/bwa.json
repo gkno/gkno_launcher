@@ -71,8 +71,20 @@
         "description" : "Read group header line such as '@RG\\tID:foo\\tSM:bar' [null]. The '\\t' in the example will be replaced with tabs in the BAM header.",
         "long form argument" : "--read-group-header",
         "short form argument" : "-g",
-        "required" : true,
+        "hide in help" : true,
         "node id" : "read-group"
+      },
+      {
+        "description" : "The read group id.",
+        "long form argument" : "--read-group-id",
+        "short form argument" : "-id",
+        "node id" : "read-group-id"
+      },
+      {
+        "description" : "The sample id.",
+        "long form argument" : "--sample-id",
+        "short form argument" : "-s",
+        "node id" : "sample-id"
       },
       {
         "description" : "The number of threads for BWA-mem.",
@@ -103,6 +115,16 @@
       "id" : "read-group",
       "task" : "align",
       "task argument" : "--read-group-header"
+    },
+    {
+      "id" : "read-group-id",
+      "task" : "align",
+      "task argument" : "--read-group-id"
+    },
+    {
+      "id" : "sample-id",
+      "task" : "align",
+      "task argument" : "--sample-id"
     },
     {
       "id" : "threads",

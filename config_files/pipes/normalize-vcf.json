@@ -1,13 +1,13 @@
 {
-  "id" : "compress-vcf",
+  "id" : "normalize-vcf",
   "configuration type" : "pipeline",
-  "description" : "Compress a VCF file using bgzip and index with tabix.",
+  "description" : "Normalize a VCF file using vt and index with tabix.",
   "categories" : ["Variant-discovery"],
 
   "pipeline tasks" : [
     {
-      "task" : "compress",
-      "tool" : "bgzip-file"
+      "task" : "normalize",
+      "tool" : "vt-normalize"
     },
     {
       "task" : "index",
@@ -15,7 +15,7 @@
     }
   ],
 
-  "import arguments" : "compress",
+  "import arguments" : "normalize",
 
   "arguments" : {
   },
@@ -23,8 +23,13 @@
   "unique graph nodes" : [
     {
       "id" : "vcf",
-      "task" : "compress",
+      "task" : "normalize",
       "task argument" : "--in"
+    },
+    {
+      "id" : "reference",
+      "task" : "normalize",
+      "task argument" : "--fasta-reference"
     }
   ],
 
@@ -33,7 +38,7 @@
       "id" : "out",
       "arguments sharing node" : [
         {
-          "task" : "compress",
+          "task" : "normalize",
           "task argument" : "--out"
         },
         {
@@ -58,7 +63,12 @@
         {
           "id" : "vcf",
           "node" : "vcf",
-          "values" : ["mutated_genome.vcf"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         }
       ]
     }

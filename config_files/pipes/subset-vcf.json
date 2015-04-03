@@ -1,13 +1,13 @@
 {
-  "id" : "compress-vcf",
+  "id" : "subset-vcf",
   "configuration type" : "pipeline",
-  "description" : "Compress a VCF file using bgzip and index with tabix.",
+  "description" : "Subset a VCF file to only include variants polymorphic in the specified samples. Subsetting performed using vt and the VCF is indexed with tabix.",
   "categories" : ["Variant-discovery"],
 
   "pipeline tasks" : [
     {
-      "task" : "compress",
-      "tool" : "bgzip-file"
+      "task" : "subset",
+      "tool" : "vt-subset"
     },
     {
       "task" : "index",
@@ -15,7 +15,7 @@
     }
   ],
 
-  "import arguments" : "compress",
+  "import arguments" : "subset",
 
   "arguments" : {
   },
@@ -23,8 +23,13 @@
   "unique graph nodes" : [
     {
       "id" : "vcf",
-      "task" : "compress",
+      "task" : "subset",
       "task argument" : "--in"
+    },
+    {
+      "id" : "samples",
+      "task" : "subset",
+      "task argument" : "--samples-file"
     }
   ],
 
@@ -33,7 +38,7 @@
       "id" : "out",
       "arguments sharing node" : [
         {
-          "task" : "compress",
+          "task" : "subset",
           "task argument" : "--out"
         },
         {
@@ -58,7 +63,12 @@
         {
           "id" : "vcf",
           "node" : "vcf",
-          "values" : ["mutated_genome.vcf"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
+        },
+        {
+          "id" : "samples",
+          "node" : "samples",
+          "values" : ["$(RESOURCES)/tutorial/current/subset-samples.txt"]
         }
       ]
     }

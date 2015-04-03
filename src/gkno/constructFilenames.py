@@ -40,7 +40,7 @@ def constructInputNode(graph, superpipeline, task, argument, nodeId, baseValues)
     if extension: updatedValue = updatedValue.replace('.' + str(extension), '')
 
     # If there are instructions on text to add, add it.
-    if 'modify text' in instructions: updatedValue = modifyText(graph, toolData, instructions, task, updatedValue)
+    if 'modify text' in instructions: updatedValue = modifyText(graph, task, argument, toolData, instructions, updatedValue)
 
     # Determine the extension to place on the filename.
     newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, nodeId, task, 'extensions')
@@ -90,7 +90,7 @@ def updateArgumentsInInstructions(graph, instructions, task):
       instructions['modify text'].append(block)
 
 # Construct the filename from an input file from the same task.
-def constructFromFilename(graph, superpipeline, instructions, task, nodeId, baseValues):
+def constructFromFilename(graph, superpipeline, instructions, task, nodeId, argument, baseValues):
 
   # Define a list of updated values.
   updatedValues = []
@@ -131,7 +131,7 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeId, base
     if extension: updatedValue = updatedValue.replace('.' + str(extension), '')
 
     # If there are instructions on text to add, add it.
-    if 'modify text' in instructions: updatedValue = modifyText(graph, toolData, instructions, task, counter, updatedValue)
+    if 'modify text' in instructions: updatedValue = modifyText(graph, task, argument, toolData, instructions, counter, updatedValue)
 
     # Check if there are instructions from the pipeline configuration file to add an extra text field
     # to the filename.
@@ -203,6 +203,33 @@ def addDivisionToValue(graph, superpipeline, task, nodeId, instructions, baseVal
   # Return the values.
   return updatedValues
 
+# Construct a file of known name.
+def constructKnownFilename(graph, superpipeline, instructions, task, nodeId, argument):
+  tool     = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'tool')
+  toolData = superpipeline.getToolData(tool)
+
+  # Get the filename to use.
+  filename = instructions['filename']
+
+  # If there are instructions on text to add, add it.
+  if 'modify text' in instructions: updatedValue = modifyText(graph, task, argument, toolData, instructions, 0, filename)
+
+  # Check if the 'directory argument' field is set. This will determine if the filename should be
+  # prepended with a path defined by a tool argument.
+  pathNodeId   = None
+  pathArgument = None
+  if 'path argument' in instructions:
+    pathArgument = instructions['path argument'] 
+    pathNodeId   = gr.pipelineGraph.CM_getNodeForInputArgument(graph, task, pathArgument)
+    values = [str(value + '/' + updatedValue) for value in gr.pipelineGraph.CM_getGraphNodeAttribute(graph, pathNodeId, 'values')]
+  else: values = [str(updatedValue)]
+
+  # Set the values.
+  gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeId, 'values', values)
+
+  # Return the constructed values.
+  return values
+
 # Determine the extension on a file.
 def getExtension(value, extensions):
 
@@ -227,7 +254,7 @@ def getExtension(value, extensions):
     return False
 
 # Modify the text in a filename.
-def modifyText(graph, toolData, instructions, task, counter, value):
+def modifyText(graph, task, argument, toolData, instructions, counter, value):
 
   # Loop over the operations to perform.
   for modify in instructions['modify text']:
@@ -246,12 +273,12 @@ def modifyText(graph, toolData, instructions, task, counter, value):
 
     # If a value from an argument is to be added.
     if action == 'add argument values':
-      for argument in actionValues:
+      for constructionArgument in actionValues:
 
         # Check that this is a valid tool argument.
-        longFormArgument = toolData.getLongFormArgument(argument)
-        #TODO ERROR
-        if not longFormArgument: print('constructFilenames.modifyText - invalid argument'); exit(1)
+        longFormArgument = toolData.getLongFormArgument(constructionArgument)
+        tool             = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'tool')
+        if not longFormArgument: errors.constructFilenameErrors().invalidArgument(task, tool, argument, constructionArgument)
 
         # Get the node for the linked argument and then find the value.
         taskArgumentValues = []
@@ -351,7 +378,7 @@ def constructInputNodes(graph, superpipeline):
           if extension: modifiedValue = modifiedValue.replace('.' + str(extension), '')
 
           # If there are instructions on text to add, add it.
-          if 'modify text' in instructions: modifiedValue = modifyText(graph, toolData, instructions, task, modifiedValue)
+          if 'modify text' in instructions: modifiedValue = modifyText(graph, task, argument, toolData, instructions, modifiedValue)
 
           # Determine the extension to place on the filename.
           newExtensions = graph.getArgumentAttribute(nodeId, task, 'extensions')
@@ -387,31 +414,3 @@ def handleRandomText(graph, value, isIntermediate, hasRandomText, randomText, no
 
   # Return the updated value.
   return updatedValue, randomText
-
-# Construct a file of known name.
-def constructKnownFilename(graph, superpipeline, instructions, task, nodeId):
-  tool     = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'tool')
-  argument = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeId, 'longFormArgument')
-
-  # Get the filename to use.
-  filename = instructions['filename']
-
-  # Check if the 'directory argument' field is set. This will determine if the filename should be
-  # prepended with a path defined by a tool argument.
-  pathValues = []
-  pathNodeId = None
-  pathArgument = None
-  if 'path argument' in instructions:
-    pathArgument = instructions['path argument'] 
-    pathNodeId   = gr.pipelineGraph.CM_getNodeForInputArgument(graph, task, pathArgument)
-    for value in gr.pipelineGraph.CM_getGraphNodeAttribute(graph, pathNodeId, 'values'): pathValues.append(value.rstrip('/'))
-  else: pathValues = ['.']
-
-  # Generate the values.
-  values = [str(value + '/' + filename) for value in pathValues]
-
-  # Set the values.
-  gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeId, 'values', values)
-
-  # Return the constructed values.
-  return values

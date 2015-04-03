@@ -253,7 +253,7 @@ class makefiles:
           if values[0] != 'set': argument = ''
 
         # If the value is set, the flag should be set on the command line, otherwise, this should be left blank.
-        else: lineValue = self.getValue(graph, nodeId, task, values[0], isInput = True, isStub = False, stubExtension = None)
+        else: lineValue = self.getValue(graph, nodeId, task, str(values[0]), isInput = True, isStub = False, stubExtension = None)
 
         # Only add the line to the lines if the flag is set.
         line = self.buildLine(argument, data.delimiter, lineValue)

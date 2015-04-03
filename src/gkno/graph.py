@@ -1093,6 +1093,9 @@ class pipelineGraph:
       if consolidate: divisions = 1
       self.setGraphNodeAttribute(task, 'divisions', divisions)
 
+      # It is possible that the values for option nodes to have instructions on how to construct the values.
+      self.checkOptionConstruction(superpipeline, task)
+
       # Check that all of the input files have their names defined. If not, check to see if instructions exist to 
       # construct the filenames. Note that no account of divisions has been taken yet. Any inputs to the task that
       # have been generated through divisions, must have been the output of a previous task. In this case, the values
@@ -1202,6 +1205,26 @@ class pipelineGraph:
     # Return the argument information.
     return values
 
+  # Check if any of the option values need constructing.
+  def checkOptionConstruction(self, superpipeline, task):
+    tool     = self.getGraphNodeAttribute(task, 'tool')
+    toolData = superpipeline.getToolData(tool)
+
+    # Loop over all of the options.
+    for nodeId in self.getOptionNodes(task):
+
+      # Check if the option has values and if not, if it has instructions on how to construct.
+      if not self.getGraphNodeAttribute(nodeId, 'values'):
+        argument     = self.getArgumentAttribute(nodeId, task, 'longFormArgument')
+        instructions = toolData.getArgumentAttribute(argument, 'constructionInstructions')
+
+        # If the option has instructions, determine how to construct the value.
+        if instructions:
+
+          # If the instructions use the 'define name' method.
+          if instructions['method'] == 'define name':
+           values = construct.constructKnownFilename(self.graph, superpipeline, instructions, task, nodeId, argument)
+
   # If the task is taking as input values from all previous divisions, thus terminating the division, 
   def consolidateDivisions(self, superpipeline, task):
     tool     = self.getGraphNodeAttribute(task, 'tool')
@@ -1243,7 +1266,7 @@ class pipelineGraph:
               values = self.checkRandomText(nodeId, predecessor, values)
 
               # Add the values to the node.
-              self.setGraphNodeAttribute(nodeId, 'values', construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeId, values))
+              self.setGraphNodeAttribute(nodeId, 'values', construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeId, argument, values))
 
           # Now link all of the outputs from the previous division nodes to this task.
           for child in self.getGraphNodeAttribute(predecessor, 'children'): self.graph.add_edge(child, task, attributes = deepcopy(self.getEdgeAttributes(predecessor, task)))
@@ -1362,6 +1385,7 @@ class pipelineGraph:
     # Loop over the output files nodes and check if filenames have been defined.
     for nodeId in self.graph.successors(task):
       if not self.getGraphNodeAttribute(nodeId, 'values'):
+        argument     = self.getArgumentAttribute(task, nodeId, 'longFormArgument')
         instructions = self.getArgumentAttribute(task, nodeId, 'constructionInstructions')
 
         # If no instructions are provided for constructing the filename, terminate since there is no way that
@@ -1383,14 +1407,14 @@ class pipelineGraph:
           if instructions['use argument'] == greedyArgument: baseValues = [baseValues[0]]
 
           # Construct the output filenames.
-          values = construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeId, baseValues)
+          values = construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeId, argument, baseValues)
 
           # Having constructed the output filenames, add them to the node.
           self.setGraphNodeAttribute(nodeId, 'values', values)
 
         # If the method is 'define name', construct the values.
         elif instructions['method'] == 'define name':
-          values = construct.constructKnownFilename(self.graph, superpipeline, instructions, task, nodeId)
+          values = construct.constructKnownFilename(self.graph, superpipeline, instructions, task, nodeId, argument)
 
         # If the construction method is unknown, terminate.
         else:
@@ -1511,6 +1535,7 @@ class pipelineGraph:
     # Loop over the output files nodes and check if filenames have been defined.
     for nodeId in self.graph.successors(task):
       if not self.getGraphNodeAttribute(nodeId, 'values'):
+        argument     = self.getArgumentAttribute(task, nodeId, 'longFormArgument')
         instructions = self.getArgumentAttribute(task, nodeId, 'constructionInstructions')
 
         # If no instructions are provided for constructing the filename, terminate since there is no way that
@@ -1529,7 +1554,7 @@ class pipelineGraph:
           children = []
           for i, child in enumerate(self.getGraphNodeAttribute(task, 'children')):
             childValues = self.getBaseValues(superpipeline, instructions, child)
-            values      = construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeId, childValues)
+            values      = construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeId, argument, childValues)
 
             # Define the name of the new node.
             fileNodeID = nodeId + str(i + 1)
@@ -1555,7 +1580,7 @@ class pipelineGraph:
 
           # Now perform the same tasks for the existing file node.
           baseValues   = self.getBaseValues(superpipeline, instructions, task)
-          values       = construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeId, baseValues)
+          values       = construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeId, argument, baseValues)
           divisionText = self.getDivisionText(task)
           self.setGraphNodeAttribute(nodeId, 'values', values)
           self.setGraphNodeAttribute(nodeId, 'children', children)

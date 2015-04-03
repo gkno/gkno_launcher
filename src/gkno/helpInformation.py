@@ -332,10 +332,19 @@ class helpInformation:
     argumentLengths = {}
     for argument in arguments:
 
+      # If this argument was imported from a constituent tool, check to see if the tool highlights this
+      # argument as hidden from the user.
+      hideInHelp = False
+      if arguments[argument].isImported:
+        task       = arguments[argument].importedFromTask
+        tool       = graph.getGraphNodeAttribute(task, 'tool')
+        toolData   = superpipeline.getToolData(tool)
+        hideInHelp = toolData.getArgumentAttribute(argument, 'hideInHelp')
+
       # Only process arguments for the top level pipeline (e.g. not for arguments that include
       # the address of the tool/pipeline that they point to). Also, do not include arguments that
       # have been marked in the configuration file as not to be included in the help message.
-      if '.' not in argument and not arguments[argument].hideInHelp:
+      if '.' not in argument and not arguments[argument].hideInHelp and not hideInHelp:
         graphNodeIDs      = arguments[argument].graphNodeIDs
         category          = arguments[argument].category
         dataType          = arguments[argument].dataType
