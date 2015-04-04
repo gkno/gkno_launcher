@@ -85,7 +85,7 @@ def main():
   if not admin.isRequested:
 
     # Check that gkno has been built before proceeding.
-    if not admin.isBuilt(): adminErrors.gknoNotBuilt()
+    if not admin.isBuilt(): adminErrors.adminErrors().gknoNotBuilt()
     pipeline = command.determinePipeline()
 
   # Otherwise, handle the admin functions.
