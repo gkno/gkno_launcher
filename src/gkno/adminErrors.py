@@ -122,11 +122,19 @@ class adminErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  # If gkno is being run, but it hasn't yet been built, inform the user.
+  def gknoNotBuilt(self):
+    self.text.append('gkno not built.')
+    self.text.append('gkno must be built prior to use by typing:')
+    self.text.append('\t')
+    self.text.append('\tgkno build')
+    self.text.append('\t')
+    self.text.append('This command will download all necessary tools and compile them.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   def gknoAlreadyBuilt(self):
     print("Already built.", file=sys.stdout)
-
-  def gknoNotBuilt(self, dest=sys.stderr):
-    print("ERROR: 'gkno build' must be run before performing this operation", file=dest)
 
   def invalidResourceArgs(self, mode, dest=sys.stderr):
     print("ERROR: Invalid arguments or order used. Type 'gkno", mode, "--help' for a usage example.", file=dest)

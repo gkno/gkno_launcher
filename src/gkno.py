@@ -82,7 +82,11 @@ def main():
   # If not being run in admin mode, determine the name of the pipeline being run. Note that
   # for the code, a tool is considered a pipeline with a single task, so the terminology
   # 'pipeline' is used throughout for both cases.
-  if not admin.isRequested: pipeline = command.determinePipeline()
+  if not admin.isRequested:
+
+    # Check that gkno has been built before proceeding.
+    if not admin.isBuilt(): adminErrors.gknoNotBuilt()
+    pipeline = command.determinePipeline()
 
   # Otherwise, handle the admin functions.
   else:
