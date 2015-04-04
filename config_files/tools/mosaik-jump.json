@@ -52,7 +52,7 @@
 
     "Options" : [
       {    
-        "description" : "Hash size [4 - 32]",
+        "description" : "Record all hashes in the genome of this size. [4 - 32]",
         "long form argument" : "--hash-size",
         "short form argument" : "-hs",
         "command line argument" : "-hs",
@@ -87,6 +87,11 @@
       "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
       "data" : [
+        {
+          "id" : "hash size",
+          "argument" : "--hash-size",
+          "values" : ["8"]
+        }
       ]
     },
 

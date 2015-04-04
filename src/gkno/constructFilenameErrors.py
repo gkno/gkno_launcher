@@ -48,3 +48,17 @@ class constructFilenameErrors:
     'instructions in the configuration file contain valid information.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  # Values from another argument are to be built into the filename, but the argument whose values are to be used
+  # has not been set.
+  def noArgumentValuesToBuild(self, task, argument, constructionArgument):
+    self.text.append('Error constructing values for argument.')
+    self.text.append('No values for the argument \'' + argument + '\' used by the task \'' + task + '\' were set on the ' + \
+    'command line and so values are constructed using instructions from the configuration file. The instructions use ' + \
+    'the values given to another argument \'' + constructionArgument + '\' (note that this is the argument defined for the ' + \
+    'and may be different, or even not present, at the pipeline level), but no values were specified for this argument.')
+    self.text.append('\tIt is preferable to ensure that this error cannot occur, so ensure that the value required to ' + \
+    'construct the filename is listed as required in either the tool or the pipeline configuration file, or that a default' + \
+    'value is provided in the parameter sets.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

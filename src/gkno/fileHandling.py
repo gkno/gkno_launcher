@@ -2,8 +2,7 @@
 
 from __future__ import print_function
 
-import fileErrors
-from fileErrors import *
+import fileErrors as errors
 
 import stringOperations
 
@@ -16,7 +15,7 @@ class fileHandling:
   def __init__(self, toolsPath, pipelinesPath, definedPath):
 
     # Define error handling for file errors.
-    self.errors = fileErrors()
+    self.errors = errors.fileErrors()
 
     # If a path to configuration files was defined by the used, find the available configuration
     # files in this directory.
@@ -89,16 +88,12 @@ class fileHandling:
     try: jsonData = open(filename)
     except:
       # TODO ERROR
-      if allowTermination: print('ERROR - failed to open json file - ' + str(filename)); exit(0)
+      if allowTermination: print('ERROR - failed to open json file - ' + str(filename)); exit(1)
       else: return False
   
     try: data = json.load(jsonData)
     except:
-      if allowTermination:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        print('ERROR - failed to extract json information - ' + str(filename))
-        print(exc_type, exc_value, exc_traceback)
-        exit(0)
+      if allowTermination: errors.fileErrors().notJson(filename, sys.exc_info)
       else: return False
   
     return data

@@ -71,3 +71,17 @@ class commandLineErrors:
     'argument to define a name for the new parmater set.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  # Multiple arguments have been given multiple values and this cannot be processed.
+  def multipleArgumentsWithMultipleValues(self, task, arguments):
+    self.text.append('Multiple arguments given multiple values.')
+    self.text.append('As part of the pipeline, the task \'' + task + '\' has multiple arguments with multiple specified values. The arguments in ' + \
+    'question are:')
+    self.text.append('\t')
+    for argument in arguments: self.text.append('\t' + argument)
+    self.text.append('\t')
+    self.text.append('There are cases where it is permitted for multiple arguments to have multiple values, but these conditions are not ' + \
+    'satisfied in this case. Please check the command line for errors, and check the documentation to determine the cases in which supplying ' + \
+    'multiple value is permitted.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

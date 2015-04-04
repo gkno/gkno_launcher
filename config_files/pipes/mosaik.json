@@ -317,6 +317,16 @@
       "id" : "default",
       "description" : "Default parameter set requires user to input all input filenames.",
       "data" : [
+        {
+          "id" : "tech",
+          "node" : "tech",
+          "values" : ["illumina"]
+        },
+        {
+          "id" : "hash",
+          "node" : "hash",
+          "values" : [15]
+        }
       ]
     },
 
@@ -368,63 +378,6 @@
           "id" : "hash size",
           "node" : "hash",
           "values" : [10]
-        },
-        {
-          "id" : "tech",
-          "node" : "tech",
-          "values" : ["illumina"]
-        }
-      ]
-    },
-
-    {
-      "id" : "tutorial",
-      "description" : "Parameter set to be used in conjuction with gkno tutorials.",
-      "data" : [
-        {
-          "id" : "jump",
-          "node" : "jump",
-          "values" : ["./reference/tutorial-reference_8"]
-        },
-        {
-          "id" : "reference",
-          "node" : "--mosaik-reference",
-          "values" : ["./reference/tutorial-reference.dat"]
-        },
-        {
-          "id" : "annse",
-          "node" : "annse",
-          "values" : ["$(RESOURCES)/tutorial/current/se.100.005.ann"]
-        },
-        {
-          "id" : "annpe",
-          "node" : "annpe",
-          "values" : ["$(RESOURCES)/tutorial/current/pe.100.01.ann"]
-        },
-        {
-          "id" : "prefix",
-          "node" : "prefix",
-          "values" : ["moblist"]
-        },
-        {
-          "id" : "sphash",
-          "node" : "sphash",
-          "values" : [50]
-        },
-        {
-          "id" : "hash",
-          "node" : "hash",
-          "values" : [8]
-        },
-        {
-          "id" : "tech",
-          "node" : "tech",
-          "values" : ["illumina"]
-        },
-        {
-          "id" : "threads",
-          "node" : "threads",
-          "values" : [2]
         }
       ]
     },
@@ -462,16 +415,6 @@
           "id" : "sphash",
           "node" : "sphash",
           "values" : [50]
-        },
-        {
-          "id" : "hash",
-          "node" : "hash",
-          "values" : [15]
-        },
-        {
-          "id" : "tech",
-          "node" : "tech",
-          "values" : ["illumina"]
         },
         {
           "id" : "threads",

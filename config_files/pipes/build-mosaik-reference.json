@@ -54,7 +54,7 @@
 
     "Options" : [
       {
-        "description" : "hash-size",
+        "description" : "Record all hashes in the genome of this size. [4 - 32]",
         "long form argument" : "--hash-size",
         "short form argument" : "-hs",
         "node id" : "hash"

@@ -25,6 +25,25 @@ class fileErrors:
     # For a list of all error code values, see adminErrors.py.
     self.errorCode = '4'
 
+  # The opened file is not a valid json file.
+  def notJson(self, filename, info):
+
+    # Determine if this is a tool or a pipeline and strip the path from the name.
+    filenameList      = filename.split('/')
+    name              = filenameList[-1].rsplit('.json')[0]
+    configurationType = 'tool' if filenameList[-2] == 'tools' else 'pipeline'
+
+    # Get additional error messages.
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+
+    # Define the error message.
+    self.text.append('Invalid configuration file.')
+    self.text.append('The ' + configurationType + ' configuration file \'' + name + '\' is not a valid json file. The specific error raised is:')
+    self.text.append('\t')
+    self.text.append(str(exc_value))
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   # If a tool is added, but the tool is already available.
   def invalidPipelineName(self, pipelines, pipeline):
     self.text.append('Invalid pipeline.')

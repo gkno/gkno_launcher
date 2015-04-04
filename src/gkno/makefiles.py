@@ -294,8 +294,10 @@ class makefiles:
     isIntermediate = True if graph.getGraphNodeAttribute(parentNodeId, 'deleteAfterTask') == task else False
 
     # Determine if this is a stub.
-    isStub        = graph.getArgumentAttribute(parentNodeId, task, 'isStub')
-    stubExtension = graph.getArgumentAttribute(parentNodeId, task, 'stubExtension')
+    isStub         = graph.getArgumentAttribute(parentNodeId, task, 'isStub')
+    stubExtension  = graph.getArgumentAttribute(parentNodeId, task, 'stubExtension')
+    includeStubDot = graph.getArgumentAttribute(parentNodeId, task, 'includeStubDot')
+    isPrimaryNode  = graph.getArgumentAttribute(parentNodeId, task, 'isPrimaryStubNode')
 
     # Determine if this argument is for a stream.
     isStream = graph.getArgumentAttribute(parentNodeId, task, 'isStream')
@@ -325,12 +327,14 @@ class makefiles:
         for value in lineValues:
           lineValue = self.getValue(graph, nodeId, task, value, isInput = True, isStub = isStub, stubExtension = stubExtension)
           line      = self.buildLine(argument, data.delimiter, lineValue)
+          if isStub and not isPrimaryNode: line = None
           if line: lines.append(line)
 
       # If the task isn't greedy and has multiple values, each value is used for a seperate subphase.
       elif len(lineValues) > 1:
         lineValue = self.getValue(graph, nodeId, task, lineValues[subphase - 1], isInput = True, isStub = isStub, stubExtension = stubExtension)
         line      = self.buildLine(argument, data.delimiter, lineValue)
+        if isStub and not isPrimaryNode: line = None
         if line: lines.append(line)
 
       # If this is a file(s) that feeds into all divisions, loop over the divsions and add the files to
@@ -386,7 +390,7 @@ class makefiles:
     isStub         = graph.getArgumentAttribute(task, nodeId, 'isStub')
     stubExtension  = graph.getArgumentAttribute(task, nodeId, 'stubExtension')
     includeStubDot = graph.getArgumentAttribute(task, nodeId, 'includeStubDot')
-    isPrimaryNode  = graph.getArgumentAttribute(task, nodeId, 'primaryStubNode')
+    isPrimaryNode  = graph.getArgumentAttribute(task, nodeId, 'isPrimaryStubNode')
 
     # Determine if this argument is for a stream.
     isStream = graph.getArgumentAttribute(task, nodeId, 'isStream')
@@ -469,6 +473,9 @@ class makefiles:
   # Generate all of the makefile names if multiple makefiles are being generated and open them all for writing.
   def openMakefiles(self, pipeline, struct):
 
+    # Generate a string of random text to use in the makefile name.
+    randomString = stringOps.getRandomString(8)
+
     # Define the base makefile name.
     basename = str(pipeline + '-' + self.makefileId) if self.makefileId else str(pipeline)
 
@@ -497,7 +504,7 @@ class makefiles:
           # Add a random string to the makefile name. This ensures that if gkno has been executed in a loop,
           # multiple runs of gkno in the same directory for the same pipeline will create makefiles with
           # unique names.
-          filename += str('.' + stringOps.getRandomString(8) + '.make')
+          filename += str('.' + randomString + '.make')
 
           # Open the file for writing. If this is a single makefile, this should only happen once.
           if self.isMultipleMakefiles or (phase + subphase + division) == 3:
@@ -597,7 +604,7 @@ class makefiles:
       print(file = self.filehandles[filename])
 
   # Get the intermediate and output files for the whole pipeline.
-  def getAllOutputs(self, struct):
+  def getAllOutputs(self, struct, randomStrings):
 
     # Loop over all the phases, subphases and divisions.
     allIntermediates = []
@@ -627,8 +634,8 @@ class makefiles:
           if self.isMultipleMakefiles:
             filename   = self.filenames[key]
             filehandle = self.filehandles[filename]
-            self.addIntermediateFiles(intermediates[key], filename, filehandle)
-            self.addOutputFiles(outputs[key], filehandle)
+            self.addIntermediateFiles(intermediates[key], outputs[key], filename, filehandle)
+            self.addOutputFiles(outputs[key], randomStrings, filehandle)
 
           # Add the outputs and intermediates to the totla lists.
           allOutputs.extend(outputs[key])
@@ -640,25 +647,15 @@ class makefiles:
 
     # Add the intermediate and output files to the single makefile, if required.
     if not self.isMultipleMakefiles:
-      self.addIntermediateFiles(allIntermediates, self.singleFilename, self.singleFilehandle)
-      self.addOutputFiles(allOutputs, self.singleFilehandle)
-
-      # Collapse all the outputs and intermediates into the first key (111) and remove outputs that
-      # are present in the intermediates. An intermediate task can be an output when there are multiple
-      # makefiles, since the file could be deleted in a subsequent makefile. For a single makefile,
-      # however, all intermediates must be removed.
-      buildIntermediates = []
-      buildOutputs       = []
-      for key in outputs:
-        buildIntermediates.extend(intermediates[key])
-        buildOutputs.extend(outputs[key])
-      outputs[str(111)] = list(set(buildOutputs) - set(buildIntermediates))
+      self.addIntermediateFiles(allIntermediates, allOutputs, self.singleFilename, self.singleFilehandle)
+      self.addOutputFiles(allOutputs, randomStrings, self.singleFilehandle)
+      outputs[str(111)] = list(set(allOutputs) - set(allIntermediates))
 
     # Return a list of final outputs.
     return outputs
 
   # Add intermediate files to the makefile.
-  def addIntermediateFiles(self, intermediates, filename, filehandle):
+  def addIntermediateFiles(self, intermediates, outputs, filename, filehandle):
 
     # Write intermediate files to the makefile header. Files marked as intermediate are removed during
     # execution of the pipeline. By being marked as intermediate, reexecution of the pipeline will not
@@ -669,18 +666,27 @@ class makefiles:
 
     # Add all the intermediates to the makefile.
     for intermediate in intermediates: print(intermediate, end = ' ', file = filehandle)
+
+    # Also add all of the output files. The output files all include random strings in their names to
+    # ensure there are no filename conflicts. The final outputs are these outputs with the strings
+    # removed.
+    for output in outputs: print(output, end = ' ', file = filehandle)
     print(file = filehandle)
     print(file = filehandle)
 
   # Add output files to the makefile.
-  def addOutputFiles(self, outputs, filehandle):
+  def addOutputFiles(self, outputs, randomStrings, filehandle):
 
     # List all the output files created by this makefile.
     print('### List all of the files that are required outputs of the pipeline.', file = filehandle)
     print('all: DELETE_COMPLETE_OK $(COMPLETE_OK) ', end = '', file = filehandle)
 
     # Add all the output files to the makefile.
-    for output in outputs: print(output, end = ' ', file = filehandle)
+    for output in outputs:
+      for randomString in randomStrings:
+        if randomString in output:
+          print(output.replace(str('_' + randomString), ''), end = ' ', file = filehandle)
+          break
     print(file = filehandle)
     print(file = filehandle)
 
@@ -840,13 +846,37 @@ class makefiles:
     print('\tfi', file = filehandle)
     print(file = filehandle)
 
+  # Rename the final output files that have been successfully created.
+  def renameFinalFiles(self, outputs, randomStrings):
+
+    # Loop over all files and add the rename all files for the makefile.
+    for filename in self.filenamesList:
+      filehandle = self.filehandles[filename]
+
+      # Write the description of the action.
+      print('### Rename all of the final output files that have been successfully created', file = filehandle)
+      print('### to remove the random string included in the name.', file = filehandle)
+
+      # If there is only a single makefile, set the key to 111, otherwise use the filename to find the key.
+      key = str(111) if not self.isMultipleMakefiles else self.keys[filename]
+      for output in outputs[key]:
+        for randomString in randomStrings:
+          if randomString in output:
+            finalOutput = output.replace(str('_' + randomString), '')
+            print(finalOutput, ': ', output, sep = '', file = filehandle)
+            print('\t@mv ', output, ' ', finalOutput, sep = '', file = filehandle)
+            print(file = filehandle)
+            break
+
   # Write the final instructions to the makefile.
   def completeFile(self, outputs):
  
     # Loop over all files and add the final text to them all.
     for filename in self.filenamesList:
       filehandle = self.filehandles[filename]
-      key        = self.keys[filename]
+
+      # If there is only a single makefile, set the key to 111, otherwise use the filename to find the key.
+      key = str(111) if not self.isMultipleMakefiles else self.keys[filename]
 
       # Prior to closing the file, include instructions for generating an 'ok' file indicating that the
       # makefile was successfully executed and delete the makefile.
@@ -955,9 +985,9 @@ class makefiles:
     # Check if the value should be included in quotation marks.
     inQuotations = graph.getArgumentAttribute(source, target, 'includeInQuotations')
 
-    # If this is a stub, add the extension to the value and return.
+    # If this is a stub, strip off the extension if it has been attached.
     if isStub:
-      if not graph.getArgumentAttribute(source, target, 'primaryStubNode'): return None
+      if not graph.getArgumentAttribute(source, target, 'isPrimaryStubNode'): return None
       else: 
         try: updatedValue = value.rstrip(stubExtension)
         except: updatedValue = value

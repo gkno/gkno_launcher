@@ -6,6 +6,7 @@ from copy import deepcopy
 
 import networkx as nx
 
+import commandLineErrors as cle
 import constructFilenames as construct
 import fileHandling as fh
 import fileErrors as fe
@@ -128,8 +129,8 @@ class dataNodeAttributes:
     self.addTextToFilename = None
 
     # Random text is added to intermediate files to avoid conflicts.
-    self.hasRandomText = False
-    self.randomText    = None
+    self.hasRandomString = False
+    self.randomString  = None
 
 # Define a class to store and manipulate the pipeline graph.
 class pipelineGraph:
@@ -236,9 +237,9 @@ class pipelineGraph:
             target = taskNodeID if isInput else fileNodeID
 
             # Store the extension for this particular node.
-            stubArgumentAttributes                 = deepcopy(argumentAttributes)
-            stubArgumentAttributes.stubExtension   = extension
-            stubArgumentAttributes.primaryStubNode = True if i == 0 else False
+            stubArgumentAttributes                   = deepcopy(argumentAttributes)
+            stubArgumentAttributes.stubExtension     = extension
+            stubArgumentAttributes.isPrimaryStubNode = True if i == 0 else False
 
             # Add the edge to the graph.
             self.graph.add_edge(source, target, attributes = stubArgumentAttributes)
@@ -558,10 +559,10 @@ class pipelineGraph:
         for i, extension in enumerate(information.stubExtensions):
 
           # Add the extension to the attributes.
-          stubArgumentAttributes                 = deepcopy(argumentAttributes)
-          stubArgumentAttributes.extensions      = [str(extension)]
-          stubArgumentAttributes.stubExtension   = str(extension)
-          stubArgumentAttributes.primaryStubNode = True if i == 0 else False
+          stubArgumentAttributes                   = deepcopy(argumentAttributes)
+          stubArgumentAttributes.extensions        = [str(extension)]
+          stubArgumentAttributes.stubExtension     = str(extension)
+          stubArgumentAttributes.isPrimaryStubNode = True if i == 0 else False
 
           # Add the nodes associated with the stub that are not being linked to the other tasks,
           if extension != information.stubExtension: self.addFileNode(str(nodeAddress + '.' + extension), str(nodeAddress))
@@ -1174,17 +1175,28 @@ class pipelineGraph:
 
     # Loop over all nodes attached to the task.
     for nodeId, isInput in nodeIds:
-      argument = self.getArgumentAttribute(nodeId, task, 'longFormArgument') if isInput else self.getArgumentAttribute(task, nodeId, 'longFormArgument')
-      nodeType = self.getGraphNodeAttribute(nodeId, 'nodeType')
-      noValues = len(self.getGraphNodeAttribute(nodeId, 'values'))
 
-      # If this is the first observation of this argument, store the values.
-      if argument not in values: values[argument] = argumentValues(isInput, noValues, nodeType, nodeId)
+      # If this node belings to a stub, only process the primary stub node. Accounting for all the nodes
+      # will result in counting multiple values for the argument, but there was only a single value given
+      # on the command line.
+      if isInput:
+        isStub            = self.getArgumentAttribute(nodeId, task, 'isStub')
+        isPrimaryStubNode = self.getArgumentAttribute(nodeId, task, 'isPrimaryStubNode')
       else:
-        assert nodeType == values[argument].type
-        assert isInput == values[argument].isInput
-        values[argument].noValues += noValues
-        values[argument].nodeIds.append(nodeId)
+        isStub            = self.getArgumentAttribute(task, nodeId, 'isStub')
+        isPrimaryStubNode = self.getArgumentAttribute(task, nodeId, 'isPrimaryStubNode')
+      if not isStub or (isStub and isPrimaryStubNode):
+        argument = self.getArgumentAttribute(nodeId, task, 'longFormArgument') if isInput else self.getArgumentAttribute(task, nodeId, 'longFormArgument')
+        nodeType = self.getGraphNodeAttribute(nodeId, 'nodeType')
+        noValues = len(self.getGraphNodeAttribute(nodeId, 'values'))
+
+        # If this is the first observation of this argument, store the values.
+        if argument not in values: values[argument] = argumentValues(isInput, noValues, nodeType, nodeId)
+        else:
+          assert nodeType == values[argument].type
+          assert isInput == values[argument].isInput
+          values[argument].noValues += noValues
+          values[argument].nodeIds.append(nodeId)
 
     # Only arguments with more than one value are of interest. If the argument has zero or one value, these
     # can be simply applied on the command line without consideration of subphases or divisions.
@@ -1196,11 +1208,22 @@ class pipelineGraph:
     for argument in remove: del(values[argument])
 
     # It is not permitted for a single task to have multiple input arguments with multiple values except
-    # for the following cases:
-    #
-    # 1. A
-    # FIXME
-    if len(inputs) > 1: print('graph.getArgumentValues - MULTIPLE INPUT ARGUMENTS WITH MULTIPLE VALUES _ NEED TO HANDLE'); exit(0)
+    # for specific circumstances. Check to ensure that these conditions are met.
+    if len(inputs) > 1:
+
+      # All of the arguments with multiple values have the same number of values.
+      success = True
+      for argument in inputs:
+        number  = values[argument].noValues
+        isInput = values[argument].isInput
+        if number > 1 and number != noValues:
+          if noValues == 0: noValues = values[argument].noValues
+          else:
+           success = False
+           break
+
+      # If these cases aren't met, terminate.
+      if not success: cle.commandLineErrors().multipleArgumentsWithMultipleValues(task, inputs)
 
     # Return the argument information.
     return values
@@ -1274,21 +1297,21 @@ class pipelineGraph:
   # Check if files have random text to remove.
   def checkRandomText(self, nodeId, predecessor, values):
     isIntermediate = self.getGraphNodeAttribute(nodeId, 'isIntermediate')
-    hasRandomText  = self.getGraphNodeAttribute(predecessor, 'hasRandomText')
-    randomText     = self.getGraphNodeAttribute(predecessor, 'randomText')
+    hasRandomString  = self.getGraphNodeAttribute(predecessor, 'hasRandomString')
+    randomString     = self.getGraphNodeAttribute(predecessor, 'randomString')
     updatedValues  = deepcopy(values)
 
     # If this file is itself an intermediate file, retain the text and add its details to the node. If no
     # text has been added, add it here.
     if isIntermediate:
-      if hasRandomText:
-        self.setGraphNodeAttribute(nodeId, 'hasRandomText', True)
-        self.setGraphNodeAttribute(nodeId, 'randomText', randomText)
+      if hasRandomString:
+        self.setGraphNodeAttribute(nodeId, 'hasRandomString', True)
+        self.setGraphNodeAttribute(nodeId, 'randomString', randomString)
 
     # If this is not an intermediate file, remove the text if it exists.
-    elif hasRandomText:
-      for value in values: updatedValues.append(value.replace(str('_' + randomText), ''))
-      self.setGraphNodeAttribute('hasRandomText', False)
+    elif hasRandomString:
+      for value in values: updatedValues.append(value.replace(str('_' + randomString), ''))
+      self.setGraphNodeAttribute('hasRandomString', False)
 
     # Return the updated values.
     return updatedValues
@@ -1455,7 +1478,7 @@ class pipelineGraph:
           # text is removed from files that are not intermediate, so when consolidation occurs, all files from the same
           # phase/subphase, but different divisions need to have the same text.
           isIntermediate = self.getGraphNodeAttribute(nodeId, 'isIntermediate')
-          randomText     = strOps.getRandomString(8)
+          randomString     = strOps.getRandomString(8)
 
           # Loop over the base values (except the first - that will be dealt with at the end when updating the file node
           # that already exists), construct the output filenames, then build and add the node with an edge from the task.
@@ -1469,7 +1492,7 @@ class pipelineGraph:
             # Construct the filenames for this node. If this is the task that has first split into divisions, the argument
             # and value for the division needs to be built into the filename. If this is a task following on from the task
             # that created the divisions, this is not required.
-            values       = construct.addDivisionToValue(self.graph, superpipeline, task, nodeId, instructions, baseValues, argument, divisionValues[i], randomText)
+            values       = construct.addDivisionToValue(self.graph, superpipeline, task, nodeId, instructions, baseValues, argument, divisionValues[i], randomString)
             divisionText = str('_' + argument.strip('-') + str(divisionValues[i]))
 
             # Copy the attributes from the existing node and update the values.
@@ -1480,8 +1503,8 @@ class pipelineGraph:
             attributes.parent       = nodeId
             attributes.values       = values
             if isIntermediate:
-              attributes.hasRandomText = True
-              attributes.randomText    = randomText
+              attributes.hasRandomString = True
+              attributes.randomString    = randomString
 
             # Add the node to the list of children.
             children.append(fileNodeID)
@@ -1493,7 +1516,7 @@ class pipelineGraph:
             self.graph.add_edge(str(taskNodeID), str(fileNodeID), attributes = deepcopy(self.getEdgeAttributes(task, nodeId)))
 
           # Now perform the same tasks for the existing node.
-          values       = construct.addDivisionToValue(self.graph, superpipeline, task, nodeId, instructions, baseValues, argument, divisionValues[0], randomText)
+          values       = construct.addDivisionToValue(self.graph, superpipeline, task, nodeId, instructions, baseValues, argument, divisionValues[0], randomString)
           divisionText = str('_' + argument.strip('-') + str(divisionValues[0]))
           self.setGraphNodeAttribute(nodeId, 'children', children)
           self.setGraphNodeAttribute(nodeId, 'divisionID', 0)
@@ -1503,8 +1526,8 @@ class pipelineGraph:
 
           # Check if random text was added to the values. If so, mark the nodes.
           if isIntermediate:
-            self.setGraphNodeAttribute(nodeId, 'hasRandomText', True)
-            self.setGraphNodeAttribute(nodeId, 'randomText', randomText)
+            self.setGraphNodeAttribute(nodeId, 'hasRandomString', True)
+            self.setGraphNodeAttribute(nodeId, 'randomString', randomString)
 
         # If the construction method is unknown, terminate.
         else:
@@ -1753,6 +1776,15 @@ class pipelineGraph:
         # Set the 'deleteAfterTask' value for the node to the task after whose execution the file should
         # be deleted.
         self.setGraphNodeAttribute(nodeId, 'deleteAfterTask', task)
+
+  # Get a list of all the random strings used in filenames.
+  def getRandomStrings(self):
+    randomStrings = []
+    for nodeId in self.getNodes('file'):
+      randomString = self.getGraphNodeAttribute(nodeId, 'randomString')
+      if randomString and randomString not in randomStrings: randomStrings.append(randomString)
+
+    return randomStrings
 
   ########################################
   ##  Methods for modifying the graph.  ##

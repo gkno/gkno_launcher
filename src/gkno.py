@@ -304,7 +304,8 @@ def main():
   make.addPhony()
 
   # Get the intermediate and output files for the whole pipeline.
-  outputs = make.getAllOutputs(struct)
+  randomStrings = graph.getRandomStrings()
+  outputs       = make.getAllOutputs(struct, randomStrings)
 
   # Remove the 'ok' file used to indicated successful execution.
   make.removeOk()
@@ -314,6 +315,10 @@ def main():
     for subphase in range(1, struct.phaseInformation[phase].numberSubphases + 1):
       for division in range(1, struct.phaseInformation[phase].numberDivisions + 1):
         make.addCommandLines(graph, struct, phase, subphase, division)
+
+  # For all of the final outputs, determine the random text in the name and rename the file to have this text
+  # removed.
+  make.renameFinalFiles(outputs, randomStrings)
 
   # Write final information to the makefile, then close the file.
   make.completeFile(outputs)
@@ -333,7 +338,7 @@ def main():
     numberJobs   = command.gknoArguments[jobsArgument][0] if jobsArgument in command.gknoArguments else 1
 
     # Generate the execution command.
-    execute = 'make -j ' + str(numberJobs) + ' --file ' + make.singleFilename
+    execute = 'make -k -j ' + str(numberJobs) + ' --file ' + make.singleFilename
     success = subprocess.call(execute.split())
 
 if __name__ == "__main__":

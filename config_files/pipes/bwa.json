@@ -228,9 +228,14 @@
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment"]
         },
         {
-          "id" : "reag-group",
-          "node" : "read-group",
-          "values" : ["@RG\tID:test\tSM:test"]
+          "id" : "read-group-id",
+          "node" : "read-group-id",
+          "values" : ["mutated_genome"]
+        },
+        {
+          "id" : "sample-id",
+          "node" : "sample-id",
+          "values" : ["mutated_genome"]
         }
       ]
     },

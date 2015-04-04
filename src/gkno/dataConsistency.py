@@ -49,23 +49,6 @@ def checkNode(graph, superpipeline, source, target, nodeType, expectedDataType, 
   #TODO ERROR
   elif expectedDataType != dataType: print('dataConsistency.checkNode - 1', dataType, expectedDataType); exit(0)
 
-  # Check if this argument allows multiple values to be set.
-  # TODO REMOVED WHILE TESTING MULTIPLE INPUT DATA SETS. REMOVE OR REINCLUDE.
-#  isMultipleValuesAllowed = graph.CM_getArgumentAttribute(graph.graph, source, target, 'allowMultipleValues')
-#  if not isMultipleValuesAllowed and len(values) > 1:
-#
-#    # Check if this is a top level pipeline argument. Provide the error message dependent on this fact.
-#    if longFormArgument in data.longFormArguments.keys():
-#      shortFormArgument = data.longFormArguments[longFormArgument].shortFormArgument
-#      errors.multipleValues(longFormArgument, shortFormArgument, task = None, isPipeline = True)
-#    else:
-#      shortFormArgument = graph.CM_getArgumentAttribute(graph.graph, source, target, 'shortFormArgument')
-#
-#      # Determine the task receiving the argument.
-#      if graph.CM_getGraphNodeAttribute(graph.graph, source, 'nodeType') == 'task': task = source
-#      else: task = target
-#      errors.multipleValues(longFormArgument, shortFormArgument, task = task, isPipeline = False)
-
   # Loop over each of the values for this node.
   for value in values:
 
@@ -346,10 +329,10 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
             # construct as many nodes as required.
             if argumentAttributes.isStub: #graph.constructOutputStubs()
               for i, stubExtension in enumerate(argumentAttributes.stubExtensions):
-                modifiedNodeAddress            = str(nodeAddress + '.' + stubExtension)
-                stubAttributes                 = deepcopy(argumentAttributes)
-                stubAttributes.stubExtension   = stubExtension
-                stubAttributes.primaryStubNode = True if i == 0 else False
+                modifiedNodeAddress              = str(nodeAddress + '.' + stubExtension)
+                stubAttributes                   = deepcopy(argumentAttributes)
+                stubAttributes.stubExtension     = stubExtension
+                stubAttributes.isPrimaryStubNode = True if i == 0 else False
                 graph.addFileNode(modifiedNodeAddress, modifiedNodeAddress)
                 graph.addEdge(task, modifiedNodeAddress, stubAttributes)
 
@@ -411,8 +394,9 @@ def setFilePaths(graph, gknoArguments, gkno):
     updatedValues = []
     for value in graph.getGraphNodeAttribute(nodeId, 'values'):
 
-      # Update the value to include the extension, if this is a stub.
-      if isStub: modifiedValue = str(value + stubExtension) if '.' in stubExtension else str(value + '.' + stubExtension)
+      # Update the value to include the extension, if this is a stub (if necessary).
+      if isStub and not value.endswith(stubExtension):
+        modifiedValue = str(value + stubExtension) if '.' in stubExtension else str(value + '.' + stubExtension)
       else: modifiedValue = value
 
       # Check if the value already has a path. If not, add the input or output path. If the path
