@@ -30,13 +30,6 @@ class taskAttributes:
     # Mark if this task should consolidate divisions if any exist.
     self.consolidate = False
 
-    # Keep track of input and output nodes that have multiple nodes.
-    self.multinodeInput  = None
-    self.multinodeOutput = None
-
-    # Store the node IDs of options that have multiple values.
-    self.multivalueOptions = []
-
     # If the task outputs to a stream rather than a file, or the task accepts a stream.
     self.isInputStream  = False
     self.isOutputStream = False

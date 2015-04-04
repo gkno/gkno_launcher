@@ -1063,27 +1063,45 @@ class pipelineGraph:
       # Determine the number of values provided to all arguments for this task.
       values = self.getArgumentValues(task)
 
+      # Loop over the different input files and determine the number of subphases.
+      subphases = 1
+      for argument in values:
+        if values[argument].type == 'file' and values[argument].isInput:
+          isGreedy = False
+          for nodeId in values[argument].nodeIds: isGreedy = self.getArgumentAttribute(nodeId, task, 'isGreedy')
+
+          # Check that the number of subphases is valid.
+          if subphases != 1 and subphases != values[argument].noValues: print('ERROR - graph.constructFiles - SUBPHASES', task); exit(1)
+          if not isGreedy: subphases = values[argument].noValues
+      self.setGraphNodeAttribute(task, 'subphases', subphases)
+
       # Loop over all arguments with multiple values and ensure that they are valid.
       for argument in values:
 
         # If this task is already part of a division, it is not permitted for any option nodes to have multiple
         # values, unless these options are all to be applied to the same command line.
         if values[argument].type == 'option':
-          isAllowMultipleValues = toolData.getArgumentAttribute(argument, 'allowMultipleValues')
-          if divisions > 1 and not isAllowMultipleValues: print('ERROR - graph.constructFiles - division error', task, argument); exit(1)
-          else:
 
-            # If this task is split into divisions, set the number of divisions and mark this task as the task that
-            # splits into divisions. This task breaks the graph into divisions and subsequent tasks either consolidate
-            # the divisions, or act on the divisions already defined.
-            # 
-            # Note that only a single node can be supplied.
-            if isAllowMultipleValues: divisions = 1
-            else:
-              divisions             = values[argument].noValues
-              isFirstTaskInDivision = True
-              if len(values[argument].nodeIds) != 1: print('ERROR - graph.constructFiles - division error 2', values[argument].nodeIds); exit(1)
-              else: divisionNode = values[argument].nodeIds[0]
+          # If the option can be applied multiple times on the command line, set the number of divisions to 1.
+          if toolData.getArgumentAttribute(argument, 'allowMultipleValues'): divisions = 1
+
+          # If there are the same number of option values as there are subphases, there is a value for each
+          # subphase and consequently, there is no reason to split the task into divisions.
+          elif values[argument].noValues == subphases: divisions = 1
+
+          #TODO ERROR
+          elif divisions > 1: print('ERROR - graph.constructFiles - division error', task, argument); exit(1)
+
+          # If this task is split into divisions, set the number of divisions and mark this task as the task that
+          # splits into divisions. This task breaks the graph into divisions and subsequent tasks either consolidate
+          # the divisions, or act on the divisions already defined.
+          # 
+          # Note that only a single node can be supplied.
+          else:
+            divisions             = values[argument].noValues
+            isFirstTaskInDivision = True
+            if len(values[argument].nodeIds) != 1: print('ERROR - graph.constructFiles - division error 2', values[argument].nodeIds); exit(1)
+            else: divisionNode = values[argument].nodeIds[0]
 
       # If the task only has a single division, there are no files to consolidate, so set consolidate to False.
       if divisions == 1: consolidate = False

@@ -212,24 +212,49 @@ def constructKnownFilename(graph, superpipeline, instructions, task, nodeId, arg
   # Get the filename to use.
   value = instructions['filename']
 
-  # If there are instructions on text to add, add it.
-  updatedValue = modifyText(graph, task, argument, toolData, instructions, 0, value) if 'modify text' in instructions else value
+  # Determine the number of subphases for this graph. If there are multiple subphases, is is possible
+  # that any arguments from the tool whose values are used in the construction can have as many values
+  # as there are subphases.
+  subphases = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'subphases')
+
+  # Loop over the number of subphases.
+  if 'modify text' in instructions:
+    values = [modifyText(graph, task, argument, toolData, instructions, counter, value) for counter in range(0, subphases)]
+  else: values = [value] * subphases
 
   # Check if the 'directory argument' field is set. This will determine if the filename should be
   # prepended with a path defined by a tool argument.
   pathNodeId   = None
   pathArgument = None
+  updatedValues = []
   if 'path argument' in instructions:
-    pathArgument = instructions['path argument'] 
-    pathNodeId   = gr.pipelineGraph.CM_getNodeForInputArgument(graph, task, pathArgument)
-    values = [str(value + '/' + updatedValue) for value in gr.pipelineGraph.CM_getGraphNodeAttribute(graph, pathNodeId, 'values')]
-  else: values = [str(updatedValue)]
+    pathArgument   = instructions['path argument'] 
+    pathNodeId     = gr.pipelineGraph.CM_getNodeForInputArgument(graph, task, pathArgument)
+    pathNodeValues = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, pathNodeId, 'values')
+
+    # If there is a single argument for the path node, use this value for all values.
+    if len(pathNodeValues) == 1:
+      for value in values: updatedValues.append(str(pathNodeValues[0] + '/' + value))
+
+    # If there are multiple path node values, but only a single argument value, the result is a new value for each
+    # subphase.
+    elif len(values) == 1:
+      for value in pathValues: updatedValues.append(str(values[0] + '/' + value))
+
+    # If there are the same number of values as path node values, each path node values applies to a specific subphase.
+    elif len(values) == len(pathNodeValues):
+      for counter, value in enumerate(values): updatedValues.append(str(pathNodeValues[counter] + '/' + value))
+
+    # Any other combination of values is invalid.
+    #TODO ERROR
+    else: print('constructFilenames.constructKnownFilename - PATH VALUES.'); exit(1)
+  else: updatedValues = values
 
   # Set the values.
-  gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeId, 'values', values)
+  gr.pipelineGraph.CM_setGraphNodeAttribute(graph, nodeId, 'values', updatedValues)
 
   # Return the constructed values.
-  return values
+  return updatedValues
 
 # Determine the extension on a file.
 def getExtension(value, extensions):
@@ -292,9 +317,10 @@ def modifyText(graph, task, argument, toolData, instructions, counter, value):
         # is introduced.
         if len(taskArgumentValues) == 0:
           errors.constructFilenameErrors().noArgumentValuesToBuild(task, argument, constructionArgument)
+
+        elif isinstance(counter, int): value += str(taskArgumentValues[counter])
         #TODO ERROR
         elif len(taskArgumentValues) > 1: print('constructFilenames.modifyText - multiple arguments'); exit(1)
-        elif isinstance(counter, int): value += str(taskArgumentValues[counter])
         elif len(taskArgumentValues) == 1: value += str(taskArgumentValues[0])
 
   # Return the modifed value.

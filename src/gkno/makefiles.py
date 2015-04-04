@@ -238,11 +238,26 @@ class makefiles:
       # same command line. Again, this cannot be a flag.
       elif len(values) > 1:
 
-        # Check that the option is permitted to be applied multiple times.
-        if not isAllowMultipleValues: print('ERROR - makefiles.addOption - 2', argument, len(values)); exit(1)
-        for value in values:
-          lineValue = self.getValue(graph, nodeId, task, value, isInput = True, isStub = False, stubExtension = None)
-          lines.append(self.buildLine(argument, data.delimiter, lineValue))
+        # Check if the option is permitted to be applied multiple times. If so, add all values to the same command line.
+        if isAllowMultipleValues:
+          for value in values:
+            lineValue = self.getValue(graph, nodeId, task, value, isInput = True, isStub = False, stubExtension = None)
+            lines.append(self.buildLine(argument, data.delimiter, lineValue))
+
+          # Add the options to the command lines for each subphase.
+          for j in range(1, data.numberSubphases + 1): data.commands[j][i].extend(lines)
+
+        # If there are the same number of values as there are subphases, add the values accordingly.
+        elif len(values) == data.numberSubphases:
+          for j in range(1, data.numberSubphases + 1):
+            lineValue = self.getValue(graph, nodeId, task, values[j - 1], isInput = True, isStub = False, stubExtension = None)
+            line      = self.buildLine(argument, data.delimiter, lineValue)
+
+            # Add the options to the command lines for each subphase.
+            if line: data.commands[j][i].append(line)
+
+        # If neither of the above consitions are true, terminate.
+        else: print('ERROR - makefiles.addOption - 2', argument, len(values)); exit(1)
 
       # If there is only a single value, build the line considering if this is a flag.
       else:
@@ -259,8 +274,8 @@ class makefiles:
         line = self.buildLine(argument, data.delimiter, lineValue)
         if line: lines.append(line)
 
-      # Add the options to the command lines for each subphase.
-      for j in range(1, data.numberSubphases + 1): data.commands[j][i].extend(lines)
+        # Add the options to the command lines for each subphase.
+        for j in range(1, data.numberSubphases + 1): data.commands[j][i].extend(lines)
 
   # Add input files to the command line.
   def addInput(self, graph, task, data, nodeId):
