@@ -209,7 +209,7 @@ class adminErrors:
       if not tools[tool]: self.text.append('\t' + str(tool))
     self.text.append('\t')
     self.errors.writeFormattedText(self.text, errorType = 'warning')
-    self.errors.terminate(self.errorCode)
+    sys.exit(self.errorCode)
 
   # If a tool is added, but the tool name is not provided.
   def noToolNameProvided(self, tools):
