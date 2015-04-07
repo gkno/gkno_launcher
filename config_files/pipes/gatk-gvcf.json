@@ -14,18 +14,8 @@
       "tool" : "gatk-indel-realigner"
     },
     {
-      "task" : "index-realigned",
-      "tool" : "bamtools-index",
-      "omit from reduced plot" : true
-    },
-    {
       "task": "recalibrate",
       "tool" : "gatk-recalibrate-bq"
-    },
-    {
-      "task" : "index-recalibrated",
-      "tool" : "bamtools-index",
-      "omit from reduced plot" : true
     },
     {
       "task" : "print-reads",
@@ -63,6 +53,9 @@
         "short form argument" : "-d",
         "node id" : "dbsnp"
       }
+    ],
+
+    "Outputs" : [
     ],
 
     "Options" : [
@@ -125,6 +118,31 @@
         {
           "task" : "single-sample-call",
           "task argument" : "--fasta-reference"
+        }
+      ]
+    },
+    {
+      "id" : "reference-index",
+      "arguments sharing node" : [
+        {
+          "task" : "create-target-intervals",
+          "task argument" : "--fasta-index"
+        },
+        {
+          "task" : "realign-indels",
+          "task argument" : "--fasta-index"
+        },
+        {
+          "task" : "recalibrate",
+          "task argument" : "--fasta-index"
+        },
+        {
+          "task" : "print-reads",
+          "task argument" : "--fasta-index"
+        },
+        {
+          "task" : "single-sample-call",
+          "task argument" : "--fasta-index"
         }
       ]
     },
@@ -194,14 +212,11 @@
     },
     {
       "id" : "indel",
+      "delete files" : true,
       "arguments sharing node" : [
         {
           "task" : "realign-indels",
           "task argument" : "--out"
-        },
-        {
-          "task" : "index-realigned",
-          "task argument" : "--in"
         },
         {
           "task" : "recalibrate",
@@ -214,11 +229,12 @@
       ]
     },
     {
-      "id" : "indel-index",
+      "id" : "realigned-index",
+      "delete files" : true,
       "arguments sharing node" : [
         {
-          "task" : "index-realigned",
-          "task argument" : "--out"
+          "task" : "realign-indels",
+          "task argument" : "--out-index"
         },
         {
           "task" : "recalibrate",
@@ -251,25 +267,8 @@
           "task argument" : "--out"
         },
         {
-          "task" : "index-recalibrated",
-          "task argument" : "--in"
-        },
-        {
           "task" : "single-sample-call",
           "task argument" : "--in"
-        }
-      ]
-    },
-    {
-      "id" : "single-index",
-      "arguments sharing node" : [
-        {
-          "task" : "index-recalibrated",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "single-sample-call",
-          "task argument" : "--in-index"
         }
       ]
     }

@@ -10,31 +10,6 @@
   "arguments" : {
     "Inputs" : [
       {
-        "description" : "The reference FASTA file.",
-        "long form argument" : "--fasta-reference",
-        "short form argument" : "-r",
-        "command line argument" : "--reference_sequence",
-        "required" : true,
-        "data type" : "string",
-        "extensions" : ["fasta", "fa"]
-      },
-      {
-        "description" : "The reference FASTA index file.",
-        "long form argument" : "--index",
-        "short form argument" : "-x",
-        "command line argument" : "none",
-        "required" : true,
-        "data type" : "string",
-        "modify argument" : "omit",
-        "modify value" : "omit",
-        "extensions" : ["fai"],
-        "construct filename" : {
-          "method": "from tool argument",
-          "use argument" : "--fasta-reference",
-          "modify extension" : "append"
-        }
-      },
-      {
         "description" : "The input BAM file.",
         "long form argument" : "--in",
         "short form argument" : "-i",
@@ -56,6 +31,31 @@
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
+          "modify extension" : "append"
+        }
+      },
+      {
+        "description" : "The reference FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "--reference_sequence",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["fasta", "fa"]
+      },
+      {
+        "description" : "The reference FASTA index file.",
+        "long form argument" : "--fasta-index",
+        "short form argument" : "-x",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "extensions" : ["fai"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
           "modify extension" : "append"
         }
       },

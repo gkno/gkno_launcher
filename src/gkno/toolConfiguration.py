@@ -361,8 +361,7 @@ class toolConfiguration:
 
       # Check that the argument name is unique.
       if attributes.longFormArgument in self.arguments:
-        #TODO ERROR
-        if self.allowTermination: print('tools.checkArguments - 1', attributes.longFormArgument); exit(0)
+        if self.allowTermination: self.errors.repeatedLongFormArgument(helpInfo, attributes.longFormArgument)
         else:
           self.success = False
           return

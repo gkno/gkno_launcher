@@ -91,6 +91,9 @@ class makefiles:
     # Store information including command lines, dependencies and outputs for each task.
     self.executionInfo = {}
 
+    # For each intermediate file, store where in the pipeline it can be deleted.
+    self.deleteAfterTask = {}
+
     # Record if multiple makefiles are to be generated.
     self.isMultipleMakefiles = False
 
@@ -306,7 +309,7 @@ class makefiles:
     isGreedy              = graph.getGraphNodeAttribute(task, 'isGreedy')
 
     # Check if this node contains intermediate files.
-    isIntermediate = True if graph.getGraphNodeAttribute(parentNodeId, 'deleteAfterTask') == task else False
+    isIntermediate = graph.getGraphNodeAttribute(parentNodeId, 'isIntermediate')
 
     # Determine if this is a stub.
     isStub         = graph.getArgumentAttribute(parentNodeId, task, 'isStub')
@@ -375,16 +378,6 @@ class makefiles:
       elif len(values) > 1: data.dependencies[subphase][division].append(str(values[subphase - 1]))
       else: data.dependencies[subphase][division].append(str(values[0]))
 
-      # Add to the intermediates if necessary.
-      if isIntermediate:
-        if isGreedy and len(values) > 1:
-          for value in values:
-            if str(value) not in data.intermediates[subphase][division]: data.intermediates[subphase][division].append(str(value))
-        elif len(values) > 1:
-          if str(values[subphase - 1]) not in data.intermediates[subphase][division]: data.intermediates[subphase][division].append(str(values[subphase - 1]))
-        else:
-          if str(values[0]) not in data.intermediates[subphase][division]: data.intermediates[subphase][division].append(str(values[0]))
-
   # Add input files to the command line.
   def addOutput(self, graph, task, data, nodeId):
 
@@ -398,8 +391,7 @@ class makefiles:
     children = graph.getGraphNodeAttribute(nodeId, 'children')
 
     # Check if this node contains intermediate files.
-    #isIntermediate = graph.getGraphNodeAttribute(nodeId, 'isIntermediate')
-    isIntermediate = True if graph.getGraphNodeAttribute(nodeId, 'deleteAfterTask') == task else False
+    isIntermediate = graph.getGraphNodeAttribute(nodeId, 'isIntermediate')
 
     # Determine if this is a stub.
     isStub         = graph.getArgumentAttribute(task, nodeId, 'isStub')
@@ -437,7 +429,16 @@ class makefiles:
         data.outputs[subphase + 1][1].append(str(value))
 
         # If this is an intermediate file, add to the list of intermediate files.
-        if isIntermediate and str(value) not in data.intermediates[subphase + 1][1]: data.intermediates[subphase + 1][1].append(str(value))
+        if isIntermediate and str(value) not in data.intermediates[subphase + 1][1]:
+          data.intermediates[subphase + 1][1].append(str(value))
+
+          # Determine the task after which the file can be deleted.
+          deleteAfterTask = graph.getGraphNodeAttribute(nodeId, 'deleteAfterTask')
+          if deleteAfterTask not in self.deleteAfterTask: self.deleteAfterTask[deleteAfterTask] = []
+
+          # Determine the phase that the task is in.
+          key = str(subphase + 1) + str(1)
+          self.deleteAfterTask[deleteAfterTask].append((key, str(value)))
 
     # If there are multiple divisions, values for division 2 onwards are stored in the child nodes which are dealt with here.
     if isParent:
@@ -464,7 +465,16 @@ class makefiles:
             data.outputs[subphase + 1][division].append(str(value))
     
             # If this is an intermediate file, add to the list of intermediate files.
-            if isIntermediate and str(value) not in data.intermediates[subphase + 1][division]: data.intermediates[subphase + 1][division].append(str(value))
+            if isIntermediate and str(value) not in data.intermediates[subphase + 1][division]: 
+              data.intermediates[subphase + 1][division].append(str(value))
+    
+              # Determine the task after which the file can be deleted.
+              deleteAfterTask = graph.getGraphNodeAttribute(nodeId, 'deleteAfterTask')
+              if deleteAfterTask not in self.deleteAfterTask: self.deleteAfterTask[deleteAfterTask] = []
+    
+              # Determine the phase that the task is in.
+              key = str(subphase + 1) + str(division)
+              self.deleteAfterTask[deleteAfterTask].append((key, str(value)))
 
   # Check if the value has the given extension and, if not, add it.
   def addStubExtension(self, value, extension, includeStubDot):
@@ -486,10 +496,7 @@ class makefiles:
     filehandle = fh.fileHandling.openFileForWriting(ilename)
 
   # Generate all of the makefile names if multiple makefiles are being generated and open them all for writing.
-  def openMakefiles(self, pipeline, struct):
-
-    # Generate a string of random text to use in the makefile name.
-    randomString = stringOps.getRandomString(8)
+  def openMakefiles(self, pipeline, randomString, struct):
 
     # Define the base makefile name.
     basename = str(pipeline + '-' + self.makefileId) if self.makefileId else str(pipeline)
@@ -619,7 +626,7 @@ class makefiles:
       print(file = self.filehandles[filename])
 
   # Get the intermediate and output files for the whole pipeline.
-  def getAllOutputs(self, struct, randomStrings):
+  def getAllOutputs(self, struct, randomString):
 
     # Loop over all the phases, subphases and divisions.
     allIntermediates = []
@@ -650,9 +657,9 @@ class makefiles:
             filename   = self.filenames[key]
             filehandle = self.filehandles[filename]
             self.addIntermediateFiles(intermediates[key], outputs[key], filename, filehandle)
-            self.addOutputFiles(outputs[key], randomStrings, filehandle)
+            self.addOutputFiles(outputs[key], filehandle)
 
-          # Add the outputs and intermediates to the totla lists.
+          # Add the outputs and intermediates to the total lists.
           allOutputs.extend(outputs[key])
           allIntermediates.extend(intermediates[key])
 
@@ -663,7 +670,7 @@ class makefiles:
     # Add the intermediate and output files to the single makefile, if required.
     if not self.isMultipleMakefiles:
       self.addIntermediateFiles(allIntermediates, allOutputs, self.singleFilename, self.singleFilehandle)
-      self.addOutputFiles(allOutputs, randomStrings, self.singleFilehandle)
+      self.addOutputFiles(allOutputs, self.singleFilehandle)
       outputs[str(111)] = list(set(allOutputs) - set(allIntermediates))
 
     # Return a list of final outputs.
@@ -681,27 +688,18 @@ class makefiles:
 
     # Add all the intermediates to the makefile.
     for intermediate in intermediates: print(intermediate, end = ' ', file = filehandle)
-
-    # Also add all of the output files. The output files all include random strings in their names to
-    # ensure there are no filename conflicts. The final outputs are these outputs with the strings
-    # removed.
-    for output in outputs: print(output, end = ' ', file = filehandle)
     print(file = filehandle)
     print(file = filehandle)
 
   # Add output files to the makefile.
-  def addOutputFiles(self, outputs, randomStrings, filehandle):
+  def addOutputFiles(self, outputs, filehandle):
 
     # List all the output files created by this makefile.
     print('### List all of the files that are required outputs of the pipeline.', file = filehandle)
     print('all: DELETE_COMPLETE_OK $(COMPLETE_OK) ', end = '', file = filehandle)
 
     # Add all the output files to the makefile.
-    for output in outputs:
-      for randomString in randomStrings:
-        if randomString in output:
-          print(output.replace(str('_' + randomString), ''), end = ' ', file = filehandle)
-          break
+    for output in outputs: print(str(output), end = ' ', file = filehandle)
     print(file = filehandle)
     print(file = filehandle)
 
@@ -798,10 +796,20 @@ class makefiles:
     # FIXME
     if len(info.outputs) > 1: self.multipleOutputFiles(filehandle, filename, info, subphase, division)
 
-    # If any files are to be deleted after this task, delete them.
-    if info.intermediates:
+    # If any files are to be deleted after these tasks, delete them.
+    intermediates = []
+    for task in info.tasks:
+      if task in self.deleteAfterTask:
+        key = str(subphase) + str(division)
+        for storedKey, value in self.deleteAfterTask[task]:
+          if storedKey == key: intermediates.append(value)
+
+    # Delete the files.
+    if intermediates:
       print('### Delete intermediate files that are no longer required.', file = filehandle)
-      for intermediate in info.intermediates: print('\t@rm -f ', intermediate, sep = '', file = filehandle)
+      print('\t@echo -e "Deleting temporary files...\\c"', file = filehandle)
+      for intermediate in intermediates: print('\t@rm -f ', intermediate, sep = '', file = filehandle)
+      print('\t@echo -e "complete."', file = filehandle)
       print(file = filehandle)
 
   # Write information to the makefile for a task with no streaming.
@@ -831,12 +839,19 @@ class makefiles:
       self.multipleOutputFiles(filehandle, filename, self.executionInfo[task], subphase, division)
 
     # If any files are to be deleted after this task, delete them.
-    if self.executionInfo[task].intermediates[subphase][division]:
-      print('### Delete intermediate files that are no longer required.', file = filehandle)
-      print('\t@echo -e "Deleting temporary files...\\c"', file = filehandle)
-      for intermediate in self.executionInfo[task].intermediates[subphase][division]: print('\t@rm -f ', intermediate, sep = '', file = filehandle)
-      print('\t@echo -e "complete."', file = filehandle)
-      print(file = filehandle)
+    if task in self.deleteAfterTask:
+      intermediates = []
+      key           = str(subphase) + str(division)
+      for storedKey, value in self.deleteAfterTask[task]:
+        if storedKey == key: intermediates.append(value)
+
+      # If there are files to delete, include instructions to delete them.
+      if intermediates:
+        print('### Delete intermediate files that are no longer required.', file = filehandle)
+        print('\t@echo -e "Deleting temporary files...\\c"', file = filehandle)
+        for intermediate in intermediates: print('\t@rm -f ', intermediate, sep = '', file = filehandle)
+        print('\t@echo -e "complete."', file = filehandle)
+        print(file = filehandle)
 
   # output is included in the rule for the additional task.
   def multipleOutputFiles(self, filehandle, filename, data, subphase, division):
@@ -860,28 +875,6 @@ class makefiles:
     print('\t  $(MAKE) --no-print-directory -f $(PWD)/', filename, ' ', data.outputs[subphase][division][0], '; \\', sep = '', file = filehandle)
     print('\tfi', file = filehandle)
     print(file = filehandle)
-
-  # Rename the final output files that have been successfully created.
-  def renameFinalFiles(self, outputs, randomStrings):
-
-    # Loop over all files and add the rename all files for the makefile.
-    for filename in self.filenamesList:
-      filehandle = self.filehandles[filename]
-
-      # Write the description of the action.
-      print('### Rename all of the final output files that have been successfully created', file = filehandle)
-      print('### to remove the random string included in the name.', file = filehandle)
-
-      # If there is only a single makefile, set the key to 111, otherwise use the filename to find the key.
-      key = str(111) if not self.isMultipleMakefiles else self.keys[filename]
-      for output in outputs[key]:
-        for randomString in randomStrings:
-          if randomString in output:
-            finalOutput = output.replace(str('_' + randomString), '')
-            print(finalOutput, ': ', output, sep = '', file = filehandle)
-            print('\t@mv ', output, ' ', finalOutput, sep = '', file = filehandle)
-            print(file = filehandle)
-            break
 
   # Write the final instructions to the makefile.
   def completeFile(self, outputs):

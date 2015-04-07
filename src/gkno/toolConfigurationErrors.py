@@ -90,6 +90,15 @@ class toolErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  # A long form argument is defined multiple times.
+  def repeatedLongFormArgument(self, helpInfo, argument):
+    self.text.append('Repeated long form argument in tool configuration file.')
+    self.text.append('The configuration file for tool \'' + helpInfo[0] + '\' contains information for a number of tool arguments. The \'' + \
+    helpInfo[1] + '\' section contains information for the argument \'' + argument + '\' but this long form argument has already been defined ' + \
+    'in the configuration file. Please ensure that all arguments in the configuration file are unique.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   ###########################################
   ## Errors with construction instrictions ##
   ###########################################

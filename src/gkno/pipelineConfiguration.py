@@ -556,10 +556,10 @@ class pipelineConfiguration:
         self.success, attributes = methods.checkAttributes(argumentInformation, allowedAttributes, attributes, self.allowTermination, helpInfo)
   
         # If the long form argument already exists, there is a problem. All arguments must be unique.
-        if longFormArgument in self.longFormArguments: print('pipeline.checkArguments - 6'); exit(0)
+        if longFormArgument in self.longFormArguments: self.errors.repeatedLongFormArgument(helpInfo)
   
         # Also check that the node id is not the name of a task.
-        if attributes.shortFormArgument in self.shortFormArguments: print('pipeline.checkArguments - 7'); exit(0)
+        if attributes.shortFormArgument in self.shortFormArguments: self.errors.repeatedShortFormArgument(helpInfo)
   
         # Store the attributes.
         self.longFormArguments[longFormArgument]              = attributes

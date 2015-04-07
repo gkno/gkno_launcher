@@ -7,6 +7,7 @@ import fileHandling
 import parameterSets
 import pipelineConfiguration
 import pipelineConfigurationErrors as perr
+import stringOperations as strOps
 import toolConfiguration
 
 import json
@@ -48,6 +49,10 @@ class superpipelineClass:
 
     # Keep track of the tasks that should be included in a plot.
     self.tasksInPlot = {}
+
+    # Associate a random string with the graph. This will be used in any makefiles and intermediate
+    # files to ensure simultaneous executions of gkno will not produced filename conflicts.
+    self.randomString = strOps.getRandomString(8)
 
   # Starting from the defined pipeline, process and validate the configuration file contents,
   # then dig down through all the nested pipelines and validate their configuration files.

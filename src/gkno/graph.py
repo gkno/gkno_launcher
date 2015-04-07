@@ -128,10 +128,6 @@ class dataNodeAttributes:
     # node (if the filenames are constructed).
     self.addTextToFilename = None
 
-    # Random text is added to intermediate files to avoid conflicts.
-    self.hasRandomString = False
-    self.randomString  = None
-
 # Define a class to store and manipulate the pipeline graph.
 class pipelineGraph:
   def __init__(self):
@@ -683,7 +679,8 @@ class pipelineGraph:
       # a task outputted by this task.
       successorTasks = []
       for successor in self.graph.successors(task):
-        for successorTask in self.graph.successors(successor): successorTasks.append(successorTask)
+        for successorTask in self.graph.successors(successor):
+          if successorTask not in successorTasks: successorTasks.append(successorTask)
 
       # If there is a single task marked as a successor task, but this is not the task that is already indicated
       # as the next task, check that the task can be moved. This means that the successor task needs to be checked
@@ -1064,15 +1061,7 @@ class pipelineGraph:
       values = self.getArgumentValues(task)
 
       # Loop over the different input files and determine the number of subphases.
-      subphases = 1
-      for argument in values:
-        if values[argument].type == 'file' and values[argument].isInput:
-          isGreedy = False
-          for nodeId in values[argument].nodeIds: isGreedy = self.getArgumentAttribute(nodeId, task, 'isGreedy')
-
-          # Check that the number of subphases is valid.
-          if subphases != 1 and subphases != values[argument].noValues: print('ERROR - graph.constructFiles - SUBPHASES', task); exit(1)
-          if not isGreedy: subphases = values[argument].noValues
+      subphases = self.getSubphases(task, values)
       self.setGraphNodeAttribute(task, 'subphases', subphases)
 
       # Loop over all arguments with multiple values and ensure that they are valid.
@@ -1146,6 +1135,22 @@ class pipelineGraph:
       # If there are no divisions, no new task nodes need to be constructed, or equivalently, no new output nodes. The
       # existing output nodes need to be checked to ensure that they contain the correct number of values.
       else: self.checkOutputFiles(superpipeline, task, greedyArgument)
+
+  # Determine the number of subphases for a tsak. This is based on the number of values given to an individual non-greedy
+  # task.
+  def getSubphases(self, task, values):
+    subphases = 1
+    for argument in values:
+      if values[argument].type == 'file' and values[argument].isInput:
+        isGreedy = False
+        for nodeId in values[argument].nodeIds: isGreedy = self.getArgumentAttribute(nodeId, task, 'isGreedy')
+
+        # Check that the number of subphases is valid.
+        if subphases != 1 and subphases != values[argument].noValues: print('ERROR - graph.constructFiles - SUBPHASES', task); exit(1)
+        if not isGreedy: subphases = values[argument].noValues
+
+    # Return the number of subphases.
+    return subphases
 
   # Loop over all input file nodes and check if any are marked as being a parent node. If so, this node has
   # multiple children, defined as a division. Return the number of divisions.
@@ -1394,15 +1399,20 @@ class pipelineGraph:
     # Get the tool associated with the task.
     tool = superpipeline.tasks[task]
 
-    # Loop over the input files.
-    for fileNodeID in self.getInputFileNodes(task):
+    # There are cases where input file names are constructed using other input files to the same task. If this is
+    # the case, it is important that the input files are traversed in the correct order. If all input filenames are
+    # being constructed, those that have dependencies on other input files must be handled last.
+    argumentOrder = construct.determineInputFileOrder(self.graph, superpipeline, task)
 
-      # Determine the tool argument that uses the values from this node.
-      argument = self.getArgumentAttribute(fileNodeID, task, 'longFormArgument')
-      values   = self.getGraphNodeAttribute(fileNodeID, 'values')
+    # Loop over the arguments that can be instructed in the order that guarantees all filenames can be build.
+    for argument, nodeId, constructionNodeId in argumentOrder:
+
+      # Determine the values set for this node.
+      #argument = self.getArgumentAttribute(fileNodeID, task, 'longFormArgument')
+      values = self.getGraphNodeAttribute(nodeId, 'values')
 
       # Check the greedy attribute for the task and update if necessary.
-      if self.getArgumentAttribute(fileNodeID, task, 'isGreedy'):
+      if self.getArgumentAttribute(nodeId, task, 'isGreedy'):
         #TODO ERROR
         if not superpipeline.toolConfigurationData[tool].getArgumentAttribute(argument, 'allowMultipleValues'): print('ERROR - GREEDY'); exit(0)
 
@@ -1414,10 +1424,11 @@ class pipelineGraph:
       if len(values) == 0:
 
         # Determine if the argument has filename construction instructions.
-        constructUsingNode = self.getGraphNodeAttribute(fileNodeID, 'constructUsingNode')
-        if constructUsingNode:
-          baseValues = self.getGraphNodeAttribute(constructUsingNode, 'values')
-          self.setGraphNodeAttribute(fileNodeID, 'values', construct.constructInputNode(self.graph, superpipeline, task, argument, fileNodeID, baseValues))
+        #constructUsingNode = self.getGraphNodeAttribute(fileNodeID, 'constructUsingNode')
+        #if constructUsingNode:
+        #baseValues    = self.getGraphNodeAttribute(constructUsingNode, 'values')
+        updatedValues = construct.constructInputNode(self.graph, superpipeline, task, argument, nodeId, constructionNodeId)
+        self.setGraphNodeAttribute(nodeId, 'values', updatedValues)
 
   # Loop over all output file nodes (for tasks with no divisions), checking that all of the filenames are
   # defined. If not, construct them if instructions are provided.
@@ -1794,15 +1805,6 @@ class pipelineGraph:
         # Set the 'deleteAfterTask' value for the node to the task after whose execution the file should
         # be deleted.
         self.setGraphNodeAttribute(nodeId, 'deleteAfterTask', task)
-
-  # Get a list of all the random strings used in filenames.
-  def getRandomStrings(self):
-    randomStrings = []
-    for nodeId in self.getNodes('file'):
-      randomString = self.getGraphNodeAttribute(nodeId, 'randomString')
-      if randomString and randomString not in randomStrings: randomStrings.append(randomString)
-
-    return randomStrings
 
   ########################################
   ##  Methods for modifying the graph.  ##

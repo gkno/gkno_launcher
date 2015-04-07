@@ -87,6 +87,12 @@
         "node id" : "sample-id"
       },
       {
+        "description" : "The platform id (e.g. ILLUMINA).",
+        "long form argument" : "--platform-id",
+        "short form argument" : "-p",
+        "node id" : "platform-id"
+      },
+      {
         "description" : "The number of threads for BWA-mem.",
         "long form argument" : "--threads-bwa",
         "short form argument" : "-tb",
@@ -125,6 +131,11 @@
       "id" : "sample-id",
       "task" : "align",
       "task argument" : "--sample-id"
+    },
+    {
+      "id" : "platform-id",
+      "task" : "align",
+      "task argument" : "--platform-id"
     },
     {
       "id" : "threads",

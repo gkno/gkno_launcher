@@ -158,6 +158,24 @@ class pipelineErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  # A long form argument is defined multiple times.
+  def repeatedLongFormArgument(self, helpInfo):
+    self.text.append('Repeated long form argument in pipeline configuration file.')
+    self.text.append('The configuration file for pipeline \'' + helpInfo[0] + '\' contains information for a number of pipeline arguments. The \'' + \
+    helpInfo[1] + '\' section contains information for the argument \'' + helpInfo[2] + '\' but this long form argument has already been defined ' + \
+    'in the configuration file. Please ensure that all arguments in the configuration file are unique.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # A short form argument is defined multiple times.
+  def repeatedShortFormArgument(self, helpInfo):
+    self.text.append('Repeated short form argument in pipeline configuration file.')
+    self.text.append('The configuration file for pipeline \'' + helpInfo[0] + '\' contains information for a number of pipeline arguments. The \'' + \
+    helpInfo[1] + '\' section contains information for the argument \'' + helpInfo[2] + '\' but this short form argument has already been defined ' + \
+    'in the configuration file. Please ensure that all arguments in the configuration file are unique.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   ##########################################
   ## Errors in the unique or shared nodes ##
   ##########################################
@@ -166,7 +184,7 @@ class pipelineErrors:
   def invalidTaskInNode(self, pipeline, nodeType, nodeID, task, tasks):
     self.text.append('Invalid task in configuration file node.')
     self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains a node with id \'' + nodeID + '\' in the \'' + \
-    nodeType + ' graph nodes\' secion. Within this node, the task \'' + task + '\' is used, but this task has not been defined in the ' + \
+    nodeType + ' graph nodes\' section. Within this node, the task \'' + task + '\' is used, but this task has not been defined in the ' + \
     '\'pipeline tasks\' section of the configuration file and consequently is not valid. Please check that all tasks in the configuration ' + \
     'file are valid for the pipeline.')
     self.errors.writeFormattedText(self.text, errorType = 'error')

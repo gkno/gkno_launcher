@@ -219,7 +219,7 @@ class adminErrors:
     for tool in tools: self.text.append('\t' + tool.name)
     self.text.append('\t')
     self.errors.writeFormattedText(self.text, errorType = 'error')
-    self.errors.terminate(self.errorCode)
+    self.errors.terminate(int(self.errorCode))
 
   # If a tool is added, but the tool added is invalid.
   def invalidToolAdded(self, tools):

@@ -227,7 +227,12 @@ def main():
   # for which construction instructions are provided can be omitted from this check. This will ensure that all required
   # input files are set, ensuring that filename construction can proceed. The check will be performed again after
   # filenames have been constructed, without the omission of constructed files.
-  if not isExportSet: dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = False)
+  if not isExportSet: dc.checkRequiredArguments(graph, superpipeline, args)
+
+  # Loop over the tasks in the pipeline and construct filenames for arguments that require them, but weren't given
+  # any on the command line. In addition, if multiple options are given to a task, this routine will generate new
+  # nodes for the task and files and link them together as necessary.
+  graph.constructFiles(superpipeline)
 
   # Determine which files are marked for deletion.
   superpipeline.determineFilesToDelete(graph)
@@ -239,11 +244,6 @@ def main():
   plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
   if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
   if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
-
-  # Loop over the tasks in the pipeline and construct filenames for arguments that require them, but weren't given
-  # any on the command line. In addition, if multiple options are given to a task, this routine will generate new
-  # nodes for the task and files and link them together as necessary.
-  graph.constructFiles(superpipeline)
 
   # Print the workflow to screen.
   write.workflow(superpipeline, workflow)
@@ -259,11 +259,6 @@ def main():
 
   # If the user has requested that a parameter set is to be exported, export the parameter set and terminate.
   if isExportSet: parSet.export(superpipeline, args, isExportSet[0], command.pipelineArguments)
-
-  # Check that all files exist. At this point, all filenames have been constructed, so anything that is required, but
-  # is not set will have no opportunity to be set, so gkno should terminate.
-  #FIXME ENSURE THAT AL FILES ARE CHECKED - THE CAN BE CONSTRUCTED CHECK SHOULD BE REMOVED.
-  dc.checkRequiredArguments(graph, superpipeline, args, isFullCheck = True)
 
   # Having reached this point, all of the required values have been checked, are present and have the correct data
   # type. In the construction of the graph, a number of non-required nodes could have been created and, since they
@@ -296,7 +291,7 @@ def main():
 
   # Open the required makefiles. This is either a single makefile that will run all tasks, or a set of makefiles broken
   # up by the phase, subphase and division
-  make.openMakefiles(superpipeline.pipeline, struct)
+  make.openMakefiles(superpipeline.pipeline, superpipeline.randomString, struct)
 
   # Add the header text to the file(s).
   make.addHeader(commitId, __date__, __version__, superpipeline.pipeline, sourcePath, toolsPath, resourcesPath)
@@ -308,8 +303,7 @@ def main():
   make.addPhony()
 
   # Get the intermediate and output files for the whole pipeline.
-  randomStrings = graph.getRandomStrings()
-  outputs       = make.getAllOutputs(struct, randomStrings)
+  outputs = make.getAllOutputs(struct, superpipeline.randomString)
 
   # Remove the 'ok' file used to indicated successful execution.
   make.removeOk()
@@ -319,10 +313,6 @@ def main():
     for subphase in range(1, struct.phaseInformation[phase].numberSubphases + 1):
       for division in range(1, struct.phaseInformation[phase].numberDivisions + 1):
         make.addCommandLines(graph, struct, phase, subphase, division)
-
-  # For all of the final outputs, determine the random text in the name and rename the file to have this text
-  # removed.
-  make.renameFinalFiles(outputs, randomStrings)
 
   # Write final information to the makefile, then close the file.
   make.completeFile(outputs)

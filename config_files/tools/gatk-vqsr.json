@@ -1,0 +1,326 @@
+{
+  "id" : "gatk-vqsr",
+  "configuration type" : "tool",
+  "description" : "Variant score recalibration.",
+  "categories" : ["GATK"],
+  "tools" : ["gatk"],
+  "path" : "gatk",
+  "executable" : "GenomeAnalysisTK.jar",
+  "precommand" : "java -Xmx2g -jar",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The reference FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "--reference_sequence",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["fasta", "fa"]
+      },
+      {
+        "description" : "The reference FASTA index file.",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "extensions" : ["fai"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "append"
+        }
+      },
+      {
+        "description" : "The input joint called VCF file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--input",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["vcf", "vcf.gz"]
+      },
+      {
+        "description" : "A list of hapmap sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
+        "long form argument" : "--resource-hapmap",
+        "short form argument" : "-rh",
+        "command line argument" : "-resource:hapmap,known=false,training=true,truth=true,prior=15.0",
+        "data type" : "string",
+        "extensions" : ["vcf", "vcf.gz"]
+      },
+      {
+        "description" : "A list of omni sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
+        "long form argument" : "--resource-omni",
+        "short form argument" : "-ro",
+        "command line argument" : "-resource:omni,known=false,training=true,truth=true,prior=12.0",
+        "data type" : "string",
+        "extensions" : ["vcf", "vcf.gz"]
+      },
+      {
+        "description" : "A list of 1000G SNP sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
+        "long form argument" : "--resource-1000g",
+        "short form argument" : "-rs",
+        "command line argument" : "-resource:1000G,known=false,training=true,truth=false,prior=10.0",
+        "data type" : "string",
+        "extensions" : ["vcf", "vcf.gz"]
+      },
+      {
+        "description" : "A list of dbsnp sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
+        "long form argument" : "--resource-dbsnp",
+        "short form argument" : "-rd",
+        "command line argument" : "-resource:dbsnp,known=true,training=false,truth=false,prior=2.0",
+        "data type" : "string",
+        "extensions" : ["vcf", "vcf.gz"]
+      },
+      {
+        "description" : "A list of indel sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
+        "long form argument" : "--resource-indel",
+        "short form argument" : "-ri",
+        "command line argument" : "-resource:mills,known=true,training=true,truth=true,prior=12.0",
+        "data type" : "string",
+        "extensions" : ["vcf", "vcf.gz"]
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output recal file used by ApplyRecalibration.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--recal_file",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["recal"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_vqsr"]
+            },
+            {
+              "add argument values" : ["--mode"]
+            }
+          ]
+        }
+      },
+      {
+        "description" : "The output tranches file used by ApplyRecalibration.",
+        "long form argument" : "--tranches-file",
+        "short form argument" : "-tf",
+        "command line argument" : "--tranches_file",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["tranches"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_vqsr"]
+            },
+            {
+              "add argument values" : ["--mode"]
+            }
+          ]
+        }
+      },
+      {
+        "description" : "The output rscript file generated by the VQSR to aid in visualization of the input data and learned model.",
+        "long form argument" : "--r-script-file",
+        "short form argument" : "-rf",
+        "command line argument" : "--rscript_file",
+        "data type" : "string",
+        "extensions" : ["R"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_vqsr"]
+            },
+            {
+              "add argument values" : ["--mode"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "options" : [
+      {
+        "description" : "The minimum level of logging.",
+        "long form argument" : "--logging-level",
+        "short form argument" : "-l",
+        "command line argument" : "--logging_level",
+        "data type" : "string",
+        "short form argument" : "-l"
+      },
+      {
+        "description" : "The type of analysis to run.",
+        "long form argument" : "--analysis-type",
+        "short form argument" : "-a",
+        "command line argument" : "--analysis_type",
+        "data type" : "string"
+      },
+      {
+        "description" : "Recalibration mode to employ (SNP|INDEL|BOTH).",
+        "long form argument" : "--mode",
+        "short form argument" : "-m",
+        "command line argument" : "--mode",
+        "required" : true,
+        "data type" : "string"
+      },
+      {
+        "description" : "Maximum number of Gaussians for the positive model.",
+        "long form argument" : "--max-gaussians",
+        "short form argument" : "-mg",
+        "command line argument" : "--maxGaussians",
+        "data type" : "integer"
+      },
+      {
+        "description" : "Maximum number of Gaussians for the negative model.",
+        "long form argument" : "--max-negative-gaussians",
+        "short form argument" : "-mng",
+        "command line argument" : "--maxNegativeGaussians",
+        "data type" : "integer"
+      },
+      {
+        "description" : "The target genomic region.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "command line argument" : "--intervals",
+        "data type" : "string"
+      },
+      {
+        "description" : "One or more specific annotations to apply to variant calls.",
+        "long form argument" : "--annotation",
+        "short form argument" : "-n",
+        "command line argument" : "--annotation",
+        "data type" : "string",
+        "allow multiple values" : true
+      },
+      {
+        "description" : "The levels of novel false discovery rate (FDR, implied by ti/tv) at which to slice the data. (in percent, that is 1.0 for 1 percent).",
+        "long form argument" : "--tranche",
+        "short form argument" : "-c",
+        "command line argument" : "--TStranche",
+        "data type" : "float",
+        "allow multiple values" : true
+      },
+      {
+        "description" : "The number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
+        "command line argument" : "--num_threads",
+        "data type" : "integer"
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+        {
+          "id" : "log",
+          "argument" : "--logging-level",
+          "values" : ["INFO"]
+        },
+        {
+          "id" : "analysis",
+          "argument" : "--analysis-type",
+          "values" : ["VariantRecalibrator"]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
+        },
+        {
+          "id" : "bam",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "id" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
+    },
+
+    {
+      "id" : "human-snp",
+      "description" : "Parameter set for calling SNPs in the human genome.",
+      "data" : [
+        {
+          "id" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "id" : "mode",
+          "argument" : "--mode",
+          "values" : ["SNP"]
+        },
+        {
+          "id" : "annotations",
+          "argument" : "--annotation",
+          "values" : ["Coverage", "QualByDepth", "FisherStrand", "MappingQualityRankSumTest", "ReadPosRankSumTest"]
+        },
+        {
+          "id" : "tranche",
+          "argument" : "--tranche",
+          "values" : [100.00, 99.9, 99.0, 90.0]
+        }
+      ]
+    },
+
+    {
+      "id" : "human-indel",
+      "description" : "Parameter set for calling indels in humans.",
+      "data" : [
+        {
+          "id" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "id" : "mode",
+          "argument" : "--mode",
+          "values" : ["INDEL"]
+        },
+        {
+          "id" : "annotations",
+          "argument" : "--annotation",
+          "values" : ["Coverage", "FisherStrand", "MappingQualityRankSumTest", "ReadPosRankSumTest"]
+        },
+        {
+          "id" : "maxGauss",
+          "argument" : "--max-gaussians",
+          "values" : [4]
+        },
+        {
+          "id" : "tranche",
+          "argument" : "--tranche",
+          "values" : [100.00, 99.9, 99.0, 90.0]
+        }
+      ]
+    }
+  ]
+}

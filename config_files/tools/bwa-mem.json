@@ -223,6 +223,14 @@
         "data type" : "string"
       },
       {
+        "description" : "The platform id.",
+        "long form argument" : "--platform-id",
+        "short form argument" : "-p",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string"
+      },
+      {
         "description" : "Read group header line such as '@RG\tid:foo\tSM:bar' [null].",
         "long form argument" : "--read-group-header",
         "short form argument" : "-R",
@@ -236,6 +244,12 @@
           "modify text" : [
             {
               "add argument values" : ["--read-group-id"]
+            },
+            {
+              "add text" : ["\\tPL:"]
+            },
+            {
+              "add argument values" : ["--platform-id"]
             },
             {
               "add text" : ["\\tSM:"]

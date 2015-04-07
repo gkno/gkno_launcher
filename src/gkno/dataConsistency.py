@@ -135,7 +135,7 @@ def checkExtensions(value, extensions):
 
 # Loop over all tasks in the pipeline and check that all required values (excepting output files
 # which can be constructed) have been defined.
-def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
+def checkRequiredArguments(graph, superpipeline, args):
 
   # Define error handling,
   errors = er.consistencyErrors()
@@ -205,31 +205,34 @@ def checkRequiredArguments(graph, superpipeline, args, isFullCheck):
             if edgeArgument == argument:
               foundNode = True
 
-              # If this node is marked as constructable, no check is required. Only proceed with checks
-              # if this node has not been added to the constructableNodes list. 
-              if nodeId not in constructableNodes: 
-                if not graph.getGraphNodeAttribute(nodeId, 'values'):
+              # TODO
+              # If this is the first check, (e.g. isFullCheck = False), only terminate if the argument has no values or
+              # instructions and is not in the constructableNodes list (this list. If this is the final check (isFullCheck = True), the presence of values is the only thing
+              # that matters.
+              hasInstructions = False if graph.getArgumentAttribute(nodeId, task, 'constructionInstructions') == None else True
+              hasValues       = True if len(graph.getGraphNodeAttribute(nodeId, 'values')) != 0 else False
+              if not hasValues and not hasInstructions and nodeId not in constructableNodes:
 
-                  # Check to see if this node can have it's values set with a top level pipeline argument (e.g. can
-                  # be set without defining the task on the command line).
-                  longFormArgument = graph.getGraphNodeAttribute(nodeId, 'longFormArgument')
-                  if longFormArgument and '.' not in longFormArgument:
+                # Check to see if this node can have it's values set with a top level pipeline argument (e.g. can
+                # be set without defining the task on the command line).
+                longFormArgument = graph.getGraphNodeAttribute(nodeId, 'longFormArgument')
+                if longFormArgument and '.' not in longFormArgument:
 
-                    # Get the short form of the pipeline argument and the argument description.
-                    #shortFormArgument = args.arguments[longFormArgument].shortFormArgument
-                    shortFormArgument = graph.getGraphNodeAttribute(nodeId, 'shortFormArgument')
-                    description       = graph.getGraphNodeAttribute(nodeId, 'description')
-                    errors.unsetRequiredArgument(longFormArgument, shortFormArgument, description)
+                  # Get the short form of the pipeline argument and the argument description.
+                  #shortFormArgument = args.arguments[longFormArgument].shortFormArgument
+                  shortFormArgument = graph.getGraphNodeAttribute(nodeId, 'shortFormArgument')
+                  description       = graph.getGraphNodeAttribute(nodeId, 'description')
+                  errors.unsetRequiredArgument(longFormArgument, shortFormArgument, description)
 
-                  # If this is not a top level argument, provide a different error.
-                  # TODO CHECK THIS
-                  else: 
+                # If this is not a top level argument, provide a different error.
+                # TODO CHECK THIS
+                else: 
 
-                    # Get the short form version of the argument as well as the argument description. This is as defined
-                    # for the tool, so if this argument can be set using a pipeline argument, these values are incorrect.
-                    shortFormArgument = graph.getArgumentAttribute(nodeId, task, 'shortFormArgument')
-                    description       = graph.getArgumentAttribute(nodeId, task, 'description')
-                    errors.unsetRequiredNestedArgument(task, argument, shortFormArgument, description, superpipeline.pipeline)
+                  # Get the short form version of the argument as well as the argument description. This is as defined
+                  # for the tool, so if this argument can be set using a pipeline argument, these values are incorrect.
+                  shortFormArgument = graph.getArgumentAttribute(nodeId, task, 'shortFormArgument')
+                  description       = graph.getArgumentAttribute(nodeId, task, 'description')
+                  errors.unsetRequiredNestedArgument(task, argument, shortFormArgument, description, superpipeline.pipeline)
 
           # If there is no node for this argument, this means that the pipeline configuration file does not contain
           # a unique or shared node for this argument. In addition, the value has not been provided on the command
@@ -346,11 +349,15 @@ def purgeEmptyNodes(graph):
 
   # Loop over all the option nodes in the graph.
   for nodeId in graph.getNodes('option'):
-    if not graph.getGraphNodeAttribute(nodeId, 'values'): graph.graph.remove_node(nodeId)
+    if not graph.getGraphNodeAttribute(nodeId, 'values'):
+      if graph.getGraphNodeAttribute(nodeId, 'isRequired'): print('ERROR - dataConsistency - purgeEmpythNodes'); exit(1)
+      graph.graph.remove_node(nodeId)
 
   # Then loop over all file nodes, removing valueless nodes.
   for nodeId in graph.getNodes('file'):
-    if not graph.getGraphNodeAttribute(nodeId, 'values'): graph.graph.remove_node(nodeId)
+    if not graph.getGraphNodeAttribute(nodeId, 'values'):
+      if graph.getGraphNodeAttribute(nodeId, 'isRequired'): print('ERROR - dataConsistency - purgeEmpythNodes'); exit(1)
+      graph.graph.remove_node(nodeId)
 
 # Set the aboslute paths of all the files used in the pipeline.
 def setFilePaths(graph, gknoArguments, gkno):

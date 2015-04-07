@@ -1,13 +1,13 @@
 {
-  "id" : "index-bam",
+  "id" : "index-vcf",
   "configuration type" : "pipeline",
-  "description" : "Index BAM files.",
-  "categories" : ["BAM-processing"],
+  "description" : "Index VCF files.",
+  "categories" : ["VCF-processing"],
 
   "pipeline tasks" : [
     {
       "task" : "index",
-      "tool" : "bamtools-index"
+      "tool" : "vcf-index"
     }
   ],
 
@@ -18,7 +18,7 @@
 
   "unique graph nodes" : [
     {
-      "id" : "bam",
+      "id" : "vcf",
       "task" : "index",
       "task argument" : "--in"
     },
@@ -41,9 +41,9 @@
       "description" : "Test parameter set for the test harness.",
       "data" : [
         {
-          "id" : "bam",
-          "node" : "bam",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+          "id" : "vcf",
+          "node" : "vcf",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
         }
       ]
     }

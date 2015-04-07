@@ -1,0 +1,241 @@
+{
+  "id" : "gatk-vqsr-recalibrate",
+  "configuration type" : "tool",
+  "description" : "Recalibrate the VCF files.",
+  "categories" : ["GATK"],
+  "tools" : ["gatk"],
+  "path" : "gatk",
+  "executable" : "GenomeAnalysisTK.jar",
+  "precommand" : "java -Xmx2g -jar",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The reference FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "--reference_sequence",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["fasta", "fa"]
+      },
+      {
+        "description" : "The reference FASTA index file.",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "modify argument" : "omit",
+        "modify argument" : "omit",
+        "extensions" : ["fai"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "append"
+        }
+      },
+      {
+        "description" : "The raw input variants to be recalibrated.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--input",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["vcf", "vcf.gz"]
+      },
+      {
+        "description" : "The input recal file used by ApplyRecalibration.",
+        "long form argument" : "--recal-file",
+        "short form argument" : "-rf",
+        "command line argument" : "--recal_file",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["recal"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_vqsr"]
+            },
+            {
+              "add argument values" : ["--mode"]
+            }
+          ]
+        }
+      },
+      {
+        "description" : "The input tranches file describing where to cut the data.",
+        "long form argument" : "--tranches-file",
+        "short form argument" : "-tf",
+        "command line argument" : "--tranches_file",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["tranches"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_vqsr"]
+            },
+            {
+              "add argument values" : ["--mode"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output filtered and recalibrated VCF file in which each variant is annotated with its VQSLOD value",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--out",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["vcf"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_gatk_recalibrated"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The minimum level of logging.",
+        "long form argument" : "--logging-level",
+        "short form argument" : "-l",
+        "command line argument" : "--logging_level",
+        "data type" : "string",
+        "short form argument" : "-l"
+      },
+      {
+        "description" : "The type of analysis to run.",
+        "long form argument" : "--analysis-type",
+        "short form argument" : "-a",
+        "command line argument" : "--analysis_type",
+        "data type" : "string"
+      },
+      {
+        "description" : "The target genomic region.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "command line argument" : "--intervals",
+        "data type" : "string"
+      },
+      {
+        "description" : "Recalibration mode to employ (SNP|INDEL|BOTH).",
+        "long form argument" : "--mode",
+        "short form argument" : "-m",
+        "command line argument" : "--mode",
+        "required" : true,
+        "data type" : "string"
+      },
+      {
+        "description" : "The truth sensitivity level at which to start filtering.",
+        "long form argument" : "--truth-sensitivity",
+        "short form argument" : "-s",
+        "command line argument" : "--ts_filter_level",
+        "data type" : "integer"
+      },
+      {
+        "description" : "The number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
+        "command line argument" : "--num_threads",
+        "data type" : "integer"
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+        {
+          "id" : "log",
+          "argument" : "--logging-level",
+          "values" : ["INFO"]
+        },
+        {
+          "id" : "analysis",
+          "argument" : "--analysis-type",
+          "values" : ["ApplyRecalibration"]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
+        },
+        {
+          "id" : "output path",
+          "values" : ["./"],
+          "argument" : "--output-path"
+        }
+      ]
+    },
+
+    {
+      "id" : "human-snp",
+      "description" : "Parameter set for recalibrating SNPs in the human genome.",
+      "data" : [
+        {
+          "id" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "id" : "mode",
+          "argument" : "--mode",
+          "values" : ["SNP"]
+        },
+        {
+          "id" : "sensitivity",
+          "argument" : "--truth-sensitivity",
+          "values" : [99.0]
+        }
+      ]
+    },
+
+    {
+      "id" : "human-indel",
+      "description" : "Parameter set for recalibrating indels in the human genome.",
+      "data" : [
+        {
+          "id" : "reference",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "id" : "mode",
+          "argument" : "--mode",
+          "values" : ["INDEL"]
+        },
+        {
+          "id" : "sensitivity",
+          "argument" : "--truth-sensitivity",
+          "values" : [99.0]
+        }
+      ]
+    }
+  ]
+}

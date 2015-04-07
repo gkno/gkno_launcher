@@ -1,0 +1,382 @@
+{
+  "id" : "gatk-vqsr",
+  "configuration type" : "pipeline",
+  "description" : "Recalibrate the variant scores. It is recommended that this is performed if there are sufficient variants (one whole exome or at least 30 exomes).",
+  "categories" : ["Variant-discovery"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "recal-snps",
+      "tool" : "gatk-vqsr"
+    },
+    {
+      "task" : "apply-snps",
+      "tool" : "gatk-vqsr-recalibrate"
+    },
+    {
+      "task" : "recal-indels",
+      "tool" : "gatk-vqsr"
+    },
+    {
+      "task" : "apply-indels",
+      "tool" : "gatk-vqsr-recalibrate"
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The joint called VCF file to be recalibrated.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "input"
+      },
+      {
+        "description" : "The reference FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "node id" : "reference"
+      },
+      {
+        "description" : "A list of hapmap sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
+        "long form argument" : "--resource-hapmap",
+        "short form argument" : "-rh",
+        "node id" : "hapmap"
+      },
+      {
+        "description" : "A list of omni sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
+        "long form argument" : "--resource-omni",
+        "short form argument" : "-ro",
+        "node id" : "omni"
+      },
+      {
+        "description" : "A list of 1000G SNP sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
+        "long form argument" : "--resource-1000g",
+        "short form argument" : "-rs",
+        "node id" : "1000G"
+      },
+      {
+        "description" : "A list of dbsnp sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
+        "long form argument" : "--resource-dbsnp",
+        "short form argument" : "-rd",
+        "node id" : "dbsnp"
+      },
+      {
+        "description" : "A list of indel sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
+        "long form argument" : "--resource-indel",
+        "short form argument" : "-ri",
+        "node id" : "mills"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output recal file used by ApplyRecalibration for SNPs.",
+        "long form argument" : "--out-snp-recal",
+        "short form argument" : "-os",
+        "node id" : "snp-recal"
+      },
+      {
+        "description" : "The output recal file used by ApplyRecalibration for INDELs.",
+        "long form argument" : "--out-indel-recal",
+        "short form argument" : "-oi",
+        "node id" : "indel-recal"
+      },
+      {
+        "description" : "The output tranches file used by ApplyRecalibration for SNPs.",
+        "long form argument" : "--snp-tranches-file",
+        "short form argument" : "-stf",
+        "node id" : "snp-tranche"
+      },
+      {
+        "description" : "The output tranches file used by ApplyRecalibration for INDELs.",
+        "long form argument" : "--indel-tranches-file",
+        "short form argument" : "-itf",
+        "node id" : "indel-tranche"
+      },
+      {
+        "description" : "The output filtered and recalibrated VCF file in which each variant is annotated with its VQSLOD value for SNPs.",
+        "long form argument" : "--snp-vcf",
+        "short form argument" : "-sv",
+        "node id" : "recal-snp-vcf"
+      },
+      {
+        "description" : "The output filtered and recalibrated VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "One or more specific annotations to apply to variant calls.",
+        "long form argument" : "--annotation",
+        "short form argument" : "-n",
+        "node id" : "annotation"
+      },
+      {
+        "description" : "Recalibration mode to employ (SNP|INDEL|BOTH).",
+        "long form argument" : "--snp-mode",
+        "short form argument" : "-sm",
+        "node id" : "snp-mode",
+        "hide in help" : true
+      },
+      {
+        "description" : "Recalibration mode to employ (SNP|INDEL|BOTH).",
+        "long form argument" : "--indel-mode",
+        "short form argument" : "-im",
+        "node id" : "indel-mode",
+        "hide in help" : true
+      },
+      {
+        "description" : "The levels of novel false discovery rate (FDR, implied by ti/tv) at which to slice the data. (in percent, that is 1.0 for 1 percent).",
+        "long form argument" : "--tranche",
+        "short form argument" : "-c",
+        "node id" : "tranche"
+      },
+      {
+        "description" : "The truth sensitivity level at which to start filtering.",
+        "long form argument" : "--truth-sensitivity",
+        "short form argument" : "-s",
+        "node id" : "sensitivity"
+      },
+      {
+        "description" : "Maximum number of Gaussians for the positive model.",
+        "long form argument" : "--max-gaussians",
+        "short form argument" : "-mg",
+        "node id" : "gaussians"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "hapmap",
+      "task" : "recal-snps",
+      "task argument" : "--resource-hapmap"
+    },
+    {
+      "id" : "omni",
+      "task" : "recal-snps",
+      "task argument" : "--resource-omni"
+    },
+    {
+      "id" : "1000G",
+      "task" : "recal-snps",
+      "task argument" : "--resource-1000g"
+    },
+    {
+      "id" : "dbsnp",
+      "task" : "recal-snps",
+      "task argument" : "--resource-dbsnp"
+    },
+    {
+      "id" : "mills",
+      "task" : "recal-indels",
+      "task argument" : "--resource-indel"
+    },
+    {
+      "id" : "gaussians",
+      "task" : "recal-indels",
+      "task argument" : "--max-gaussians"
+    },
+    {
+      "id" : "output",
+      "task" : "apply-indels",
+      "task argument" : "--out"
+    }
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "input",
+      "arguments sharing node" : [
+        {
+          "task" : "recal-snps",
+          "task argument" : "--in"
+        },
+        {
+          "task" : "apply-snps",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "reference",
+      "arguments sharing node" : [
+        {
+          "task" : "recal-snps",
+          "task argument" : "--fasta-reference"
+        },
+        {
+          "task" : "apply-snps",
+          "task argument" : "--fasta-reference"
+        },
+        {
+          "task" : "recal-indels",
+          "task argument" : "--fasta-reference"
+        },
+        {
+          "task" : "apply-indels",
+          "task argument" : "--fasta-reference"
+        }
+      ]
+    },
+    {
+      "id" : "annotation",
+      "arguments sharing node" : [
+        {
+          "task" : "recal-snps",
+          "task argument" : "--annotation"
+        },
+        {
+          "task" : "recal-indels",
+          "task argument" : "--annotation"
+        }
+      ]
+    },
+    {
+      "id" : "snp-mode",
+      "arguments sharing node" : [
+        {
+          "task" : "recal-snps",
+          "task argument" : "--mode"
+        },
+        {
+          "task" : "apply-snps",
+          "task argument" : "--mode"
+        }
+      ]
+    },
+    {
+      "id" : "indel-mode",
+      "arguments sharing node" : [
+        {
+          "task" : "recal-indels",
+          "task argument" : "--mode"
+        },
+        {
+          "task" : "apply-indels",
+          "task argument" : "--mode"
+        }
+      ]
+    },
+    {
+      "id" : "tranche",
+      "arguments sharing node" : [
+        {
+          "task" : "recal-snps",
+          "task argument" : "--tranche"
+        },
+        {
+          "task" : "recal-indels",
+          "task argument" : "--tranche"
+        }
+      ]
+    },
+    {
+      "id" : "snp-recal",
+      "arguments sharing node" : [
+        {
+          "task" : "recal-snps",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "apply-snps",
+          "task argument" : "--recal-file"
+        }
+      ]
+    },
+    {
+      "id" : "indel-recal",
+      "arguments sharing node" : [
+        {
+          "task" : "recal-indels",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "apply-indels",
+          "task argument" : "--recal-file"
+        }
+      ]
+    },
+    {
+      "id" : "snp-tranche",
+      "arguments sharing node" : [
+        {
+          "task" : "recal-snps",
+          "task argument" : "--tranches-file"
+        },
+        {
+          "task" : "apply-snps",
+          "task argument" : "--tranches-file"
+        }
+      ]
+    },
+    {
+      "id" : "indel-tranche",
+      "arguments sharing node" : [
+        {
+          "task" : "recal-indels",
+          "task argument" : "--tranches-file"
+        },
+        {
+          "task" : "apply-indels",
+          "task argument" : "--tranches-file"
+        }
+      ]
+    },
+    {
+      "id" : "sensitivity",
+      "arguments sharing node" : [
+        {
+          "task" : "apply-snps",
+          "task argument" : "--truth-sensitivity"
+        },
+        {
+          "task" : "apply-indels",
+          "task argument" : "--truth-sensitivity"
+        }
+      ]
+    },
+    {
+      "id" : "recal-snp-vcf",
+      "arguments sharing node" : [
+        {
+          "task" : "apply-snps",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "recal-indels",
+          "task argument" : "--in"
+        }
+      ]
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : []
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "gvcf",
+          "node" : "gvcf",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.g.vcf"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        }
+      ]
+    }
+  ]
+}
