@@ -55,8 +55,8 @@ class pipelineArguments:
     self.dataType = None
 
     # Define the configuration file and graph node that the argument points to.
-    self.nodeID       = None
-    self.graphNodeIDs = []
+    self.nodeId       = None
+    self.graphNodeIds = []
 
     # Record if the argument is listed as required in the pipeline configuration file.
     self.isRequired = False
@@ -106,7 +106,7 @@ class nodeTaskAttributes:
 
     # If, however, the task uses another pipeline, the node within the pipeline needs to be
     # specified.
-    self.externalNodeID = None
+    self.externalNodeId = None
 
     # If a non stub node is connecting to a stub node, the extension from the stub node
     # needs to be specified.
@@ -430,9 +430,9 @@ class pipelineConfiguration:
       # Check the attributes conform to expectations.
       self.success, attributes = methods.checkAttributes(uniqueNode, allowedAttributes, attributes, self.allowTermination, helpInfo)
 
-      # If the nodeID already exists in the attributes, a node of this name has already been seen. All 
+      # If the nodeId already exists in the attributes, a node of this name has already been seen. All 
       #nodes must have a unique name.
-      if attributes.id in self.uniqueNodeAttributes: self.errors.repeatedNodeID(uniqueNode, helpInfo)
+      if attributes.id in self.uniqueNodeAttributes: self.errors.repeatedNodeId(uniqueNode, helpInfo)
 
       # Also check that the node id is not the name of a task.
       if attributes.id in self.allTasks: self.errors.nodeIdIsTaskId('unique', helpInfo)
@@ -478,7 +478,7 @@ class pipelineConfiguration:
       if attributes.id in self.uniqueNodeAttributes: print('pipeline.checkSharedNodes - 6'); exit(0)
 
       # Also check that the node id is not the name of a task.
-      if attributes.id in self.allTasks: self.errors.nodeIDIsTaskID(self.name, 'shared graph nodes', id)
+      if attributes.id in self.allTasks: self.errors.nodeIdIsTaskID(self.name, 'shared graph nodes', id)
 
       # Store the attributes.
       self.sharedNodeAttributes[attributes.id] = attributes
@@ -489,17 +489,17 @@ class pipelineConfiguration:
 
     # Define the allowed nodes attributes.
     allowedAttributes                        = {}
-    allowedAttributes['node id']             = (str, False, True, 'externalNodeID')
+    allowedAttributes['node id']             = (str, False, True, 'externalNodeId')
     allowedAttributes['stub extension']      = (str, False, True, 'stubExtension')
     allowedAttributes['task']                = (str, True, True, 'task')
     allowedAttributes['task argument']       = (str, False, True, 'taskArgument')
 
     # Loop over all of the defined nodes.
-    for nodeID in self.sharedNodeAttributes:
-      for node in self.sharedNodeAttributes[nodeID].nodes:
+    for nodeId in self.sharedNodeAttributes:
+      for node in self.sharedNodeAttributes[nodeId].nodes:
 
         # Define a set of information to be used in help messages.
-        helpInfo = (self.name, 'shared nodes', nodeID)
+        helpInfo = (self.name, 'shared nodes', nodeId)
 
         # Check that the supplied structure is a dictionary.
         if not methods.checkIsDictionary(node, self.allowTermination): return
@@ -515,7 +515,7 @@ class pipelineConfiguration:
         # THE TASK ARGUMENT.
 
         # Store the attributes.
-        self.sharedNodeAttributes[nodeID].sharedNodeTasks.append(attributes)
+        self.sharedNodeAttributes[nodeId].sharedNodeTasks.append(attributes)
 
   # Check all of the defined arguments for the pipeline.
   def checkArguments(self, data):
@@ -528,7 +528,7 @@ class pipelineConfiguration:
     allowedAttributes['description']         = (str, True, True, 'description')
     allowedAttributes['hide in help']        = (bool, False, True, 'hideInHelp')
     allowedAttributes['long form argument']  = (str, True, True, 'longFormArgument')
-    allowedAttributes['node id']             = (str, True, True, 'nodeID')
+    allowedAttributes['node id']             = (str, True, True, 'nodeId')
     allowedAttributes['required']            = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument'] = (str, True, True, 'shortFormArgument')
 
@@ -624,30 +624,30 @@ class pipelineConfiguration:
     observedLongFormArguments  = []
 
     # Parse all of the unique nodes.
-    for nodeID in self.getUniqueNodeIDs():
+    for nodeId in self.getUniqueNodeIds():
 
       # Get the long and short form arguments.
-      longFormArgument  = self.getUniqueNodeAttribute(nodeID, 'longFormArgument')
-      shortFormArgument = self.getUniqueNodeAttribute(nodeID, 'shortFormArgument')
+      longFormArgument  = self.getUniqueNodeAttribute(nodeId, 'longFormArgument')
+      shortFormArgument = self.getUniqueNodeAttribute(nodeId, 'shortFormArgument')
 
       # Check that the arguments are unique and store the values
       if self.allowTermination:
-        self.callArgumentErrors(nodeID, longFormArgument, shortFormArgument, observedLongFormArguments, observedShortFormArguments)
+        self.callArgumentErrors(nodeId, longFormArgument, shortFormArgument, observedLongFormArguments, observedShortFormArguments)
       if longFormArgument:
         observedLongFormArguments.append(longFormArgument)
         observedShortFormArguments.append(shortFormArgument)
         self.arguments[longFormArgument] = shortFormArgument
 
     # Parse all of the shared nodes.
-    for nodeID in self.getSharedNodeIDs():
+    for nodeId in self.getSharedNodeIds():
 
       # Get the long and short form arguments.
-      longFormArgument  = self.getSharedNodeAttribute(nodeID, 'longFormArgument')
-      shortFormArgument = self.getSharedNodeAttribute(nodeID, 'shortFormArgument')
+      longFormArgument  = self.getSharedNodeAttribute(nodeId, 'longFormArgument')
+      shortFormArgument = self.getSharedNodeAttribute(nodeId, 'shortFormArgument')
 
       # Check that the arguments are unique and store the values.
       if self.allowTermination:
-        self.callArgumentErrors(nodeID, longFormArgument, shortFormArgument, observedLongFormArguments, observedShortFormArguments)
+        self.callArgumentErrors(nodeId, longFormArgument, shortFormArgument, observedLongFormArguments, observedShortFormArguments)
       if longFormArgument:
         observedLongFormArguments.append(longFormArgument)
         observedShortFormArguments.append(shortFormArgument)
@@ -656,11 +656,11 @@ class pipelineConfiguration:
     return True
 
   # If termination is allowed, call errors on the observed arguments.
-  def callArgumentErrors(self, nodeID, longFormArgument, shortFormArgument, observedLongFormArguments, observedShortFormArguments):
-    if longFormArgument in observedLongFormArguments: self.errors.repeatedLongFormArgument(nodeID, longFormArgument)
-    if shortFormArgument in observedShortFormArguments: self.errors.repeatedShortFormArgument(nodeID, longFormArgument, shortFormArgument)
-    if longFormArgument and not shortFormArgument: self.errors.noShortFormArgument(nodeID, longFormArgument)
-    if shortFormArgument and not longFormArgument: self.errors.noLongFormArgument(nodeID, shortFormArgument)
+  def callArgumentErrors(self, nodeId, longFormArgument, shortFormArgument, observedLongFormArguments, observedShortFormArguments):
+    if longFormArgument in observedLongFormArguments: self.errors.repeatedLongFormArgument(nodeId, longFormArgument)
+    if shortFormArgument in observedShortFormArguments: self.errors.repeatedShortFormArgument(nodeId, longFormArgument, shortFormArgument)
+    if longFormArgument and not shortFormArgument: self.errors.noShortFormArgument(nodeId, longFormArgument)
+    if shortFormArgument and not longFormArgument: self.errors.noLongFormArgument(nodeId, shortFormArgument)
 
   # If the pipeline contains any tasks that generate multiple ouptut nodes, check that all definitions
   # to make sense of the pipeline have been provided.
@@ -743,16 +743,16 @@ class pipelineConfiguration:
     arguments = []
 
     # Get all the tool arguments associated with unique nodes.
-    for nodeID in self.getUniqueNodeIDs():
-      task         = self.getUniqueNodeAttribute(nodeID, 'task')
-      taskArgument = self.getUniqueNodeAttribute(nodeID, 'taskArgument')
-      if taskArgument: arguments.append(('unique', nodeID, task, taskArgument))
+    for nodeId in self.getUniqueNodeIds():
+      task         = self.getUniqueNodeAttribute(nodeId, 'task')
+      taskArgument = self.getUniqueNodeAttribute(nodeId, 'taskArgument')
+      if taskArgument: arguments.append(('unique', nodeId, task, taskArgument))
 
     # Get all the tool arguments associated with shared nodes.
-    for nodeID in self.getSharedNodeIDs():
-      for information in self.getSharedNodeTasks(nodeID):
+    for nodeId in self.getSharedNodeIds():
+      for information in self.getSharedNodeTasks(nodeId):
         if information.taskArgument:
-          arguments.append(('shared', nodeID, information.task, information.taskArgument))
+          arguments.append(('shared', nodeId, information.task, information.taskArgument))
 
     return arguments
 
@@ -767,28 +767,28 @@ class pipelineConfiguration:
     except: return None
 
   # Get a list of all unique node IDs.
-  def getUniqueNodeIDs(self):
+  def getUniqueNodeIds(self):
     try: return self.uniqueNodeAttributes.keys()
     except: return None
 
   # Get an attribute about a unique node.
-  def getUniqueNodeAttribute(self, nodeID, attribute):
-    try: return getattr(self.uniqueNodeAttributes[nodeID], attribute)
+  def getUniqueNodeAttribute(self, nodeId, attribute):
+    try: return getattr(self.uniqueNodeAttributes[nodeId], attribute)
     except: return None
 
   # Get a list of all shared node IDs.
-  def getSharedNodeIDs(self):
+  def getSharedNodeIds(self):
     try: return self.sharedNodeAttributes.keys()
     except: return None
 
   # Get all of the tasks sharing a node.
-  def getSharedNodeTasks(self, nodeID):
-    try: return self.sharedNodeAttributes[nodeID].sharedNodeTasks
+  def getSharedNodeTasks(self, nodeId):
+    try: return self.sharedNodeAttributes[nodeId].sharedNodeTasks
     except: return None
 
   # Get an attribute about a shared node.
-  def getSharedNodeAttribute(self, nodeID, attribute):
-    try: return getattr(self.sharedNodeAttributes[nodeID], attribute)
+  def getSharedNodeAttribute(self, nodeId, attribute):
+    try: return getattr(self.sharedNodeAttributes[nodeId], attribute)
     except: return None
 
   # Get attributes for a task defined in the shared node section.
@@ -835,9 +835,9 @@ class pipelineConfiguration:
   def getLongFormArgument(self, argument):
 
     # Check if this argument is from a unique node.
-    for nodeID in self.getUniqueNodeIDs():
-      shortFormArgument = self.getUniqueNodeAttribute(nodeID, 'shortFormArgument')
-      longFormArgument  = self.getUniqueNodeAttribute(nodeID, 'longFormArgument')
+    for nodeId in self.getUniqueNodeIds():
+      shortFormArgument = self.getUniqueNodeAttribute(nodeId, 'shortFormArgument')
+      longFormArgument  = self.getUniqueNodeAttribute(nodeId, 'longFormArgument')
 
       # If the long form argument matches the given argument, return the long form. If the argument
       # matches the short from, return the associated long form.
@@ -845,9 +845,9 @@ class pipelineConfiguration:
       elif argument == shortFormArgument: return longFormArgument
 
     # If the argument was not an argument for a unique node, check the shared nodes.
-    for nodeID in self.getSharedNodeIDs():
-      shortFormArgument = self.getSharedNodeAttribute(nodeID, 'shortFormArgument')
-      longFormArgument  = self.getSharedNodeAttribute(nodeID, 'longFormArgument')
+    for nodeId in self.getSharedNodeIds():
+      shortFormArgument = self.getSharedNodeAttribute(nodeId, 'shortFormArgument')
+      longFormArgument  = self.getSharedNodeAttribute(nodeId, 'longFormArgument')
 
       # If the long form argument matches the given argument, return the long form. If the argument
       # matches the short from, return the associated long form.

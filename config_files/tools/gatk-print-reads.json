@@ -27,6 +27,7 @@
         "data type" : "string",
         "modify argument" : "omit",
         "modify value" : "omit",
+        "hide argument in help" : true,
         "extensions" : ["bai"],
         "construct filename" : {
           "method": "from tool argument",
@@ -52,6 +53,7 @@
         "data type" : "string",
         "modify argument" : "omit",
         "modify value" : "omit",
+        "hide argument in help" : true,
         "extensions" : ["fai"],
         "construct filename" : {
           "method": "from tool argument",
@@ -78,6 +80,28 @@
         "required" : true,
         "data type" : "string",
         "extensions" : ["bam"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_gatk_recalibrated"]
+            }
+          ]
+        }
+      },
+      {
+        "description" : "The output recalibrated BAM index file.",
+        "long form argument" : "--out-index",
+        "short form argument" : "-oi",
+        "command line argument" : "--out",
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["bai"],
+        "hide argument in help" : true,
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",

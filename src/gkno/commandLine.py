@@ -329,25 +329,25 @@ class commandLine:
 
         # Search the successor and predecessor nodes for this task for the argument supplied.
         foundArgument    = False
-        associatedNodeID = None
-        for nodeID in gr.pipelineGraph.CM_getInputNodes(graph, taskAddress):
-          longFormArgument = gr.pipelineGraph.CM_getArgumentAttribute(graph, nodeID, taskAddress, 'longFormArgument')
+        associatedNodeId = None
+        for nodeId in gr.pipelineGraph.CM_getInputNodes(graph, taskAddress):
+          longFormArgument = gr.pipelineGraph.CM_getArgumentAttribute(graph, nodeId, taskAddress, 'longFormArgument')
           if longFormArgument == argument:
             foundArgument    = True
-            associatedNodeID = nodeID
+            associatedNodeId = nodeId
             break
 
         # Only check the output nodes if the argument has not already been associated with an input node.
         if not foundArgument:
-          for nodeID in gr.pipelineGraph.CM_getOutputNodes(graph, taskAddress):
-            longFormArgument = gr.pipelineGraph.CM_getArgumentAttribute(graph.graph, nodeID, taskAddress, 'longFormArgument')
+          for nodeId in gr.pipelineGraph.CM_getOutputNodes(graph, taskAddress):
+            longFormArgument = gr.pipelineGraph.CM_getArgumentAttribute(graph.graph, nodeId, taskAddress, 'longFormArgument')
             if longFormArgument == argument:
               foundArgument    = True
-              associatedNodeID = nodeID
+              associatedNodeId = nodeId
               break
 
         # Add the node to the list.
-        if associatedNodeID: associatedNodes.append((taskAddress, associatedNodeID, tool, argument, values, False))
+        if associatedNodeId: associatedNodes.append((taskAddress, associatedNodeId, tool, argument, values, False))
         else: associatedNodes.append((taskAddress, str(taskAddress + '.' + argument), tool, argument, values, True))
 
     # Return the list with information on the nodes to create.

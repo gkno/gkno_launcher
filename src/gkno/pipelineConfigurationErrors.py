@@ -61,36 +61,36 @@ class pipelineErrors:
     self.errors.terminate(self.errorCode)
 
   # If a configuration file contains has repeated definitions of the same long form argument.
-  def repeatedLongFormArgument(self, nodeID, longFormArgument):
+  def repeatedLongFormArgument(self, nodeId, longFormArgument):
     self.text.append('Repeated argument in the pipeline configuration file.')
-    self.text.append('The pipeline configuration file contains a definition for a graph node with ID \'' + nodeID + '\' which defines the ' + \
+    self.text.append('The pipeline configuration file contains a definition for a graph node with ID \'' + nodeId + '\' which defines the ' + \
     'long form argument \'' + longFormArgument + '\'. This argument has already been defined in the configuration file. Please ensure that all ' + \
     'arguments are unique.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
   # If a configuration file contains has repeated definitions of the same short form argument.
-  def repeatedShortFormArgument(self, nodeID, longFormArgument, shortFormArgument):
+  def repeatedShortFormArgument(self, nodeId, longFormArgument, shortFormArgument):
     self.text.append('Repeated argument in the pipeline configuration file.')
-    self.text.append('The pipeline configuration file contains a definition for a graph node with ID \'' + nodeID + '\' which defines the ' + \
+    self.text.append('The pipeline configuration file contains a definition for a graph node with ID \'' + nodeId + '\' which defines the ' + \
     'short form argument \'' + shortFormArgument + '\' associated with the long form argument \'' + longFormArgument + '\'. This argument has ' + \
     'already been defined in the configuration file. Please ensure that all arguments are unique.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
   # If a long form argument is defined with no short form.
-  def noShortFormArgument(self, nodeID, longFormArgument):
+  def noShortFormArgument(self, nodeId, longFormArgument):
     self.text.append('No defined short form argument in the pipeline configuration file.')
-    self.text.append('The pipeline configuration file contains a definition for a graph node with ID \'' + nodeID + '\' which defines the ' + \
+    self.text.append('The pipeline configuration file contains a definition for a graph node with ID \'' + nodeId + '\' which defines the ' + \
     'long form argument \'' + longFormArgument + '\'. There is no short form argument associated with this, however. Please ensure that all ' + \
     'nodes in the configuration file defining arguments contain both a short and long form version of the argument.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
   # If a short form argument is defined with no long form.
-  def noLongFormArgument(self, nodeID, shortFormArgument):
+  def noLongFormArgument(self, nodeId, shortFormArgument):
     self.text.append('No defined long form argument in the pipeline configuration file.')
-    self.text.append('The pipeline configuration file contains a definition for a graph node with ID \'' + nodeID + '\' which defines the ' + \
+    self.text.append('The pipeline configuration file contains a definition for a graph node with ID \'' + nodeId + '\' which defines the ' + \
     'short form argument \'' + shortFormArgument + '\'. There is no long form argument associated with this, however. Please ensure that all ' + \
     'nodes in the configuration file defining arguments contain both a short and long form version of the argument.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
@@ -116,7 +116,7 @@ class pipelineErrors:
     self.errors.terminate(self.errorCode)
 
   # A node ID is also the name of a task.
-  def nodeIDIsTaskID(self, name, node, id):
+  def nodeIdIsTaskID(self, name, node, id):
     self.text.append('Node ID conflicts with a task ID.')
     self.text.append('The configuration file for the \'' + name + '\' pipeline contains a node in the \'' + node + '\' section with the ' + \
     'id \'' + id + '\'. This is also the name of a task in the pipeline. All the task names and node ids within a single configuration ' + \
@@ -181,9 +181,9 @@ class pipelineErrors:
   ##########################################
 
   # A supplied task is not valid.
-  def invalidTaskInNode(self, pipeline, nodeType, nodeID, task, tasks):
+  def invalidTaskInNode(self, pipeline, nodeType, nodeId, task, tasks):
     self.text.append('Invalid task in configuration file node.')
-    self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains a node with id \'' + nodeID + '\' in the \'' + \
+    self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains a node with id \'' + nodeId + '\' in the \'' + \
     nodeType + ' graph nodes\' section. Within this node, the task \'' + task + '\' is used, but this task has not been defined in the ' + \
     '\'pipeline tasks\' section of the configuration file and consequently is not valid. Please check that all tasks in the configuration ' + \
     'file are valid for the pipeline.')
@@ -191,9 +191,9 @@ class pipelineErrors:
     self.errors.terminate(self.errorCode)
 
   # A configuration file node contains a tool argument that is not valid.
-  def invalidToolArgument(self, pipeline, nodeType, nodeID, task, tool, argument):
+  def invalidToolArgument(self, pipeline, nodeType, nodeId, task, tool, argument):
     self.text.append('Invalid tool argument.')
-    self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains a node with id \'' + nodeID + '\' in the \'' + \
+    self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains a node with id \'' + nodeId + '\' in the \'' + \
     nodeType + ' graph nodes\' section. Within this node, the task \'' + task + '\' which uses the tool \'' + tool + '\' is associated ' + \
     'with the argument \'' + argument + '\', but this argument is not valid for the tool. Please check that all of the tool arguments ' + \
     'in the pipeline configuration file are valid for the tools they are linked to.')
@@ -201,7 +201,7 @@ class pipelineErrors:
     self.errors.terminate(self.errorCode)
 
   # If a node has a non-unique id.
-  def repeatedNodeID(self, node, helpInfo):
+  def repeatedNodeId(self, node, helpInfo):
     self.text.append('Repeated pipeline node ID.')
     self.text.append('The configuration file for the pipeline \'' + helpInfo[0] + '\' contains at least two nodes in the \'' + helpInfo[1] + \
     '\' section with the same ID (' + helpInfo[2] + '). All nodes must have unique IDs in order to construct the pipeline graph. Please ' + \

@@ -72,29 +72,29 @@ class plotGraph():
     graphToDraw = graph.graph.copy()
 
     # Remove all option nodes.
-    for optionNodeID in gr.pipelineGraph.CM_getNodes(graphToDraw, 'option'):
-      if isReduced: graphToDraw.remove_node(optionNodeID)
+    for optionNodeId in gr.pipelineGraph.CM_getNodes(graphToDraw, 'option'):
+      if isReduced: graphToDraw.remove_node(optionNodeId)
       else:
-        graphToDraw.node[optionNodeID]["label"]     = optionNodeID.rsplit('.', 1)[-1]
-        graphToDraw.node[optionNodeID]["shape"]     = 'rectangle'
-        graphToDraw.node[optionNodeID]["style"]     = 'filled, rounded'
-        graphToDraw.node[optionNodeID]["fillcolor"] = '#6E915F'
-        graphToDraw.node[optionNodeID]["fontname"]  = 'montserrat'
-        graphToDraw.node[optionNodeID]["fontcolor"] = 'white'
+        graphToDraw.node[optionNodeId]["label"]     = optionNodeId.rsplit('.', 1)[-1]
+        graphToDraw.node[optionNodeId]["shape"]     = 'rectangle'
+        graphToDraw.node[optionNodeId]["style"]     = 'filled, rounded'
+        graphToDraw.node[optionNodeId]["fillcolor"] = '#6E915F'
+        graphToDraw.node[optionNodeId]["fontname"]  = 'montserrat'
+        graphToDraw.node[optionNodeId]["fontcolor"] = 'white'
 
     # Loop over file nodes. If the node has predecessors and successors, leave it in the graph. If it has only
     # predecessors or successors, check if it is listed as a node to be kept in the graph.
-    for fileNodeID in gr.pipelineGraph.CM_getNodes(graphToDraw, 'file'):
+    for fileNodeId in gr.pipelineGraph.CM_getNodes(graphToDraw, 'file'):
 
       # If a reduced plot is requested, check if this node can be removed by checking all of the tool arguments
       # associated with the node for the includeInReducedPlot variable set to False.
       isIncluded = True
       if isReduced:
         arguments = []
-        for task in graphToDraw.predecessors(fileNodeID):
-          arguments.append((task, graph.getArgumentAttribute(task, fileNodeID, 'longFormArgument')))
-        for task in graphToDraw.successors(fileNodeID):
-          arguments.append((task, graph.getArgumentAttribute(fileNodeID, task, 'longFormArgument')))
+        for task in graphToDraw.predecessors(fileNodeId):
+          arguments.append((task, graph.getArgumentAttribute(task, fileNodeId, 'longFormArgument')))
+        for task in graphToDraw.successors(fileNodeId):
+          arguments.append((task, graph.getArgumentAttribute(fileNodeId, task, 'longFormArgument')))
 
         for task, longFormArgument in arguments:
           tool     = graph.getGraphNodeAttribute(task, 'tool')
@@ -104,61 +104,61 @@ class plotGraph():
             break
 
       # If this node is not required, remove it.
-      if isReduced and not isIncluded: graphToDraw.remove_node(fileNodeID)
+      if isReduced and not isIncluded: graphToDraw.remove_node(fileNodeId)
  
       # Otherwise, update the nodes attributes for plotting.
       else:
-        predecessorNodeIDs = graphToDraw.predecessors(fileNodeID)
-        successorNodeIDs   = graphToDraw.successors(fileNodeID)
+        predecessorNodeIds = graphToDraw.predecessors(fileNodeId)
+        successorNodeIds   = graphToDraw.successors(fileNodeId)
         extension          = 'NA'
-        for predecessorNodeID in predecessorNodeIDs:
-          try: extension = gr.pipelineGraph.CM_getArgumentAttribute(graphToDraw, predecessorNodeID, fileNodeID, 'extensions')[0]
+        for predecessorNodeId in predecessorNodeIds:
+          try: extension = gr.pipelineGraph.CM_getArgumentAttribute(graphToDraw, predecessorNodeId, fileNodeId, 'extensions')[0]
           except: extension = 'NA'
           if extension != 'NA': break
         if extension == 'NA':
-          for successorNodeID in successorNodeIDs:
-            try: extension = gr.pipelineGraph.CM_getArgumentAttribute(graphToDraw, fileNodeID, successorNodeID, 'extensions')[0]
+          for successorNodeId in successorNodeIds:
+            try: extension = gr.pipelineGraph.CM_getArgumentAttribute(graphToDraw, fileNodeId, successorNodeId, 'extensions')[0]
             except: extension = 'NA'
             if extension != 'NA': break
   
         # Modify the file node.
-        graphToDraw.node[fileNodeID]["label"] = extension.rsplit('.', 1)[-1]
+        graphToDraw.node[fileNodeId]["label"] = extension.rsplit('.', 1)[-1]
 
     # Loop over the nodes and add names, styles etc and mark those node to be removed.
-    for taskNodeID in gr.pipelineGraph.CM_getNodes(graphToDraw, 'task'):
+    for taskNodeId in gr.pipelineGraph.CM_getNodes(graphToDraw, 'task'):
 
       # Remove the address from the task name.
-      taskNodeName = taskNodeID.rsplit('.', 1)[-1]
+      taskNodeName = taskNodeId.rsplit('.', 1)[-1]
 
       # Mark if nodes should be removed or not.
-      if gr.pipelineGraph.CM_getGraphNodeAttribute(graphToDraw, taskNodeID, 'includeInReducedPlot'): graphToDraw.node[taskNodeID]["include"] = True
-      elif isReduced: graphToDraw.node[taskNodeID]["include"] = False
+      if gr.pipelineGraph.CM_getGraphNodeAttribute(graphToDraw, taskNodeId, 'includeInReducedPlot'): graphToDraw.node[taskNodeId]["include"] = True
+      elif isReduced: graphToDraw.node[taskNodeId]["include"] = False
 
       # Define the name of the new node.
-      taskName = taskNodeID.rsplit('.', 1)[-1]
+      taskName = taskNodeId.rsplit('.', 1)[-1]
 
       # Modify node attributes.
-      graphToDraw.node[taskNodeID]["style"]     = 'filled'
-      graphToDraw.node[taskNodeID]["shape"]     = 'doublecircle'
-      graphToDraw.node[taskNodeID]["label"]     = taskName
-      graphToDraw.node[taskNodeID]["fillcolor"] = '#005422'
-      graphToDraw.node[taskNodeID]["fontname"]  = 'montserrat'
-      graphToDraw.node[taskNodeID]["fontcolor"] = 'white'
+      graphToDraw.node[taskNodeId]["style"]     = 'filled'
+      graphToDraw.node[taskNodeId]["shape"]     = 'doublecircle'
+      graphToDraw.node[taskNodeId]["label"]     = taskName
+      graphToDraw.node[taskNodeId]["fillcolor"] = '#005422'
+      graphToDraw.node[taskNodeId]["fontname"]  = 'montserrat'
+      graphToDraw.node[taskNodeId]["fontcolor"] = 'white'
 
     # Remove nodes marked for removal, handling edges that are left dangling.
     if isReduced: self.removeNodes(graphToDraw)
 
     # Remove any orphaned nodes.
-    for nodeID in graphToDraw.nodes():
-      if not graphToDraw.predecessors(nodeID) and not graphToDraw.successors(nodeID): graphToDraw.remove_node(nodeID)
+    for nodeId in graphToDraw.nodes():
+      if not graphToDraw.predecessors(nodeId) and not graphToDraw.successors(nodeId): graphToDraw.remove_node(nodeId)
 
     # Loop over the nodes and add names, styles etc for file nodes.
-    for nodeID in gr.pipelineGraph.CM_getNodes(graphToDraw, 'file'):
-      graphToDraw.node[nodeID]["shape"]     = 'circle'
-      graphToDraw.node[nodeID]["style"]     = 'filled'
-      graphToDraw.node[nodeID]["fillcolor"] = '#6E915F'
-      graphToDraw.node[nodeID]["fontname"]  = 'montserrat'
-      graphToDraw.node[nodeID]["fontcolor"] = 'white'
+    for nodeId in gr.pipelineGraph.CM_getNodes(graphToDraw, 'file'):
+      graphToDraw.node[nodeId]["shape"]     = 'circle'
+      graphToDraw.node[nodeId]["style"]     = 'filled'
+      graphToDraw.node[nodeId]["fillcolor"] = '#6E915F'
+      graphToDraw.node[nodeId]["fontname"]  = 'montserrat'
+      graphToDraw.node[nodeId]["fontcolor"] = 'white'
 
     # Draw the graph from left to right, rather than default top to bottom.
     graphToDraw.graph.setdefault('graph', {})['rankdir'] = 'LR'
@@ -173,36 +173,36 @@ class plotGraph():
     nodesToDelete = []
 
     # Loop over the task nodes.
-    for taskNodeID in gr.pipelineGraph.CM_getNodes(graphToDraw, 'task'):
+    for taskNodeId in gr.pipelineGraph.CM_getNodes(graphToDraw, 'task'):
 
       # Only process nodes to be removed.
-      if not graphToDraw.node[taskNodeID]['include']:
+      if not graphToDraw.node[taskNodeId]['include']:
 
         # Get all the predecessors and identify any previous tasks that produce files that pass through the
         # node being deleted.
         sources      = []
-        predecessors = graphToDraw.predecessors(taskNodeID)
-        for predecessorNodeID in predecessors:
-          for previousTask in graphToDraw.predecessors(predecessorNodeID):
-            if graphToDraw.node[previousTask]['include']: sources.append(predecessorNodeID)
+        predecessors = graphToDraw.predecessors(taskNodeId)
+        for predecessorNodeId in predecessors:
+          for previousTask in graphToDraw.predecessors(predecessorNodeId):
+            if graphToDraw.node[previousTask]['include']: sources.append(predecessorNodeId)
 
         # Now move along the successors and see if any created files get passed to tasks that are kept.
         targets    = []
-        successors = graphToDraw.successors(taskNodeID)
+        successors = graphToDraw.successors(taskNodeId)
         while successors:
-          successorNodeID = successors.pop(0)
-          for nodeID in graphToDraw.successors(successorNodeID):
+          successorNodeId = successors.pop(0)
+          for nodeId in graphToDraw.successors(successorNodeId):
 
             # If the task node is a node being kept, mark this node as a target and move on.
-            if graphToDraw.node[nodeID]['include']: targets.append(nodeID)
+            if graphToDraw.node[nodeId]['include']: targets.append(nodeId)
 
             # If the task node is being removed, add its successors to the successors list to determine if
             # a task can be reached that is being kept.
             else:
-              for nextSuccessor in graphToDraw.successors(nodeID): successors.append(nextSuccessor)
+              for nextSuccessor in graphToDraw.successors(nodeId): successors.append(nextSuccessor)
 
           # Store the file node for later.
-          nodesToCheck.append(successorNodeID)
+          nodesToCheck.append(successorNodeId)
 
         # If there are no source or target nodes, no edges are required. Otherwise, join the sources to the
         # targets.
@@ -210,24 +210,24 @@ class plotGraph():
           for target in targets: graphToDraw.add_edge(source, target)
 
         # Mark the node for deletion.
-        nodesToDelete.append(taskNodeID)
+        nodesToDelete.append(taskNodeId)
 
     # Delete the task nodes.
-    for taskNodeID in nodesToDelete: graphToDraw.remove_node(taskNodeID)
+    for taskNodeId in nodesToDelete: graphToDraw.remove_node(taskNodeId)
 
     # Loop over all the nodes that were successors to removed task nodes.
-    for nodeID in nodesToCheck:
+    for nodeId in nodesToCheck:
 
       # Check if the node is still in the graph.
-      if nodeID in graphToDraw:
+      if nodeId in graphToDraw:
 
         # If the node has no predecessors, then the file node isn't flowing from a previous task, but will 
         # be shown in the plot as a unique node feeding into a task being kept in the plot. This gives the
         # false impression that the file is supplied, rather than having been generated by a task that has
         # been removed from the graph. This node should be deleted.
-        if not graphToDraw.predecessors(nodeID): graphToDraw.remove_node(nodeID)
+        if not graphToDraw.predecessors(nodeId): graphToDraw.remove_node(nodeId)
 
     # Finally, step through the graph and remove nodes marked 'NA'. These are files created from stubs that
     # are not passed to other tools, so just clutter the plot.
-    for nodeID in gr.pipelineGraph.CM_getNodes(graphToDraw, 'file'):
-      if graphToDraw.node[nodeID]['label'] == 'NA': graphToDraw.remove_node(nodeID)
+    for nodeId in gr.pipelineGraph.CM_getNodes(graphToDraw, 'file'):
+      if graphToDraw.node[nodeId]['label'] == 'NA': graphToDraw.remove_node(nodeId)

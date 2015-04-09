@@ -15,11 +15,11 @@ class debug:
     for task in graph.workflow:
       print('task:', task)
       print('\tinputs:')
-      for nodeID in graph.graph.predecessors(task):
-        print('\t\t', graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+      for nodeId in graph.graph.predecessors(task):
+        print('\t\t', nodeId, graph.getArgumentAttribute(nodeId, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeId, 'values'))
       print('\toutputs:')
-      for nodeID in graph.graph.successors(task):
-        print('\t\t', graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+      for nodeId in graph.graph.successors(task):
+        print('\t\t', nodeId, graph.getArgumentAttribute(task, nodeId, 'longFormArgument'), graph.getGraphNodeAttribute(nodeId, 'values'))
 
   # Write out all input and output files from all task in the graph.
   def allTasks(self, graph):
@@ -29,8 +29,8 @@ class debug:
     for task in graph.getNodes('task'):
       print('task:', task)
       print('\tinputs:')
-      for nodeID in graph.graph.predecessors(task):
-        print('\t\t', graph.getArgumentAttribute(nodeID, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+      for nodeId in graph.graph.predecessors(task):
+        print('\t\t', graph.getArgumentAttribute(nodeId, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeId, 'values'))
       print('\toutputs:')
-      for nodeID in graph.graph.successors(task):
-        print('\t\t', graph.getArgumentAttribute(task, nodeID, 'longFormArgument'), graph.getGraphNodeAttribute(nodeID, 'values'))
+      for nodeId in graph.graph.successors(task):
+        print('\t\t', graph.getArgumentAttribute(task, nodeId, 'longFormArgument'), graph.getGraphNodeAttribute(nodeId, 'values'))

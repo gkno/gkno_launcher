@@ -89,7 +89,7 @@
         {
           "id" : "gvcf",
           "node" : "gvcf",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.g.vcf"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.g.vcf", "$(RESOURCES)/tutorial/current/mutated_genome_set2.g.vcf"]
         },
         {
           "id" : "reference",

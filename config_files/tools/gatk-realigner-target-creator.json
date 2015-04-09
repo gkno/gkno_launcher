@@ -27,6 +27,7 @@
         "data type" : "string",
         "modify argument" : "omit",
         "modify value" : "omit",
+        "hide argument in help" : true,
         "extensions" : ["bai"],
         "construct filename" : {
           "method": "from tool argument",
@@ -155,7 +156,7 @@
         {
           "id" : "dbsnp",
           "argument" : "--known-sites",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"]
+          "values" : ["$(RESOURCES)/tutorial/current/Mills_and_1000G_gold_standard.indels.b37.chr20_fragment.vcf.gz"]
         },
         {
           "id" : "output path",

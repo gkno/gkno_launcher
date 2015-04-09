@@ -48,14 +48,20 @@
         "node id" : "known"
       },
       {
-        "description" : "The dbSNP database VCF file.",
-        "long form argument" : "--dbsnp",
-        "short form argument" : "-d",
-        "node id" : "dbsnp"
+        "description" : "A VCF file(s) containing known variants that will be supplied to the base quality recalibration step alone.",
+        "long form argument" : "--known-recalibration",
+        "short form argument" : "-kr",
+        "node id" : "known-for-recalibration"
       }
     ],
 
     "Outputs" : [
+      {
+        "description" : "The output GVCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
     ],
 
     "Options" : [
@@ -76,9 +82,14 @@
 
   "unique graph nodes" : [
     {
-      "id" : "dbsnp",
+      "id" : "known-for-recalibration",
       "task" : "recalibrate",
       "task argument" : "--known-sites"
+    },
+    {
+      "id" : "output",
+      "task" : "single-sample-call",
+      "task argument" : "--out"
     }
   ],
 
@@ -229,7 +240,7 @@
       ]
     },
     {
-      "id" : "realigned-index",
+      "id" : "realigned-bam-index",
       "delete files" : true,
       "arguments sharing node" : [
         {
@@ -260,7 +271,7 @@
       ]
     },
     {
-      "id" : "index-recalibrated-bam",
+      "id" : "recalibrated-bam",
       "arguments sharing node" : [
         {
           "task" : "print-reads",
@@ -269,6 +280,19 @@
         {
           "task" : "single-sample-call",
           "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "recalibrated-bam-index",
+      "arguments sharing node" : [
+        {
+          "task" : "print-reads",
+          "task argument" : "--out-index"
+        },
+        {
+          "task" : "single-sample-call",
+          "task argument" : "--in-index"
         }
       ]
     }
@@ -289,7 +313,7 @@
         {
           "id" : "bam",
           "node" : "bam",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam", "$(RESOURCES)/tutorial/current/mutated_genome_set2.bam"]
         },
         {
           "id" : "reference",
@@ -298,8 +322,13 @@
         },
         {
           "id" : "dbsnp",
-          "node" : "dbsnp",
+          "node" : "known-recal",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"]
+        },
+        {
+          "id" : "out",
+          "node" : "output",
+          "values" : ["$(PWD)/mutated_genome.g.vcf", "$(PWD)/mutated_genome_set2.g.vcf"]
         }
       ]
     },

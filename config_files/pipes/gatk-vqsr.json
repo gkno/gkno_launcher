@@ -6,19 +6,19 @@
 
   "pipeline tasks" : [
     {
-      "task" : "recal-snps",
+      "task" : "recalibrate-snps",
       "tool" : "gatk-vqsr"
     },
     {
-      "task" : "apply-snps",
+      "task" : "apply-snp-recalibration",
       "tool" : "gatk-vqsr-recalibrate"
     },
     {
-      "task" : "recal-indels",
+      "task" : "recalibrate-indels",
       "tool" : "gatk-vqsr"
     },
     {
-      "task" : "apply-indels",
+      "task" : "apply-indel-recalibration",
       "tool" : "gatk-vqsr-recalibrate"
     }
   ],
@@ -153,37 +153,37 @@
   "unique graph nodes" : [
     {
       "id" : "hapmap",
-      "task" : "recal-snps",
+      "task" : "recalibrate-snps",
       "task argument" : "--resource-hapmap"
     },
     {
       "id" : "omni",
-      "task" : "recal-snps",
+      "task" : "recalibrate-snps",
       "task argument" : "--resource-omni"
     },
     {
       "id" : "1000G",
-      "task" : "recal-snps",
+      "task" : "recalibrate-snps",
       "task argument" : "--resource-1000g"
     },
     {
       "id" : "dbsnp",
-      "task" : "recal-snps",
+      "task" : "recalibrate-snps",
       "task argument" : "--resource-dbsnp"
     },
     {
       "id" : "mills",
-      "task" : "recal-indels",
+      "task" : "recalibrate-indels",
       "task argument" : "--resource-indel"
     },
     {
       "id" : "gaussians",
-      "task" : "recal-indels",
+      "task" : "recalibrate-indels",
       "task argument" : "--max-gaussians"
     },
     {
       "id" : "output",
-      "task" : "apply-indels",
+      "task" : "apply-indel-recalibration",
       "task argument" : "--out"
     }
   ],
@@ -193,11 +193,11 @@
       "id" : "input",
       "arguments sharing node" : [
         {
-          "task" : "recal-snps",
+          "task" : "recalibrate-snps",
           "task argument" : "--in"
         },
         {
-          "task" : "apply-snps",
+          "task" : "apply-snp-recalibration",
           "task argument" : "--in"
         }
       ]
@@ -206,19 +206,19 @@
       "id" : "reference",
       "arguments sharing node" : [
         {
-          "task" : "recal-snps",
+          "task" : "recalibrate-snps",
           "task argument" : "--fasta-reference"
         },
         {
-          "task" : "apply-snps",
+          "task" : "apply-snp-recalibration",
           "task argument" : "--fasta-reference"
         },
         {
-          "task" : "recal-indels",
+          "task" : "recalibrate-indels",
           "task argument" : "--fasta-reference"
         },
         {
-          "task" : "apply-indels",
+          "task" : "apply-indel-recalibration",
           "task argument" : "--fasta-reference"
         }
       ]
@@ -227,11 +227,11 @@
       "id" : "annotation",
       "arguments sharing node" : [
         {
-          "task" : "recal-snps",
+          "task" : "recalibrate-snps",
           "task argument" : "--annotation"
         },
         {
-          "task" : "recal-indels",
+          "task" : "recalibrate-indels",
           "task argument" : "--annotation"
         }
       ]
@@ -240,11 +240,11 @@
       "id" : "snp-mode",
       "arguments sharing node" : [
         {
-          "task" : "recal-snps",
+          "task" : "recalibrate-snps",
           "task argument" : "--mode"
         },
         {
-          "task" : "apply-snps",
+          "task" : "apply-snp-recalibration",
           "task argument" : "--mode"
         }
       ]
@@ -253,11 +253,11 @@
       "id" : "indel-mode",
       "arguments sharing node" : [
         {
-          "task" : "recal-indels",
+          "task" : "recalibrate-indels",
           "task argument" : "--mode"
         },
         {
-          "task" : "apply-indels",
+          "task" : "apply-indel-recalibration",
           "task argument" : "--mode"
         }
       ]
@@ -266,11 +266,11 @@
       "id" : "tranche",
       "arguments sharing node" : [
         {
-          "task" : "recal-snps",
+          "task" : "recalibrate-snps",
           "task argument" : "--tranche"
         },
         {
-          "task" : "recal-indels",
+          "task" : "recalibrate-indels",
           "task argument" : "--tranche"
         }
       ]
@@ -279,11 +279,11 @@
       "id" : "snp-recal",
       "arguments sharing node" : [
         {
-          "task" : "recal-snps",
+          "task" : "recalibrate-snps",
           "task argument" : "--out"
         },
         {
-          "task" : "apply-snps",
+          "task" : "apply-snp-recalibration",
           "task argument" : "--recal-file"
         }
       ]
@@ -292,11 +292,11 @@
       "id" : "indel-recal",
       "arguments sharing node" : [
         {
-          "task" : "recal-indels",
+          "task" : "recalibrate-indels",
           "task argument" : "--out"
         },
         {
-          "task" : "apply-indels",
+          "task" : "apply-indel-recalibration",
           "task argument" : "--recal-file"
         }
       ]
@@ -305,11 +305,11 @@
       "id" : "snp-tranche",
       "arguments sharing node" : [
         {
-          "task" : "recal-snps",
+          "task" : "recalibrate-snps",
           "task argument" : "--tranches-file"
         },
         {
-          "task" : "apply-snps",
+          "task" : "apply-snp-recalibration",
           "task argument" : "--tranches-file"
         }
       ]
@@ -318,11 +318,11 @@
       "id" : "indel-tranche",
       "arguments sharing node" : [
         {
-          "task" : "recal-indels",
+          "task" : "recalibrate-indels",
           "task argument" : "--tranches-file"
         },
         {
-          "task" : "apply-indels",
+          "task" : "apply-indel-recalibration",
           "task argument" : "--tranches-file"
         }
       ]
@@ -331,11 +331,11 @@
       "id" : "sensitivity",
       "arguments sharing node" : [
         {
-          "task" : "apply-snps",
+          "task" : "apply-snp-recalibration",
           "task argument" : "--truth-sensitivity"
         },
         {
-          "task" : "apply-indels",
+          "task" : "apply-indel-recalibration",
           "task argument" : "--truth-sensitivity"
         }
       ]
@@ -344,11 +344,15 @@
       "id" : "recal-snp-vcf",
       "arguments sharing node" : [
         {
-          "task" : "apply-snps",
+          "task" : "apply-snp-recalibration",
           "task argument" : "--out"
         },
         {
-          "task" : "recal-indels",
+          "task" : "recalibrate-indels",
+          "task argument" : "--in"
+        },
+        {
+          "task" : "apply-indel-recalibration",
           "task argument" : "--in"
         }
       ]
@@ -359,7 +363,28 @@
     {
       "id" : "default",
       "description" : "Default parameter set requires user to input all input filenames.",
-      "data" : []
+      "data" : [
+        {
+          "id" : "snp-mode",
+          "node" : "snp-mode",
+          "values" : ["SNP"]
+        },
+        {
+          "id" : "indel-mode",
+          "node" : "indel-mode",
+          "values" : ["INDEL"]
+        },
+        {
+          "id" : "annotation",
+          "node" : "annotation",
+          "values" : ["Coverage", "QualByDepth", "FisherStrand", "MappingQualityRankSumTest", "ReadPosRankSumTest"]
+        },
+        {
+          "id" : "tranche",
+          "node" : "tranche",
+          "values" : [100.0, 99.9, 99.0, 90.0]
+        }
+      ]
     },
 
     {
@@ -368,13 +393,38 @@
       "data" : [
         {
           "id" : "gvcf",
-          "node" : "gvcf",
+          "node" : "input",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.g.vcf"]
         },
         {
           "id" : "reference",
           "node" : "reference",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "id" : "hapmap",
+          "node" : "hapmap",
+          "values" : ["$(RESOURCES)/tutorial/current/hapmap_3.3.b37.chr20_fragment.vcf.gz"]
+        },
+        {
+          "id" : "omni",
+          "node" : "omni",
+          "values" : ["$(RESOURCES)/tutorial/current/1000G_omni2.5.b37.chr20_fragment.vcf.gz"]
+        },
+        {
+          "id" : "1000G",
+          "node" : "1000G",
+          "values" : ["$(RESOURCES)/tutorial/current/1000G_phase1.snps.high_confidence.b37.chr20_fragment.vcf.gz"]
+        },
+        {
+          "id" : "dbsnp",
+          "node" : "dbsnp",
+          "values" : ["$(RESOURCES)/tutorial/current/dbsnp_138.b37.excluding_sites_after_129.chr20_fragment.vcf.gz"]
+        },
+        {
+          "id" : "mills",
+          "node" : "mills",
+          "values" : ["$(RESOURCES)/tutorial/current/Mills_and_1000G_gold_standard.indels.b37.chr20_fragment.vcf.gz"]
         }
       ]
     }

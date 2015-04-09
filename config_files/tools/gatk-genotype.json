@@ -37,6 +37,7 @@
         "data type" : "string",
         "modify argument" : "omit",
         "modify value" : "omit",
+        "hide argument in help" : true,
         "extensions" : ["fai"],
         "construct filename" : {
           "method": "from tool argument",

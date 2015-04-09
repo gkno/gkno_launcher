@@ -223,6 +223,11 @@ def main():
   # arguments are set, since the pipeline is not being executed.
   isExportSet = gknoConfiguration.getGknoArgument('GKNO-EXPORT-PARAMETER-SET', command.gknoArguments)
 
+  # Determine whether or not to output a visual representation of the pipeline graph.
+  plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
+  if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
+  if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
+
   # Loop over all of the nodes in the graph and ensure that all required arguments have been set. Any output files
   # for which construction instructions are provided can be omitted from this check. This will ensure that all required
   # input files are set, ensuring that filename construction can proceed. The check will be performed again after
@@ -239,11 +244,6 @@ def main():
 
   # Mark any tasks that have greedy arguments as greedy.
   graph.markGreedyTasks(superpipeline)
-
-  # Determine whether or not to output a visual representation of the pipeline graph.
-  plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
-  if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
-  if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
 
   # Print the workflow to screen.
   write.workflow(superpipeline, workflow)

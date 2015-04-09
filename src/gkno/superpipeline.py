@@ -39,8 +39,8 @@ class superpipelineClass:
     self.tasks = {}
 
     # Store the unique and shared node IDs in all the pipeline.
-    self.uniqueNodeIDs = []
-    self.sharedNodeIDs = []
+    self.uniqueNodeIds = []
+    self.sharedNodeIds = []
 
     # Store all of the constituent pipeline with their tier and also all the pipelines indexed
     # by tier.
@@ -176,8 +176,8 @@ class superpipelineClass:
           self.tasksInPlot[taskAddress] = not pipeline.getTaskAttribute(task, 'omitFromReducedPlot')
 
         # Store the unique and shared node IDs for each pipeline.
-        self.uniqueNodeIDs += [str(pipeline.address + '.' + nodeID) if pipeline.address else str(nodeID) for nodeID in pipeline.getUniqueNodeIDs()]
-        self.sharedNodeIDs += [str(pipeline.address + '.' + nodeID) if pipeline.address else str(nodeID) for nodeID in pipeline.getSharedNodeIDs()]
+        self.uniqueNodeIds += [str(pipeline.address + '.' + nodeId) if pipeline.address else str(nodeId) for nodeId in pipeline.getUniqueNodeIds()]
+        self.sharedNodeIds += [str(pipeline.address + '.' + nodeId) if pipeline.address else str(nodeId) for nodeId in pipeline.getSharedNodeIds()]
 
   # Check that all references to tasks in the pipeline configuration file are valid. The task may
   # be a task in a contained pipeline and not within the pipeline being checked. The allTasks
@@ -190,25 +190,25 @@ class superpipelineClass:
         pipelineObject = self.pipelineConfigurationData[pipelineName]
 
         # Check the tasks that any unique nodes point to.
-        for nodeID in pipelineObject.uniqueNodeAttributes.keys():
+        for nodeId in pipelineObject.uniqueNodeAttributes.keys():
     
           # Get the name of the task that this node points to. This is the full address of the
           # task and so may live in a nested pipeline.
-          task = pipelineObject.getUniqueNodeAttribute(nodeID, 'task')
+          task = pipelineObject.getUniqueNodeAttribute(nodeId, 'task')
     
           # This pipeline may itself be called by an enveloping pipeline. If so, any tasks
           # will require prepending with the address of this pipeline.
           if pipelineObject.address: task = pipelineObject.address + '.' + task
     
           # If the task is not listed as one of the pipeline tasks. terminate.
-          if task not in self.tasks: pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', nodeID, task, self.tasks)
+          if task not in self.tasks: pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', nodeId, task, self.tasks)
     
         # Check the tasks that shared nodes point to.
-        for sharedNodeID in pipelineObject.sharedNodeAttributes.keys():
-          for node in pipelineObject.sharedNodeAttributes[sharedNodeID].sharedNodeTasks:
+        for sharedNodeId in pipelineObject.sharedNodeAttributes.keys():
+          for node in pipelineObject.sharedNodeAttributes[sharedNodeId].sharedNodeTasks:
             task           = pipelineObject.getNodeTaskAttribute(node, 'task')
             taskArgument   = pipelineObject.getNodeTaskAttribute(node, 'taskArgument')
-            externalNodeID = pipelineObject.getNodeTaskAttribute(node, 'externalNodeID')
+            externalNodeId = pipelineObject.getNodeTaskAttribute(node, 'externalNodeId')
 
             # Add the address of the current pipeline if this is not the top tier pipeline.
             if pipelineObject.address: task = pipelineObject.address + '.' + task
@@ -216,24 +216,24 @@ class superpipelineClass:
             # If the externalNode is set, the node is in an external pipeline and is being pointed
             # to directly. Ensure that the task argument is not also defined and then construct the
             # name of the graph node to test for existence.
-            if externalNodeID:
+            if externalNodeId:
               if taskArgument: print('superpipeline.checkContainedTasks - 2'); exit(0)
-              task = task + '.' + externalNodeID
-              if task not in self.uniqueNodeIDs and task not in self.sharedNodeIDs:
-                pipelineObject.errors.invalidTaskInNode(pipelineName, 'shared', sharedNodeID, task, self.tasks)
+              task = task + '.' + externalNodeId
+              if task not in self.uniqueNodeIds and task not in self.sharedNodeIds:
+                pipelineObject.errors.invalidTaskInNode(pipelineName, 'shared', sharedNodeId, task, self.tasks)
 
             # If the node defines a task and a task argument (not a node, as above), check that the task
             # exists. This task could be in another pipeline.
             else:
-              if task not in self.tasks: pipelineObject.errors.invalidTaskInNode(pipelineName, 'shared', sharedNodeID, task, self.tasks)
+              if task not in self.tasks: pipelineObject.errors.invalidTaskInNode(pipelineName, 'shared', sharedNodeId, task, self.tasks)
 
   # Given a pipeline name and a node ID, return the node type (i.e. unique or shared).
-  def getNodeType(self, pipeline, nodeID):
+  def getNodeType(self, pipeline, nodeId):
 
     # Define the node address.
-    address = pipeline + '.' + nodeID
-    if address in self.uniqueNodeIDs: return 'unique'
-    elif address in self.sharedNodeIDs: return 'shared'
+    address = pipeline + '.' + nodeId
+    if address in self.uniqueNodeIds: return 'unique'
+    elif address in self.sharedNodeIds: return 'shared'
     else: return None
 
   # Loop over the list of required tools, open and process their configuration files and store.
@@ -264,7 +264,7 @@ class superpipelineClass:
         arguments = self.pipelineConfigurationData[pipeline].getToolArguments()
 
         # Check that each argument is valid.
-        for nodeType, nodeID, task, argument in arguments:
+        for nodeType, nodeId, task, argument in arguments:
 
           # Get the tool associated with the task.
           address     = self.pipelineConfigurationData[pipeline].address + '.' if self.pipelineConfigurationData[pipeline].address else ''
@@ -276,7 +276,7 @@ class superpipelineClass:
 
           # If the long form does not exist, the argument in the pipeline configuration file is not valid.
           if not longFormArgument:
-            self.pipelineConfigurationData[pipeline].errors.invalidToolArgument(pipeline, nodeType, nodeID, task, tool, argument)
+            self.pipelineConfigurationData[pipeline].errors.invalidToolArgument(pipeline, nodeType, nodeId, task, tool, argument)
 
   # Return the tool used for a task. The task is the full address, so may well be a task
   # buried within enclosed pipelines.
@@ -301,18 +301,18 @@ class superpipelineClass:
       for pipeline in self.pipelinesByTier[tier]:
 
         # Loop over all of the shared nodes.
-        for nodeID in self.pipelineConfigurationData[pipeline].getSharedNodeIDs():
+        for nodeId in self.pipelineConfigurationData[pipeline].getSharedNodeIds():
           address     = self.pipelineConfigurationData[pipeline].address
-          nodeAddress = str(address + '.' + nodeID) if address else str(nodeID)
+          nodeAddress = str(address + '.' + nodeId) if address else str(nodeId)
 
           # Check if the file is marked for deletion.
-          if self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeID, 'isDelete'):
-            for graphNodeID in graph.configurationFileToGraphNodeID[nodeAddress]: graph.setGraphNodeAttribute(graphNodeID, 'isIntermediate', True)
+          if self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeId, 'isDelete'):
+            for graphNodeId in graph.configurationFileToGraphNodeId[nodeAddress]: graph.setGraphNodeAttribute(graphNodeId, 'isIntermediate', True)
 
           # Check if the file is marked as having additional text to add when filenames are constructed.
-          text = self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeID, 'addTextToFilename')
+          text = self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeId, 'addTextToFilename')
           if text:
-            for graphNodeID in graph.configurationFileToGraphNodeID[nodeAddress]: graph.setGraphNodeAttribute(graphNodeID, 'addTextToFilename', text)
+            for graphNodeId in graph.configurationFileToGraphNodeId[nodeAddress]: graph.setGraphNodeAttribute(graphNodeId, 'addTextToFilename', text)
 
   #######################################################
   ## Methods to get information from the superpipeline ##
@@ -357,21 +357,21 @@ class superpipelineClass:
     except: return None
 
   # Get a node attribute.
-  def getNodeAttribute(self, nodeID, attribute):
+  def getNodeAttribute(self, nodeId, attribute):
 
     # Consider a task from a tier two pipeline. This would have an address of the form,
     # 'pipeline.task'. The tier one pipeline would just have the name of the task in the pipeline.
-    namesList    = nodeID.split('.')
-    nestedNodeID = namesList.pop()
+    namesList    = nodeId.split('.')
+    nestedNodeId = namesList.pop()
     pipelineName = '.'.join(namesList) if namesList else self.pipeline
-    nodeType     = self.getNodeType(pipelineName, nestedNodeID)
+    nodeType     = self.getNodeType(pipelineName, nestedNodeId)
 
     # If this is a unique node, get the attribute.
     if nodeType == 'unique':
-      try: return self.pipelineConfigurationData[pipelineName].getUniqueNodeAttribute(nestedNodeID, 'description')
+      try: return self.pipelineConfigurationData[pipelineName].getUniqueNodeAttribute(nestedNodeId, 'description')
       except: return False
 
     # If this is a shared node, get the attribute.
     if nodeType == 'shared':
-      try: return self.pipelineConfigurationData[pipelineName].getSharedNodeAttribute(nestedNodeID, 'description')
+      try: return self.pipelineConfigurationData[pipelineName].getSharedNodeAttribute(nestedNodeId, 'description')
       except: return False

@@ -37,7 +37,7 @@ class parameterSetArguments:
     self.argument = None
 
     # Pipeline data sets also require a pipeline node ID.
-    self.nodeID = None
+    self.nodeId = None
 
 # Define a class to handle parameter sets.
 class parameterSets:
@@ -68,7 +68,7 @@ class parameterSets:
     # provided as the means of identifying the node for which the supplied values apply. For pipelines, it is
     # the node within the pipeline that is supplied.
     if isTool: allowedDataAttributes['argument'] = (str, True, True, 'argument')
-    else: allowedDataAttributes['node']          = (str, True, True, 'nodeID')
+    else: allowedDataAttributes['node']          = (str, True, True, 'nodeId')
 
     # Loop over all of the defined parameter sets.
     for parameterSet in data:
@@ -146,7 +146,7 @@ class parameterSets:
 
       # Put all of the values in a list.
       nodeAttributes           = parameterSetArguments()
-      nodeAttributes.nodeID    = str(args.arguments[argument].nodeID)
+      nodeAttributes.nodeId    = str(args.arguments[argument].nodeId)
       nodeAttributes.id        = str('node' + str(counter))
       nodeAttributes.values    = values
       attributes.data.append(nodeAttributes)
@@ -167,7 +167,7 @@ class parameterSets:
         for data in sets[parameterSet].data:
           nodeInformation             = OrderedDict()
           nodeInformation['id']       = data.id
-          nodeInformation['node']     = data.nodeID
+          nodeInformation['node']     = data.nodeId
           nodeInformation['values']   = data.values
           parameterSetInformation['data'].append(nodeInformation)
 
@@ -211,24 +211,24 @@ class parameterSets:
 
   # Get a parameter set from a pipeline configuration file.
   @staticmethod
-  def SM_getNodeIDs(parameterSet):
-    nodeIDs = {}
+  def SM_getNodeIds(parameterSet):
+    nodeIds = {}
 
     # Loop over all of the defined node IDs for this parameter set.
     for dataSet in parameterSet.data:
-      nodeID          = dataSet.nodeID
+      nodeId          = dataSet.nodeId
       values          = dataSet.values
-      nodeIDs[nodeID] = values
+      nodeIds[nodeId] = values
 
-    return nodeIDs
+    return nodeIds
 
   # Get an attribute included in the data section of a parameter set.
   @staticmethod
-  def SM_getDataAttributeFromNodeID(parameterSet, dataID, attribute):
+  def SM_getDataAttributeFromNodeId(parameterSet, dataID, attribute):
 
     # Loop over the data and find the correct ID.
     for dataSet in parameterSet.data:
-      if dataSet.nodeID == dataID: return getattr(dataSet, attribute)
+      if dataSet.nodeId == dataID: return getattr(dataSet, attribute)
 
     # If the ID wasn't found, return False.
     return False

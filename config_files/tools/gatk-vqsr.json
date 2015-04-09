@@ -47,7 +47,7 @@
         "description" : "A list of hapmap sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
         "long form argument" : "--resource-hapmap",
         "short form argument" : "-rh",
-        "command line argument" : "-resource:hapmap,known=false,training=true,truth=true,prior=15.0",
+        "command line argument" : "--resource:hapmap,known=false,training=true,truth=true,prior=15.0",
         "data type" : "string",
         "extensions" : ["vcf", "vcf.gz"]
       },
@@ -55,7 +55,7 @@
         "description" : "A list of omni sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
         "long form argument" : "--resource-omni",
         "short form argument" : "-ro",
-        "command line argument" : "-resource:omni,known=false,training=true,truth=true,prior=12.0",
+        "command line argument" : "--resource:omni,known=false,training=true,truth=true,prior=12.0",
         "data type" : "string",
         "extensions" : ["vcf", "vcf.gz"]
       },
@@ -63,7 +63,7 @@
         "description" : "A list of 1000G SNP sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
         "long form argument" : "--resource-1000g",
         "short form argument" : "-rs",
-        "command line argument" : "-resource:1000G,known=false,training=true,truth=false,prior=10.0",
+        "command line argument" : "--resource:1000G,known=false,training=true,truth=false,prior=10.0",
         "data type" : "string",
         "extensions" : ["vcf", "vcf.gz"]
       },
@@ -71,7 +71,7 @@
         "description" : "A list of dbsnp sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
         "long form argument" : "--resource-dbsnp",
         "short form argument" : "-rd",
-        "command line argument" : "-resource:dbsnp,known=true,training=false,truth=false,prior=2.0",
+        "command line argument" : "--resource:dbsnp,known=true,training=false,truth=false,prior=2.0",
         "data type" : "string",
         "extensions" : ["vcf", "vcf.gz"]
       },
@@ -79,7 +79,7 @@
         "description" : "A list of indel sites for which to apply a prior probability of being correct but which aren't used by the algorithm (training and truth sets are required to run).",
         "long form argument" : "--resource-indel",
         "short form argument" : "-ri",
-        "command line argument" : "-resource:mills,known=true,training=true,truth=true,prior=12.0",
+        "command line argument" : "--resource:mills,known=true,training=true,truth=true,prior=12.0",
         "data type" : "string",
         "extensions" : ["vcf", "vcf.gz"]
       }
@@ -100,7 +100,7 @@
           "modify extension" : "replace",
           "modify text" : [
             {
-              "add text" : ["_vqsr"]
+              "add text" : ["_vqsr."]
             },
             {
               "add argument values" : ["--mode"]
@@ -122,7 +122,7 @@
           "modify extension" : "replace",
           "modify text" : [
             {
-              "add text" : ["_vqsr"]
+              "add text" : ["_vqsr."]
             },
             {
               "add argument values" : ["--mode"]
@@ -143,7 +143,7 @@
           "modify extension" : "replace",
           "modify text" : [
             {
-              "add text" : ["_vqsr"]
+              "add text" : ["_vqsr."]
             },
             {
               "add argument values" : ["--mode"]
@@ -202,7 +202,7 @@
         "description" : "One or more specific annotations to apply to variant calls.",
         "long form argument" : "--annotation",
         "short form argument" : "-n",
-        "command line argument" : "--annotation",
+        "command line argument" : "--use_annotation",
         "data type" : "string",
         "allow multiple values" : true
       },

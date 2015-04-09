@@ -345,7 +345,7 @@ class helpInformation:
       # the address of the tool/pipeline that they point to). Also, do not include arguments that
       # have been marked in the configuration file as not to be included in the help message.
       if '.' not in argument and not arguments[argument].hideInHelp and not hideInHelp:
-        graphNodeIDs      = arguments[argument].graphNodeIDs
+        graphNodeIds      = arguments[argument].graphNodeIds
         category          = arguments[argument].category
         dataType          = arguments[argument].dataType
         description       = arguments[argument].description
@@ -355,9 +355,9 @@ class helpInformation:
         # already has values, they are coming from a parameter set. If this is required, make it clear that it
         # isn't necessary to define the value.
         isRequired = False
-        for graphNodeID in graphNodeIDs:
-          isRequired = True if (graph.getGraphNodeAttribute(graphNodeID, 'isRequired') or isRequired) else False
-          hasValues  = True if graph.getGraphNodeAttribute(graphNodeID, 'values') else False
+        for graphNodeId in graphNodeIds:
+          isRequired = True if (graph.getGraphNodeAttribute(graphNodeId, 'isRequired') or isRequired) else False
+          hasValues  = True if graph.getGraphNodeAttribute(graphNodeId, 'values') else False
 
         # if the argument is required, add [REQUIRED] to the end of the description.
         if isRequired:

@@ -23,10 +23,10 @@ def checkValues(graph, superpipeline):
 
     # Get all of the arguments that use this node and check the data types. Start with all predecessors to this node.
     expectedDataType = None
-    for predecessorNodeID in graph.getPredecessors(nodeId):
-      expectedDataType = checkNode(graph, superpipeline, predecessorNodeID, nodeId, nodeType, expectedDataType, values, isInput = False)
-    for successorNodeID in graph.getSuccessors(nodeId):
-      expectedDataType = checkNode(graph, superpipeline, nodeId, successorNodeID, nodeType, expectedDataType, values, isInput = True)
+    for predecessorNodeId in graph.getPredecessors(nodeId):
+      expectedDataType = checkNode(graph, superpipeline, predecessorNodeId, nodeId, nodeType, expectedDataType, values, isInput = False)
+    for successorNodeId in graph.getSuccessors(nodeId):
+      expectedDataType = checkNode(graph, superpipeline, nodeId, successorNodeId, nodeType, expectedDataType, values, isInput = True)
 
 # Check the values for a node.
 def checkNode(graph, superpipeline, source, target, nodeType, expectedDataType, values, isInput):
@@ -64,7 +64,7 @@ def checkNode(graph, superpipeline, source, target, nodeType, expectedDataType, 
         # Not all files have specified extensions. If no extensions are supplied, this check should not be performed.
         if extensions:
           task       = target if isInput else source
-          fileNodeID = source if isInput else target
+          fileNodeId = source if isInput else target
 
           # Fail if there was an error.
           if not checkExtensions(value, extensions):
@@ -149,7 +149,7 @@ def checkRequiredArguments(graph, superpipeline, args):
     if args.arguments[argument].isRequired:
 
       # Loop over the associated graph nodes and see if the values are set.
-      for nodeId in args.arguments[argument].graphNodeIDs:
+      for nodeId in args.arguments[argument].graphNodeIds:
 
         # Check if this argument was imported from a task in the pipeline. If so, determine if there are
         # any instructions for constructing the filename (if not an option). Only terminate if the argument
@@ -253,9 +253,9 @@ def checkRequiredArguments(graph, superpipeline, args):
                 argumentToUse = instructions['use argument']
 
                 # Find all nodes for this task using this argument.
-                for predecessorNodeID in graph.graph.predecessors(task):
-                  if graph.getArgumentAttribute(predecessorNodeID, task, 'longFormArgument') == argumentToUse:
-                    nodeAddress = str(predecessorNodeID + '.' + argument)
+                for predecessorNodeId in graph.graph.predecessors(task):
+                  if graph.getArgumentAttribute(predecessorNodeId, task, 'longFormArgument') == argumentToUse:
+                    nodeAddress = str(predecessorNodeId + '.' + argument)
 
                     # Add the node and edge.
                     argumentAttributes = toolData.getArgumentData(argument)
@@ -263,7 +263,7 @@ def checkRequiredArguments(graph, superpipeline, args):
                     graph.addEdge(nodeAddress, task, argumentAttributes)
 
                     # Attach the name of the node from which this filename is constructed to the node.
-                    graph.setGraphNodeAttribute(nodeAddress, 'constructUsingNode', predecessorNodeID)
+                    graph.setGraphNodeAttribute(nodeAddress, 'constructUsingNode', predecessorNodeId)
 
               # If there are instructions, but the construction method does not use another argument, create a node.
               else:
@@ -295,11 +295,11 @@ def checkRequiredArguments(graph, superpipeline, args):
                 if instructions['method'] == 'from tool argument':
                   longFormArgument = toolData.getLongFormArgument(instructions['use argument'])
                   foundNode        = False
-                  for predecessorNodeID in graph.graph.predecessors(task):
-                    edgeArgument = graph.getArgumentAttribute(predecessorNodeID, task, 'longFormArgument')
+                  for predecessorNodeId in graph.graph.predecessors(task):
+                    edgeArgument = graph.getArgumentAttribute(predecessorNodeId, task, 'longFormArgument')
                     if edgeArgument == longFormArgument:
                       foundNode           = True
-                      constructionNodeID = predecessorNodeID
+                      constructionNodeId = predecessorNodeId
 
                   # If the node being used to construct the file does not exist, then it cannot be used to 
                   # construct the filename and so some data must be missing.
@@ -307,8 +307,8 @@ def checkRequiredArguments(graph, superpipeline, args):
 
                   # If the node used to construct this filename exists, but it has no values or predecessors,
                   # it also will not be able to be used to construct the argument.
-                  #elif not graph.getGraphNodeAttribute(constructionNodeID, 'values'):
-                    #if not graph.graph.predecessors(constructionNodeID):
+                  #elif not graph.getGraphNodeAttribute(constructionNodeId, 'values'):
+                    #if not graph.graph.predecessors(constructionNodeId):
                       # TODO ERROR
                       #print('dataConsistency - checkRequiredArguments - cannot construct output', task, argument); exit(1)
 
