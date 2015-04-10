@@ -25,12 +25,13 @@ import gkno.parameterSets as ps
 import gkno.pipelineConfiguration as pc
 import gkno.superpipeline as sp
 import gkno.toolConfiguration as tc
+import gkno.tracking as tracking
 import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.0.0"
-__date__ = "January 2015"
+__version__ = "2.0.1"
+__date__ = "April 2015"
 
 def main():
 
@@ -322,6 +323,11 @@ def main():
 
   # Check that all of the dependent files exist (excluding dependencies that are created by tasks in the pipeline).
   success = files.checkFileExistence(requiredInputFiles, resourcesPath, toolsPath)
+
+  # Having established the mode of operation and checked that the command lines are
+  # valid etc., ping the website to log use of gkno.
+  if not gknoConfiguration.getGknoArgument('GKNO-DNL', command.gknoArguments): tracking.phoneHome(sourcePath, pipeline)
+  exit(0)
 
   # Execute the generated script unless the user has explicitly asked for it not to be run, or if multiple makefiles
   # have been generated.

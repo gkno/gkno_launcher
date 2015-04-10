@@ -209,7 +209,9 @@ class adminErrors:
       if not tools[tool]: self.text.append('\t' + str(tool))
     self.text.append('\t')
     self.errors.writeFormattedText(self.text, errorType = 'warning')
-    sys.exit(self.errorCode)
+
+    # No need to include the terminated message, since gkno is still usable. Only the tools that failed to build cannot be accessed.
+    exit(0)
 
   # If a tool is added, but the tool name is not provided.
   def noToolNameProvided(self, tools):
