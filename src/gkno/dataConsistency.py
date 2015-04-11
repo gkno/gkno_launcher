@@ -146,10 +146,19 @@ def checkRequiredArguments(graph, superpipeline, args):
   # Loop over the defined pipeline arguments and check that all arguments listed as required have
   # been set.
   for argument in args.arguments:
+
+    # If the pipeline specifies if this argument is required or not, update the properties of the nodes.
+    # If not specified (i.e. isRequired == None), it is left to the tool configuration to determine if
+    # the argument is required. This allows the pipeline configuration file to not only specify that an
+    # argument is required even if the underlying tool doesn't require the value, the pipeline can also
+    # override the tools claim that the argument is required.
+    if args.arguments[argument].isRequired == False:
+      for nodeId in args.arguments[argument].graphNodeIds: graph.setGraphNodeAttribute(nodeId, 'isRequired', False)
     if args.arguments[argument].isRequired:
 
       # Loop over the associated graph nodes and see if the values are set.
       for nodeId in args.arguments[argument].graphNodeIds:
+        graph.setGraphNodeAttribute(nodeId, 'isRequired', False)
 
         # Check if this argument was imported from a task in the pipeline. If so, determine if there are
         # any instructions for constructing the filename (if not an option). Only terminate if the argument
@@ -205,34 +214,38 @@ def checkRequiredArguments(graph, superpipeline, args):
             if edgeArgument == argument:
               foundNode = True
 
-              # TODO
-              # If this is the first check, (e.g. isFullCheck = False), only terminate if the argument has no values or
-              # instructions and is not in the constructableNodes list (this list. If this is the final check (isFullCheck = True), the presence of values is the only thing
-              # that matters.
-              hasInstructions = False if graph.getArgumentAttribute(nodeId, task, 'constructionInstructions') == None else True
-              hasValues       = True if len(graph.getGraphNodeAttribute(nodeId, 'values')) != 0 else False
-              if not hasValues and not hasInstructions and nodeId not in constructableNodes:
-
-                # Check to see if this node can have it's values set with a top level pipeline argument (e.g. can
-                # be set without defining the task on the command line).
-                longFormArgument = graph.getGraphNodeAttribute(nodeId, 'longFormArgument')
-                if longFormArgument and '.' not in longFormArgument:
-
-                  # Get the short form of the pipeline argument and the argument description.
-                  #shortFormArgument = args.arguments[longFormArgument].shortFormArgument
-                  shortFormArgument = graph.getGraphNodeAttribute(nodeId, 'shortFormArgument')
-                  description       = graph.getGraphNodeAttribute(nodeId, 'description')
-                  errors.unsetRequiredArgument(longFormArgument, shortFormArgument, description)
-
-                # If this is not a top level argument, provide a different error.
-                # TODO CHECK THIS
-                else: 
-
-                  # Get the short form version of the argument as well as the argument description. This is as defined
-                  # for the tool, so if this argument can be set using a pipeline argument, these values are incorrect.
-                  shortFormArgument = graph.getArgumentAttribute(nodeId, task, 'shortFormArgument')
-                  description       = graph.getArgumentAttribute(nodeId, task, 'description')
-                  errors.unsetRequiredNestedArgument(task, argument, shortFormArgument, description, superpipeline.pipeline)
+              # If this node has already been marked as not required (i.e. the tools requirement has been superceded
+              # by instructions in the pipeline configuration file).
+              if graph.getGraphNodeAttribute(nodeId, 'isRequired'):
+  
+                # TODO
+                # If this is the first check, (e.g. isFullCheck = False), only terminate if the argument has no values or
+                # instructions and is not in the constructableNodes list (this list. If this is the final check (isFullCheck = True), the presence of values is the only thing
+                # that matters.
+                hasInstructions = False if graph.getArgumentAttribute(nodeId, task, 'constructionInstructions') == None else True
+                hasValues       = True if len(graph.getGraphNodeAttribute(nodeId, 'values')) != 0 else False
+                if not hasValues and not hasInstructions and nodeId not in constructableNodes:
+  
+                  # Check to see if this node can have it's values set with a top level pipeline argument (e.g. can
+                  # be set without defining the task on the command line).
+                  longFormArgument = graph.getGraphNodeAttribute(nodeId, 'longFormArgument')
+                  if longFormArgument and '.' not in longFormArgument:
+  
+                    # Get the short form of the pipeline argument and the argument description.
+                    #shortFormArgument = args.arguments[longFormArgument].shortFormArgument
+                    shortFormArgument = graph.getGraphNodeAttribute(nodeId, 'shortFormArgument')
+                    description       = graph.getGraphNodeAttribute(nodeId, 'description')
+                    errors.unsetRequiredArgument(longFormArgument, shortFormArgument, description)
+  
+                  # If this is not a top level argument, provide a different error.
+                  # TODO CHECK THIS
+                  else: 
+  
+                    # Get the short form version of the argument as well as the argument description. This is as defined
+                    # for the tool, so if this argument can be set using a pipeline argument, these values are incorrect.
+                    shortFormArgument = graph.getArgumentAttribute(nodeId, task, 'shortFormArgument')
+                    description       = graph.getArgumentAttribute(nodeId, task, 'description')
+                    errors.unsetRequiredNestedArgument(task, argument, shortFormArgument, description, superpipeline.pipeline)
 
           # If there is no node for this argument, this means that the pipeline configuration file does not contain
           # a unique or shared node for this argument. In addition, the value has not been provided on the command

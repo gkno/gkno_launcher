@@ -59,7 +59,7 @@ class pipelineArguments:
     self.graphNodeIds = []
 
     # Record if the argument is listed as required in the pipeline configuration file.
-    self.isRequired = False
+    self.isRequired = None
 
     # Record if the argument should not be shown in the help message.
     self.hideInHelp = False

@@ -69,7 +69,7 @@ class taskNodeAttributes:
     self.isChild    = False
     self.parent     = None
 
-    # Store the number of subphaes and divisions the task is broken up into.
+    # Store the number of subphases and divisions the task is broken up into.
     self.subphases = 0
 
     # Record if this node should be included in any graphical output.
@@ -1775,6 +1775,23 @@ class pipelineGraph:
           # main node (not all the daughter nodes) since the workflow does not contain the daughter nodes.
           if not self.getGraphNodeAttribute(nodeId, 'isDaughterNode'):
             if self.workflow.index(successorTask) != self.workflow.index(task) + 1: print('ERROR - UPDATE WORKFLOW - graph.checkStreams - 7'); exit(1)
+
+  # If a task has multiple divisions, ensure that there are the same number of input and output files for the task.
+  # It is possible that n input files were specified on the command line, leading to n executions of the task, but
+  # m output files were specified. This will lead to problems when constructing the command lines.
+  def checkNumberOfOutputs(self):
+
+    # Loop over all tasks in the workflow.
+    for task in self.workflow:
+
+      # Determine the number of output files.
+      for nodeId in self.getOutputFileNodes(task):
+        argument = self.getArgumentAttribute(task, nodeId, 'longFormArgument')
+
+        # If there are more or less output files than subphases, throw the relevant error.
+        subphases = self.getGraphNodeAttribute(task, 'subphases')
+        outputs   = len(self.getGraphNodeAttribute(nodeId, 'values'))
+        if outputs != subphases: self.errors.outputsSubphases(task, argument, outputs, subphases)
 
   # Determine after which task intermediate files should be deleted.
   def deleteFiles(self):

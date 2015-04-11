@@ -30,7 +30,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 __date__ = "April 2015"
 
 def main():
@@ -282,6 +282,11 @@ def main():
   struct = es.executionStructure()
   struct.determineExecutionStructure(graph)
 
+  # If a task has multiple divisions, ensure that there are the same number of input and output files for the task.
+  # It is possible that n input files were specified on the command line, leading to n executions of the task, but
+  # m output files were specified. This will lead to problems when constructing the command lines.
+  graph.checkNumberOfOutputs()
+
   # Generate a makefiles object and then build all the command lines for the tasks as well as creating a list of each
   # tasks dependencies and output.
   make = mk.makefiles()
@@ -327,7 +332,6 @@ def main():
   # Having established the mode of operation and checked that the command lines are
   # valid etc., ping the website to log use of gkno.
   if not gknoConfiguration.getGknoArgument('GKNO-DNL', command.gknoArguments): tracking.phoneHome(sourcePath, pipeline)
-  exit(0)
 
   # Execute the generated script unless the user has explicitly asked for it not to be run, or if multiple makefiles
   # have been generated.
