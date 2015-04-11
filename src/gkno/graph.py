@@ -1788,10 +1788,13 @@ class pipelineGraph:
       for nodeId in self.getOutputFileNodes(task):
         argument = self.getArgumentAttribute(task, nodeId, 'longFormArgument')
 
-        # If there are more or less output files than subphases, throw the relevant error.
+        # If there are more or less output files than subphases, throw the relevant error. If the task is
+        # greedy, then there should only be a single output file, regardless of the number of inputs.
         subphases = self.getGraphNodeAttribute(task, 'subphases')
         outputs   = len(self.getGraphNodeAttribute(nodeId, 'values'))
-        if outputs != subphases: self.errors.outputsSubphases(task, argument, outputs, subphases)
+        isGreedy  = self.getGraphNodeAttribute(task, 'isGreedy')
+        if outputs != subphases and not isGreedy: self.errors.outputsSubphases(task, argument, outputs, subphases)
+        if outputs > 1 and isGreedy: print('ERROR - graph.checkNumberOfOutputs'); exit(1)
 
   # Determine after which task intermediate files should be deleted.
   def deleteFiles(self):
