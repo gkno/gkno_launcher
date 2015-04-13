@@ -8,6 +8,7 @@ import networkx as nx
 
 import commandLineErrors as cle
 import constructFilenames as construct
+import constructFilenameErrors as cfe
 import fileHandling as fh
 import fileErrors as fe
 import graphErrors
@@ -1453,6 +1454,14 @@ class pipelineGraph:
           # Get the values from which to construct the filenames. If there are multiple values, but only a single
           # execution, use the first value for constructing the filenames.
           baseValues = self.getBaseValues(superpipeline, instructions, task)
+
+          # Check that the number of base values is the same as the number of subphases. If not, throw an error.
+          # This can happen where there are multiple subphases because an input file has been given multiple
+          # values, but this is not the input file used to generate the output file names.
+          subphases = self.getGraphNodeAttribute(task, 'subphases')
+          if len(baseValues) != subphases:
+            shortFormArgument = self.getArgumentAttribute(task, nodeId, 'shortFormArgument')
+            cfe.constructFilenameErrors().numberBaseValues(task, argument, shortFormArgument, len(baseValues), subphases)
 
           # If the input argument being used to construct the output filenames is the greedy argument, then this
           # means that there should only be a single output (not an output for each of the input arguments). In

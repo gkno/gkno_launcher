@@ -81,7 +81,7 @@ def getRequiredFiles():
   filehandle   = open('keep-list.txt')
   isTerminate  = False
   keep         = []
-  resourcePath = '/d1/home/award/gkno/temp/gkno_launcher/tutorial/'
+  resourcePath = os.path.abspath(os.getcwd() + '/../resources/tutorial/current') + '/'
   for line in filehandle.readlines(): keep.append(line.rstrip('\n'))
 
   filehandle = open('copy-files.txt')
@@ -216,8 +216,8 @@ def helpCommands():
                ('specific category', executable + ' -cat test', 0),
                ('all pipelines (long form)', executable + ' --all-pipelines', 0),
                ('all pipelines (short form)', executable + ' -api', 0),
-               ('pipeline (long form)', executable + ' call --help', 0),
-               ('pipeline (short form)', executable + ' call -h', 0)
+               ('pipeline (long form)', executable + ' freebayes --help', 0),
+               ('pipeline (short form)', executable + ' freebayes -h', 0)
              ]
 
   return commands
@@ -229,7 +229,7 @@ def userCommands():
   executable = testHarness(0).executable
 
   # Perform the tests using this pipeline.
-  pipeline = 'call-population'
+  pipeline = 'freebayes'
   initial  = executable + ' ' + pipeline
 
   # Build a list of commands to test.

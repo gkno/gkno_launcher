@@ -247,6 +247,11 @@
           "id" : "sample-id",
           "node" : "sample-id",
           "values" : ["mutated_genome"]
+        },
+        {
+          "id" : "platform-id",
+          "node" : "platform-id",
+          "values" : ["ILLUMINA"]
         }
       ]
     },

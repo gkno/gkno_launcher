@@ -62,3 +62,23 @@ class constructFilenameErrors:
     'value is provided in the parameter sets.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  # The number of base values being used to construct the output filenames have a different number of values than the
+  # number of subphases. This would result in constructing the wrong number of output files.
+  def numberBaseValues(self, task, argument, shortFormArgument, numberBaseValues, subphases):
+    plural = {}
+    plural['time'] = 'time' if subphases == 1 else 'times'
+    plural['value'] = 'value' if subphases == 1 else 'values'
+
+    self.text.append('Incorrect number of filenames in construction.')
+    self.text.append('As part of the pipeline, the task \'' + task + '\' has filenames for the argument \'' + argument + \
+    ' (' + shortFormArgument + ')\' constructed using instructions from the tool configuration file. The task is not greedy ' + \
+    'and has been supplied with multiple input files, so this task is to be run ' + str(subphases) + ' ' + plural['time'] + \
+    '. The output file names are being generated based on the values provided to another tool argument, but there are ' + \
+    str(numberBaseValues) + ' ' + plural['value'] + ' value associated with this argument. As a result, the number of output ' + \
+    'files created will be different to the number of input files and consequently, the pipeline will not run correctly. ' + \
+    'A likely explanation to this problem is that the input file argument with multiple values is not the argument used to ' + \
+    'construct the output filenames. Either the construction instructions need to be modified, or the output files need to ' + \
+    'be explicitly defined on the command line.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

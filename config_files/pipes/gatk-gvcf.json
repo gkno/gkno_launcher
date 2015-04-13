@@ -45,12 +45,14 @@
         "description" : "A VCF file containing known variant alleles.",
         "long form argument" : "--known-sites",
         "short form argument" : "-k",
+        "required" : false,
         "node id" : "known"
       },
       {
         "description" : "A VCF file(s) containing known variants that will be supplied to the base quality recalibration step alone.",
         "long form argument" : "--known-recalibration",
         "short form argument" : "-kr",
+        "required" : true,
         "node id" : "known-for-recalibration"
       }
     ],
@@ -322,7 +324,7 @@
         },
         {
           "id" : "dbsnp",
-          "node" : "known-recal",
+          "node" : "known-for-recalibration",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dbSNP.snps.sites.vcf"]
         },
         {
