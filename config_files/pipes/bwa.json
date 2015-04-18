@@ -11,18 +11,22 @@
       "output to stream" : true
     },
     {
+      "task" : "dedup",
+      "tool" : "samblaster",
+      "input is stream" : true,
+      "output to stream" : true
+    },
+    {
       "task" : "convert-to-bam",
       "tool" : "sam-to-bam",
       "input is stream" : true,
+      "output to stream" : true,
       "omit from reduced plot" : true
     },
     {
       "task" : "sort",
-      "tool" : "samtools-sort"
-    },
-    {
-      "task" : "dedup",
-      "tool" : "samtools-rmdup"
+      "tool" : "samtools-sort",
+      "input is stream" : true
     },
     {
       "task" : "index",
@@ -146,7 +150,7 @@
 
   "shared graph nodes" : [
     {
-      "id" : "convert",
+      "id" : "aligned-sam",
       "delete files" : true,
       "arguments sharing node" : [
         {
@@ -154,35 +158,35 @@
           "task argument" : "--out"
         },
         {
-          "task" : "convert-to-bam",
+          "task" : "dedup",
           "task argument" : "--in"
         }
       ]
     },
     {
-      "id" : "pass-to-sort",
+      "id" : "marked-sam",
       "delete files" : true,
       "arguments sharing node" : [
-        {
-          "task" : "convert-to-bam",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "sort",
-          "task argument" : "--in"
-        }
-      ]
-    },
-    {
-      "id" : "pass-to-dedup",
-      "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "sort",
-          "task argument" : "--out"
-        },
         {
           "task" : "dedup",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "convert-to-bam",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "unsorted-bam",
+      "delete files" : true,
+      "arguments sharing node" : [
+        {
+          "task" : "convert-to-bam",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "sort",
           "task argument" : "--in"
         }
       ]
@@ -191,7 +195,7 @@
       "id" : "output",
       "arguments sharing node" : [
         {
-          "task" : "dedup",
+          "task" : "sort",
           "task argument" : "--out"
         },
         {

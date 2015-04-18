@@ -100,3 +100,6 @@
 [submodule "tools/htslib"]
 	path = tools/htslib
 	url = https://github.com/gkno/htslib.git
+[submodule "tools/samblaster"]
+	path = tools/samblaster
+	url = https://github.com/gkno/samblaster

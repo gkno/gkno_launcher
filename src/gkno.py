@@ -30,7 +30,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.0.3"
+__version__ = "2.1.0"
 __date__ = "April 2015"
 
 def main():
@@ -286,7 +286,6 @@ def main():
   # It is possible that n input files were specified on the command line, leading to n executions of the task, but
   # m output files were specified. This will lead to problems when constructing the command lines.
   graph.checkNumberOfOutputs()
-  debug.debug().allTasks(graph)
 
   # Generate a makefiles object and then build all the command lines for the tasks as well as creating a list of each
   # tasks dependencies and output.

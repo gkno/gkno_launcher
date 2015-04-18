@@ -581,6 +581,22 @@ class Rufus(GknoTool):
   def doUpdate(self):
     return self.make()
 
+# Samblaster.
+class Samblaster(GknoTool):
+  def __init__(self):
+    super(Samblaster, self).__init__()
+    self.name       = "samblaster"
+    self.installDir = "samblaster"
+ 
+  # Build the tool.
+  def doBuild(self):
+    return self.make()
+
+  # Update the tool.
+  def doUpdate(self):
+    if not self.makeClean(): return False
+    return self.make()
+
 # samtools
 class Samtools(GknoTool):
   def __init__(self):
@@ -801,6 +817,7 @@ List = [
         Picard(),
         Premo(),
         Rufus(),
+        Samblaster(),
         Scissors(),
         Seqan(),       
         SnpEff(),

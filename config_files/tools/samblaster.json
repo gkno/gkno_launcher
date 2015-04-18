@@ -1,0 +1,208 @@
+{
+  "id" : "samblaster",
+  "configuration type" : "tool", 
+  "description" : "Mark duplicate reads in a SAM file.",
+  "categories" : ["BAM-processing"],
+  "tools" : ["samblaster"],
+  "path" : "samblaster",
+  "executable" : "samblaster",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "Input SAM file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--input",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["sam"],
+        "if input is stream" : {
+          "argument" : "",
+          "value" : ""
+        }
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output duplicate marked SAM file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--output",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["sam"],
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_samblaster"]
+            }
+          ]
+        },
+        "if output to stream" : {
+          "argument" : "omit",
+          "value" : "omit"
+        }
+      },
+      {
+        "description" : "Output discordant read pairs to this file.",
+        "long form argument" : "--discordant-file",
+        "short form argument" : "-d",
+        "command line argument" : "--discordantFile",
+        "data type" : "string",
+        "extensions" : ["sam"],
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_samblaster_discordant"]
+            }
+          ]
+        }
+      },
+      {
+        "description" : "Output split reads to this file.",
+        "long form argument" : "--split-reads",
+        "short form argument" : "-s",
+        "command line argument" : "--splitterFile",
+        "data type" : "string",
+        "extensions" : ["sam"],
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_samblaster_split"]
+            }
+          ]
+        }
+      },
+      {
+        "description" : "Output unmapped/clipped reads to this FASTQ file.",
+        "long form argument" : "--unmapped-reads",
+        "short form argument" : "-u",
+        "command line argument" : "--unmappedFile",
+        "data type" : "string",
+        "extensions" : ["fq"],
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_unmapped"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Accept duplicate marks already in input file instead of looking for duplicates in the input.",
+        "long form argument" : "--accept-duplicates",
+        "short form argument" : "-a",
+        "command line argument" : "--acceptDupMarksf",
+        "data type" : "flag"
+      },
+      {
+        "description" : "Exclude reads marked as duplicates from discordant, splitter, and/or unmapped file.",
+        "long form argument" : "--exclude-duplicates",
+        "short form argument" : "-e",
+        "command line argument" : "-excludeDups",
+        "data type" : "flag"
+      },
+      {
+        "description" : "Remove duplicates reads from all output files. (Implies --excludeDups).",
+        "long form argument" : "--remove-duplicates",
+        "short form argument" : "-m",
+        "command line argument" : "--removeDups",
+        "data type" : "flag"
+      },
+      {
+        "description" : "Add MC and MQ tags to all output paired-end SAM lines.",
+        "long form argument" : "--add-mate-tags",
+        "short form argument" : "-d",
+        "command line argument" : "--addMateTags",
+        "data type" : "flag"
+      },
+      {
+        "description" : "Maximum number of split alignments for a read to be included in splitter file. [2].",
+        "long form argument" : "--max-split-count",
+        "short form argument" : "-s",
+        "command line argument" : "--maxSplitCount",
+        "data type" : "integer"
+      },
+      {
+        "description" : "Maximum number of un-aligned bases between two alignments to be included in splitter file. [50].",
+        "long form argument" : "--max-unmapped-bases",
+        "short form argument" : "-b",
+        "command line argument" : "--maxUnmappedBases",
+        "data type" : "integer"
+      },
+      {
+        "description" : "Minimum structural variant feature size for split alignments to be included in splitter file. [50].",
+        "long form argument" : "--min-indel-size",
+        "short form argument" : "-l",
+        "command line argument" : "--minIndelSize",
+        "data type" : "integer"
+      },
+      {
+        "description" : "Minimum non-overlaping base pairs between two alignments for a read to be included in splitter file. [20].",
+        "long form argument" : "--min-non-overlap",
+        "short form argument" : "-n",
+        "command line argument" : "--minNonOverlap",
+        "data type" : "integer"
+      },
+      {
+        "description" : "Minumum number of bases a mapped read must be clipped to be included in unmapped file. [20].",
+        "long form argument" : "--min-clip-size",
+        "short form argument" : "-c",
+        "command line argument" : "--minClipSize",
+        "data type" : "integer"
+      },
+      {
+        "description" : "Output fewer statistics.",
+        "long form argument" : "--quiet",
+        "short form argument" : "-q",
+        "command line argument" : "--quiet",
+        "data type" : "flag"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--no-prefix",
+    "--output-to-stdout",
+    "--threads",
+    "--in",
+    "--out"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "input",
+          "argument" : "--in",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        }
+      ]
+    }
+  ]
+}

@@ -50,7 +50,7 @@
 
     "Options" : [
       {
-        "description" : "Use defined name as filename not prefix..",
+        "description" : "Use defined name as filename not prefix.",
         "long form argument" : "--no-prefix",
         "short form argument" : "-p",
         "command line argument" : "-f",
