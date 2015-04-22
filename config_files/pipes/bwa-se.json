@@ -1,0 +1,263 @@
+{
+  "id" : "bwa-se",
+  "configuration type" : "pipeline",
+  "description" : "Align single-end fastq files using BWA mem, converting the result to BAM.",
+  "categories" : ["Alignment"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "align",
+      "tool" : "bwa-mem",
+      "output to stream" : true
+    },
+    {
+      "task" : "dedup",
+      "tool" : "samblaster",
+      "input is stream" : true,
+      "output to stream" : true
+    },
+    {
+      "task" : "convert-to-bam",
+      "tool" : "sam-to-bam",
+      "input is stream" : true,
+      "output to stream" : true,
+      "omit from reduced plot" : true
+    },
+    {
+      "task" : "sort",
+      "tool" : "samtools-sort",
+      "input is stream" : true
+    },
+    {
+      "task" : "index",
+      "tool" : "bamtools-index"
+    },
+    {
+      "task" : "stats",
+      "tool" : "bamtools-stats"
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The reference FASTA file prefix.",
+        "long form argument" : "--reference-prefix",
+        "short form argument" : "-rp",
+        "node id" : "reference"
+      },
+      {
+        "description" : "The input fastq file (first mate).",
+        "long form argument" : "--fastq",
+        "short form argument" : "-q",
+        "node id" : "fastq"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output BAM file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Read group header line such as '@RG\\tID:foo\\tSM:bar' [null]. The '\\t' in the example will be replaced with tabs in the BAM header.",
+        "long form argument" : "--read-group-header",
+        "short form argument" : "-g",
+        "hide in help" : true,
+        "node id" : "read-group"
+      },
+      {
+        "description" : "The read group id.",
+        "long form argument" : "--read-group-id",
+        "short form argument" : "-id",
+        "node id" : "read-group-id"
+      },
+      {
+        "description" : "The sample id.",
+        "long form argument" : "--sample-id",
+        "short form argument" : "-s",
+        "node id" : "sample-id"
+      },
+      {
+        "description" : "The platform id (e.g. ILLUMINA).",
+        "long form argument" : "--platform-id",
+        "short form argument" : "-p",
+        "node id" : "platform-id"
+      },
+      {
+        "description" : "The number of threads for BWA-mem.",
+        "long form argument" : "--threads-bwa",
+        "short form argument" : "-tb",
+        "node id" : "threads"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    { 
+      "id" : "reference",
+      "task" : "align",
+      "task argument" : "--reference-prefix"
+    },
+    { 
+      "id" : "fastq",
+      "task" : "align",
+      "task argument" : "--fastq"
+    },
+    { 
+      "id" : "fastq2",
+      "task" : "align",
+      "task argument" : "--fastq2"
+    },
+    {
+      "id" : "read-group",
+      "task" : "align",
+      "task argument" : "--read-group-header"
+    },
+    {
+      "id" : "read-group-id",
+      "task" : "align",
+      "task argument" : "--read-group-id"
+    },
+    {
+      "id" : "sample-id",
+      "task" : "align",
+      "task argument" : "--sample-id"
+    },
+    {
+      "id" : "platform-id",
+      "task" : "align",
+      "task argument" : "--platform-id"
+    },
+    {
+      "id" : "threads",
+      "task" : "align",
+      "task argument" : "--threads"
+    }
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "aligned-sam",
+      "delete files" : true,
+      "arguments sharing node" : [
+        {
+          "task" : "align",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "dedup",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "marked-sam",
+      "delete files" : true,
+      "arguments sharing node" : [
+        {
+          "task" : "dedup",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "convert-to-bam",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "unsorted-bam",
+      "delete files" : true,
+      "arguments sharing node" : [
+        {
+          "task" : "convert-to-bam",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "sort",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "output",
+      "arguments sharing node" : [
+        {
+          "task" : "sort",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "index",
+          "task argument" : "--in"
+        },
+        {
+          "task" : "stats",
+          "task argument" : "--in"
+        }
+      ]
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+        {
+          "id" : "threads",
+          "node" : "threads",
+          "values" : [8]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "fastq",
+          "node" : "fastq",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
+        },
+        {
+          "id" : "reference-prefix",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment"]
+        },
+        {
+          "id" : "read-group-id",
+          "node" : "read-group-id",
+          "values" : ["mutated_genome"]
+        },
+        {
+          "id" : "sample-id",
+          "node" : "sample-id",
+          "values" : ["mutated_genome"]
+        },
+        {
+          "id" : "platform-id",
+          "node" : "platform-id",
+          "values" : ["ILLUMINA"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for the human genome.",
+      "data" : [
+        {
+          "id" : "reference-prefix",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys"]
+        }
+      ]
+    }
+  ]
+}
