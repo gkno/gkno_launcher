@@ -71,24 +71,21 @@ class commandLine:
         # not. If not, store this as the value for the previous argument.
         elif argument and not isArgument:
           self.arguments[argument].append(entry)
-          argument = None
   
-        # If the previous entry was an argument and this is an argument, then the previous entry is
-        # assumed to be a flag. Append None to the list of arguments for the flag and then create
-        # the list in self.arguments for the current argument.
-        elif argument and isArgument:
-          self.arguments[argument].append(None)
-          argument = entry
-          if argument not in self.arguments: self.arguments[argument] = []
-  
-        # If this entry is an argument and the previous entry was not, store this entry as an argument.
-        elif not argument and isArgument:
+        # If this entry is an argument, set the value of 'argument' to this entry and create the key in
+        # self.arguments.
+        elif isArgument:
           argument = entry
           if argument not in self.arguments: self.arguments[argument] = []
 
     # If the end of the command line is reached and argument is still populated, this is assumed
     # to be a flag and should be added.
     if argument and not self.arguments[argument]: self.arguments[argument] = [None]
+
+    # If a flag was set on the command line, it's value will be empty. Loop over self.arguments and replace
+    # all empty fields with None.
+    for argument in self.arguments:
+      if len(self.arguments[argument]) == 0: self.arguments[argument].append(None)
 
     # If the mode of operation is to provide information on help categories, store the help category.
     self.category = None
