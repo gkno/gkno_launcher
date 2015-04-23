@@ -18,13 +18,7 @@
     },
     {
       "task" : "filter",
-      "tool" : "vcf-filter",
-      "output to stream" : true
-    },
-    {
-      "task" : "compress",
-      "tool" : "bgzip-stream",
-      "input is stream" : true
+      "tool" : "vt-filter"
     },
     {
       "task" : "index",
@@ -48,15 +42,21 @@
     "Filtering options" : [
       {
         "description" : "Specifies a filter to apply to the info fields of records, removes alleles which do not pass the filter.",
-        "long form argument" : "--info-filter",
+        "long form argument" : "--filter-expression",
         "short form argument" : "-f",
-        "node id" : "info-filter"
+        "node id" : "filter-expression"
       },
       {
-        "description" : "Tag vcf records as filtered with this tag instead of suppressing them.",
-        "long form argument" : "--tag-pass",
-        "short form argument" : "-tp",
-        "node id" : "tag"
+        "description" : "The text to add to the filter field for each record in the VCF file that satisfies the filter expression.",
+        "long form argument" : "--filter-tag",
+        "short form argument" : "-ft",
+        "node id" : "filter-tag"
+      },
+      {
+        "description" : "The description of the filter to include in the VCF header.",
+        "long form argument" : "--filter-tag-description",
+        "short form argument" : "-fd",
+        "node id" : "filter-tag-description"
       }
     ]
   },
@@ -78,20 +78,25 @@
       "task argument" : "--region"
     },
     {
-      "id" : "info-filter",
+      "id" : "filter-tag",
       "task" : "filter",
-      "task argument" : "--info-filter"
+      "task argument" : "--tag"
     },
     {
-      "id" : "tag",
+      "id" : "filter-tag-description",
       "task" : "filter",
-      "task argument" : "--tag-pass"
+      "task argument" : "--tag-description"
+    },
+    {
+      "id" : "filter-expression",
+      "task" : "filter",
+      "task argument" : "--filter-expression"
     }
   ],
 
   "shared graph nodes" : [
     {
-      "id" : "pass-to-combine",
+      "id" : "freebayes-vcf",
       "delete files" : true,
       "arguments sharing node" : [
         {
@@ -105,7 +110,7 @@
       ]
     },
     {
-      "id" : "pass-to-filter",
+      "id" : "combined-vcf",
       "delete files" : true,
       "arguments sharing node" : [
         {
@@ -126,19 +131,6 @@
           "task argument" : "--out"
         },
         {
-          "task" : "compress",
-          "task argument" : "--in"
-        }
-      ]
-    },
-    {
-      "id" : "index-vcf",
-      "arguments sharing node" : [
-        {
-          "task" : "compress",
-          "task argument" : "--out"
-        },
-        {
           "task" : "index",
           "task argument" : "--in"
         }
@@ -153,13 +145,18 @@
       "data" : [
         {
           "id" : "filter",
-          "node" : "info-filter",
-          "values" : ["QUAL > 1 & QUAL / AO > 1 & SAF > 0 & SAR > 0"]
+          "node" : "filter-expression",
+          "values" : ["QUAL>1&&QUAL/INFO.AO>1&&INFO.SAF>0&&INFO.SAR>0"]
         },
         {
-          "id" : "tag",
-          "node" : "tag",
+          "id" : "filter-tag",
+          "node" : "filter-tag",
           "values" : ["PASS"]
+        },
+        {
+          "id" : "filter-tag-description",
+          "node" : "filter-tag-description",
+          "values" : ["The records passing the defined filter expression."]
         }
       ]
     },

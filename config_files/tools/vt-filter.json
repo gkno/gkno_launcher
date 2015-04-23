@@ -1,16 +1,16 @@
 {
-  "id" : "vt-subset",
+  "id" : "vt-filter",
   "configuration type" : "tool",
-  "description" : "Subsets a VCF file to a set of variants that are polymorphic on a selected set of individuals.",
+  "description" : "Filter a VCF file based on user-defined criteria.",
   "categories" : ["VCF-processing"],
   "tools" : ["vt"],
   "path" : "vt/",
   "executable" : "vt",
-  "modifier" : "subset",
+  "modifier" : "filter",
   "arguments" : {
     "Inputs" : [
       {
-        "description" : "The input VCF file to be subsetted.",
+        "description" : "The input VCF file to be normalized.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "none",
@@ -24,24 +24,17 @@
         "extensions" : ["vcf", "vcf.gz"]
       },
       {
-        "description" : "A file containing a list of intervals.",
+        "description" : "A file containing list of intervals.",
         "long form argument" : "--intervals-file",
         "short form argument" : "-if",
         "command line argument" : "-I",
-        "data type" : "string"
-      },
-      {
-        "description" : "A file containing a list of samples.",
-        "long form argument" : "--samples-file",
-        "short form argument" : "-s",
-        "command line argument" : "-s",
         "data type" : "string"
       }
     ],
   
     "Outputs" : [
       {
-        "description" : "The output, subsetted, compressed and indexed VCF file.",
+        "description" : "The filtered VCF file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "-o",
@@ -58,7 +51,7 @@
           "modify extension" : "replace",
           "modify text" : [
             {
-              "add text" : ["_subset"]
+              "add text" : ["_filtered"]
             }
           ]
         }
@@ -67,27 +60,48 @@
   
     "Options" : [
       {
-        "description" : "Filter expression.",
-        "long form argument" : "--filter",
-        "short form argument" : "-f",
-        "command line argument" : "-f",
-        "data type" : "integer"
+        "description" : "Clear filter tags already present in the VCF file.",
+        "long form argument" : "--clear-filters",
+        "short form argument" : "-c",
+        "command line argument" : "-x",
+        "data type" : "flag"
       },
       {
-        "description" : "Intervals.",
-        "long form argument" : "--intervals",
-        "short form argument" : "-n",
-        "command line argument" : "-n",
-        "data type" : "integer"
+        "description" : "The filter expression (enclose in quotes on the command line).",
+        "long form argument" : "--filter-expression",
+        "short form argument" : "-f",
+        "command line argument" : "-f",
+        "required" : true,
+        "data type" : "string",
+        "include value in quotations" : true
+      },
+      {
+        "description" : "The text to add to the filter field for each record in the VCF file that satisfies the filter expression.",
+        "long form argument" : "--tag",
+        "short form argument" : "-t",
+        "command line argument" : "-t",
+        "required" : true,
+        "data type" : "string",
+        "include value in quotations" : true
+      },
+      {
+        "description" : "The description of the filter to include in the VCF header.",
+        "long form argument" : "--tag-description",
+        "short form argument" : "-d",
+        "command line argument" : "-d",
+        "required" : true,
+        "data type" : "string",
+        "include value in quotations" : true
       }
     ]
   },
 
   "argument order" : [
-    "--intervals",
     "--intervals-file",
-    "--samples-file",
-    "--filter",
+    "--clear-filters",
+    "--filter-expression",
+    "--tag",
+    "--tag-description",
     "--out",
     "--in"
   ],
