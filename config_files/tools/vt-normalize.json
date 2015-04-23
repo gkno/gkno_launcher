@@ -19,7 +19,7 @@
         "data type" : "string",
         "if input is stream" : {
           "argument" : "",
-          "value" : "-"
+          "value" : "+"
         },
         "extensions" : ["vcf", "vcf.gz"]
       },

@@ -40,6 +40,10 @@
               "add text" : ["_combined"]
             }
           ]
+        },
+        "if output to stream" : {
+          "argument" : "omit",
+          "value" : "omit"
         }
       }
     ],

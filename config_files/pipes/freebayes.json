@@ -14,11 +14,28 @@
       "task" : "combine-vcf",
       "tool" : "vcf-combine",
       "consolidate divisions" : true,
+      "omit from reduced plot" : true,
+      "output to stream" : true
+    },
+    {
+      "task" : "compress",
+      "tool" : "bgzip-stream",
+      "input is stream" : true
+    },
+    {
+      "task" : "index-calls",
+      "tool" : "vcf-index",
       "omit from reduced plot" : true
     },
     {
       "task" : "filter",
-      "tool" : "vt-filter"
+      "tool" : "vt-filter",
+      "output to stream" : true
+    },
+    {
+      "task" : "normalize",
+      "tool" : "vt-normalize",
+      "input is stream" : true
     },
     {
       "task" : "index",
@@ -68,11 +85,6 @@
       "task argument" : "--in"
     },
     {
-      "id" : "reference",
-      "task" : "call",
-      "task argument" : "--fasta-reference"
-    },
-    {
       "id" : "region",
       "task" : "call",
       "task argument" : "--region"
@@ -110,6 +122,19 @@
       ]
     },
     {
+      "id" : "reference",
+      "arguments sharing node" : [
+        {
+          "task" : "call",
+          "task argument" : "--fasta-reference"
+        },
+        {
+          "task" : "normalize",
+          "task argument" : "--fasta-reference"
+        }
+      ]
+    },
+    {
       "id" : "combined-vcf",
       "delete files" : true,
       "arguments sharing node" : [
@@ -118,7 +143,52 @@
           "task argument" : "--out"
         },
         {
+          "task" : "compress",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "compressed-vcf",
+      "delete files" : true,
+      "arguments sharing node" : [
+        {
+          "task" : "compress",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "index-calls",
+          "task argument" : "--in"
+        },
+        {
           "task" : "filter",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "compressed-vcf-index",
+      "delete files" : true,
+      "arguments sharing node" : [
+        {
+          "task" : "index-calls",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "filter",
+          "task argument" : "--index"
+        }
+      ]
+    },
+    {
+      "id" : "filtered-vcf",
+      "arguments sharing node" : [
+        {
+          "task" : "filter",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "normalize",
           "task argument" : "--in"
         }
       ]
@@ -127,7 +197,7 @@
       "id" : "output",
       "arguments sharing node" : [
         {
-          "task" : "filter",
+          "task" : "normalize",
           "task argument" : "--out"
         },
         {

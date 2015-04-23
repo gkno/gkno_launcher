@@ -21,7 +21,24 @@
           "argument" : "",
           "value" : "-"
         },
-        "extensions" : ["vcf", "vcf.gz"]
+        "extensions" : ["vcf.gz"]
+      },
+      {
+        "description" : "The VCF index file.",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
+        "command line argument" : "none",
+        "required" : true,
+        "modify value" : "omit",
+        "extensions" : ["tbi"],
+        "data type" : "string",
+        "allow multiple values" : true,
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "append"
+        },
+        "include in reduced plot" : false
       },
       {
         "description" : "A file containing list of intervals.",
@@ -42,8 +59,8 @@
         "data type" : "string",
         "extensions" : ["vcf.gz"],
         "if output to stream" : {
-          "argument" : "",
-          "value" : ""
+          "argument" : "-o",
+          "value" : "+"
         },
         "construct filename" : {
           "method": "from tool argument",
@@ -103,7 +120,8 @@
     "--tag",
     "--tag-description",
     "--out",
-    "--in"
+    "--in",
+    "--index"
   ],
 
   "parameter sets" : [
