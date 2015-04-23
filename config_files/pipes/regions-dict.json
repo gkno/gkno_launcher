@@ -28,6 +28,16 @@
       "task argument" : "--window-size"
     },
     {
+      "id" : "sequences",
+      "task" : "regions",
+      "task argument" : "--reference-sequences"
+    },
+    {
+      "id" : "invert",
+      "task" : "regions",
+      "task argument" : "--invert-sequences"
+    },
+    {
       "id" : "output",
       "task" : "regions",
       "task argument" : "--out"
@@ -46,6 +56,11 @@
           "id" : "out",
           "node" : "output",
           "values" : ["region-windows.list"]
+        },
+        {
+          "id" : "invert",
+          "node" : "invert",
+          "values" : [false]
         },
         {
           "id" : "window",

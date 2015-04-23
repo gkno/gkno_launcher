@@ -163,7 +163,7 @@ class makefiles:
       # specified in the configuration file.
       for argument in argumentOrder:
         if argument in optionArguments:
-          for nodeId in optionArguments[argument]: self.addOption(graph, task, data, nodeId)
+          for nodeId in optionArguments[argument]: self.addOption(graph, task, data, nodeId);
         if argument in inputArguments:
           for nodeId in inputArguments[argument]: self.addInput(graph, task, data, nodeId)
         if argument in outputArguments:
@@ -236,6 +236,9 @@ class makefiles:
         if len(values) != data.numberDivisions: print('ERROR - makefiles.addOption - 1', task, nodeId); exit(1)
         lineValue = self.getValue(graph, nodeId, task, values[i - 1], isInput = True, isStub = False, stubExtension = None)
         lines.append(self.buildLine(argument, data.delimiter, lineValue))
+
+        # Add the options to the command lines for each subphase.
+        for j in range(1, data.numberSubphases + 1): data.commands[j][i].extend(lines)
 
       # If this option does not create the divisions, but there are multiple values, they must all be applied on the
       # same command line. Again, this cannot be a flag.

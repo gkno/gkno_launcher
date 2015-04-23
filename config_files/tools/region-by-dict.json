@@ -19,7 +19,7 @@
         "modify argument" : "omit"
       },
       {
-        "description" : "Only regions from the reference sequence in this file will be output. If --invert-sequences is also set, the sequences not contained in the file will be output.",
+        "description" : "Only regions from the reference sequences in this file will be output. If --invert-sequences is also set, the sequences not contained in the file will be output.",
         "long form argument" : "--reference-sequences",
         "short form argument" : "-s",
         "command line argument" : "none",
