@@ -1,0 +1,51 @@
+{
+  "id" : "fasta-dictionary",
+  "configuration type" : "pipeline",
+  "description" : "Generate a dictionary containing all of the sequences in the input reference fasta.",
+  "categories" : ["FASTQ-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "create-dictionary",
+      "tool" : "picard-create-sequence-dictionary"
+    }
+  ],
+
+  "import arguments" : "create-dictionary",
+
+  "arguments" : {
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "fasta",
+      "task" : "create-dictionary",
+      "task argument" : "--fasta-reference"
+    },
+    {
+      "id" : "dictionary",
+      "task" : "create-dictionary",
+      "task argument" : "--out"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : []
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "fasta",
+          "node" : "fasta",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        }
+      ]
+    }
+  ]
+}
