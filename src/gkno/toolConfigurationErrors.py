@@ -100,7 +100,7 @@ class toolErrors:
     self.errors.terminate(self.errorCode)
 
   ###########################################
-  ## Errors with construction instrictions ##
+  ## Errors with construction instructions ##
   ###########################################
 
   # If the supplied construction instructions do not include a method.
@@ -159,5 +159,32 @@ class toolErrors:
     'using the method \'' + method + '\', which allows a number of other fields to be set. The field \'path argument\' defines an ' + \
     'argument in the tool that specifies a path to be added to the filename. The argument supplied with this (' + pathArgument + \
     ') is not a valid argument for this tool. Please update the configuration file to include only valid arguments.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  ####################################
+  ## Errors with the argument order ##
+  ####################################
+
+  # If the argument order list contains an argument that hasn't been defined in the configuration file.
+  def invalidArgumentInArgumentOrder(self, tool, argument):
+    self.text.append('Invalid argument in argument order.')
+    self.text.append('The configuration file for tool \'' + tool + '\' includes the \'argument order\' list which defines the order in ' + \
+    'which the tool arguments should appear on the command line. This list must include all defined tool arguments and no others, however ' + \
+    'the undefined argument \'' + argument + '\' appears in the list. Please ensure that the \'argument order\' list is complete and ' + \
+    'valid.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # If the argument order list is incomplete.
+  def incompleteArgumentOrder(self, tool, arguments):
+    self.text.append('Incomplete argument order list.')
+    self.text.append('The configuration file for tool \'' + tool + '\' includes the \'argument order\' list which defines the order in ' + \
+    'which the tool arguments should appear on the command line. This list must include all defined tool arguments and no others, however ' + \
+    'the list is missing the following arguments:')
+    self.text.append('\t')
+    for argument in arguments: self.text.append('\t' + argument)
+    self.text.append('\t')
+    self.text.append('Please ensure that this list contains all of the defined tool arguments.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)

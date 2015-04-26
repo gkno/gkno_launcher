@@ -25,9 +25,10 @@ class helpInformation:
     # Define allowed help categories.
     self.helpCategories                      = {}
     self.helpCategories['1000G-pipelines']   = 'Analyses performed similarly to 1000 Genomes project analyses.'
-    self.helpCategories['BAM-processing']    = 'Pipelines primarily focused on manipulating BAM files.'
     self.helpCategories['Alignment']         = 'Read alignment tasks are performed as part of the pipeline.'
+    self.helpCategories['BAM-processing']    = 'Pipelines primarily focused on manipulating BAM files.'
     self.helpCategories['FASTA-processing']  = 'Pipelines involving manipulation of reference FASTA files.'
+    self.helpCategories['kmer-processing']   = 'Perform analyses involving the processing of kmers.'
     self.helpCategories['Reference-free']    = 'Analysis of genomes without use of the genome reference.'
     self.helpCategories['Scripts']           = 'Scripts to perform many commonly performed tasks.'
     self.helpCategories['Simulation']        = 'Simulation-based pipelines.'

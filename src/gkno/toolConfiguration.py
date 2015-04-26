@@ -211,6 +211,10 @@ class toolConfiguration:
     # that the values are valid.
     if self.success: self.checkConstructionInstructions()
 
+    # If the configuration file includes the 'argument order' list, check that all the arguments
+    # for the tool are included and no others.
+    if self.success: self.success = self.checkArgumentOrder()
+
     # Check the parameter set information and store.
     if self.success: self.success = self.parameterSets.checkParameterSets(data['parameter sets'], self.allowTermination, self.name, isTool = True)
 
@@ -472,6 +476,29 @@ class toolConfiguration:
     if 'path argument' in instructions:
       pathArgument = instructions['path argument']
       if pathArgument not in self.arguments: self.errors.invalidPathArgument(self.name, category, argument, pathArgument, 'define name')
+
+  # Check that the 'argument order' list is complete and valid.
+  def checkArgumentOrder(self):
+    observedArguments = []
+    if len(self.argumentOrder) != 0:
+
+      # Loop over the arguments in the list.
+      for argument in self.argumentOrder:
+
+        # Get the long form of the argument.
+        longFormArgument = self.getLongFormArgument(argument)
+        if longFormArgument == None: self.errors.invalidArgumentInArgumentOrder(self.name, argument)
+
+        # Check that the argument is a valid argument for the tool.
+        observedArguments.append(longFormArgument)
+
+      # Loop over all the defined tool arguments and ensure that they have been defined in the argument order list.
+      missingArguments = []
+      for argument in self.arguments:
+        if argument not in observedArguments: missingArguments.append(argument)
+      if len(missingArguments) > 0: self.errors.incompleteArgumentOrder(self.name, missingArguments)
+
+    return True
 
   ##############################
   ### Get and set attributes ###

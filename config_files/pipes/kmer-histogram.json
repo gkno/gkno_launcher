@@ -1,0 +1,66 @@
+{
+  "id" : "kmer-histogram",
+  "configuration type" : "pipeline",
+  "description" : "Count the number of occurences of kmers of a specified length and then construct a histogram of the counts.",
+  "categories" : ["kmer-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "count-kmers",
+      "tool" : "jellyfish-count"
+    },
+    {
+      "task" : "build-histogram",
+      "tool" : "jellyfish-histogram"
+    }
+  ],
+
+  "import arguments" : "compress",
+
+  "arguments" : {
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "vcf",
+      "task" : "compress",
+      "task argument" : "--in"
+    }
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "out",
+      "arguments sharing node" : [
+        {
+          "task" : "compress",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "index",
+          "task argument" : "--in"
+        }
+      ]
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : []
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "vcf",
+          "node" : "vcf",
+          "values" : ["mutated_genome.vcf"]
+        }
+      ]
+    }
+  ]
+}
