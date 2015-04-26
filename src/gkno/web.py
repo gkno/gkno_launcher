@@ -72,8 +72,3 @@ class webContent:
 
     # Close the files.
     fileHandle.close()
-
-    # Having written out the content, terminate.
-    exit(0)
-
-

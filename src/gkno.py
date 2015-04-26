@@ -30,7 +30,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.8.0"
+__version__ = "2.8.1"
 __date__ = "April 2015"
 
 def main():
@@ -168,13 +168,15 @@ def main():
     # graph nodes and vice versa.
     args.assignNodesToArguments(graph, superpipeline)
 
-    # If web page json files are being created, update the list of categories and the pipeline information.
+    # If web page json files are being created, update the list of categories and the pipeline information. Also
+    # generate a reduced plot of the pipeline.
     if mode == 'web':
       web.updateCategories(superpipeline.pipelineConfigurationData[superpipeline.pipeline])
       web.updatePipelineInformation(superpipeline.pipelineConfigurationData[superpipeline.pipeline], args.arguments)
+      plot.plot(superpipeline, graph, str(superpipeline.pipeline + '.dot'), isReduced = True)
 
   # Write out web content and terminate.
-  if mode == 'web': web.writeContent()
+  if mode == 'web': web.writeContent(); exit(0)
 
   # Generate the workflow.
   workflow = graph.generateWorkflow()
