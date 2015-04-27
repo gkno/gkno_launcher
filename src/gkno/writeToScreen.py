@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import helpInformation as hi
+import errors as errors
 
 import inspect
 from inspect import currentframe, getframeinfo
@@ -52,23 +53,34 @@ def workflow(superpipeline, workflow):
   print(file = sys.stdout)
   sys.stdout.flush()
 
-#  def writeTracking(self, ID):
-#    print("Logging gkno usage with ID: ", ID, "...", sep = '', end = '', file = sys.stdout)
-#    sys.stdout.flush()
-#  
-#  def writeExecuting(self, filename):
-#    print('Executing makefile: ', filename, '...', sep = '', file = sys.stdout)
-#    sys.stdout.flush()
-#  
-#  def writeComplete(self, success):
-#    if success != 0:
-#      print('.failed', file = sys.stdout)
-#      print('\ngkno failed to complete successfully.  Please check the output files to identify the cause of the problem.', file = sys.stderr)
-#      self.errors.terminate()
-#      sys.stdout.flush()
-#
-#  # Write debugging text.
-#  def writeDebug(self, text):
-#    frameInfo = getframeinfo(currentframe().f_back)
-#    print('\tdebugging - ', frameInfo.filename, ' line ', frameInfo.lineno, ': ', text, sep = '', file = sys.stdout)
-#    sys.stdout.flush()
+# If any input values have been reordered, warn the user.
+def reordered(graph, reorderedLists):
+
+  # Only write a warning if values were reordered.
+  if len(reorderedLists) > 0:
+    text = []
+    text.append('Input values have been reordered.')
+    text.append('At least one of the tasks in the pipeline has arguments that are linked together. ' + \
+    'This is usually the case, when there are two arguments whose values need to be connected with one ' + \
+    'another (for example, the two fastq files from paired end sequencing). In constructing the pipeline, ' + \
+    'gkno reordered the values supplied to some tasks, outlined below:')
+    text.append('\t')
+    for task, nodeId, linkedNodeId, originalList, reorderedList, referenceList in reorderedLists:
+      longFormArgument = graph.getGraphNodeAttribute(nodeId, 'longFormArgument')
+      text.append('-  task: ' + task + ', argument: ' + longFormArgument)
+      string = originalList[0]
+      for i in range(1, len(originalList)): string += ', ' + originalList[i]
+      text.append('\toriginally:  ' + string)
+      string = reorderedList[0]
+      for i in range(1, len(reorderedList)): string += ', ' + reorderedList[i]
+      text.append('\tmodified to: ' + string)
+      string = referenceList[0]
+      for i in range(1, len(referenceList)): string += ', ' + referenceList[i]
+      text.append('\tto match:    ' + string)
+      text.append('\t')
+
+    text.append('Please check that these files are ordered correctly. To disable reordering of input values, ' + \
+    'include the argument \'--do-not-reorder (-dnr)\' on the command line.')
+
+    # Write the warning to screen.
+    errors.errors().writeFormattedText(text, 'warning')

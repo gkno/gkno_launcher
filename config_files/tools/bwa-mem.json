@@ -26,7 +26,8 @@
         "command line argument" : "none",
         "modify argument" : "omit",
         "data type" : "string",
-        "extensions" : ["fq", "fq.gz", "fastq", "fastq.gz"]
+        "extensions" : ["fq", "fq.gz", "fastq", "fastq.gz"],
+        "linked argument" : "--fastq"
       },
       {
         "description" : "FM-index files (prefix).",
@@ -211,6 +212,7 @@
         "long form argument" : "--read-group-id",
         "short form argument" : "-id",
         "command line argument" : "none",
+        "modify value" : "omit",
         "data type" : "string",
         "required" : true
       },
@@ -219,6 +221,7 @@
         "long form argument" : "--sample-id",
         "short form argument" : "-s",
         "command line argument" : "none",
+        "modify value" : "omit",
         "required" : true,
         "data type" : "string"
       },
@@ -227,6 +230,7 @@
         "long form argument" : "--platform-id",
         "short form argument" : "-p",
         "command line argument" : "none",
+        "modify value" : "omit",
         "required" : true,
         "data type" : "string"
       },
@@ -351,7 +355,10 @@
     "--reference-prefix",
     "--fastq",
     "--fastq2",
-    "--sam"
+    "--sample-id",
+    "--platform-id",
+    "--read-group-id",
+    "--out"
   ],
 
   "parameter sets" : [

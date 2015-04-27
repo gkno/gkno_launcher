@@ -6,6 +6,7 @@ import commandLineErrors
 from commandLineErrors import *
 import dataConsistency
 import graph as gr
+import stringOperations as strOps
 
 import json
 import os
@@ -32,6 +33,9 @@ class commandLine:
 
     # Store commands. These could be instructions on the mode of usage etc.
     self.commands = []
+
+    # Store the values for lists that have been reordered.
+    self.reorderedLists = []
 
     # Parse the command line and store all the arguments with their values.
     argument        = None
@@ -229,6 +233,42 @@ class commandLine:
       # If the argument is invalid.
       else: self.errors.invalidArgument(argument)
 
+  # Check if any of the arguments are linked and if so, check if multiple values have been provided to them.
+  # If so, ensure that the order in which the values are sorted is such that the first value for each argument
+  # is most similar to the first value for the other etc.
+  def linkedArguments(self, graph, superpipeline, args):
+    for task in graph.workflow:
+      tool     = graph.getGraphNodeAttribute(task, 'tool')
+      toolData = superpipeline.getToolData(tool)
+
+      # Check if any of the arguments for this task have been given multiple values.
+      linkedArguments = {}
+      for nodeId in graph.graph.predecessors(task):
+        if len(graph.getGraphNodeAttribute(nodeId, 'values')) > 1:
+          argument       = graph.getArgumentAttribute(nodeId, task, 'longFormArgument')
+          linkedArgument = toolData.getArgumentAttribute(argument, 'linkedArgument')
+          if linkedArgument != None: linkedArguments[nodeId] = linkedArgument
+
+      # If there are any linked arguments with multiple values, check the order of the values.
+      for nodeId in linkedArguments:
+        argumentValues = graph.getGraphNodeAttribute(nodeId, 'values')
+
+        # Determine the nodeId of the linked argument.
+        for linkedNodeId in graph.graph.predecessors(task):
+          if linkedArguments[nodeId] == graph.getArgumentAttribute(linkedNodeId, task, 'longFormArgument'): break
+
+        # Use the linkedArgumentValues as a reference list and order the values in argumentValues to be most
+        # similar to the reference list,
+        referenceList = graph.getGraphNodeAttribute(linkedNodeId, 'values')
+        queryList     = []
+        for value in referenceList: queryList.append(strOps.findMostSimilar(argumentValues, value))
+
+        # If reordering has taken place, store the values so that the user can be warned. Update the graph to
+        # include the reordered list.
+        if queryList != argumentValues:
+          self.reorderedLists.append((task, nodeId, linkedNodeId, argumentValues, queryList, referenceList))
+          graph.setGraphNodeAttribute(nodeId, 'values', queryList)
+        
   # Determine the name (if any) of the requested parameter set.
   def getParameterSetName(self, arguments, gkno):
 

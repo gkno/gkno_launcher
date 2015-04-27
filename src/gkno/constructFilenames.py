@@ -376,9 +376,10 @@ def modifyText(graph, task, argument, toolData, instructions, counter, value):
         if len(taskArgumentValues) == 0:
           errors.constructFilenameErrors().noArgumentValuesToBuild(task, argument, constructionArgument)
 
-        elif isinstance(counter, int): value += str(taskArgumentValues[counter])
-        #TODO ERROR
-        elif len(taskArgumentValues) > 1: print('constructFilenames.modifyText - multiple arguments'); exit(1)
+        # If there is a value for this subphase, use it.
+        elif isinstance(counter, int) and counter < len(taskArgumentValues): value += str(taskArgumentValues[counter])
+
+        # If there is only a single value, use this.
         elif len(taskArgumentValues) == 1: value += str(taskArgumentValues[0])
 
   # Return the modifed value.

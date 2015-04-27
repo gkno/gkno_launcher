@@ -40,6 +40,13 @@ class argumentAttributes:
     # Define the extensions allowed for the argument.
     self.extensions = []
 
+    # An argument can be defined as being linked to another argument for the tool. Linked
+    # arguments can be used to make sure that lists of values are ordered such that each
+    # value for the argument is most similar to the value for the linked argument. For
+    # example, paired end fastq files. The argument for the second mate is linked to the
+    # argument for the first mate to ensure that the correct values go together.
+    self.linkedArgument = None
+    
     # Store instructions on how to construct the filename.
     self.constructionInstructions = None
 
@@ -273,6 +280,7 @@ class toolConfiguration:
     allowedAttributes['include in reduced plot']       = (bool, False, True, 'includeInReducedPlot')
     allowedAttributes['include value in quotations']   = (bool, False, True, 'includeInQuotations')
     allowedAttributes['is filename stub']              = (bool, False, True, 'isStub')
+    allowedAttributes['linked argument']               = (str, False, True, 'linkedArgument')
     allowedAttributes['long form argument']            = (str, True, True, 'longFormArgument')
     allowedAttributes['modify argument']               = (str, False, True, 'modifyArgument')
     allowedAttributes['modify value']                  = (str, False, True, 'modifyValue')

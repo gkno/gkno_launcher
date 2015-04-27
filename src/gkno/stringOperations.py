@@ -28,3 +28,15 @@ def rankListByString(inputList, queryString):
 # Return a random string of length n.
 def getRandomString(n):
   return ''.join(random.SystemRandom().choice(string.uppercase + string.digits) for _ in xrange(n))
+
+# Find the value from a list that is most similar to the query string.
+def findMostSimilar(referenceList, queryString):
+  score = 0
+  for referenceString in referenceList:
+    queryScore = int( 100 * SequenceMatcher(None, referenceString.lower(), queryString.lower()).ratio())
+    if queryScore > score:
+      score       = queryScore
+      matchString = referenceString
+
+  # Return the most closely matched string.
+  return matchString

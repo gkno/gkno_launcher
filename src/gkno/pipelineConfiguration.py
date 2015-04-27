@@ -527,6 +527,7 @@ class pipelineConfiguration:
     allowedAttributes                        = {}
     allowedAttributes['description']         = (str, True, True, 'description')
     allowedAttributes['hide in help']        = (bool, False, True, 'hideInHelp')
+    allowedAttributes['linked argument']     = (str, False, True, 'linkedArgument')
     allowedAttributes['long form argument']  = (str, True, True, 'longFormArgument')
     allowedAttributes['node id']             = (str, True, True, 'nodeId')
     allowedAttributes['required']            = (bool, False, True, 'isRequired')

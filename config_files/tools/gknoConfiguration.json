@@ -49,6 +49,13 @@
       "data type" : "flag",
       "values" : ["unset"]
     },
+    "GKNO-DO-NOT-REORDER" : {
+      "description" : "Flag to disable reordering of values supplied to linked arguments.",
+      "long form argument" : "--do-not-reorder",
+      "short form argument" : "-dnr",
+      "data type" : "flag",
+      "values" : ["unset"]
+    },
     "GKNO-DRAW-FULL-PIPELINE" : {
       "description" : "Name of the file to which a full visual depiction of the pipeline graph will be output.",
       "long form argument" : "--draw-full-pipeline-graph",

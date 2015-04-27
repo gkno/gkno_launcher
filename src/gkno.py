@@ -30,7 +30,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.8.3"
+__version__ = "2.8.4"
 __date__ = "April 2015"
 
 def main():
@@ -231,6 +231,9 @@ def main():
   if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
   if plot.isReducedPlot: plot.plot(superpipeline, graph, plot.reducedPlotFilename, isReduced = True)
 
+  # If multiple values have been supplied to linked arguments, determine if they should be reordered.
+  if not gknoConfiguration.getGknoArgument('GKNO-DO-NOT-REORDER', command.gknoArguments): command.linkedArguments(graph, superpipeline, args)
+
   # Loop over all of the nodes in the graph and ensure that all required arguments have been set. Any output files
   # for which construction instructions are provided can be omitted from this check. This will ensure that all required
   # input files are set, ensuring that filename construction can proceed. The check will be performed again after
@@ -250,6 +253,9 @@ def main():
 
   # Print the workflow to screen.
   write.workflow(superpipeline, workflow)
+
+  # If any input values have been reordered, warn the user.
+  write.reordered(graph, command.reorderedLists)
 
   # Having constructed all of the output file names (which may then be linked to other tasks as outputs), rerun the
   # check of the values to ensure that the data types and the ssociated extensions are valid. This will provide a
