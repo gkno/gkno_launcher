@@ -11,179 +11,146 @@
       "output to stream" : true
     },
     {
-      "realign",
+      "task" : "realign",
       "tool" : "glia",
+      "input is stream" : true,
       "output to stream" : true
     },
     {
       "task" : "sort",
       "tool" : "samtools-sort",
+      "input is stream" : true,
       "output to stream" : true
     },
     {
       "task" : "call",
-      "pipeline" : "freebayes"
+      "pipeline" : "freebayes",
+      "input is stream" : true
     }
   ],
 
   "arguments" : {
     "Inputs" : [
       {
-      "description" : "The input BAM file(s).",
-      "long form argument" : "--in",
-      "short form argument" : "-i",
-      "node id" : "input-bam"
-    },
-    {
-      "description" : "The genomic region for consideration.",
-      "long form argument" : "--region",
-      "short form argument" : "-rg",
-      "required" : true,
-      "node id" : "region"
-    },
-    {
-      "description" : "The FASTA reference genome.",
-      "long form argument" : "--fasta-reference",
-      "short form argument" : "-r",
-      "node id" : "reference"
-    },
-    {
-      "description" : "Realign the BAM stream on stdin to the VCF file, adjusting position and flattening alignments back into the reference space where realignment to the graph provides better quality.",
-      "long form argument" : "--realign-bam",
-      "short form argument" : "-rb",
-      "tasks" : {
-        "graph-align" : "--realign-bam"
-      }
-    },
-    {
-      "description" : "Report the reverse complement if it provides a better alignment.",
-      "long form argument" : "--reverse-complement",
-      "short form argument" : "-rc",
-      "tasks" : {
-        "graph-align" : "--reverse-complement"
-      }
-    },
-    {
-      "ID" : "unsorted",
-      "description" : "Do not attempt streaming sort of alignments.  This can save memory in high coverage areas, but will require sort of BAM file before it can be used for variant calling.",
-      "long form argument" : "--unsorted-output",
-      "short form argument" : "-u",
-      "tasks" : {
-        "graph-align" : "--unsorted-output"
-      }
-    },
-    {
-      "ID" : "window",
-      "description" : "Number of bp of window to assemble from VCF for realignment.",
-      "long form argument" : "--realignment-window",
-      "short form argument" : "-rw",
-      "tasks" : {
-        "graph-align" : "--realignment-window"
-      }
-    },
-    {
-      "ID" : "softclip threshold",
-      "description" : "If sum of qualities of soft clipped bases is >= N, realign (default ~inf).",
-      "long form argument" : "--soft-clip-qsum-threshold",
-      "short form argument" : "-s",
-      "tasks" : {
-        "graph-align" : "--soft-clip-qsum-threshold"
-      }
-    },
-    {
-      "ID" : "mismatch threshold",
-      "description" : "If sum of qualities of mismatched bases is >= N, realign (default ~inf).",
-      "long form argument" : "--mismatch-qsum-threshold",
-      "short form argument" : "-mqt",
-      "tasks" : {
-        "graph-align" : "--mismatch-qsum-threshold"
-      }
-    },
-    {
-      "ID" : "gap count",
-      "description" : "Accept realignment if number of gaps is < N.",
-      "long form argument" : "--gap-count-max",
-      "short form argument" : "-gcm",
-      "tasks" : {
-        "graph-align" : "--gap-count-max"
-      }
-    },
-    {
-      "ID" : "vcf",
-      "description" : "The genome DAG, BGZIP'ed (.vcf.gz) and tabix-indexed (.tbi).",
-      "long form argument" : "--vcf",
-      "short form argument" : "-v",
-      "tasks" : {
-        "graph-align" : "--vcf",
-        "call" : "--variant-input"
-      }
-    },
-    {
-      "ID" : "sort",
-      "description" : "Pass realigned reads to Freebayes",
-      "tasks" : {
-        "graph-align" : "--out",
-        "sort" : "--in"
-      }
-    },
-    {
-      "ID" : "stdout",
-      "long form argument" : "--sort-to-stdout",
-      "short form argument" : "-ss",
-      "description" : "Output sorted file to stdout.",
-      "tasks" : {
-        "sort" : "--output-to-stdout"
-      }
-    },
-    {
-      "ID" : "pass-to-call",
-      "description" : "Pass realigned reads to Freebayes",
-      "tasks" : {
-        "sort" : "--out",
-        "call" : "--in"
-      }
-    },
-    {
-      "ID" : "combine-freebayes",
-      "description" : "Combine the Freebayes VCF files.",
-      "tasks" : {
-        "call" : "--out"
+        "description" : "The input BAM file(s).",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "input"
       },
-      "greedy tasks" : {
-        "combine" : "--in"
+      {
+        "description" : "The FASTA reference genome.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "node id" : "reference"
       },
-      "delete files" : true
-    },
-    {
-      "ID" : "compress",
-      "description" : "Compress the Freebayes VCF file.",
-      "long form argument" : "--freebayes-out",
-      "short form argument" : "-f",
-      "tasks" : {
-        "combine" : "--out",
-        "compress" : "--in"
+      {
+        "description" : "The genome DAG, BGZIP'ed (.vcf.gz) and tabix-indexed (.tbi).",
+        "long form argument" : "--vcf",
+        "short form argument" : "-v",
+        "node id" : "dag"
       }
-    },
-    {
-      "ID" : "index",
-      "description" : "Index the Freebayes VCF file",
-      "tasks" : {
-        "compress" : "--out",
-        "index" : "--in"
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output recalled, normalized VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "call.output"
       }
-    }
-  ],
+    ],
+
+    "Options" : [
+      {
+        "description" : "The genomic region for consideration.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "required" : true,
+        "node id" : "region"
+      },
+      {
+        "description" : "Do not attempt streaming sort of alignments.  This can save memory in high coverage areas, but will require sort of BAM file before it can be used for variant calling.",
+        "long form argument" : "--unsorted-output",
+        "short form argument" : "-u",
+        "node id" : "unsorted"
+      },
+      {
+        "description" : "Number of bp of window to assemble from VCF for realignment.",
+        "long form argument" : "--realignment-window",
+        "short form argument" : "-rw",
+        "node id" : "window"
+      },
+      {
+        "description" : "If sum of qualities of soft clipped bases is >= N, realign (default ~inf).",
+        "long form argument" : "--soft-clip-qsum-threshold",
+        "short form argument" : "-s",
+        "node id" : "soft-clip-threshold"
+      },
+      {
+        "description" : "If sum of qualities of mismatched bases is >= N, realign (default ~inf).",
+        "long form argument" : "--mismatch-qsum-threshold",
+        "short form argument" : "-mqt",
+        "node id" : "mismatch-threshold"
+      },
+      {
+        "description" : "Accept realignment if number of gaps is < N.",
+        "long form argument" : "--gap-count-max",
+        "short form argument" : "-gcm",
+        "node id" : "gap-count"
+      }
+    ]
+  },
 
   "unique graph nodes" : [
     {
-      "id" : "input-bam",
-      "task" : "merge-bam"
+      "id" : "input",
+      "task" : "merge-bam",
       "task argument" : "--in"
     },
     {
       "id" : "region",
       "task" : "merge-bam",
       "task argument" : "--region"
+    },
+    {
+      "id" : "realign-bam",
+      "task" : "realign",
+      "task argument" : "--realign-bam"
+    },
+    {
+      "id" : "reverse-complement",
+      "task" : "realign",
+      "task argument" : "--reverse-complement"
+    },
+    {
+      "id" : "unsorted",
+      "task" : "realign",
+      "task argument" : "--unsorted-output"
+    },
+    {
+      "id" : "window",
+      "task" : "realign",
+      "task argument" : "--realignment-window"
+    },
+    {
+      "id" : "soft-clip-threshold",
+      "task" : "realign",
+      "task argument" : "--soft-clip-qsum-threshold"
+    },
+    {
+      "id" : "mismatch-threshold",
+      "task" : "realign",
+      "task argument" : "--mismatch-qsum-threshold"
+    },
+    {
+      "id" : "gap-count",
+      "task" : "realign",
+      "task argument" : "--gap-count-max"
+    },
+    {
+      "id" : "sort-to-stdout",
+      "task" : "sort",
+      "task argument" : "--output-to-stdout"
     }
   ],
 
@@ -193,11 +160,11 @@
       "arguments sharing node" : [
         {
           "task" : "merge-bam",
-          "argument" : "--out"
+          "task argument" : "--out"
         },
         {
-          "task" : "graph-align",
-          "argument" : "--in"
+          "task" : "realign",
+          "task argument" : "--in"
         }
       ]
     },
@@ -205,12 +172,51 @@
       "id" : "reference",
       "arguments sharing node" : [
         {
-          "task" : "graph-align",
-          "argument" : "--fasta-reference"
+          "task" : "realign",
+          "task argument" : "--fasta-reference"
         },
         {
           "task" : "call",
-          "argument" : "--fasta-reference"
+          "node id" : "reference"
+        }
+      ]
+    },
+    {
+      "id" : "dag",
+      "arguments sharing node" : [
+        {
+          "task" : "realign",
+          "task argument" : "--vcf"
+        },
+        {
+          "task" : "call",
+          "node id" : "variant-input"
+        }
+      ]
+    },
+    {
+      "id" : "realigned-bam",
+      "arguments sharing node" : [
+        {
+          "task" : "realign",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "sort",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "sorted-bam",
+      "arguments sharing node" : [
+        {
+          "task" : "sort",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "call",
+          "node id" : "bam"
         }
       ]
     }
@@ -218,59 +224,91 @@
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "The default instance sets all the parameters for the pipeline to run.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "realign",
-          "argument" : "--realign-bam",
+          "id" : "realign",
+          "node" : "realign-bam",
           "values" : ["set"]
         },
         {
-          "ID" : "reverse complement",
-          "argument" : "--reverse-complement",
+          "id" : "reverse complement",
+          "node" : "reverse-complement",
           "values" : ["set"]
         },
         {
-          "ID" : "unsorted output",
-          "argument" : "--unsorted-output",
+          "id" : "unsorted output",
+          "node" : "unsorted",
           "values" : ["set"]
         },
         {
-          "ID" : "window",
-          "argument" : "--realignment-window",
+          "id" : "window",
+          "node" : "window",
           "values" : [1500]
         },
         {
-          "ID" : "soft-clip",
-          "argument" : "--soft-clip-qsum-threshold",
+          "id" : "soft-clip",
+          "node" : "soft-clip-threshold",
           "values" : [200]
         },
         {
-          "ID" : "mismatch",
-          "argument" : "--mismatch-qsum-threshold",
+          "id" : "mismatch",
+          "node" : "mismatch-threshold",
           "values" : [200]
         },
         {
-          "ID" : "gap",
-          "argument" : "--gap-count-max",
+          "id" : "gap",
+          "node" : "gap-count",
           "values" : [4]
         },
         {
-          "ID" : "sort",
-          "argument" : "--sort-to-stdout",
+          "id" : "sort",
+          "node" : "sort-to-stdout",
           "values" : ["set"]
         }
       ]
     },
 
     {
-      "ID" : "human",
-      "description" : "Parameter set for the human genome.",
-      "nodes" : [
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
         {
-          "ID" : "reference",
-          "argument" : "--fasta-reference",
+          "id" : "input",
+          "node" : "input",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "id" : "variant-input",
+          "node" : "dag",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+        },
+        {
+          "id" : "region",
+          "node" : "region",
+          "values" : ["20:1..50000", "20:50000-100000"]
+        },
+        {
+          "id" : "output",
+          "node" : "call.output",
+          "values" : ["adjudicated.vcf.gz"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for the human genome.",
+      "data" : [
+        {
+          "id" : "reference",
+          "node" : "reference",
           "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
         }
       ]

@@ -47,7 +47,7 @@
         "required" : true,
         "data type" : "string",
         "extensions" : ["tbi"],
-        "hide in help" : true,
+        "hide argument in help" : true,
         "modify argument" : "omit",
         "modify value" : "omit",
         "construct filename" : {

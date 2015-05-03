@@ -30,7 +30,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.9.1"
+__version__ = "2.9.2"
 __date__ = "April 2015"
 
 def main():
@@ -244,6 +244,11 @@ def main():
   # any on the command line. In addition, if multiple options are given to a task, this routine will generate new
   # nodes for the task and files and link them together as necessary.
   graph.constructFiles(superpipeline)
+
+  # Check that all of the streams are correctly marked in the superpipeline. This checks to see if a task is
+  # marked as accepting a stream, but the task is itelf a pipeline, for example. In this case, the first task
+  # in the nested pipeline needs to be marked as accepting a stream.
+  superpipeline.checkStreams(graph)
 
   # Determine which files are marked for deletion.
   superpipeline.determineFilesToDelete(graph)

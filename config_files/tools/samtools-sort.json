@@ -44,6 +44,10 @@
               "add text" : ["_sorted"]
             }
           ]
+        },
+        "if output to stream" : {
+          "argument" : "",
+          "value" : ""
         }
       }
     ],

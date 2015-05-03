@@ -85,6 +85,11 @@
       "task argument" : "--in"
     },
     {
+      "id" : "variant-input",
+      "task" : "call",
+      "task argument" : "--variant-input"
+    },
+    {
       "id" : "region",
       "task" : "call",
       "task argument" : "--region"

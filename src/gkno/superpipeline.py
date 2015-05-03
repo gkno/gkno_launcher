@@ -278,6 +278,55 @@ class superpipelineClass:
           if not longFormArgument:
             self.pipelineConfigurationData[pipeline].errors.invalidToolArgument(pipeline, nodeType, nodeId, task, tool, argument)
 
+  #
+  def checkStreams(self, graph):
+
+    # Loop over all of the pipelines in the superpipeline.
+    for tier in self.pipelinesByTier:
+      for pipeline in self.pipelinesByTier[tier]:
+        data = self.getPipelineData(pipeline)
+
+        # Loop over all tasks defined for the pipeline:
+        for task in data.pipelineTasks:
+
+          # Identify tasks that run pipelines.
+          if data.pipelineTasks[task].pipeline: 
+
+            # If this task is marked as accepting a stream as input, 
+            if data.getTaskAttribute(task, 'isInputStream'):
+
+              # Find the first task in the pipeline workflow associated with this nested pipeline.
+              isStreamSet = False
+              for pipelineTask in graph.workflow:
+                if pipelineTask.startswith(task):
+                  isStreamSet = True
+                  graph.setGraphNodeAttribute(pipelineTask, 'isInputStream', True)
+
+                  # If the task is marked as greedy, reset it to not be greedy. If accepting a stream, this
+                  # is not permitted. The value can be set as greedy since the pipeline which the task is
+                  # running could be greedy if run in isolation and not as part of a superpipeline.
+                  graph.setGraphNodeAttribute(pipelineTask, 'isGreedy', False)
+                  break
+
+              # If no task was found in the pipeline, terminate with an error.
+              #TODO ERROR
+              if not isStreamSet: print('NO STREAM SET - superpipeline.checkStreams'); exit(1)
+
+            # TODO HANDLE PIPELINES WHOSE OUTPUT IS A STREAM.
+            if data.getTaskAttribute(task, 'isOutputStream'): 
+
+              # Find the first task in the pipeline workflow associated with this nested pipeline.
+              isStreamSet = False
+              for pipelineTask in reversed(graph.workflow):
+                if pipelineTask.startswith(task):
+                  isStreamSet = True
+                  graph.setGraphNodeAttribute(pipelineTask, 'isOutputStream', True)
+                  break
+
+              # If no task was found in the pipeline, terminate with an error.
+              #TODO ERROR
+              if not isStreamSet: print('NO STREAM SET - superpipeline.checkStreams'); exit(1)
+
   # Return the tool used for a task. The task is the full address, so may well be a task
   # buried within enclosed pipelines.
   def getTool(self, taskAddress):
