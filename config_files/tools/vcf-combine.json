@@ -61,7 +61,6 @@
 
   "argument order" : [
     "--in",
-    "--index",
     "--region",
     "--out"
   ],

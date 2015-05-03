@@ -1,5 +1,5 @@
 {
-  "id" : "vtsubset",
+  "id" : "vt-subset",
   "configuration type" : "tool",
   "description" : "Subsets a VCF to only those sites polymorphic in the defined samples.",
   "categories" : ["VCF-processing"],

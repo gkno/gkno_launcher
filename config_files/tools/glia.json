@@ -1,6 +1,7 @@
 {
   "id" : "glia",
-  "description" : "Perform local graph alignment.",
+  "configuration type" : "tool",
+  "description" : "Perform read-by-read local realignment using a graph representation of the reference genome and variants.",
   "categories" : ["BAM-processing", "Aligners", "Variant-graph", "Marthlab-software"],
   "tools" : ["glia"],
   "path" : "glia",
@@ -8,11 +9,15 @@
   "arguments" : {
     "Inputs" : [
       {
-        "description" : "The input bam.",
+        "description" : "The input bam file.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "--in",
         "required" : true,
+        "if input is stream" : {
+          "argument" : "omit",
+          "value" : ""
+        },
         "data type" : "string",
         "extensions" : ["bam"]
       },
@@ -42,24 +47,31 @@
         "required" : true,
         "data type" : "string",
         "extensions" : ["tbi"],
+        "hide in help" : true,
+        "modify argument" : "omit",
+        "modify value" : "omit",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--vcf",
           "modify extension" : "append"
-        },
-        "include in reduced plot" : false
+        }
       }
     ],
   
     "Outputs" : [
       {
-        "description" : "The output file.",
+        "description" : "The output realigned BAM file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "-out",
         "required" : true,
         "data type" : "string",
         "extensions" : ["bam"],
+        "modify argument" : "stdout",
+        "if output to stream" : {
+          "argument" : "omit",
+          "value" : "omit"
+        },
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -277,9 +289,51 @@
       "description" : "Default parameter set requires the users input for all files.",
       "data" : [
         {
-          "id" : "bam",
+          "id" : "realign",
           "argument" : "--realign-bam",
           "values" : ["set"]
+        },
+        {
+          "id" : "reverse complement",
+          "argument" : "--reverse-complement",
+          "values" : ["set"]
+        },
+        {
+          "id" : "unsorted output",
+          "argument" : "--unsorted-output",
+          "values" : ["set"]
+        },
+        {
+          "id" : "window",
+          "argument" : "--realignment-window",
+          "values" : [1500]
+        },
+        {
+          "id" : "soft-clip",
+          "argument" : "--soft-clip-qsum-threshold",
+          "values" : [200]
+        },
+        {
+          "id" : "mismatch",
+          "argument" : "--mismatch-qsum-threshold",
+          "values" : [200]
+        },
+        {
+          "id" : "gap",
+          "argument" : "--gap-count-max",
+          "values" : [4]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for the human genome.",
+      "data" : [
+        {
+          "id" : "ref",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
         }
       ]
     },
