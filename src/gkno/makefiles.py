@@ -738,7 +738,7 @@ class makefiles:
       # as well as the information for this task can be written to file.
       elif isInputStream:
         self.storeStreamingTaskInformation(info, subphase, division, task, isLast = True)
-        self.writeStreamingInformation(graph, info, phase, subphase, division)
+        self.writeStreamingInformation(graph, struct, info, phase, subphase, division)
 
       # If this does not accept a stream or output to a stream, just write the information to the makefile.
       else: self.writeStandardInformation(graph, phase, subphase, division, task)
@@ -771,7 +771,7 @@ class makefiles:
     for line in self.executionInfo[task].commands[subphase][division]: info.commands.append(line)
 
   # Write information to the makefile for a set of piped tasks.
-  def writeStreamingInformation(self, graph, info, phase, subphase, division):
+  def writeStreamingInformation(self, graph, struct, info, phase, subphase, division):
 
     # Get the filename and filehandle.
     filename   = self.filenames[str(phase) + str(subphase) + str(division)]
@@ -804,9 +804,32 @@ class makefiles:
     intermediates = []
     for task in info.tasks:
       if task in self.deleteAfterTask:
+
+        # Define the key for this phase and division.
         key = str(subphase) + str(division)
+
+        # Determine the number of subphases and divisions for the task.
+        numberSubphases = struct.phaseInformation[struct.task[task]].numberSubphases
+        numberDivisions = struct.phaseInformation[struct.task[task]].numberDivisions
+
+        # Loop over the values marked as to be deleted after this task.
         for storedKey, value in self.deleteAfterTask[task]:
-          if storedKey == key: intermediates.append(value)
+          if numberSubphases == 1:
+
+            # If this task only has a single phase and division, all values should be deleted after this execution.
+            if numberDivisions == 1: intermediates.append(value)
+
+            # If the task has a single subphase, but multiple divisions, append values whose key ends with the
+            # division.
+            elif storedKey.endswith(str(division)): intermediates.append(value)
+
+          # If the task has a single division and multiple subphases, append values whose key begins with the correct
+          # subphase.
+          elif numberDivisions == 1:
+            if storedKey.startswith(str(subphase)): intermediates.append(value)
+
+          # If the task has multiple subphases and divisions, append the value if associated with the correct key.
+          elif storedKey == key: intermediates.append(value)
 
     # Delete the files.
     if intermediates:
@@ -982,6 +1005,9 @@ class makefiles:
 
     # Return the value based on the instructions.
     if instructions['value'] == 'omit': return None
+
+    # If the instructions indicate that the value should be left as is, return the original value.
+    elif instructions['value'] == 'keep': return value
 
     # If none of the above instructions are set, return the value supplied in the instructions. This is
     # what will be used in place of the value.
