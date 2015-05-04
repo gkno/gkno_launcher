@@ -130,6 +130,16 @@
           "id" : "vcf",
           "node" : "input",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "id" : "samples",
+          "node" : "samples",
+          "values" : ["$(RESOURCES)/tutorial/current/sample.txt"]
         }
       ]
     },
