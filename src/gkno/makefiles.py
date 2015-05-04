@@ -286,11 +286,6 @@ class makefiles:
   # Add input files to the command line.
   def addInput(self, graph, task, data, nodeId):
 
-    # Get the argument, values and data type for the option node.
-    argument = self.getToolArgument(graph, task, nodeId, isInput = True)
-    values   = graph.getGraphNodeAttribute(nodeId, 'values')
-    dataType = graph.getArgumentAttribute(nodeId, task, 'dataType')
-
     # Determine the division to which these values belong, or if this is an argument that should be applied to all
     # divisions. Also, determine the parent node if this is a child and use the parent to determine all information,
     # e.g. streaming etc.
@@ -302,6 +297,12 @@ class makefiles:
       parentNodeId = graph.getGraphNodeAttribute(nodeId, 'parent')
     else:
       if not graph.getGraphNodeAttribute(nodeId, 'children'): isGlobal = True
+
+    # Get the argument, values and data type for the option node. Use the parentNodeId for getting the argument. All
+    # child nodes still use the same command line argument.
+    argument = self.getToolArgument(graph, task, parentNodeId, isInput = True)
+    values   = graph.getGraphNodeAttribute(nodeId, 'values')
+    dataType = graph.getArgumentAttribute(parentNodeId, task, 'dataType')
 
     # If this task consolidates files then it should be treated as global.
     if graph.getGraphNodeAttribute(task, 'consolidate'): isGlobal = True

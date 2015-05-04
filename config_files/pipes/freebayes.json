@@ -47,6 +47,9 @@
   "import arguments" : "call",
 
   "arguments" : {
+    "Inputs" : [
+    ],
+
     "Outputs" : [
       {
         "description" : "The output filtered VCF file.",
@@ -83,6 +86,11 @@
       "id" : "bam",
       "task" : "call",
       "task argument" : "--in"
+    },
+    {
+      "id" : "haplotype-alleles",
+      "task" : "call",
+      "task argument" : "--haplotype-basis-alleles"
     },
     {
       "id" : "variant-input",

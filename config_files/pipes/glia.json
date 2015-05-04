@@ -190,7 +190,7 @@
         },
         {
           "task" : "call",
-          "node id" : "variant-input"
+          "node id" : "haplotype-alleles"
         }
       ]
     },
@@ -292,7 +292,7 @@
         {
           "id" : "region",
           "node" : "region",
-          "values" : ["20:1..50000", "20:50000-100000"]
+          "values" : ["20:1..50000", "20:50000..100000"]
         },
         {
           "id" : "output",

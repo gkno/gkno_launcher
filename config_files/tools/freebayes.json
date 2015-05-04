@@ -98,7 +98,7 @@
         "long form argument" : "--haplotype-basis-alleles",
         "short form argument" : "-hba",
         "command line argument" : "--haplotype-basis-alleles",
-        "extensions" : ["vcf"],
+        "extensions" : ["vcf.gz"],
         "data type" : "string"
       }
     ],
