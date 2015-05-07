@@ -170,9 +170,6 @@ class pipelineGraph:
     # Add shared nodes.
     self.addSharedNodes(superpipeline, pipeline)
 
-    # Join tasks and nodes as instructed.
-    self.connectNodesToTasks(superpipeline, pipeline)
-
   # Add unique graph nodes to the graph.
   def addUniqueNodes(self, superpipeline, pipeline):
     for configurationNodeId in pipeline.uniqueNodeAttributes:
@@ -585,93 +582,54 @@ class pipelineGraph:
         # Link the pipeline configuration file nodes to the graph node.
         self.configurationFileToGraphNodeId[information.nodeId] = [modifiedNodeAddress]
 
-  # Connect nodes and tasks as instructed in the pipeline configuration file.
-  def connectNodesToTasks(self, superpipeline, pipeline):
+  # Join nodes together using the 'connect nodes' sections of the configuration files.
+  def connectNodes(self, superpipeline):
 
-    # Determine the pipeline address and the node address.
-    address = str(pipeline.address + '.') if pipeline.address else str('')
+    # Loop over the pipelines.
+    for tier in superpipeline.pipelinesByTier.keys():
+      for pipelineName in superpipeline.pipelinesByTier[tier]:
+        pipelineData = superpipeline.getPipelineData(pipelineName)
 
-    # Loop over all the pipeline connections.
-    for nodeId in pipeline.connections:
+        # Determine the pipeline address and the node address.
+        address = str(pipelineData.address + '.') if pipelineData.address else str('')
 
-      # Store the source node IDs.
-      sourceNodeIds = []
+        # Loop over all the pipeline connections.
+        for connection in pipelineData.connections:
 
-      # Determine all the source nodes.
-      for source in pipeline.getSources(nodeId):
-        #externalPipeline = pipeline.getNodeTaskAttribute(source, 'pipeline')
-        externalNodeId   = pipeline.getNodeTaskAttribute(source, 'externalNodeId')
-        task             = pipeline.getNodeTaskAttribute(source, 'task')
-        taskArgument     = pipeline.getNodeTaskAttribute(source, 'taskArgument')
+          # Check that the source and target both exist in the graph.
+          #TODO ERRORS
+          if connection.source not in self.graph: print('ERROR - graph.connectNodes - source', connection.source); exit(1)
+          if connection.target not in self.graph: print('ERROR - graph.connectNodes - target', connection.source); exit(1)
 
-        # Determine the pipeline relative task address.
-        #taskAddress = str(externalPipeline + '.' + task) if externalPipeline else str(task)
-        taskAddress = address + task
+          # Determine which of the nodes is a task node and which is not.
+          isSourceATask = True if self.getGraphNodeAttribute(connection.source, 'nodeType') == 'task' else False
+          isTargetATask = True if self.getGraphNodeAttribute(connection.target, 'nodeType') == 'task' else False
 
-        # If the source node already exists, it is defined with the external node. Store this source
-        # node ID.
-        if externalNodeId: sourceNodeIds.append(str(taskAddress + '.' + externalNodeId))
+          # Throw an error if both the source and connection are tasks or neither of them are.
+          # TODO ERROR
+          if isSourceATask and isTargetATask: print('ERROR - graph.connectNodes - both tasks'); exit(1)
+          elif not isSourceATask and not isTargetATask: print('ERROR - graph.connectNodes - neither tasks'); exit(1)
 
-        # If the external node isn't specified, the node needs to be created. The source must be a
-        # file node (not a task), otherwise this would create a situation with multiple tasks producing
-        # the same output file. In creating the node, this must therefore be the output of the defined
-        # task. 
-        #TODO PUT IN A CHECK THAT IF CREATING NODES, THE ABOVE LOGIC IS VALID.
-        else:
+          # If the source is the task, the target must be an output file node.
+          elif isSourceATask: print('ERROR - graph.connectNode - not handled source as task'); exit(1)
 
-          # Generate the node address (e.g. the output file for a task in the external pipeline).
-          nodeAddress = str(taskAddress + '.' + taskArgument.split('--', 1)[-1])
-          if nodeAddress in superpipeline.sharedNodeIds or nodeAddress in superpipeline.uniqueNodeIds: print('graph.connectNodesToTasks - 2'); exit(0)
+          # If the target is the task, determine the argument whose attributes should be attached to the edge.
+          else:
 
-          # Get the tool associated with this task.
-          tool           = superpipeline.tasks[address + taskAddress]
-          toolAttributes = superpipeline.getToolData(tool)
+            # Get the tool associated with the task and the long form of the supplied argument.
+            tool             = self.getGraphNodeAttribute(connection.target, 'tool')
+            toolData         = superpipeline.getToolData(tool)
+            longFormArgument = toolData.getLongFormArgument(connection.argument)
 
-          # Get the long form of the argument and the associated attributes for the argument.
-          longFormArgument   = toolAttributes.getLongFormArgument(taskArgument)
-          argumentAttributes = toolAttributes.getArgumentData(longFormArgument)
+            # Terminate if the argument is not valid for the tool.
+            #TODO ERROR
+            if not longFormArgument: print('ERROR - graph.connectNodes - argument'); exit(1)
 
-          # Determine if this is a filename stub.
-          isStub = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
-          if isStub: stubExtensions = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'stubExtensions')    
+            # Get the argument attributes.
+            attributes = toolData.getArgumentData(longFormArgument)
 
-          # Create the file node and connect it to the task for which it is an output.
-          self.addFileNode(address + nodeAddress, address + nodeAddress)
-          self.addEdge(address + taskAddress, address + nodeAddress, argumentAttributes)
-
-          # Store the node ID for connecting to the target task node.
-          sourceNodeIds.append(str(address + nodeAddress))
-
-      # Loop over the target nodes and join the sources to them.
-      for target in pipeline.getTargets(nodeId):
-        #externalPipeline = pipeline.getNodeTaskAttribute(target, 'pipeline')
-        externalNodeId   = pipeline.getNodeTaskAttribute(target, 'externalNodeId')
-        task             = pipeline.getNodeTaskAttribute(target, 'task')
-        taskArgument     = pipeline.getNodeTaskAttribute(target, 'taskArgument')
-
-        # Define the task address.
-        taskAddress = str(address + task)
-
-        # If the target node already exists, it is defined with the external node is.
-        if externalNodeId: targetNodeId = str(taskAddress + '.' + externalNodeId)
-
-        # If the task is a tool and an argument is defined, get the argument attributes.
-        else:
-
-          # Get the tool and it's attributes associated with this argument.
-          tool           = superpipeline.tasks[taskAddress]
-          toolAttributes = superpipeline.getToolData(tool)
-  
-          # Get the long form of the argument and the associated attributes for the argument.
-          longFormArgument   = toolAttributes.getLongFormArgument(taskArgument)
-          argumentAttributes = toolAttributes.getArgumentData(longFormArgument)
-
-          # Define the taget for the edge.
-          targetNodeId = taskAddress + '.' + longFormArgument
-
-        # Connect all the source nodes to the target node.
-        print('BUILD', targetNodeId)
-        #for sourceNodeId in sourceNodeIds: self.graph.add_edge(sourceNodeId, targetNodeId, attributes = argumentAttributes)
+            # Add the edge to the graph.
+            self.graph.add_edge(connection.source, connection.target, attributes = attributes)
 
   # Associate the configuration node ids for unique nodes that point to nodes in nested pipelines with the
   # created graph nodes.
@@ -728,7 +686,7 @@ class pipelineGraph:
       successorTasks = []
       for successor in self.graph.successors(task):
         for successorTask in self.graph.successors(successor):
-          if successorTask not in successorTasks: successorTasks.append(successorTask)
+          if successorTask not in successorTasks and successorTask in tempWorkflow: successorTasks.append(successorTask)
 
       # If there is a single task marked as a successor task, but this is not the task that is already indicated
       # as the next task, check that the task can be moved. This means that the successor task needs to be checked

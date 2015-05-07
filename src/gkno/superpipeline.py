@@ -335,20 +335,6 @@ class superpipelineClass:
               #TODO ERROR
               if not isStreamSet: print('NO STREAM SET - superpipeline.checkStreams'); exit(1)
 
-  # Return the tool used for a task. The task is the full address, so may well be a task
-  # buried within enclosed pipelines.
-  def getTool(self, taskAddress):
-
-    # Consider a task from a tier two pipeline. This would have an address of the form,
-    # 'pipeline.task'. The tier one pipeline would just have the name of the task in the pipeline.
-    namesList    = taskAddress.split('.')
-    task         = namesList.pop()
-    pipelineName = '.'.join(namesList) if namesList else self.pipeline
-
-    # Get the pipeline configuration data for this pipeline.
-    try: return self.pipelineConfigurationData[pipelineName].getTaskAttribute(task, 'tool')
-    except: return False
-
   # Determine which nodes are intermediate (e.g. are listed in the shared nodes section of the
   # pipeline configuration file with the 'delete files' set).
   def determineFilesToDelete(self, graph):
@@ -378,6 +364,20 @@ class superpipelineClass:
   # Return all the tools used in the superpipeline.
   def getTools(self):
     return self.tools
+
+  # Return the tool used for a task. The task is the full address, so may well be a task
+  # buried within enclosed pipelines.
+  def getTool(self, taskAddress):
+
+    # Consider a task from a tier two pipeline. This would have an address of the form,
+    # 'pipeline.task'. The tier one pipeline would just have the name of the task in the pipeline.
+    namesList    = taskAddress.split('.')
+    task         = namesList.pop()
+    pipelineName = '.'.join(namesList) if namesList else self.pipeline
+
+    # Get the pipeline configuration data for this pipeline.
+    try: return self.pipelineConfigurationData[pipelineName].getTaskAttribute(task, 'tool')
+    except: return False
 
   # Return data for a specified tool.
   def getToolData(self, tool):

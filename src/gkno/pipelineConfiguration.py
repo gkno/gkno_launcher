@@ -150,12 +150,9 @@ class uniqueGraphNodes:
 class edgeDefinitions:
   def __init__(self):
 
-    #An id for the node.
-    self.id = None
-
     # Store information on the source and targets.
-    self.sourceInformation = []
-    self.targetInformation = []
+    self.source = None
+    self.target = None
 
 # Define a class to store general pipeline attributes,
 class pipelineConfiguration:
@@ -195,7 +192,7 @@ class pipelineConfiguration:
     self.uniqueNodeAttributes = {}
 
     # The connections that need to be made between nodes and tasks.
-    self.connections = {}
+    self.connections = []
 
     # Store all of the valid top level pipeline arguments.
     self.longFormArguments  = {}
@@ -324,18 +321,18 @@ class pipelineConfiguration:
   def checkTopLevelInformation(self, data):
 
     # Define the allowed general attributes.
-    allowedAttributes                            = {}
-    allowedAttributes['id']                      = (str, True, True, 'id')
-    allowedAttributes['arguments']               = (dict, True, False, None)
-    allowedAttributes['description']             = (str, True, True, 'description')
-    allowedAttributes['categories']              = (list, True, True, 'categories')
-    allowedAttributes['configuration type']      = (str, True, False, None)
-    allowedAttributes['connect nodes to tasks' ] = (list, False, False, None)
-    allowedAttributes['import arguments']        = (str, False, True, 'importArgumentsFromTool')
-    allowedAttributes['parameter sets']          = (list, True, False, None)
-    allowedAttributes['pipeline tasks']          = (list, True, False, None)
-    allowedAttributes['shared graph nodes']      = (list, False, False, None)
-    allowedAttributes['unique graph nodes']      = (list, False, False, None)
+    allowedAttributes                       = {}
+    allowedAttributes['id']                 = (str, True, True, 'id')
+    allowedAttributes['arguments']          = (dict, True, False, None)
+    allowedAttributes['description']        = (str, True, True, 'description')
+    allowedAttributes['categories']         = (list, True, True, 'categories')
+    allowedAttributes['configuration type'] = (str, True, False, None)
+    allowedAttributes['connect nodes']      = (list, False, False, None)
+    allowedAttributes['import arguments']   = (str, False, True, 'importArgumentsFromTool')
+    allowedAttributes['parameter sets']     = (list, True, False, None)
+    allowedAttributes['pipeline tasks']     = (list, True, False, None)
+    allowedAttributes['shared graph nodes'] = (list, False, False, None)
+    allowedAttributes['unique graph nodes'] = (list, False, False, None)
 
     # Define a set of information to be used in help messages.
     helpInfo = (self.name, None, None)
@@ -573,31 +570,19 @@ class pipelineConfiguration:
   # Check that defined edges are correctly included.
   def checkDefinedEdges(self, data):
 
-    if 'connect nodes to tasks' not in data: return True
+    if 'connect nodes' not in data: return True
 
     # Define the allowed attributes.
-    allowedAttributes            = {}
-    allowedAttributes['id']      = (str, True, True, 'id')
-    allowedAttributes['sources'] = (list, True, False, None)
-    allowedAttributes['targets'] = (list, True, False, None)
-
-    # Define the allowed source attributes.
-    allowedSourceAttributes                  = {}
-    allowedSourceAttributes['task']          = (str, True, True, 'task')
-    allowedSourceAttributes['task argument'] = (str, False, True, 'taskArgument')
-    allowedSourceAttributes['node id']       = (str, False, True, 'externalNodeId')
-
-    # Define the allowed target attributes.
-    allowedTargetAttributes                  = {}
-    allowedTargetAttributes['task']          = (str, True, True, 'task')
-    allowedTargetAttributes['task argument'] = (str, False, True, 'taskArgument')
-    allowedSourceAttributes['node id']       = (str, False, True, 'externalNodeId')
+    allowedAttributes             = {}
+    allowedAttributes['argument'] = (str, True, False, None)
+    allowedAttributes['source']   = (str, True, False, None)
+    allowedAttributes['target']   = (str, True, False, None)
 
     # Loop over all the defined definitions.
-    for information in data['connect nodes to tasks']:
+    for i, information in enumerate(data['connect nodes']):
 
       # Define a set of information to be used in help messages.
-      helpInfo = (self.name, 'connect nodes to tasks', information['id'])
+      helpInfo = (self.name, 'connect nodes', i)
 
       # Check that the supplied structure is a dictionary.
       if not methods.checkIsDictionary(information, self.allowTermination): return
@@ -609,21 +594,24 @@ class pipelineConfiguration:
       self.success, attributes = methods.checkAttributes(information, allowedAttributes, attributes, self.allowTermination, helpInfo)
 
       # Loop over all the listed sources and check the information.
-      for source in information['sources']:
-        if not methods.checkIsDictionary(source, self.allowTermination): return
-        sourceAttributes = nodeTaskAttributes()
-        self.success, sourceAttributes = methods.checkAttributes(source, allowedSourceAttributes, sourceAttributes, self.allowTermination, helpInfo)
-        attributes.sourceInformation.append(sourceAttributes)
+#      for source in information['sources']:
+#        if not methods.checkIsDictionary(source, self.allowTermination): return
+#        sourceAttributes = nodeTaskAttributes()
+#        self.success, sourceAttributes = methods.checkAttributes(source, allowedSourceAttributes, sourceAttributes, self.allowTermination, helpInfo)
+#        attributes.sourceInformation.append(sourceAttributes)
+#
+#      # Loop over all the listed targets and check the information.
+#      for target in information['targets']:
+#        if not methods.checkIsDictionary(target, self.allowTermination): return
+#        targetAttributes = nodeTaskAttributes()
+#        self.success, targetAttributes = methods.checkAttributes(target, allowedTargetAttributes, targetAttributes, self.allowTermination, helpInfo)
+#        attributes.targetInformation.append(targetAttributes)
 
-      # Loop over all the listed targets and check the information.
-      for target in information['targets']:
-        if not methods.checkIsDictionary(target, self.allowTermination): return
-        targetAttributes = nodeTaskAttributes()
-        self.success, targetAttributes = methods.checkAttributes(target, allowedTargetAttributes, targetAttributes, self.allowTermination, helpInfo)
-        attributes.targetInformation.append(targetAttributes)
-
-      # Store the ID.
-      self.connections[attributes.id] = attributes
+      # Store the connection.
+      attributes.source   = str(information['source'])
+      attributes.target   = str(information['target'])
+      attributes.argument = str(information['argument'])
+      self.connections.append(attributes)
 
   # Store all of the pipeline arguments.
   def storeArguments(self):

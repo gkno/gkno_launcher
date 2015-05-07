@@ -30,7 +30,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.9.6"
+__version__ = "2.9.7"
 __date__ = "May 2015"
 
 def main():
@@ -158,6 +158,9 @@ def main():
     # in nested pipelines.
     graph.findUniqueNodes(superpipeline)
 
+    # Parse the configuration files identifying nodes that are to be connected.
+    graph.connectNodes(superpipeline)
+
     # Determine which graph nodes are required. A node may be used by multiple tasks and may be optional
     # for some and required by others. For each node, loop over all edges and check if any of the edges
     # are listed as required. If so, the node is required and should be marked as such.
@@ -171,7 +174,6 @@ def main():
     # Now that the graph is built, parse all of the arguments in the pipelines and associate them with the
     # graph nodes and vice versa.
     args.assignNodesToArguments(graph, superpipeline)
-    plot.plot(superpipeline, graph, 'bob.dot', isReduced = False)
 
     # If web page json files are being created, update the list of categories and the pipeline information. Also
     # generate a reduced plot of the pipeline.
