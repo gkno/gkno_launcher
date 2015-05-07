@@ -18,16 +18,16 @@
         "data type" : "string",
         "extensions" : ["fq", "fq.gz", "fastq", "fastq.gz", "fa", "fasta", "fa.gz", "fasta.gz"],
         "modify argument" : "omit",
-        "modify values" : "command",
+        "modify value" : "command",
         "value command" : {
           "command" : "<(zcat VALUE)",
-          "apply to extensions" : [".fq.gz", ".fastq.gz", ".fa.gz", ".fasta.gz"]
+          "apply to extensions" : ["fq.gz", "fastq.gz", "fa.gz", "fasta.gz"]
         },
         "allow multiple values" : true
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {
         "description" : "Output file.",
         "long form argument" : "--out",
@@ -35,7 +35,7 @@
         "command line argument" : "--output",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".jf"],
+        "extensions" : ["jf"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -52,15 +52,14 @@
       }
     ],
 
-    "options" : [
+    "Options" : [
       {
         "description" : "Length of k-mer.",
         "long form argument" : "--k-mer",
         "short form argument" : "-k",
         "command line argument" : "--mer-len",
         "required" : true,
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Initial hash size.",
@@ -68,24 +67,21 @@
         "short form argument" : "-s",
         "command line argument" : "--size",
         "required" : true,
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Number of threads.",
         "long form argument" : "--threads",
         "short form argument" : "-t",
         "command line argument" : "--threads",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       },
       {
         "description" : "Count both strand, canonical representation (default: false)",
         "long form argument" : "--canonical",
         "short form argument" : "-c",
         "command line argument" : "--canonical",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       }
     ] 
   },
@@ -101,27 +97,27 @@
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : []
+      "data" : []
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "input",
+          "id" : "input",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
         },
         {
-          "ID" : "kmer",
+          "id" : "kmer",
           "argument" : "--k-mer",
           "values" : [15]
         },
         {
-          "ID" : "size",
+          "id" : "size",
           "argument" : "--size",
           "values" : [1000]
         }

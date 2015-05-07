@@ -1036,6 +1036,27 @@ class makefiles:
     # If this is not a stub, return the argument to be used on the command line.
     if modifyValue == 'omit': return None
 
+    # If a command has been supplied to replace the value, modify the value accordingly.
+    elif modifyValue == 'command': 
+      instructions = graph.getArgumentAttribute(source, target, 'valueCommand')
+      command      = instructions['command']
+  
+      # If the field 'apply to extensions' is set, only apply this command if the value has
+      # one of the specified extensions.
+      applyCommand = True
+      if 'apply to extensions' in instructions:
+        isMatchedExtension = False
+        for extension in instructions['apply to extensions']:
+          if value.endswith(extension):
+            isMatchedExtension = True
+            break
+        if not isMatchedExtension: applyCommand = False
+
+      # If the command is to be used replaced, return the command with 'VALUE' replaced with the
+      # value.
+      if applyCommand: return str(command).replace('VALUE', value)
+      else: return value
+
     # Include the value in quotations, if requested.
     elif inQuotations: return str('"' + value + '"')
 

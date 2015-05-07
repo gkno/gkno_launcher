@@ -131,6 +131,9 @@ class uniqueGraphNodes:
     self.task         = None
     self.taskArgument = None
 
+    # If this node points to a node within another pipeline.
+    self.nodeId = None
+
     # Record if this node is greedy.
     self.isGreedy = False
 
@@ -408,6 +411,7 @@ class pipelineConfiguration:
     allowedAttributes                             = {}
     allowedAttributes['id']                       = (str, True, True, 'id')
     allowedAttributes['omit from reduced plot']   = (bool, False, True, 'omitFromReducedPlot')
+    allowedAttributes['node id']                  = (str, False, True, 'nodeId')
     allowedAttributes['task']                     = (str, True, True, 'task')
     allowedAttributes['task argument']            = (str, False, True, 'taskArgument')
 
@@ -569,7 +573,7 @@ class pipelineConfiguration:
   # Check that defined edges are correctly included.
   def checkDefinedEdges(self, data):
 
-    if 'connect nodes to tasks' not in data: return
+    if 'connect nodes to tasks' not in data: return True
 
     # Define the allowed attributes.
     allowedAttributes            = {}
@@ -580,18 +584,20 @@ class pipelineConfiguration:
     # Define the allowed source attributes.
     allowedSourceAttributes                  = {}
     allowedSourceAttributes['task']          = (str, True, True, 'task')
-    allowedSourceAttributes['task argument'] = (str, True, True, 'taskArgument')
+    allowedSourceAttributes['task argument'] = (str, False, True, 'taskArgument')
+    allowedSourceAttributes['node id']       = (str, False, True, 'externalNodeId')
 
     # Define the allowed target attributes.
     allowedTargetAttributes                  = {}
     allowedTargetAttributes['task']          = (str, True, True, 'task')
-    allowedTargetAttributes['task argument'] = (str, True, True, 'taskArgument')
+    allowedTargetAttributes['task argument'] = (str, False, True, 'taskArgument')
+    allowedSourceAttributes['node id']       = (str, False, True, 'externalNodeId')
 
     # Loop over all the defined definitions.
     for information in data['connect nodes to tasks']:
 
       # Define a set of information to be used in help messages.
-      helpInfo = (self.name, 'connect nodes to tasks', information)
+      helpInfo = (self.name, 'connect nodes to tasks', information['id'])
 
       # Check that the supplied structure is a dictionary.
       if not methods.checkIsDictionary(information, self.allowTermination): return

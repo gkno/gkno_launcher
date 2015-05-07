@@ -2,7 +2,7 @@
   "id" : "fasta-dictionary",
   "configuration type" : "pipeline",
   "description" : "Generate a dictionary containing all of the sequences in the input reference fasta.",
-  "categories" : ["FASTQ-processing"],
+  "categories" : ["FASTA-processing"],
 
   "pipeline tasks" : [
     {

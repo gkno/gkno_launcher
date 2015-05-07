@@ -199,9 +199,17 @@ class superpipelineClass:
           # This pipeline may itself be called by an enveloping pipeline. If so, any tasks
           # will require prepending with the address of this pipeline.
           if pipelineObject.address: task = pipelineObject.address + '.' + task
+
+          # If the node points to a node in an external pipeline, get the address of the node.
+          externalNodeId = pipelineObject.getUniqueNodeAttribute(nodeId, 'nodeId')
+          if externalNodeId:
+            if pipelineObject.getUniqueNodeAttribute(nodeId, 'taskArgument'): print('superpipeline.checkContainedTasks - 1'); exit(0)
+            task = task + '.' + externalNodeId
+            if task not in self.uniqueNodeIds and task not in self.sharedNodeIds:
+              pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', uniqueNodeId, task, self.tasks)
     
           # If the task is not listed as one of the pipeline tasks. terminate.
-          if task not in self.tasks: pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', nodeId, task, self.tasks)
+          elif task not in self.tasks: pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', nodeId, task, self.tasks)
     
         # Check the tasks that shared nodes point to.
         for sharedNodeId in pipelineObject.sharedNodeAttributes.keys():

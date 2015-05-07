@@ -47,7 +47,7 @@
         },
         "if output to stream" : {
           "argument" : "",
-          "value" : "temp"
+          "value" : "keep"
         }
       }
     ],

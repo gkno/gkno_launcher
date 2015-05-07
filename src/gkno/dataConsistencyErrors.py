@@ -114,7 +114,7 @@ class consistencyErrors:
     text = ' (this task is part of a pipeline called by the main pipeline)' if '.' in task else ''
     self.text.append('A node required for constructing a filename is not present.')
     self.text.append('In order to construct values for the argument \'' + argument + '\' in the task with address \'' + task + '\' using tool \'' + \
-    tool + '\'' + text + '\', the argument \'' + requiredArgument + '\' must be defined, or be constructable. There is no node in the graph for ' + \
+    tool + '\'' + text + ', the argument \'' + requiredArgument + '\' must be defined, or be constructable. There is no node in the graph for ' + \
     'this argument, so this is not possible. Please modify the pipeline configuration file to provide an argument to set this value, or ensure ' + \
     'that the argument shares a node with another task in the pipeline, allowing the value to be constructed.')
     self.errors.writeFormattedText(self.text, errorType = 'error')

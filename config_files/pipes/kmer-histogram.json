@@ -7,37 +7,202 @@
   "pipeline tasks" : [
     {
       "task" : "count-kmers",
-      "tool" : "jellyfish-count"
+      "tool" : "jellyfish-count",
+      "greedy argument" : "--in"
     },
     {
       "task" : "build-histogram",
       "tool" : "jellyfish-histogram"
+    },
+    {
+      "task" : "plot-histogram",
+      "tool" : "histo-plot"
     }
   ],
 
-  "import arguments" : "compress",
-
   "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The first mate FASTQ file.",
+        "long form argument" : "--fastq",
+        "short form argument" : "-q",
+        "node id" : "fastq"
+      },
+      {
+        "description" : "The second mate FASTQ file.",
+        "long form argument" : "--fastq2",
+        "short form argument" : "-q2",
+        "node id" : "fastq2"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output file containing the kmer counts (extension: .jf).",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "counts"
+      },
+      {
+        "description" : "The output histogram plot.",
+        "long form argument" : "--histogram",
+        "short form argument" : "-hs",
+        "node id" : "histogram"
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The k-mer length.",
+        "long form argument" : "--k-mer",
+        "short form argument" : "-k",
+        "node id" : "k-mer-size"
+      },
+      {
+        "description" : "The initial hash size.",
+        "long form argument" : "--size",
+        "short form argument" : "-s",
+        "node id" : "initial-size"
+      },
+      {
+        "description" : "Count both strand, canonical representation (default: true).",
+        "long form argument" : "--canonical",
+        "short form argument" : "-c",
+        "node id" : "canonical"
+      },
+      {
+        "description" : "The number of threads to use for counting k-mers.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
+        "node id" : "threads"
+      },
+      {
+        "description" : "Generate a full histogram. Don't skip count 0. (default: true).",
+        "long form argument" : "--full",
+        "short form argument" : "-f",
+        "node id" : "full-histogram"
+      },
+      {
+        "description" : "The quantile of data to plot.",
+        "long form argument" : "--quantile",
+        "short form argument" : "-n",
+        "node id" : "quantile"
+      },
+      {
+        "description" : "The plot title.",
+        "long form argument" : "--title",
+        "short form argument" : "-l",
+        "node id" : "title"
+      },
+      {
+        "description" : "The x axis label [bin].",
+        "long form argument" : "--x-label",
+        "short form argument" : "-x",
+        "node id" : "x-label"
+      },
+      {
+        "description" : "The y axis label [value].",
+        "long form argument" : "--y-label",
+        "short form argument" : "-y",
+        "node id" : "y-label"
+      }
+    ]
   },
 
   "unique graph nodes" : [
     {
-      "id" : "vcf",
-      "task" : "compress",
+      "id" : "fastq",
+      "task" : "count-kmers",
       "task argument" : "--in"
+    },
+    {
+      "id" : "fastq2",
+      "task" : "count-kmers",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "k-mer-size",
+      "task" : "count-kmers",
+      "task argument" : "--k-mer"
+    },
+    {
+      "id" : "initial-size",
+      "task" : "count-kmers",
+      "task argument" : "--size"
+    },
+    {
+      "id" : "canonical",
+      "task" : "count-kmers",
+      "task argument" : "--canonical"
+    },
+    {
+      "id" : "full-histogram",
+      "task" : "build-histogram",
+      "task argument" : "--full"
+    },
+    {
+      "id" : "title",
+      "task" : "plot-histogram",
+      "task argument" : "--title"
+    },
+    {
+      "id" : "x-label",
+      "task" : "plot-histogram",
+      "task argument" : "--x-label"
+    },
+    {
+      "id" : "y-label",
+      "task" : "plot-histogram",
+      "task argument" : "--y-label"
+    },
+    {
+      "id" : "quantile",
+      "task" : "plot-histogram",
+      "task argument" : "--quantile"
+    },
+    {
+      "id" : "histogram",
+      "task" : "plot-histogram",
+      "task argument" : "--out"
     }
   ],
 
   "shared graph nodes" : [
     {
-      "id" : "out",
+      "id" : "counts",
       "arguments sharing node" : [
         {
-          "task" : "compress",
+          "task" : "count-kmers",
           "task argument" : "--out"
         },
         {
-          "task" : "index",
+          "task" : "build-histogram",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "threads",
+      "arguments sharing node" : [
+        {
+          "task" : "count-kmers",
+          "task argument" : "--threads"
+        },
+        {
+          "task" : "build-histogram",
+          "task argument" : "--threads"
+        }
+      ]
+    },
+    {
+      "id" : "plot",
+      "arguments sharing node" : [
+        {
+          "task" : "build-histogram",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "plot-histogram",
           "task argument" : "--in"
         }
       ]
@@ -48,7 +213,33 @@
     {
       "id" : "default",
       "description" : "Default parameter set requires user to input all input filenames.",
-      "data" : []
+      "data" : [
+        {
+          "id" : "k-mer",
+          "node" : "k-mer-size",
+          "values" : [23]
+        },
+        {
+          "id" : "initial size",
+          "node" : "initial-size",
+          "values" : [1000000]
+        },
+        {
+          "id" : "canonical",
+          "node" : "canonical",
+          "values" : ["set"]
+        },
+        { 
+          "id" : "threads-k-mer",
+          "node" : "threads",
+          "values" : [8]
+        },
+        { 
+          "id" : "full-histogram",
+          "node" : "full-histogram",
+          "values" : ["set"]
+        }
+      ]
     },
 
     {
@@ -56,9 +247,14 @@
       "description" : "Test parameter set for the test harness.",
       "data" : [
         {
-          "id" : "vcf",
-          "node" : "vcf",
-          "values" : ["mutated_genome.vcf"]
+          "id" : "fastq",
+          "node" : "fastq",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
+        },
+        {
+          "id" : "fastq2",
+          "node" : "fastq2",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_2.fq"]
         }
       ]
     }

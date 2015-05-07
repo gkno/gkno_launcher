@@ -29,6 +29,10 @@ class argumentAttributes:
     self.modifyArgument = None
     self.modifyValue    = None
 
+    # If there are instructions on supplying a command to use in place of the value,
+    # store the instructions.
+    self.valueCommand = {}
+
     # Mark the edge as a stream if necessary.
     self.isStream = False
 
@@ -218,6 +222,10 @@ class toolConfiguration:
     # that the values are valid.
     if self.success: self.checkConstructionInstructions()
 
+    # If instructtions have been provided on replacing a value with a command, check that the
+    # instructions are valid.
+    if self.success: self.checkValueCommand()
+
     # If the configuration file includes the 'argument order' list, check that all the arguments
     # for the tool are included and no others.
     if self.success: self.success = self.checkArgumentOrder()
@@ -288,6 +296,7 @@ class toolConfiguration:
     allowedAttributes['short form argument']           = (str, False, True, 'shortFormArgument')
     allowedAttributes['stub extensions']               = (list, False, True, 'stubExtensions')
     allowedAttributes['suggestible']                   = (bool, False, True, 'isSuggestible')
+    allowedAttributes['value command']                 = (dict, False, True, 'valueCommand')
 
     # Fail if there is no input arguments section. This is included since all input arguments
     # are included in the 'Inputs' section and, if by mistake, the section is named 'inputs' (no
@@ -320,6 +329,7 @@ class toolConfiguration:
     allowedAttributes['required']                      = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']           = (str, False, True, 'shortFormArgument')
     allowedAttributes['stub extensions']               = (list, False, True, 'stubExtensions')
+    allowedAttributes['value command']                 = (dict, False, True, 'valueCommand')
 
     # Fail if there is no output arguments section. This is included since all output arguments
     # are included in the 'Outputs' section and, if by mistake, the section is named 'outputs' (no
@@ -348,6 +358,7 @@ class toolConfiguration:
     allowedAttributes['modify value']                = (str, False, True, 'modifyValue')
     allowedAttributes['required']                    = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']         = (str, False, True, 'shortFormArgument')
+    allowedAttributes['value command']               = (dict, False, True, 'valueCommand')
 
     # Loop over all the other categories of arguments.
     for category in arguments:
@@ -484,6 +495,42 @@ class toolConfiguration:
     if 'path argument' in instructions:
       pathArgument = instructions['path argument']
       if pathArgument not in self.arguments: self.errors.invalidPathArgument(self.name, category, argument, pathArgument, 'define name')
+
+  # Check that instructions on replacing a value with a command are valid.
+  def checkValueCommand(self):
+    allowedFields = {}
+    allowedFields['command']             = (str, True)
+    allowedFields['apply to extensions'] = (list, False)
+
+    # Loop over all the tool arguments looking for any with instructions on replacing a value with a command.
+    for argument in self.arguments:
+      observedFields = []
+
+      # Loop over all fields in the instructions and check that they are valid.
+      if self.arguments[argument].valueCommand:
+        for field in self.arguments[argument].valueCommand:
+  
+          # If the field is invalid, terminate.
+          if field not in allowedFields: print('ERROR - checkValueCommand'); exit(1)
+  
+          # Check that the field has the correct type.
+          setValue = self.arguments[argument].valueCommand[field]
+          value    = str(setValue) if isinstance(setValue, unicode) else setValue
+          if allowedFields[field][0] != type(value): print('ERROR - checkValueCommand - type', field); exit(1)
+  
+          # Record the field as having been observed.
+          observedFields.append(field)
+  
+          # If the field 'apply to extensions' is set, check that all supplied extensions are valid for the argument.
+          if field == 'apply to extensions':
+            for extension in self.arguments[argument].valueCommand[field]:
+              if extension not in self.arguments[argument].extensions: print('ERROR - checkValueCommand - invalid extension'); exit(1)
+  
+        # Check that all required fields have been set.
+        for field in allowedFields.keys():
+          if allowedFields[field][1] and field not in observedFields: print('ERROR - checkValueCommand - missing', field); exit(1)
+
+    return True
 
   # Check that the 'argument order' list is complete and valid.
   def checkArgumentOrder(self):

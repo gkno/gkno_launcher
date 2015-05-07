@@ -192,69 +192,74 @@ class pipelineGraph:
       if graphNodeId not in self.configurationFileToGraphNodeId:
 
         # Get the task this node points to and determine if it is a tool or a pipeline.
-        task         = pipeline.getUniqueNodeAttribute(configurationNodeId, 'task')
-        taskArgument = pipeline.getUniqueNodeAttribute(configurationNodeId, 'taskArgument')
-        taskNodeId   = address + task
+        task           = pipeline.getUniqueNodeAttribute(configurationNodeId, 'task')
+        taskNodeId     = address + task
+        taskArgument   = pipeline.getUniqueNodeAttribute(configurationNodeId, 'taskArgument')
+        externalNodeId = pipeline.getUniqueNodeAttribute(configurationNodeId, 'nodeId')
   
-        # Check to see if the task runs a tool or a pipeline.
-        tool           = superpipeline.getTool(taskNodeId)
-        toolAttributes = superpipeline.getToolData(tool)
-
-        # Get the long form of the argument and the associated attributes for the argument.
-        longFormArgument   = toolAttributes.getLongFormArgument(taskArgument)
-        argumentAttributes = toolAttributes.getArgumentData(longFormArgument)
+        # Only create unique nodes that point to an argument. If the configuration file node points to a
+        # node in an external pipeline, skip the node. The node will be created when the pipeline being
+        # pointed to is parsed and the configuration file node will be associated with this node in the
+        # findUniqueNodes method.
+        if taskArgument:
+          tool           = superpipeline.getTool(taskNodeId)
+          toolAttributes = superpipeline.getToolData(tool)
   
-        # Determine if this is a file or an option.
-        isInput  = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
-        isOutput = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
-
-        # Determine if this argument is greedy.
-        argumentAttributes.isGreedy = pipeline.getUniqueNodeAttribute(configurationNodeId, 'isGreedy')
+          # Get the long form of the argument and the associated attributes for the argument.
+          longFormArgument   = toolAttributes.getLongFormArgument(taskArgument)
+          argumentAttributes = toolAttributes.getArgumentData(longFormArgument)
+    
+          # Determine if this is a file or an option.
+          isInput  = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
+          isOutput = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
   
-        # Determine if this is a filename stub.
-        isStub = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
-        if isStub: stubExtensions = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'stubExtensions')
+          # Determine if this argument is greedy.
+          argumentAttributes.isGreedy = pipeline.getUniqueNodeAttribute(configurationNodeId, 'isGreedy')
+    
+          # Determine if this is a filename stub.
+          isStub = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
+          if isStub: stubExtensions = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'stubExtensions')
+    
+          # If the configuration file node is for a filename stub, add as many nodes to the graph as there are files
+          # associated with the stub. Then connect all the nodes to the task.
+          if isStub:
   
-        # If the configuration file node is for a filename stub, add as many nodes to the graph as there are files
-        # associated with the stub. Then connect all the nodes to the task.
-        if isStub:
-
-          # Loop over all of the stub extensions.
-          for i, extension in enumerate(stubExtensions):
-
-            # Define the name of the new file node.
-            fileNodeId = str(graphNodeId + '.' + str(extension))
-
-            # Add the file node.
-            self.addFileNode(fileNodeId, graphNodeId)
-
-            # Identify the source and target node (depending on whether this is an input or an output)
-            # and add the edges to the graph.
-            source = fileNodeId if isInput else taskNodeId
-            target = taskNodeId if isInput else fileNodeId
-
-            # Store the extension for this particular node.
-            stubArgumentAttributes                   = deepcopy(argumentAttributes)
-            stubArgumentAttributes.stubExtension     = extension
-            stubArgumentAttributes.isPrimaryStubNode = True if i == 0 else False
-
-            # Add the edge to the graph.
-            self.graph.add_edge(source, target, attributes = stubArgumentAttributes)
-
-        # If this is an input file (not a stub), add the node and join it to the task.
-        elif isInput:
-          self.addFileNode(str(graphNodeId), str(graphNodeId))
-          self.addEdge(graphNodeId, taskNodeId, argumentAttributes)
-
-        # If this is an output file (not a stub), add the node and join it to the task.
-        elif isOutput:
-          self.addFileNode(str(graphNodeId), str(graphNodeId))
-          self.addEdge(taskNodeId, graphNodeId, argumentAttributes)
-
-        # If this is not a file, then create an option node and join to the task.
-        else:
-          self.addOptionNode(str(graphNodeId))
-          self.addEdge(graphNodeId, taskNodeId, argumentAttributes)
+            # Loop over all of the stub extensions.
+            for i, extension in enumerate(stubExtensions):
+  
+              # Define the name of the new file node.
+              fileNodeId = str(graphNodeId + '.' + str(extension))
+  
+              # Add the file node.
+              self.addFileNode(fileNodeId, graphNodeId)
+  
+              # Identify the source and target node (depending on whether this is an input or an output)
+              # and add the edges to the graph.
+              source = fileNodeId if isInput else taskNodeId
+              target = taskNodeId if isInput else fileNodeId
+  
+              # Store the extension for this particular node.
+              stubArgumentAttributes                   = deepcopy(argumentAttributes)
+              stubArgumentAttributes.stubExtension     = extension
+              stubArgumentAttributes.isPrimaryStubNode = True if i == 0 else False
+  
+              # Add the edge to the graph.
+              self.graph.add_edge(source, target, attributes = stubArgumentAttributes)
+  
+          # If this is an input file (not a stub), add the node and join it to the task.
+          elif isInput:
+            self.addFileNode(str(graphNodeId), str(graphNodeId))
+            self.addEdge(graphNodeId, taskNodeId, argumentAttributes)
+  
+          # If this is an output file (not a stub), add the node and join it to the task.
+          elif isOutput:
+            self.addFileNode(str(graphNodeId), str(graphNodeId))
+            self.addEdge(taskNodeId, graphNodeId, argumentAttributes)
+  
+          # If this is not a file, then create an option node and join to the task.
+          else:
+            self.addOptionNode(str(graphNodeId))
+            self.addEdge(graphNodeId, taskNodeId, argumentAttributes)
 
   # Add shared nodes to the graph.
   def addSharedNodes(self, superpipeline, pipeline):
@@ -594,17 +599,18 @@ class pipelineGraph:
 
       # Determine all the source nodes.
       for source in pipeline.getSources(nodeId):
-        externalPipeline = pipeline.getNodeTaskAttribute(source, 'pipeline')
-        externalNode     = pipeline.getNodeTaskAttribute(source, 'pipelineNodeId')
+        #externalPipeline = pipeline.getNodeTaskAttribute(source, 'pipeline')
+        externalNodeId   = pipeline.getNodeTaskAttribute(source, 'externalNodeId')
         task             = pipeline.getNodeTaskAttribute(source, 'task')
         taskArgument     = pipeline.getNodeTaskAttribute(source, 'taskArgument')
 
         # Determine the pipeline relative task address.
-        taskAddress = str(externalPipeline + '.' + task) if externalPipeline else str(task)
+        #taskAddress = str(externalPipeline + '.' + task) if externalPipeline else str(task)
+        taskAddress = address + task
 
         # If the source node already exists, it is defined with the external node. Store this source
         # node ID.
-        if externalNode: sourceNodeIds.append(str(address + externalPipeline + '.' + externalNode))
+        if externalNodeId: sourceNodeIds.append(str(taskAddress + '.' + externalNodeId))
 
         # If the external node isn't specified, the node needs to be created. The source must be a
         # file node (not a task), otherwise this would create a situation with multiple tasks producing
@@ -638,24 +644,64 @@ class pipelineGraph:
 
       # Loop over the target nodes and join the sources to them.
       for target in pipeline.getTargets(nodeId):
-        externalPipeline = pipeline.getNodeTaskAttribute(target, 'pipeline')
-        externalNode     = pipeline.getNodeTaskAttribute(target, 'pipelineNodeId')
+        #externalPipeline = pipeline.getNodeTaskAttribute(target, 'pipeline')
+        externalNodeId   = pipeline.getNodeTaskAttribute(target, 'externalNodeId')
         task             = pipeline.getNodeTaskAttribute(target, 'task')
         taskArgument     = pipeline.getNodeTaskAttribute(target, 'taskArgument')
 
-        # Get the tool and it's attributes associated with this argument.
-        tool           = superpipeline.tasks[address + taskAddress]
-        toolAttributes = superpipeline.getToolData(tool)
+        # Define the task address.
+        taskAddress = str(address + task)
 
-        # Get the long form of the argument and the associated attributes for the argument.
-        longFormArgument   = toolAttributes.getLongFormArgument(taskArgument)
-        argumentAttributes = toolAttributes.getArgumentData(longFormArgument)
+        # If the target node already exists, it is defined with the external node is.
+        if externalNodeId: targetNodeId = str(taskAddress + '.' + externalNodeId)
 
-        # Determine the pipeline relative task address.
-        taskAddress = str(externalPipeline + '.' + task) if externalPipeline else str(task)
+        # If the task is a tool and an argument is defined, get the argument attributes.
+        else:
+
+          # Get the tool and it's attributes associated with this argument.
+          tool           = superpipeline.tasks[taskAddress]
+          toolAttributes = superpipeline.getToolData(tool)
+  
+          # Get the long form of the argument and the associated attributes for the argument.
+          longFormArgument   = toolAttributes.getLongFormArgument(taskArgument)
+          argumentAttributes = toolAttributes.getArgumentData(longFormArgument)
+
+          # Define the taget for the edge.
+          targetNodeId = taskAddress + '.' + longFormArgument
 
         # Connect all the source nodes to the target node.
-        for sourceNodeId in sourceNodeIds: self.graph.add_edge(sourceNodeId, address + taskAddress, attributes = argumentAttributes)
+        print('BUILD', targetNodeId)
+        #for sourceNodeId in sourceNodeIds: self.graph.add_edge(sourceNodeId, targetNodeId, attributes = argumentAttributes)
+
+  # Associate the configuration node ids for unique nodes that point to nodes in nested pipelines with the
+  # created graph nodes.
+  def findUniqueNodes(self, superpipeline):
+    for tier in superpipeline.pipelinesByTier.keys():
+      for pipelineName in superpipeline.pipelinesByTier[tier]:
+        pipelineData = superpipeline.pipelineConfigurationData[pipelineName]
+        for configurationNodeId in pipelineData.uniqueNodeAttributes:
+
+          # Define the pipeline relative address.
+          address = str(pipelineData.address + '.') if pipelineData.address else str('')
+
+          # Get the task this node points to and determine if it is a tool or a pipeline.
+          taskAddress    = address + pipelineData.getUniqueNodeAttribute(configurationNodeId, 'task')
+          externalNodeId = pipelineData.getUniqueNodeAttribute(configurationNodeId, 'nodeId')
+          if externalNodeId:
+            externalNodeAddress = taskAddress + '.' + externalNodeId
+
+            # If the configuration node id is already in the configurationFileToGraphNodeId structure, there has
+            # been an error.
+            #TODO ERROR
+            if configurationNodeId in self.configurationFileToGraphNodeId: print('ERROR - findUniqueNodes'); exit(1)
+
+            # The configuration node points to a node in a nested pipeline, so the node must have been constructed.
+            # If externalNodeAddress is not in the configurationFileToGraphNodeId structure, there has been an error.
+            # TODO ERROR
+            if externalNodeAddress not in self.configurationFileToGraphNodeId: print('ERROR - findUniqueNodes'); exit(1)
+
+            # Associate the configuration node with the graph node.
+            self.configurationFileToGraphNodeId[configurationNodeId] = [externalNodeAddress]
 
   # Generate a topologically sorted graph.
   #TODO
@@ -1862,6 +1908,9 @@ class pipelineGraph:
     # If the node already exists, add the configuration file node ID to the node attributes.
     else:
       linkedConfigurationFileNodeIds = self.getGraphNodeAttribute(graphNodeId, 'configurationFileNodeIds')
+
+      #FIXME THIS IS ADDED FOR CONNECTING NODES. CHECK.
+      if not linkedConfigurationFileNodeIds: linkedConfigurationFileNodeIds = []
       if configurationFileNodeId not in linkedConfigurationFileNodeIds:
         linkedConfigurationFileNodeIds.append(configurationFileNodeId)
         self.setGraphNodeAttribute(graphNodeId, 'configurationFileNodeIds', linkedConfigurationFileNodeIds)

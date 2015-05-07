@@ -1,14 +1,14 @@
 {
   "id" : "jellyfish-histo",
+  "configuration type" : "tool",
   "description" : "Create a histogram of k-mer occurrences.",
   "categories" : ["Kmer-processing", "Jellyfish"],
   "tools" : ["jellyfish"],
   "path" : "Jellyfish/bin",
   "executable" : "jellyfish",
   "modifier" : "histo",
-  "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
         "description" : "The k-mer count file.",
         "long form argument" : "--in",
@@ -16,12 +16,12 @@
         "command line argument" : "-in",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".jf"],
-        "modify argument name on command line" : "hide"
+        "extensions" : ["jf"],
+        "modify argument" : "omit"
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {
         "description" : "Output file.",
         "long form argument" : "--out",
@@ -29,7 +29,7 @@
         "command line argument" : "--output",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".histo"],
+        "extensions" : ["histo"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -38,22 +38,20 @@
       }
     ],
 
-    "options" : [
+    "Options" : [
       {
         "description" : "Full histogram. Don't skip count 0. (default: false).",
         "long form argument" : "--full",
         "short form argument" : "-f",
         "command line argument" : "--full",
-        "data type" : "flag",
-        "extensions" : ["no extension"]
+        "data type" : "flag"
       },
       {
         "description" : "Number of threads.",
         "long form argument" : "--threads",
         "short form argument" : "-t",
         "command line argument" : "--threads",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "data type" : "integer"
       }
     ]
   },
@@ -67,18 +65,18 @@
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : [
+      "data" : [
       ]
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "input",
+          "id" : "input",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1_15.jf"]
         }

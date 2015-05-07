@@ -1,0 +1,140 @@
+{
+  "id" : "histo-plot",
+  "configuration type" : "tool",
+  "description" : "Plot the histogram of kmer lengths.",
+  "categories" : ["Visualisation"],
+  "tools" : [],
+  "path" : "none",
+  "executable" : "Rscript",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "Input histogram data file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["histo"]
+      },
+      {
+        "description" : "R script to process.",
+        "long form argument" : "--script",
+        "short form argument" : "-s",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["r"]
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output tab delimited file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["pdf"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace"
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The quantile of data to plot.",
+        "long form argument" : "--quantile",
+        "short form argument" : "-q",
+        "command line argument" : "none",
+        "data type" : "float",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The x axis label [bin].",
+        "long form argument" : "--x-label",
+        "short form argument" : "-x",
+        "command line argument" : "none",
+        "include value in quotations" : true,
+        "data type" : "string",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The y axis label [value].",
+        "long form argument" : "--y-label",
+        "short form argument" : "-y",
+        "command line argument" : "none",
+        "include value in quotations" : true,
+        "data type" : "string",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The plot title.",
+        "long form argument" : "--title",
+        "short form argument" : "-t",
+        "command line argument" : "none",
+        "include value in quotations" : true,
+        "data type" : "string",
+        "modify argument" : "omit"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--script",
+    "--in",
+    "--out",
+    "--title",
+    "--x-label",
+    "--y-label",
+    "--quantile"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+        {
+          "id" : "script",
+          "argument" : "--script",
+          "values" : ["$(TOOL_BIN)/R/histo-plot.r"]
+        },
+        {
+          "id" : "title",
+          "argument" : "--title",
+          "values" : ["The distribution of kmer frequencies."]
+        },
+        {
+          "id" : "xlabel",
+          "argument" : "--x-label",
+          "values" : ["Frequency of kmer observation"]
+        },
+        {
+          "id" : "ylabel",
+          "argument" : "--y-label",
+          "values" : ["Number of kmers observed"]
+        },
+        {
+          "id" : "quant",
+          "argument" : "--quantile",
+          "values" : [0.995]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+      ]
+    }
+  ]
+}
