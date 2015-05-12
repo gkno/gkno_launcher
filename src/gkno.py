@@ -15,6 +15,7 @@ import gkno.constructFilenames as construct
 import gkno.dataConsistency as dc
 import gkno.debug as debug
 import gkno.executionStructure as es
+import gkno.evaluateCommands as ec
 import gkno.fileHandling as fh
 import gkno.gknoConfiguration as gc
 import gkno.graph as gr
@@ -30,7 +31,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.9.7"
+__version__ = "2.9.8"
 __date__ = "May 2015"
 
 def main():
@@ -79,6 +80,9 @@ def main():
   # Define a class for handling files. In the initialisation, determine the names of all available
   # tools and pipelines.
   files = fh.fileHandling(toolConfigurationFilesPath, pipelineConfigurationFilesPath, userConfigurationPath)
+
+  # Define a cloass for handling arguments whose values are a command to evaluate.
+  evalCom = ec.evaluateCommands()
 
   # If not being run in admin mode, determine the name of the pipeline being run. Note that
   # for the code, a tool is considered a pipeline with a single task, so the terminology
@@ -160,6 +164,10 @@ def main():
 
     # Parse the configuration files identifying nodes that are to be connected.
     graph.connectNodes(superpipeline)
+
+    # If any pipeline configuration nodes are given commands to evaluate, check the validity of the instructions
+    # and implement them.
+    evalCom.checkCommands(graph, superpipeline)
 
     # Determine which graph nodes are required. A node may be used by multiple tasks and may be optional
     # for some and required by others. For each node, loop over all edges and check if any of the edges

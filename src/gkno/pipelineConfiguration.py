@@ -94,6 +94,10 @@ class sharedGraphNodes:
     # node (if the filenames are constructed).
     self.addTextToFilename = None
 
+    # If the value associated with the shared graph node is to be derived by evaluating a command, store
+    # the information required to construct the command.
+    self.evaluateCommand = None
+
 # Define a class to hold information for shared nodes.
 class nodeTaskAttributes:
   def __init__(self):
@@ -144,6 +148,10 @@ class uniqueGraphNodes:
 
     # Record if the task should be included in the plot.
     self.omitFromReducedPlot = False
+
+    # If the value associated with the unique graph node is to be derived by evaluating a command, store
+    # the information required to construct the command.
+    self.evaluateCommand = None
 
 # Define a class to store information on edges to be created. These are defined using the
 # 'connect nodes and edges' section in the pipeline configuration file.
@@ -406,6 +414,7 @@ class pipelineConfiguration:
 
     # Define the allowed nodes attributes.
     allowedAttributes                             = {}
+    allowedAttributes['evaluate command']         = (dict, False, True, 'evaluateCommand')
     allowedAttributes['id']                       = (str, True, True, 'id')
     allowedAttributes['omit from reduced plot']   = (bool, False, True, 'omitFromReducedPlot')
     allowedAttributes['node id']                  = (str, False, True, 'nodeId')
@@ -452,6 +461,7 @@ class pipelineConfiguration:
     allowedAttributes['add text to filename']   = (str, False, True, 'addTextToFilename')
     allowedAttributes['arguments sharing node'] = (list, True, True, 'nodes')
     allowedAttributes['delete files']           = (bool, False, True, 'isDelete')
+    allowedAttributes['evaluate command']       = (dict, False, True, 'evaluateCommand')
     allowedAttributes['id']                     = (str, True, True, 'id')
 
     # Loop over all of the defined nodes.

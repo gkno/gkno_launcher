@@ -206,7 +206,7 @@ class superpipelineClass:
             if pipelineObject.getUniqueNodeAttribute(nodeId, 'taskArgument'): print('superpipeline.checkContainedTasks - 1'); exit(0)
             task = task + '.' + externalNodeId
             if task not in self.uniqueNodeIds and task not in self.sharedNodeIds:
-              pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', uniqueNodeId, task, self.tasks)
+              pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', nodeId, task, self.tasks)
     
           # If the task is not listed as one of the pipeline tasks. terminate.
           elif task not in self.tasks: pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', nodeId, task, self.tasks)

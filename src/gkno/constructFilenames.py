@@ -202,7 +202,7 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeId, argu
     # Determine the extension to place on the filename. If the file is a stub, do not attach the extension, just store
     # it on the node.
     newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeId, 'extensions')
-    updatedValue = furnishExtension(instructions, updatedValue, extension, newExtensions)
+    updatedValue  = furnishExtension(instructions, updatedValue, extension, newExtensions)
 
     # Add the updated value to the modifiedValues list.
     updatedValues.append(updatedValue)

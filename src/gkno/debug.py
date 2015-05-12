@@ -30,7 +30,7 @@ class debug:
       print('task:', task)
       print('\tinputs:')
       for nodeId in graph.graph.predecessors(task):
-        print('\t\t', graph.getArgumentAttribute(nodeId, task, 'longFormArgument'), graph.getGraphNodeAttribute(nodeId, 'values'))
+        print('\t\t', graph.getArgumentAttribute(nodeId, task, 'longFormArgument'), ' ', graph.getGraphNodeAttribute(nodeId, 'values'), ' (node id: ', nodeId, ')', sep = '')
       print('\toutputs:')
       for nodeId in graph.graph.successors(task):
-        print('\t\t', graph.getArgumentAttribute(task, nodeId, 'longFormArgument'), graph.getGraphNodeAttribute(nodeId, 'values'))
+        print('\t\t', graph.getArgumentAttribute(task, nodeId, 'longFormArgument'), ' ', graph.getGraphNodeAttribute(nodeId, 'values'), ' (node id: ', nodeId, ')', sep = '')

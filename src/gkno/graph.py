@@ -129,6 +129,12 @@ class dataNodeAttributes:
     # node (if the filenames are constructed).
     self.addTextToFilename = None
 
+    # If the values associated with the node are commands to be evaluated at run time, then the
+    # values will not conform to the required data type (since the command will be a string). If
+    # this is the case, the isCommandToEvaluate flag will be set to True so that the checks are 
+    # not performed.
+    self.isCommandToEvaluate = False
+
 # Define a class to store and manipulate the pipeline graph.
 class pipelineGraph:
   def __init__(self):
@@ -599,7 +605,7 @@ class pipelineGraph:
           # Check that the source and target both exist in the graph.
           #TODO ERRORS
           if connection.source not in self.graph: print('ERROR - graph.connectNodes - source', connection.source); exit(1)
-          if connection.target not in self.graph: print('ERROR - graph.connectNodes - target', connection.source); exit(1)
+          if connection.target not in self.graph: print('ERROR - graph.connectNodes - target', connection.target); exit(1)
 
           # Determine which of the nodes is a task node and which is not.
           isSourceATask = True if self.getGraphNodeAttribute(connection.source, 'nodeType') == 'task' else False
@@ -665,136 +671,249 @@ class pipelineGraph:
   #TODO
   def generateWorkflow(self):
 
-    # Perform a topological sort of the graph.
-    tempWorkflow = []
+    #TODO SEE IF THIS UPDATED METHOD (CURRENTLY INCOMPLETE) IS BETTER THAN THE EXISTING.
+    # Define a structure that holds the predecessor and successor tasks for each task in the pipeline.
+    class neighbours:
+      def __init__(self, predecessors, successors):
+        self.predecessors = predecessors
+        self.successors   = successors
+
+    # Store all of the tasks by their tier in the pipeline.
+    tasksByTier    = {}
+    tasksByTier[1] = {}
+
+    # Determine all of the tasks in the pipeline.
+    remainingTasks = {}
+    tasks          = []
     for nodeId in nx.topological_sort(self.graph):
-      nodeType = getattr(self.graph.node[nodeId]['attributes'], 'nodeType')
-      if nodeType == 'task': tempWorkflow.append(nodeId)
+      if self.getGraphNodeAttribute(nodeId, 'nodeType') == 'task': tasks.append(nodeId)
 
-    # The topological sort is non-unique and so the order is not necessarily the desirable order. A task
-    # can be separated from a set of tasks with which it logically belongs and still be topologically
-    # sorted. Loop over the tasks and try to keep connected tasks together.
-    task = tempWorkflow.pop(0)
-    self.workflow.append(task)
+    # Loop over all of the tasks in the pipeline and determine which have no predecessors. Store these as the first
+    # tier of tasks. For all tasks, keep track of the predecessor and successor tasks for final sorting of the tasks.
+    for task in tasks:
 
-    # Tasks will be removed from the tempWorkflow and placed in the final workflow. Continue working until
-    # all tasks in the pipeline have been moved to the new workflow.
-    while tempWorkflow:
+      # Get all the predecessor tasks.
+      predecessors = []
+      for predecessor in self.graph.predecessors(task):
+        for predecessorTask in self.graph.predecessors(predecessor):
+          if self.getGraphNodeAttribute(predecessorTask, 'nodeType') == 'task' and predecessorTask not in predecessors: predecessors.append(predecessorTask)
 
-      # Get all of the tasks that are succeed this task by one level. This means any task that takes as input
-      # a task outputted by this task.
-      successorTasks = []
+      # Get all the successor tasks.
+      successors = []
       for successor in self.graph.successors(task):
         for successorTask in self.graph.successors(successor):
-          if successorTask not in successorTasks and successorTask in tempWorkflow: successorTasks.append(successorTask)
+          if self.getGraphNodeAttribute(successorTask, 'nodeType') == 'task' and successorTask not in successors: successors.append(successorTask)
 
-      # If there is a single task marked as a successor task, but this is not the task that is already indicated
-      # as the next task, check that the task can be moved. This means that the successor task needs to be checked
-      # to ensure that it does not depend on any of the intervening tasks.
-      isDescendant = False
-      if len(successorTasks) == 1:
-        testTasks = []
-        for testTask in tempWorkflow:
-          if testTask != successorTasks[0]: testTasks.append(testTask)
-        for testTask in testTasks:
-          if successorTasks[0] in nx.descendants(self.graph, testTask):
-            isDescendant = True
-            break
- 
-      # If there are multiple successor tasks, loop over the tasks and check if any of these tasks depend on
-      # each other.
-      i = 0
-      while len(successorTasks) > 1:
-        successorTask = successorTasks[i]
+      # If the task has no predecessors, store it as a first tier task.
+      if not predecessors: tasksByTier[1][task] = neighbours(predecessors, successors)
+      else: remainingTasks[task] = neighbours(predecessors, successors)
 
-        # For this successor task, find all tasks on which it depends.
-        isDependent      = False
-        predecessorTasks = []
-        for predecessor in self.graph.predecessors(successorTask):
-          for predecessorTask in self.graph.predecessors(predecessor): predecessorTasks.append(predecessorTask)
+    # Loop over the the tasks that have predecessors and rank the tasks by tier. Tier 2 tasks are dependent on tier 1 etc.
+    tier = 2
+    while len(remainingTasks) > 0:
+      removeTasks       = []
+      tasksByTier[tier] = {}
+      for task in remainingTasks:
 
-        # Check if any of these tasks on which the successor task depends appear in the list of successor tasks.
-        # If they do, this means that this task cannot be next in the workflow.
-        for predecessorTask in predecessorTasks:
-          if predecessorTask in successorTasks:
-            isDependent = True
-            break
+        # Check all the tasks predecessors and see if any of them appear in the previous tier. If so, and none of the tasks
+        # are in the remainingTasks, store this task as a member of the current tier.
+        hasTaskInPreviousTier   = False
+        hasTaskinRemainingTasks = False
+        for predecessor in remainingTasks[task].predecessors:
+          if predecessor in tasksByTier[tier - 1].keys(): hasTaskInPreviousTier = True
+          elif predecessor in remainingTasks: hasTaskinRemainingTasks = True
 
-        # If this successor task is dependent on other tasks in the list of successor tasks, move to the next task
-        # in this list.
-        if isDependent: i += 1
+        if hasTaskInPreviousTier and not hasTaskinRemainingTasks:
+          tasksByTier[tier][task] = remainingTasks[task]
+          if task not in removeTasks: removeTasks.append(task)
 
-        # Otherwise, this task can be added to the workflow and removed from the list of successor tasks and the
-        # tempWorkflow.
-        else:
-          self.workflow.append(successorTask)
-          tempWorkflow.remove(successorTask)
-          successorTasks.remove(successorTask)
-          i = 0
-                
-      # If the successor task has no successors of its own, it can be added to the workflow as the end of a set of
-      # connected tasks. Then the first task in the original topologically sorted list can be added to the workflow
-      # and its successors investigated.
-      if isDescendant or len(successorTasks) != 1:
-        task = tempWorkflow.pop(0)
-        self.workflow.append(task)
+      # All tasks that have been added to this tier need to be removed from the remaining tasks list.
+      for task in removeTasks: del(remainingTasks[task])
 
-      # If there is a only a single successor task, or all but one of the multiple successor tasks have already been
-      # added to the workflow, add this task to the workflow and remove from the tempWorkflow.
-      else:
-        task = successorTasks[0]
-        if task not in self.workflow: self.workflow.append(task)
-        if task in tempWorkflow: tempWorkflow.remove(task)
+      # Increment the tier.
+      tier += 1
 
-    # Sanity check.
-    assert len(tempWorkflow) == 0
+    # Loop over the first tier tasks until all have been added to the workflow.
+    while len(tasksByTier[1]) > 0:
 
-    # The topological sort does not always generate the correct order. In this routine, check for
-    # cases where a task is outputting to the stream. It is possible that after this task, the
-    # topological sort could choose from multiple tasks to perform next. This routine exists to
-    # ensure that the task following is the one that expects the stream as its input.
-    #FIXME
-    incomplete = True
-    startCount = 0
-    while incomplete:
-      for counter in range(startCount, len(self.workflow)):
-        task = self.workflow[counter]
-        if counter == len(self.workflow) - 1: incomplete = False
-        else:
-          nextTask = self.workflow[counter + 1]
+      # Pick a task from the first tier and step through the tiers adding tasks that connect to this task.
+      tier         = 1
+      task, struct = tasksByTier[tier].popitem()
+      self.workflow.append(task)
 
-          # If this task outputs to the stream, determine what the next task should be.
-          if self.getGraphNodeAttribute(task, 'isOutputStream'):
-            for outputNodeId in self.graph.successors(task):
-              successorTasks  = []
-              for successorTask in self.graph.successors(outputNodeId): successorTasks.append(successorTask)
+      # Define the tasks available in the next tier.
+      tasks = struct.successors
 
-            # If the next task is not in the list of tasks, modify the workflow to ensure that it is.
-            successorIndex = self.workflow.index(successorTasks[0])
-            if nextTask not in successorTasks:
+      # Loop over the tasks in the next tier, searching for tasks dependent on the present task.
+      while len(tasks) > 0:
+        availableTasks = {}
+        for successor in tasks:
+          if successor in tasksByTier[tier + 1]:
+  
+            # Check that all the predecessors to this task are already in the workflow. If not, the task cannot be
+            # added to the workflow yet.
+            hasPredecessors = True
+            for predecessor in tasksByTier[tier + 1][successor].predecessors:
+              if predecessor not in self.workflow: hasPredecessors = False
+  
+            # Only add the task if all predecessors are in the workflow.
+            if hasPredecessors:
+              noSuccessors = len(tasksByTier[tier + 1][successor].successors)
+              if noSuccessors not in availableTasks: availableTasks[noSuccessors] = []
+              availableTasks[noSuccessors].append(successor)
+    
+        # Loop over the tasks from the next tier and add to the workflow. If there are multiple tasks, prioritize
+        # based on the minimum number of successors to that task. In particular, of the successor itself has no
+        # successors, it should appear first in the workflow.
+        tasks = []
+        for noSuccessors in sorted(availableTasks):
+          for task in availableTasks[noSuccessors]:
+            self.workflow.append(task)
+  
+            # Add the sucecssors to the task added to the workflow to the tasks list. This list will be used to
+            # continue extending the workflow into the next tier.
+            tasks.extend(tasksByTier[tier + 1].pop(task).successors)
+  
+        # Increment the tier.
+        tier += 1
 
-              # Store the tasks 
-              workflowMiddle = []
-              workflowMiddle = self.workflow[counter + 1: successorIndex]
+    # If there are still tasks in reaminingTasks, not all tasks have been added to the workflow. In this case, terminate
+    # since the workflow is incomplete.
+    if len(remainingTasks) != 0: print('ERROR - graph.generateWorkflow - workflow incomplete'); exit(1)
 
-              # Find all the tasks after the successor task. Once tasks have been moved around, these
-              # tasks will all be added to the end.
-              workflowEnd = []
-              workflowEnd = self.workflow[successorIndex + 1:]
+    # Return the workflow.
+    return self.workflow
 
-              # Reconstruct the workflow.
-              updatedWorkflow = []
-              for updateCount in range(0, counter + 1): updatedWorkflow.append(self.workflow[updateCount])
-              updatedWorkflow.append(successorTasks[0])
-              for updateTask in workflowMiddle: updatedWorkflow.append(updateTask)
-              for updateTask in workflowEnd: updatedWorkflow.append(updateTask)
-
-              # Update the workflow.
-              self.workflow = updatedWorkflow
-
-              # Reset the startCount. There is no need to loop over the entire workflow on the next pass.
-              startCount = counter
-              break
+#    # Perform a topological sort of the graph.
+#    tempWorkflow = []
+#    for nodeId in nx.topological_sort(self.graph):
+#      nodeType = getattr(self.graph.node[nodeId]['attributes'], 'nodeType')
+#      if nodeType == 'task': tempWorkflow.append(nodeId)
+#
+#    # The topological sort is non-unique and so the order is not necessarily the desirable order. A task
+#    # can be separated from a set of tasks with which it logically belongs and still be topologically
+#    # sorted. Loop over the tasks and try to keep connected tasks together.
+#    task = tempWorkflow.pop(0)
+#    self.workflow.append(task)
+#
+#    # Tasks will be removed from the tempWorkflow and placed in the final workflow. Continue working until
+#    # all tasks in the pipeline have been moved to the new workflow.
+#    while tempWorkflow:
+#
+#      # Get all of the tasks that are succeed this task by one level. This means any task that takes as input
+#      # a task outputted by this task.
+#      successorTasks = []
+#      for successor in self.graph.successors(task):
+#        for successorTask in self.graph.successors(successor):
+#          if successorTask not in successorTasks and successorTask in tempWorkflow: successorTasks.append(successorTask)
+#
+#      # If there is a single task marked as a successor task, but this is not the task that is already indicated
+#      # as the next task, check that the task can be moved. This means that the successor task needs to be checked
+#      # to ensure that it does not depend on any of the intervening tasks.
+#      isDescendant = False
+#      if len(successorTasks) == 1:
+#        testTasks = []
+#        for testTask in tempWorkflow:
+#          if testTask != successorTasks[0]: testTasks.append(testTask)
+#        for testTask in testTasks:
+#          if successorTasks[0] in nx.descendants(self.graph, testTask):
+#            isDescendant = True
+#            break
+# 
+#      # If there are multiple successor tasks, loop over the tasks and check if any of these tasks depend on
+#      # each other.
+#      i = 0
+#      while len(successorTasks) > 1:
+#        successorTask = successorTasks[i]
+#
+#        # For this successor task, find all tasks on which it depends.
+#        isDependent      = False
+#        predecessorTasks = []
+#        for predecessor in self.graph.predecessors(successorTask):
+#          for predecessorTask in self.graph.predecessors(predecessor): predecessorTasks.append(predecessorTask)
+#
+#        # Check if any of these tasks on which the successor task depends appear in the list of successor tasks.
+#        # If they do, this means that this task cannot be next in the workflow.
+#        for predecessorTask in predecessorTasks:
+#          if predecessorTask in successorTasks:
+#            isDependent = True
+#            break
+#
+#        # If this successor task is dependent on other tasks in the list of successor tasks, move to the next task
+#        # in this list.
+#        if isDependent: i += 1
+#
+#        # Otherwise, this task can be added to the workflow and removed from the list of successor tasks and the
+#        # tempWorkflow.
+#        else:
+#          self.workflow.append(successorTask)
+#          tempWorkflow.remove(successorTask)
+#          successorTasks.remove(successorTask)
+#          i = 0
+#                
+#      # If the successor task has no successors of its own, it can be added to the workflow as the end of a set of
+#      # connected tasks. Then the first task in the original topologically sorted list can be added to the workflow
+#      # and its successors investigated.
+#      if isDescendant or len(successorTasks) != 1:
+#        task = tempWorkflow.pop(0)
+#        self.workflow.append(task)
+#
+#      # If there is a only a single successor task, or all but one of the multiple successor tasks have already been
+#      # added to the workflow, add this task to the workflow and remove from the tempWorkflow.
+#      else:
+#        task = successorTasks[0]
+#        if task not in self.workflow: self.workflow.append(task)
+#        if task in tempWorkflow: tempWorkflow.remove(task)
+#
+#    # Sanity check.
+#    assert len(tempWorkflow) == 0
+#
+#    # The topological sort does not always generate the correct order. In this routine, check for
+#    # cases where a task is outputting to the stream. It is possible that after this task, the
+#    # topological sort could choose from multiple tasks to perform next. This routine exists to
+#    # ensure that the task following is the one that expects the stream as its input.
+#    #FIXME
+#    incomplete = True
+#    startCount = 0
+#    while incomplete:
+#      for counter in range(startCount, len(self.workflow)):
+#        task = self.workflow[counter]
+#        if counter == len(self.workflow) - 1: incomplete = False
+#        else:
+#          nextTask = self.workflow[counter + 1]
+#
+#          # If this task outputs to the stream, determine what the next task should be.
+#          if self.getGraphNodeAttribute(task, 'isOutputStream'):
+#            for outputNodeId in self.graph.successors(task):
+#              successorTasks  = []
+#              for successorTask in self.graph.successors(outputNodeId): successorTasks.append(successorTask)
+#
+#            # If the next task is not in the list of tasks, modify the workflow to ensure that it is.
+#            successorIndex = self.workflow.index(successorTasks[0])
+#            if nextTask not in successorTasks:
+#
+#              # Store the tasks 
+#              workflowMiddle = []
+#              workflowMiddle = self.workflow[counter + 1: successorIndex]
+#
+#              # Find all the tasks after the successor task. Once tasks have been moved around, these
+#              # tasks will all be added to the end.
+#              workflowEnd = []
+#              workflowEnd = self.workflow[successorIndex + 1:]
+#
+#              # Reconstruct the workflow.
+#              updatedWorkflow = []
+#              for updateCount in range(0, counter + 1): updatedWorkflow.append(self.workflow[updateCount])
+#              updatedWorkflow.append(successorTasks[0])
+#              for updateTask in workflowMiddle: updatedWorkflow.append(updateTask)
+#              for updateTask in workflowEnd: updatedWorkflow.append(updateTask)
+#
+#              # Update the workflow.
+#              self.workflow = updatedWorkflow
+#
+#              # Reset the startCount. There is no need to loop over the entire workflow on the next pass.
+#              startCount = counter
+#              break
 
     # Return the workflow.
     return self.workflow

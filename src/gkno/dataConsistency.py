@@ -21,12 +21,17 @@ def checkValues(graph, superpipeline):
     values   = graph.getGraphNodeAttribute(nodeId, 'values')
     nodeType = graph.getGraphNodeAttribute(nodeId, 'nodeType')
 
-    # Get all of the arguments that use this node and check the data types. Start with all predecessors to this node.
-    expectedDataType = None
-    for predecessorNodeId in graph.getPredecessors(nodeId):
-      expectedDataType = checkNode(graph, superpipeline, predecessorNodeId, nodeId, nodeType, expectedDataType, values, isInput = False)
-    for successorNodeId in graph.getSuccessors(nodeId):
-      expectedDataType = checkNode(graph, superpipeline, nodeId, successorNodeId, nodeType, expectedDataType, values, isInput = True)
+    # Determine if the node values are commands to evaluate at run time. If so, do not perform these checks.
+    if not graph.getGraphNodeAttribute(nodeId, 'isCommandToEvaluate'):
+
+      # Get all of the arguments that use this node and check the data types. Start with all predecessors to this node.
+      expectedDataType = None
+      for predecessorNodeId in graph.getPredecessors(nodeId):
+        expectedDataType = checkNode(graph, superpipeline, predecessorNodeId, nodeId, nodeType, expectedDataType, values, isInput = False)
+
+      expectedDataType = None
+      for successorNodeId in graph.getSuccessors(nodeId):
+        expectedDataType = checkNode(graph, superpipeline, nodeId, successorNodeId, nodeType, expectedDataType, values, isInput = True)
 
 # Check the values for a node.
 def checkNode(graph, superpipeline, source, target, nodeType, expectedDataType, values, isInput):
