@@ -59,6 +59,7 @@
     ],
   
     "Options" : [
+      {
         "description" : "The genomic region in which to perform the analysis.",
         "long form argument" : "--region",
         "short form argument" : "-rg",
@@ -71,7 +72,7 @@
   "argument order" : [
     "--in",
     "--region",
-    "--intervals-file",
+    "--regions-file",
     "--out"
   ],
 

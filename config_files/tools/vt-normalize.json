@@ -106,9 +106,9 @@
   "argument order" : [
     "--in",
     "--region",
+    "--regions-file",
     "--fasta-reference",
     "--fasta-index",
-    "--intervals-file",
     "--window",
     "--out"
   ],
