@@ -1,0 +1,124 @@
+{
+  "id" : "rufus-build-kmers",
+  "configuration type" : "tool",
+  "description" : "Performs an intersection of two kmer frequencies and identifies kmers that are unique to one of the samples. The reads containing these kmers potentially harbour mutations. These kmers are provided in the output.",
+  "categories" : ["Kmer-processing", "Marthlab-software"],
+  "tools" : ["Rufus"],
+  "path" : "Rufus/bin",
+  "executable" : "RUFUSv6.BuildHash",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "First set of kmer counts (reference strain).",
+        "long form argument" : "--kmer-count1",
+        "short form argument" : "-k1",
+        "command line argument" : "--kmer-count1",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["tab"],
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "Second set of kmer counts (query strain).",
+        "long form argument" : "--kmer-count2",
+        "short form argument" : "-k2",
+        "command line argument" : "--kmer-count2",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["tab"],
+        "modify argument" : "omit"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "List of unique kmers.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--output",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["hl"],
+        "modify argument" : "omit",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--kmer-count2",
+          "modify extension" : "replace"
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The kmer length.",
+        "long form argument" : "--kmer",
+        "short form argument" : "-k",
+        "command line argument" : "--kmer",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "unknown",
+        "long form argument" : "--max-depth-reference",
+        "short form argument" : "-mdr",
+        "command line argument" : "--max-depth-reference",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "Minimum depth in query.",
+        "long form argument" : "--min-depth-query",
+        "short form argument" : "-mq",
+        "command line argument" : "--min-depth-query",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "Maximum depth.",
+        "long form argument" : "--max-depth",
+        "short form argument" : "-d",
+        "command line argument" : "--max-depth",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "Number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
+        "command line argument" : "--threads",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--kmer-count1",
+    "--kmer-count2",
+    "--out",
+    "--kmer",
+    "--max-depth-reference",
+    "--min-depth-query",
+    "--max-depth",
+    "--threads"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+        {
+          "id" : "threads",
+          "argument" : "--threads",
+          "values" : [1]
+        }
+      ]
+    }
+  ]
+}

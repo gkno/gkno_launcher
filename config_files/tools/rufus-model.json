@@ -1,0 +1,121 @@
+{
+  "id" : "rufus-model",
+  "configuration type" : "tool",
+  "description" : "Performs an analysis of the kmer frequency histogram, outputting cutoffs for the maximum error rate and minimum coverage for a given sample.",
+  "categories" : ["Kmer-processing", "Rufus", "Marthlab-software"],
+  "tools" : ["Rufus"],
+  "path" : "Rufus/bin",
+  "executable" : "ModelDist2",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "Input histogram of hash counts.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--histogram",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["histo"],
+        "modify argument" : "omit"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "Output dist file.",
+        "long form argument" : "--out-dist",
+        "short form argument" : "-od",
+        "command line argument" : "--output-dist",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["dist"],
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "hide argument in help" : true,
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "append"
+        }
+      },
+      {
+        "description" : "The model file contains information on how to fit normal distributions to the kmer frequency histogram as well as suggested cut-off values for other Rufus tools.",
+        "long form argument" : "--out-model",
+        "short form argument" : "-om",
+        "command line argument" : "--output-model",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["model"],
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "hide argument in help" : true,
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "append"
+        }
+      },
+      {
+        "description" : "Output prob file.",
+        "long form argument" : "--out-prob",
+        "short form argument" : "-pr",
+        "command line argument" : "--output-prob",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["prob"],
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "hide argument in help" : true,
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "append"
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Length of kmer.",
+        "long form argument" : "--kmer",
+        "short form argument" : "-k",
+        "command line argument" : "--kmer",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "Number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
+        "command line argument" : "--threads",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--in",
+    "--kmer",
+    "--threads",
+    "--out-dist",
+    "--out-model",
+    "--out-prob"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+        {
+          "id" : "threads",
+          "argument" : "--threads",
+          "values" : [1]
+        }
+      ]
+    }
+  ]
+}

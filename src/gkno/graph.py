@@ -217,7 +217,8 @@ class pipelineGraph:
           isOutput = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
   
           # Determine if this argument is greedy.
-          argumentAttributes.isGreedy = pipeline.getUniqueNodeAttribute(configurationNodeId, 'isGreedy')
+          #FIXME REMOVE?
+          #argumentAttributes.isGreedy = pipeline.getUniqueNodeAttribute(configurationNodeId, 'isGreedy')
     
           # Determine if this is a filename stub.
           isStub = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
@@ -1132,6 +1133,24 @@ class pipelineGraph:
         # Replace the values with the modifiedValues.
         self.setGraphNodeAttribute(nodeId, 'values', modifiedValues)
 
+  # Identify tasks marked as greedy and mark the nodes and edges.
+  def setGreedyTasks(self, superpipeline):
+
+    # Loop over all tasks in the pipeline.
+    for task in self.workflow:
+
+      # Get any greedy arguments associated with the task and attach the argument to the task node.
+      greedyArgument = self.getGreedyArgument(superpipeline, task)
+      if greedyArgument:
+        self.setGraphNodeAttribute(task, 'isGreedy', True)
+        self.setGraphNodeAttribute(task, 'greedyArgument', greedyArgument)
+
+        # Loop over the tasks predecessors and find the inputs that correspond to the greedy argument. Set the
+        # isGreedy flag to True for these edges.
+        for predecessor in self.graph.predecessors(task):
+          longFormArgument = self.getArgumentAttribute(predecessor, task, 'longFormArgument')
+          if longFormArgument == greedyArgument: self.setArgumentAttribute(predecessor, task, 'isGreedy', True)
+
   # Loop over all inputs to each task and determine if any of them are listed as greedy. If so, mark the task
   # as greedy.
   def markGreedyTasks(self, superpipeline):
@@ -1155,6 +1174,7 @@ class pipelineGraph:
   
           # Mark the task node to indicate that this task is greedy.
           self.setGraphNodeAttribute(task, 'isGreedy', True)
+    exit(0)
 
   # Loop over all of the tasks in the workflow and construct missing filenames where there are instructions to do so. In
   # addition, where multiple options are provided to a task, the task is divided into multiple tasks and handling of input
@@ -1172,18 +1192,14 @@ class pipelineGraph:
       divisions             = self.isTaskInDivision(task)
       isFirstTaskInDivision = False
 
-      # Check if any of the arguments for this task have been identified as greedy. If so, check
-      # that the argument is valid for the tool.
-      greedyArgument = self.getGreedyArgument(superpipeline, task)
-      if greedyArgument:
-        self.setGraphNodeAttribute(task, 'isGreedy', True)
-        self.setGraphNodeAttribute(task, 'greedyArgument', greedyArgument)
-
       # Determine general information about this task.
       consolidate = self.getGraphNodeAttribute(task, 'consolidate')
 
       # Determine the number of values provided to all arguments for this task.
       values = self.getArgumentValues(task)
+
+      # Get the greedy argument associated with the task.
+      greedyArgument = self.getGraphNodeAttribute(task, 'greedyArgument')
 
       # Loop over the different input files and determine the number of subphases.
       subphases = self.getSubphases(task, values)
@@ -1339,12 +1355,13 @@ class pipelineGraph:
         noValues = len(self.getGraphNodeAttribute(nodeId, 'values'))
 
         # If this is the first observation of this argument, store the values.
-        if argument not in values: values[argument] = argumentValues(isInput, noValues, nodeType, nodeId)
-        else:
-          assert nodeType == values[argument].type
-          assert isInput == values[argument].isInput
-          values[argument].noValues += noValues
-          values[argument].nodeIds.append(nodeId)
+        if argument != None:
+          if argument not in values: values[argument] = argumentValues(isInput, noValues, nodeType, nodeId)
+          else:
+            assert nodeType == values[argument].type
+            assert isInput == values[argument].isInput
+            values[argument].noValues += noValues
+            values[argument].nodeIds.append(nodeId)
 
     # Only arguments with more than one value are of interest. If the argument has zero or one value, these
     # can be simply applied on the command line without consideration of subphases or divisions.
@@ -1576,6 +1593,7 @@ class pipelineGraph:
           # Get the values from which to construct the filenames. If there are multiple values, but only a single
           # execution, use the first value for constructing the filenames.
           baseValues = self.getBaseValues(superpipeline, instructions, task)
+          if self.getGraphNodeAttribute(task, 'isGreedy'): baseValues = [baseValues[0]]
 
           # Check that the number of base values is the same as the number of subphases. If not, throw an error.
           # This can happen where there are multiple subphases because an input file has been given multiple

@@ -50,9 +50,9 @@
 
     "Options" : [
       {
-        "description" : "The quantile of data to plot.",
-        "long form argument" : "--quantile",
-        "short form argument" : "-q",
+        "description" : "Only include bars in histogram if their counts are greated than this percentage of the maximum observed count.",
+        "long form argument" : "--percent",
+        "short form argument" : "-p",
         "command line argument" : "none",
         "data type" : "float",
         "modify argument" : "omit"
@@ -91,10 +91,10 @@
     "--script",
     "--in",
     "--out",
+    "--percent",
     "--title",
     "--x-label",
-    "--y-label",
-    "--quantile"
+    "--y-label"
   ],
 
   "parameter sets" : [
@@ -120,12 +120,12 @@
         {
           "id" : "ylabel",
           "argument" : "--y-label",
-          "values" : ["Number of kmers observed"]
+          "values" : ["Number of kmers observed with this frequency"]
         },
         {
-          "id" : "quant",
-          "argument" : "--quantile",
-          "values" : [0.995]
+          "id" : "percent",
+          "argument" : "--percent",
+          "values" : [0.001]
         }
       ]
     },

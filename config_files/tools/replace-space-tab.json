@@ -1,55 +1,58 @@
 {
-  "id" : "jellyfish-merge",
+  "id" : "replace-space-tab",
   "configuration type" : "tool",
-  "description" : "Merge Jellyfish count (.jf) files.",
-  "categories" : ["Kmer-processing"],
-  "tools" : ["jellyfish"],
-  "path" : "Jellyfish/bin",
-  "executable" : "jellyfish",
-  "modifier" : "merge",
+  "description" : "Replace spaces with tabs.",
+  "categories" : ["General-file-processing", "Scripts"],
+  "tools" : [],
+  "path" : "scripts",
+  "executable" : "replace-space-tab.sh",
   "arguments" : {
     "Inputs" : [
       {
-        "description" : "The Jellyfish files to merge (at least two).",
+        "description" : "File to modify.",
         "long form argument" : "--in",
         "short form argument" : "-i",
-        "command line argument" : "-in",
+        "command line argument" : "--in",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["jf"],
-        "modify argument" : "omit",
-        "allow multiple values" : true
+        "modify argument" : "omit"
       }
     ],
 
     "Outputs" : [
       {
-        "description" : "The merged kmer counts file.",
+        "description" : "The output file in which all spaces have been converted to tabs.",
         "long form argument" : "--out",
         "short form argument" : "-o",
-        "command line argument" : "--output",
+        "command line argument" : "--out",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["jf"],
+        "modify argument" : "stdout",
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
-          "modify extension" : "replace",
+          "modify extension" : "retain",
           "modify text" : [
             {
-              "add text" : ["_merged"]
+              "add text" : ["_tab"]
             }
           ]
         }
       }
-    ] 
+    ]
   },
+
+  "argument order" : [
+    "--in",
+    "--out"
+  ],
 
   "parameter sets" : [
     {
       "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "data" : []
+      "data" : [
+      ]
     }
   ]
 }

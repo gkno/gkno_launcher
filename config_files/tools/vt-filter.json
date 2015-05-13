@@ -41,9 +41,9 @@
         "include in reduced plot" : false
       },
       {
-        "description" : "A file containing list of intervals.",
-        "long form argument" : "--intervals-file",
-        "short form argument" : "-if",
+        "description" : "A file containing list of genomic regions to analyse.",
+        "long form argument" : "--regions-file",
+        "short form argument" : "-rgf",
         "command line argument" : "-I",
         "data type" : "string"
       }
@@ -76,6 +76,13 @@
     ],
   
     "Options" : [
+      {
+        "description" : "The genomic region in which to perform the analysis.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "command line argument" : "-i",
+        "data type" : "string"
+      }
       {
         "description" : "Clear filter tags already present in the VCF file.",
         "long form argument" : "--clear-filters",
@@ -114,13 +121,14 @@
   },
 
   "argument order" : [
+    "--in",
+    "--region",
     "--intervals-file",
     "--clear-filters",
     "--filter-expression",
     "--tag",
     "--tag-description",
     "--out",
-    "--in",
     "--index"
   ],
 

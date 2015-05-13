@@ -31,7 +31,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.9.8"
+__version__ = "2.9.9"
 __date__ = "May 2015"
 
 def main():
@@ -255,6 +255,9 @@ def main():
   # filenames have been constructed, without the omission of constructed files.
   if not isExportSet: dc.checkRequiredArguments(graph, superpipeline, args)
 
+  # Check for greedy tasks in the pipeline and mark the relevant nodes and edges.
+  graph.setGreedyTasks(superpipeline)
+
   # Loop over the tasks in the pipeline and construct filenames for arguments that require them, but weren't given
   # any on the command line. In addition, if multiple options are given to a task, this routine will generate new
   # nodes for the task and files and link them together as necessary.
@@ -269,7 +272,7 @@ def main():
   superpipeline.determineFilesToDelete(graph)
 
   # Mark any tasks that have greedy arguments as greedy.
-  graph.markGreedyTasks(superpipeline)
+  #graph.markGreedyTasks(superpipeline)
 
   # Print the workflow to screen.
   write.workflow(superpipeline, workflow)

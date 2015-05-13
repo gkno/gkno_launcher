@@ -442,7 +442,7 @@ class pipelineConfiguration:
 
       # If the nodeId already exists in the attributes, a node of this name has already been seen. All 
       #nodes must have a unique name.
-      if attributes.id in self.uniqueNodeAttributes: self.errors.repeatedNodeId(uniqueNode, helpInfo)
+      if attributes.id in self.uniqueNodeAttributes: self.errors.repeatedNodeId(helpInfo)
 
       # Also check that the node id is not the name of a task.
       if attributes.id in self.allTasks: self.errors.nodeIdIsTaskId('unique', helpInfo)
@@ -485,8 +485,7 @@ class pipelineConfiguration:
 
       # If the node id already exists in the attributes, a node of this name has already been seen. All 
       # nodes must have a unique name.
-      if attributes.id in self.sharedNodeAttributes: print('pipeline.checkSharedNodes - 6'); exit(0)
-      if attributes.id in self.uniqueNodeAttributes: print('pipeline.checkSharedNodes - 6'); exit(0)
+      if attributes.id in (self.sharedNodeAttributes or self.uniqueNodeAttributes): self.errors.repeatedNodeId(helpInfo)
 
       # Also check that the node id is not the name of a task.
       if attributes.id in self.allTasks: self.errors.nodeIdIsTaskID(self.name, 'shared graph nodes', id)

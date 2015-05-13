@@ -1,7 +1,7 @@
 {
   "id" : "jellyfish-count",
   "configuration type" : "tool",
-  "description" : "Count k-mers in fasta or fastq files.",
+  "description" : "Count kmers in fasta or fastq files.",
   "categories" : ["Kmer-processing", "Jellyfish"],
   "tools" : ["jellyfish"],
   "path" : "Jellyfish/bin",
@@ -45,7 +45,7 @@
               "add text" : ["_"]
             },
             {
-              "add argument values" : ["--k-mer"]
+              "add argument values" : ["--kmer"]
             }
           ]
         }
@@ -54,8 +54,8 @@
 
     "Options" : [
       {
-        "description" : "Length of k-mer.",
-        "long form argument" : "--k-mer",
+        "description" : "Length of kmer.",
+        "long form argument" : "--kmer",
         "short form argument" : "-k",
         "command line argument" : "--mer-len",
         "required" : true,
@@ -87,7 +87,7 @@
   },
 
   "argument order" : [
-    "--k-mer",
+    "--kmer",
     "--size",
     "--threads",
     "--canonical",
@@ -113,7 +113,7 @@
         },
         {
           "id" : "kmer",
-          "argument" : "--k-mer",
+          "argument" : "--kmer",
           "values" : [15]
         },
         {

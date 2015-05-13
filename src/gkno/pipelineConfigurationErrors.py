@@ -201,11 +201,11 @@ class pipelineErrors:
     self.errors.terminate(self.errorCode)
 
   # If a node has a non-unique id.
-  def repeatedNodeId(self, node, helpInfo):
-    self.text.append('Repeated pipeline node ID.')
-    self.text.append('The configuration file for the pipeline \'' + helpInfo[0] + '\' contains at least two nodes in the \'' + helpInfo[1] + \
-    '\' section with the same ID (' + helpInfo[2] + '). All nodes must have unique IDs in order to construct the pipeline graph. Please ' + \
-    'ensure that all nodes defined in the configuration file are unique.')
+  def repeatedNodeId(self, helpInfo):
+    self.text.append('Repeated pipeline node id.')
+    self.text.append('The configuration file for the pipeline \'' + helpInfo[0] + '\' contains a node in the \'' + helpInfo[1] + '\' section ' + \
+    'with the same id (' + helpInfo[2] + ') as another node in the pipeline. All nodes must have unique ids in order to construct the ' + \
+    'pipeline graph. Please ensure that all nodes defined in the configuration file are unique.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 

@@ -15,9 +15,25 @@
         "command line argument" : "none",
         "modify argument" : "omit",
         "required" : true,
-        "extensions" : ["vcf"],
+        "extensions" : ["vcf", "vcf.gz"],
         "data type" : "string",
         "allow multiple values" : true
+      },
+      {
+        "description" : "The VCF index file.",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
+        "command line argument" : "none",
+        "modify value" : "omit",
+        "extensions" : ["tbi"],
+        "data type" : "string",
+        "allow multiple values" : true,
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "append"
+        },
+        "include in reduced plot" : false
       }
     ],
 
@@ -61,6 +77,7 @@
 
   "argument order" : [
     "--in",
+    "--index",
     "--region",
     "--out"
   ],

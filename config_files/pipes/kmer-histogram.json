@@ -53,10 +53,10 @@
 
     "Options" : [
       {
-        "description" : "The k-mer length.",
-        "long form argument" : "--k-mer",
+        "description" : "The kmer length.",
+        "long form argument" : "--kmer",
         "short form argument" : "-k",
-        "node id" : "k-mer-size"
+        "node id" : "kmer-size"
       },
       {
         "description" : "The initial hash size.",
@@ -71,7 +71,7 @@
         "node id" : "canonical"
       },
       {
-        "description" : "The number of threads to use for counting k-mers.",
+        "description" : "The number of threads to use for counting kmers.",
         "long form argument" : "--threads",
         "short form argument" : "-t",
         "node id" : "threads"
@@ -83,10 +83,10 @@
         "node id" : "full-histogram"
       },
       {
-        "description" : "The quantile of data to plot.",
-        "long form argument" : "--quantile",
-        "short form argument" : "-n",
-        "node id" : "quantile"
+        "description" : "Only include bars in histogram if their counts are greated than this percentage of the maximum observed count.",
+        "long form argument" : "--percent",
+        "short form argument" : "-p",
+        "node id" : "percent"
       },
       {
         "description" : "The plot title.",
@@ -121,9 +121,9 @@
       "task argument" : "--in"
     },
     {
-      "id" : "k-mer-size",
+      "id" : "kmer-size",
       "task" : "count-kmers",
-      "task argument" : "--k-mer"
+      "task argument" : "--kmer"
     },
     {
       "id" : "initial-size",
@@ -156,9 +156,9 @@
       "task argument" : "--y-label"
     },
     {
-      "id" : "quantile",
+      "id" : "percent",
       "task" : "plot-histogram",
-      "task argument" : "--quantile"
+      "task argument" : "--percent"
     },
     {
       "id" : "histogram",
@@ -215,8 +215,8 @@
       "description" : "Default parameter set requires user to input all input filenames.",
       "data" : [
         {
-          "id" : "k-mer",
-          "node" : "k-mer-size",
+          "id" : "kmer",
+          "node" : "kmer-size",
           "values" : [23]
         },
         {
@@ -230,7 +230,7 @@
           "values" : ["set"]
         },
         { 
-          "id" : "threads-k-mer",
+          "id" : "threads-kmer",
           "node" : "threads",
           "values" : [8]
         },

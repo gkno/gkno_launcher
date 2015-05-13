@@ -51,9 +51,9 @@
         "hide argument in help" : true
       },
       {
-        "description" : "A file containing list of intervals.",
-        "long form argument" : "--intervals-file",
-        "short form argument" : "-if",
+        "description" : "A file containing list of genomic regions to analyse.",
+        "long form argument" : "--regions-file",
+        "short form argument" : "-rgf",
         "command line argument" : "-I",
         "data type" : "string"
       }
@@ -69,8 +69,8 @@
         "data type" : "string",
         "extensions" : ["vcf.gz"],
         "if output to stream" : {
-          "argument" : "",
-          "value" : ""
+          "argument" : "-o",
+          "value" : "+"
         },
         "construct filename" : {
           "method": "from tool argument",
@@ -87,6 +87,13 @@
   
     "Options" : [
       {
+        "description" : "The genomic region in which to perform the analysis.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "command line argument" : "-i",
+        "data type" : "string"
+      },
+      {
         "description" : "Window size for local sorting of variants [10000].",
         "long form argument" : "--window",
         "short form argument" : "-w",
@@ -97,12 +104,13 @@
   },
 
   "argument order" : [
+    "--in",
+    "--region",
     "--fasta-reference",
     "--fasta-index",
     "--intervals-file",
     "--window",
-    "--out",
-    "--in"
+    "--out"
   ],
 
   "parameter sets" : [

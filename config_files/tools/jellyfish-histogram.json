@@ -1,7 +1,7 @@
 {
   "id" : "jellyfish-histo",
   "configuration type" : "tool",
-  "description" : "Create a histogram of k-mer occurrences.",
+  "description" : "Create a histogram of kmer occurrences.",
   "categories" : ["Kmer-processing", "Jellyfish"],
   "tools" : ["jellyfish"],
   "path" : "Jellyfish/bin",
@@ -10,7 +10,7 @@
   "arguments" : {
     "Inputs" : [
       {
-        "description" : "The k-mer count file.",
+        "description" : "The kmer count file.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "-in",
@@ -68,18 +68,6 @@
       "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
       "data" : [
-      ]
-    },
-
-    {
-      "id" : "test",
-      "description" : "Parameter set for use with the test-harness.",
-      "data" : [
-        {
-          "id" : "input",
-          "argument" : "--in",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1_15.jf"]
-        }
       ]
     }
   ]
