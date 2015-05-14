@@ -6,14 +6,8 @@
 
   "pipeline tasks" : [
     {
-      "task" : "decompose",
-      "tool" : "vt-decompose",
-      "output to stream" : true
-    },
-    {
       "task" : "normalize",
       "tool" : "vt-normalize",
-      "input is stream" : true,
       "output to stream" : true
     },
     {
@@ -95,7 +89,7 @@
   "unique graph nodes" : [
     {
       "id" : "input",
-      "task" : "decompose",
+      "task" : "normalize",
       "task argument" : "--in"
     },
     {
@@ -110,25 +104,12 @@
     },
     {
       "id" : "region",
-      "task" : "decompose",
+      "task" : "normalize",
       "task argument" : "--region"
     }
   ],
 
   "shared graph nodes" : [
-    {
-      "id" : "decomposed-vcf",
-      "arguments sharing node" : [
-        {
-          "task" : "decompose",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "normalize",
-          "task argument" : "--in"
-        }
-      ]
-    },
     {
       "id" : "normalized-vcf",
       "arguments sharing node" : [

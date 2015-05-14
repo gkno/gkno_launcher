@@ -180,8 +180,28 @@ class pipelineErrors:
   ## Errors in the unique or shared nodes ##
   ##########################################
 
+  # A configuraiton node supplies an argument to a task which is running a pipeline and the node within the pipeline is not specified.
+  def missingNodeIdForPipelineTask(self, pipeline, nodeType, nodeId, task):
+    self.text.append('Invalid information in configuration file node.')
+    self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains a node with id \'' + nodeId + '\' in the \'' + \
+    nodeType + ' graph nodes\' section. This node connects with the task \'' + task + '\', which is a task that itself runs a pipeline. ' + \
+    'In this case, the node id of the node in the associated pipeline needs to supplied (and not task argument information). The node id ' + \
+    'has not been supplied in this case. Please check the configuration file and ensure that the correct information is provided.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # An external node id is invalid.
+  def invalidNodeForExternalPipeline(self, pipeline, nodeType, nodeId, task, externalPipeline, externalNodeId):
+    self.text.append('Invalid external node id in configuration file node.')
+    self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains a node with id \'' + nodeId + '\' in the \'' + \
+    nodeType + ' graph nodes\' section. This node connects with the task \'' + task + '\', which is a task that itself runs the pipeline ' + \
+    '\'' + externalPipeline + '\'. The node id \'' + externalNodeId + '\' is supplied as the node within the external pipeline with which ' + \
+    'to connect, but this is not a valid node for the pipeline. Please check that all information in the configuration file is correct.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   # A supplied task is not valid.
-  def invalidTaskInNode(self, pipeline, nodeType, nodeId, task, tasks):
+  def invalidTaskInNode(self, pipeline, nodeType, nodeId, task):
     self.text.append('Invalid task in configuration file node.')
     self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains a node with id \'' + nodeId + '\' in the \'' + \
     nodeType + ' graph nodes\' section. Within this node, the task \'' + task + '\' is used, but this task has not been defined in the ' + \

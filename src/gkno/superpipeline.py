@@ -204,12 +204,28 @@ class superpipelineClass:
           externalNodeId = pipelineObject.getUniqueNodeAttribute(nodeId, 'nodeId')
           if externalNodeId:
             if pipelineObject.getUniqueNodeAttribute(nodeId, 'taskArgument'): print('superpipeline.checkContainedTasks - 1'); exit(0)
-            task = task + '.' + externalNodeId
-            if task not in self.uniqueNodeIds and task not in self.sharedNodeIds:
-              pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', nodeId, task, self.tasks)
+
+            # Define the node addres.
+            nodeAddress = task + '.' + externalNodeId
+
+            # If the nodeAddress is not an available node in the pipeline, there has been a problem.
+            if nodeAddress not in self.uniqueNodeIds + self.sharedNodeIds:
+
+              # If the task is valid, but the node address is not, the supplied external node id is invalid.
+              if task in pipelineObject.pipelineTasks.keys():
+                externalPipeline = pipelineObject.pipelineTasks[task].pipeline
+                pipelineObject.errors.invalidNodeForExternalPipeline(pipelineName, 'unique', nodeId, task, externalPipeline, externalNodeId)
+              else: pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', nodeId, nodeAddress)
     
-          # If the task is not listed as one of the pipeline tasks. terminate.
-          elif task not in self.tasks: pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', nodeId, task, self.tasks)
+          # If the task is not listed as a task for the pipeline, there are a couple of potential problems.
+          elif task not in self.tasks:
+
+            # If the task is listed in the pipelineTasks, but isn't in self.tasks, then the task could be running
+            # another pipeline. If this is the case, the external node needs to be set.
+            if task in pipelineObject.pipelineTasks.keys(): pipelineObject.errors.missingNodeIdForPipelineTask(pipelineName, 'unique', nodeId, task)
+
+            # If the task is not a pipeline and isn't present in the tasks, then the task doesn't exist.
+            else: pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', nodeId, task)
     
         # Check the tasks that shared nodes point to.
         for sharedNodeId in pipelineObject.sharedNodeAttributes.keys():
@@ -226,14 +242,28 @@ class superpipelineClass:
             # name of the graph node to test for existence.
             if externalNodeId:
               if taskArgument: print('superpipeline.checkContainedTasks - 2'); exit(0)
-              task = task + '.' + externalNodeId
-              if task not in self.uniqueNodeIds and task not in self.sharedNodeIds:
-                pipelineObject.errors.invalidTaskInNode(pipelineName, 'shared', sharedNodeId, task, self.tasks)
 
-            # If the node defines a task and a task argument (not a node, as above), check that the task
-            # exists. This task could be in another pipeline.
-            else:
-              if task not in self.tasks: pipelineObject.errors.invalidTaskInNode(pipelineName, 'shared', sharedNodeId, task, self.tasks)
+              # Define the node addres.
+              nodeAddress = task + '.' + externalNodeId
+
+              # If the nodeAddress is not an available node in the pipeline, there has been a problem.
+              if nodeAddress not in self.uniqueNodeIds + self.sharedNodeIds:
+
+                # If the task is valid, but the node address is not, the supplied external node id is invalid.
+                if task in pipelineObject.pipelineTasks.keys():
+                  externalPipeline = pipelineObject.pipelineTasks[task].pipeline
+                  pipelineObject.errors.invalidNodeForExternalPipeline(pipelineName, 'shared', sharedNodeId, task, externalPipeline, externalNodeId)
+                else: pipelineObject.errors.invalidTaskInNode(pipelineName, 'shared', sharedNodeId, nodeAddress)
+    
+            # If the task is not listed as a task for the pipeline, there are a couple of potential problems.
+            elif task not in self.tasks:
+  
+              # If the task is listed in the pipelineTasks, but isn't in self.tasks, then the task could be running
+              # another pipeline. If this is the case, the external node needs to be set.
+              if task in pipelineObject.pipelineTasks.keys(): pipelineObject.errors.missingNodeIdForPipelineTask(pipelineName, 'shared', sharedNodeId, task)
+  
+              # If the task is not a pipeline and isn't present in the tasks, then the task doesn't exist.
+              else: pipelineObject.errors.invalidTaskInNode(pipelineName, 'shared', sharedNodeId, task)
 
   # Given a pipeline name and a node ID, return the node type (i.e. unique or shared).
   def getNodeType(self, pipeline, nodeId):

@@ -1,0 +1,168 @@
+{
+  "id" : "get-indels",
+  "configuration type" : "pipeline",
+  "description" : "Get all indels from a VCF files and standardize the resulting VCF file.",
+  "categories" : ["VCF-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "filter",
+      "tool" : "vt-view",
+      "output to stream" : true
+    },
+    {
+      "task" : "standardize",
+      "pipeline" : "standardize-vcf",
+      "input is stream" : true
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input sorted VCF file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "input"
+      },
+      {
+        "description" : "The reference FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "node id" : "reference"
+      },
+      {
+        "description" : "A text file containing a list of samples on which to subset.",
+        "long form argument" : "--samples-files",
+        "short form argument" : "-s",
+        "node id" : "samples"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output standardized VCF file including indels only.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The genomic region to analyse.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "node id" : "region"
+      },
+      {
+        "description" : "The filter expression (enclose in quotes on the command line).",
+        "long form argument" : "--filter-expression",
+        "short form argument" : "-f",
+        "node id" : "filter-expression"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "input",
+      "task" : "filter",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "reference",
+      "task" : "standardize",
+      "node id" : "reference"
+    },
+    {
+      "id" : "samples",
+      "task" : "standardize",
+      "node id" : "samples"
+    },
+    {
+      "id" : "region",
+      "task" : "filter",
+      "task argument" : "--region"
+    },
+    {
+      "id" : "output",
+      "task" : "standardize",
+      "node id" : "output"
+    },
+    {
+      "id" : "filter-expression",
+      "task" : "filter",
+      "task argument" : "--filter-expression"
+    }
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "filtered-vcf",
+      "arguments sharing node" : [
+        {
+          "task" : "filter",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "standardize",
+          "node id" : "input"
+        }
+      ]
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+        {
+          "id" : "filter",
+          "node" : "filter-expression",
+          "values" : ["VTYPE==INDEL"]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "vcf",
+          "node" : "input",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+        },
+        {
+          "id" : "output",
+          "node" : "output",
+          "values" : ["test.vcf.gz"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "id" : "samples",
+          "node" : "samples",
+          "values" : ["$(RESOURCES)/tutorial/current/sample.txt"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for human.",
+      "data" : [
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        }
+      ]
+    }
+  ]
+}

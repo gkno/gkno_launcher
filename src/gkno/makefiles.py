@@ -688,7 +688,7 @@ class makefiles:
     # commence to regenerate the intermediate files.
     print('### The following files are intermediates. If the pipeline is rerun, rules for creating', file = filehandle)
     print('### will not be rerun unless files prior to these rules have been updated.', file = filehandle)
-    print('.INTERMEDIATE: ', filename, end = ' ', file = filehandle)
+    print('.PRECIOUS: ', filename, end = ' ', file = filehandle)
 
     # Add all the intermediates to the makefile.
     for intermediate in intermediates: print(intermediate, end = ' ', file = filehandle)

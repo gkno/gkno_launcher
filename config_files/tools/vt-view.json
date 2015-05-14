@@ -1,64 +1,57 @@
 {
-  "id" : "vt-subset",
-  "description" : "Subsets a VCF file to a set of variants that are polymorphic on a selected set of individuals.",
+  "id" : "vt-view",
+  "configuration type" : "tool",
+  "description" : "View a VCF file.",
   "categories" : ["VCF-processing"],
   "tools" : ["vt"],
   "path" : "vt/",
   "executable" : "vt",
-  "modifier" : "subset",
-  "help" : "--help|-h",
+  "modifier" : "view",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
-        "description" : "The input VCF file.",
+        "description" : "The input VCF file to be viewed.",
         "long form argument" : "--in",
         "short form argument" : "-i",
         "command line argument" : "none",
         "required" : true,
-        "modify argument name on command line" : "hide",
+        "modify argument" : "omit",
         "data type" : "string",
-        "if input is stream" : "replace",
-        "replace argument with" : {
-          "argument" : "none",
-          "value" : "-"
+        "if input is stream" : {
+          "argument" : "",
+          "value" : "+"
         },
-        "extensions" : [".vcf", ".vcf.gz"]
+        "extensions" : ["vcf", "vcf.gz"]
       },
       {
-        "description" : "A file containing a list of intervals.",
-        "long form argument" : "--intervals-file",
-        "short form argument" : "-if",
+        "description" : "A file containing a list of genomic regions to analyse.",
+        "long form argument" : "--regions-file",
+        "short form argument" : "-rgf",
         "command line argument" : "-I",
-        "data type" : "string",
-        "extensions" : ["no extension"]
-      },
-      {
-        "description" : "A file containing a list of samples.",
-        "long form argument" : "--samples-file",
-        "short form argument" : "-s",
-        "command line argument" : "-s",
-        "data type" : "string",
-        "extensions" : ["no extension"]
+        "data type" : "string"
       }
     ],
   
-    "outputs" : [
+    "Outputs" : [
       {
-        "description" : "The output compressed VCF file.",
+        "description" : "The output VCF file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "-o",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".vcf.gz"],
-        "if output to stream" : "do not include",
+        "extensions" : ["vcf.gz"],
+        "if output to stream" : {
+          "argument" : "-o",
+          "value" : "+"
+        },
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
           "modify extension" : "replace",
           "modify text" : [
             {
-              "add text" : ["_subset"]
+              "add text" : ["_filtered"]
             }
           ]
         }
@@ -67,48 +60,51 @@
   
     "Options" : [
       {
-        "description" : "Filter expression.",
-        "long form argument" : "--filter",
-        "short form argument" : "-f",
-        "command line argument" : "-f",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "description" : "The genomic region in which to perform the analysis.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "command line argument" : "-i",
+        "data type" : "string"
       },
       {
-        "description" : "Intervals.",
-        "long form argument" : "--intervals",
-        "short form argument" : "-n",
-        "command line argument" : "-n",
-        "data type" : "integer",
-        "extensions" : ["no extension"]
+        "description" : "The filter expression (enclose in quotes on the command line).",
+        "long form argument" : "--filter-expression",
+        "short form argument" : "-f",
+        "command line argument" : "-f",
+        "data type" : "string",
+        "include value in quotations" : true
       }
     ]
   },
 
   "argument order" : [
-    "--intervals",
-    "--intervals-file",
-    "--samples-file",
-    "--filter",
-    "--out",
-    "--in"
+    "--in",
+    "--region",
+    "--regions-file",
+    "--filter-expression",
+    "--out"
   ],
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : []
+      "data" : []
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "vcf",
+          "id" : "vcf",
           "argument" : "--in",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
+        },
+        {
+          "id" : "fasta",
+          "argument" : "--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         }
       ]
     }
