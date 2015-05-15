@@ -158,12 +158,16 @@ class makefiles:
           if not isInputStream: data.commands[i][j].append('\t@' + command + ' \\')
           else: data.commands[i][j].append('\t' + command + ' \\')
 
+      # Search predecessor nodes to find if there are any predecessor nodes that are links only. Any values
+      # for these links should be included as dependencies for this task.
+      self.getLinks(graph, task, data)
+
       # Loop over the argument order for the tool, getting information from the nodes in the correct
       # order. The argument order is populated with the arguments in random order if the order wasn't
       # specified in the configuration file.
       for argument in argumentOrder:
         if argument in optionArguments:
-          for nodeId in optionArguments[argument]: self.addOption(graph, task, data, nodeId);
+          for nodeId in optionArguments[argument]: self.addOption(graph, task, data, nodeId)
         if argument in inputArguments:
           for nodeId in inputArguments[argument]: self.addInput(graph, task, data, nodeId)
         if argument in outputArguments:
@@ -207,6 +211,22 @@ class makefiles:
 
     # Return the arguments.
     return arguments
+
+  # Search predecessors for edges marked as links only. These edges will not be used with arguments, but the task dependencies
+  # need to be updated.
+  def getLinks(self, graph, task, data):
+
+    # Loop over all task predecessors.
+    for predecessor in graph.graph.predecessors(task):
+
+      # Only proceed with edges marked as links.
+      if graph.getArgumentAttribute(predecessor, task, 'isLinkOnly'):
+        counter = 0
+        values  = graph.getGraphNodeAttribute(predecessor, 'values')
+        for i in range(1, data.numberSubphases + 1):
+          for j in range(1, data.numberDivisions + 1):
+            data.dependencies[i][j].append(values[counter])
+            counter += 1
 
   # Add option values to the command lines.
   def addOption(self, graph, task, data, nodeId):
@@ -427,8 +447,8 @@ class makefiles:
         if line.startswith('\t>>'): data.stdouts[subphase + 1][1] = str(line)
         else: data.commands[subphase + 1][1].append(line)
 
-      # Add the files to the dependencies or outputs for the command line (do not add the values to the list of
-      # inputs and dependencies if the files are being streamed).
+      # Add the files to the intermediates or outputs for the command line (do not add the values to the list of
+      # inputs and intermediates if the files are being streamed).
       if not isStream:
         data.outputs[subphase + 1][1].append(str(value))
 
@@ -463,8 +483,8 @@ class makefiles:
             if line.startswith('\t>>'): data.stdouts[subphase + 1][division] = str(line)
             else: data.commands[subphase + 1][division].append(line)
 
-          # Add the files to the dependencies or outputs for the command line (do not add the values to the list of
-          # inputs and dependencies if the files are being streamed).
+          # Add the files to the intermediates or outputs for the command line (do not add the values to the list of
+          # inputs and intermediates if the files are being streamed).
           if not isStream:
             data.outputs[subphase + 1][division].append(str(value))
     

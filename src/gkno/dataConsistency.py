@@ -46,46 +46,52 @@ def checkNode(graph, superpipeline, source, target, nodeType, expectedDataType, 
   longFormArgument = graph.CM_getArgumentAttribute(graph.graph, source, target, 'longFormArgument')
   dataType         = graph.CM_getArgumentAttribute(graph.graph, source, target, 'dataType')
 
-  # If this is the first argument parsed, populate the expectedDataType variable with the data type for this argument.
-  if not expectedDataType: expectedDataType = dataType
+  # Check if this edge hgas been marked as a link only. This occurs when a nodes values are constructed using values from
+  # another node. An edge is included to ensure that the workflow and dependencies are correct, but there will be no
+  # argument associated with the edge and the following checks are not required.
+  isLinkOnly = graph.CM_getArgumentAttribute(graph.graph, source, target, 'isLinkOnly')
+  if not isLinkOnly:
 
-  # If expectedDataType is populated and this data type is different to the expectedDataType, this implies that different
-  # arguments using the same values expect different data types. This is clearly impossible, so terminate.
-  #TODO ERROR
-  elif expectedDataType != dataType: print('dataConsistency.checkNode - 1', dataType, expectedDataType); exit(0)
-
-  # Loop over each of the values for this node.
-  for value in values:
-
-    # Check that the data type is correct.
+    # If this is the first argument parsed, populate the expectedDataType variable with the data type for this argument.
+    if not expectedDataType: expectedDataType = dataType
+  
+    # If expectedDataType is populated and this data type is different to the expectedDataType, this implies that different
+    # arguments using the same values expect different data types. This is clearly impossible, so terminate.
     #TODO ERROR
-    if not isCorrectDataType(value, expectedDataType): print('dataConsistency.checkNode - 2', longFormArgument, value, dataType, type(value)); exit(0)
+    elif expectedDataType != dataType: print('dataConsistency.checkNode - 1', dataType, expectedDataType); exit(0)
+  
+    # Loop over each of the values for this node.
+    for value in values:
+  
+      # Check that the data type is correct.
+      #TODO ERROR
+      if not isCorrectDataType(value, expectedDataType): print('dataConsistency.checkNode - 2', longFormArgument, value, dataType, type(value)); exit(0)
+  
+      # If this is a file, check that the extension is valid. Do not perform this check for stubs.
+      if nodeType == 'file':
+        if not graph.CM_getArgumentAttribute(graph.graph, source, target, 'isStub'):
+          extensions = graph.CM_getArgumentAttribute(graph.graph, source, target, 'extensions')
+  
+          # Not all files have specified extensions. If no extensions are supplied, this check should not be performed.
+          if extensions:
+            task       = target if isInput else source
+            fileNodeId = source if isInput else target
+  
+            # Fail if there was an error.
+            if not checkExtensions(value, extensions):
+  
+              # Check if a top level pipeline argument exists.
+              if longFormArgument in data.longFormArguments.keys():
+                shortFormArgument = data.longFormArguments[longFormArgument].shortFormArgument
+                errors.invalidExtensionPipeline(longFormArgument, shortFormArgument, value, extensions)
+  
+              # If no pipeline argument exists for this argument, list the task and argument.
+              else:
+                shortFormArgument = graph.CM_getArgumentAttribute(graph.graph, source, target, 'shortFormArgument')
+                errors.invalidExtension(task, longFormArgument, shortFormArgument, value, extensions)
 
-    # If this is a file, check that the extension is valid. Do not perform this check for stubs.
-    if nodeType == 'file':
-      if not graph.CM_getArgumentAttribute(graph.graph, source, target, 'isStub'):
-        extensions = graph.CM_getArgumentAttribute(graph.graph, source, target, 'extensions')
-
-        # Not all files have specified extensions. If no extensions are supplied, this check should not be performed.
-        if extensions:
-          task       = target if isInput else source
-          fileNodeId = source if isInput else target
-
-          # Fail if there was an error.
-          if not checkExtensions(value, extensions):
-
-            # Check if a top level pipeline argument exists.
-            if longFormArgument in data.longFormArguments.keys():
-              shortFormArgument = data.longFormArguments[longFormArgument].shortFormArgument
-              errors.invalidExtensionPipeline(longFormArgument, shortFormArgument, value, extensions)
-
-            # If no pipeline argument exists for this argument, list the task and argument.
-            else:
-              shortFormArgument = graph.CM_getArgumentAttribute(graph.graph, source, target, 'shortFormArgument')
-              errors.invalidExtension(task, longFormArgument, shortFormArgument, value, extensions)
-
-  # Return the expected data type
-  return expectedDataType
+    # Return the expected data type
+    return expectedDataType
 
 # Check a values data type.
 def isCorrectDataType(value, dataType):

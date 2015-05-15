@@ -95,6 +95,12 @@ class argumentAttributes:
     # Record whether the node associated with this argument should be included in a reduced plot.
     self.includeInReducedPlot = True
 
+    # Some argument values are commands that are to be evaluated at run time and these commands may require
+    # information from other nodes in the pipeline. When this is the case, an edge is included in the graph
+    # in order to account for the dependency, but there is no argument associated with the edge. In these
+    # cases, the following flag will be set.
+    self.isLinkOnly = False
+
 # Define a class to hold information about the tool.
 class toolAttributes:
   def __init_(self):

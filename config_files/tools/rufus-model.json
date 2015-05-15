@@ -109,13 +109,7 @@
     {
       "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "data" : [
-        {
-          "id" : "threads",
-          "argument" : "--threads",
-          "values" : [1]
-        }
-      ]
+      "data" : []
     }
   ]
 }

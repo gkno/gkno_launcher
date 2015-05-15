@@ -214,7 +214,8 @@ class superpipelineClass:
               # If the task is valid, but the node address is not, the supplied external node id is invalid.
               if task in pipelineObject.pipelineTasks.keys():
                 externalPipeline = pipelineObject.pipelineTasks[task].pipeline
-                pipelineObject.errors.invalidNodeForExternalPipeline(pipelineName, 'unique', nodeId, task, externalPipeline, externalNodeId)
+                if externalPipeline: pipelineObject.errors.invalidNodeForExternalPipeline(pipelineName, 'unique', nodeId, task, externalPipeline, externalNodeId)
+                else: pipelineObject.errors.externalNodeForTask(pipelineName, 'unique', nodeId, task, externalNodeId)
               else: pipelineObject.errors.invalidTaskInNode(pipelineName, 'unique', nodeId, nodeAddress)
     
           # If the task is not listed as a task for the pipeline, there are a couple of potential problems.
@@ -252,7 +253,8 @@ class superpipelineClass:
                 # If the task is valid, but the node address is not, the supplied external node id is invalid.
                 if task in pipelineObject.pipelineTasks.keys():
                   externalPipeline = pipelineObject.pipelineTasks[task].pipeline
-                  pipelineObject.errors.invalidNodeForExternalPipeline(pipelineName, 'shared', sharedNodeId, task, externalPipeline, externalNodeId)
+                  if externalPipeline: pipelineObject.errors.invalidNodeForExternalPipeline(pipelineName, 'shared', sharedNodeId, task, externalPipeline, externalNodeId)
+                  else: pipelineObject.errors.externalNodeForTask(pipelineName, 'shared', sharedNodeId, task, externalNodeId)
                 else: pipelineObject.errors.invalidTaskInNode(pipelineName, 'shared', sharedNodeId, nodeAddress)
     
             # If the task is not listed as a task for the pipeline, there are a couple of potential problems.

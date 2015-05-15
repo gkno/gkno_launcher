@@ -31,7 +31,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.9.11"
+__version__ = "2.9.12"
 __date__ = "May 2015"
 
 def main():
@@ -317,6 +317,9 @@ def main():
   # It is possible that n input files were specified on the command line, leading to n executions of the task, but
   # m output files were specified. This will lead to problems when constructing the command lines.
   graph.checkNumberOfOutputs()
+
+  # For values that are commands to be executed at runtime, include any values from other graph nodes as necessary.
+  evalCom.addValues(graph)
 
   # Generate a makefiles object and then build all the command lines for the tasks as well as creating a list of each
   # tasks dependencies and output.

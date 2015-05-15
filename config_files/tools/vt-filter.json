@@ -82,7 +82,7 @@
         "short form argument" : "-rg",
         "command line argument" : "-i",
         "data type" : "string"
-      }
+      },
       {
         "description" : "Clear filter tags already present in the VCF file.",
         "long form argument" : "--clear-filters",
@@ -123,7 +123,7 @@
   "argument order" : [
     "--in",
     "--region",
-    "--intervals-file",
+    "--regions-file",
     "--clear-filters",
     "--filter-expression",
     "--tag",

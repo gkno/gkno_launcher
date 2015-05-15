@@ -1230,7 +1230,7 @@ class pipelineGraph:
           else:
             divisions             = values[argument].noValues
             isFirstTaskInDivision = True
-            if len(values[argument].nodeIds) != 1: print('ERROR - graph.constructFiles - division error 2', values[argument].nodeIds); exit(1)
+            if len(values[argument].nodeIds) != 1: cfe.constructFilenameErrors().multipleDivisionNodes(task, argument, values[argument].nodeIds)
             else: divisionNode = values[argument].nodeIds[0]
 
       # If the task only has a single division, there are no files to consolidate, so set consolidate to False.

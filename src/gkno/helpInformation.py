@@ -42,7 +42,7 @@ class helpInformation:
     self.wrap = textwrap.TextWrapper(initial_indent = '   ')
 
     # Define the maximum width of a line. THis will be modified by including tabs.
-    self.width = 100
+    self.width = 150
 
   # Provide general help.
   def generalHelp(self, mode, category, admin, path):

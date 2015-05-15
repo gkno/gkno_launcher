@@ -83,3 +83,23 @@ class constructFilenameErrors:
     'be explicitly defined on the command line.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  ###########################
+  ## Errors with divisions ##
+  ###########################
+
+  # If a task splits into multiple divisions, only a single node can be associated with multiple values.
+  def multipleDivisionNodes(self, task, argument, nodeIds):
+    self.text.append('Error splitting task into multiple divisions.')
+    self.text.append('The task \'' + task + '\' is to be split into multiple divisions and consequently run multiple times for ' + \
+    'multiple sets of input data. A node associated with the task is marked as the node with multiple values. In this case, the ' + \
+    'argument \'' + argument + '\' is the argument that is given multiple values, but this argument is linked to multiple nodes ' + \
+    'as listed here:')
+    self.text.append('\t')
+    for nodeId in nodeIds: self.text.append('\t' + nodeId)
+    self.text.append('\t')
+    self.text.append('Only a single node is permitted to have multiple values. Please check the pipeline configuration file and ' + \
+    'ensure that any task that should be run multiple times for multiple input option values only has a single node with multiple ' + \
+    'values')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

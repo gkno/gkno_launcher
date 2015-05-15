@@ -59,10 +59,12 @@ class evaluateCommands:
           # terminate due to the required values being missing for these nodes.
           graph.setGraphNodeAttribute(nodeId, 'values', [str(command)])
           graph.setGraphNodeAttribute(nodeId, 'isCommandToEvaluate', True)
-          self.updateValues.append(nodeId)
+          if 'add values' in evaluateCommand: self.updateValues.append((nodeId, evaluateCommand['add values']))
+          else: self.updateValues.append((nodeId, None))
 
           # Get an initialised set of argument attributes to add to the edge.
-          edgeAttributes = tc.argumentAttributes()
+          edgeAttributes            = tc.argumentAttributes()
+          edgeAttributes.isLinkOnly = True
 
           # Add edges from all connected nodes to the task associated with the unique node.
           if nodeType == 'unique':
@@ -83,7 +85,7 @@ class evaluateCommands:
     #TODO ERROR
     if 'command' not in data: print('ERROR - evaluateCommands.getCommand'); exit(1)
 
-    return data['command']
+    return str('$(' + data['command'] + ')')
 
   # Parse the instructions on values to be added to the command, check their validity and apply.
   def getValues(self, graph, data, nodeId, command):
@@ -120,3 +122,29 @@ class evaluateCommands:
     # Return the nodeIds associated with the instructions.
     return nodeIds
 
+  # Loop over all nodes that have values that are commands to evaluate and include values from other nodes, if
+  # necessary.
+  def addValues(self, graph):
+
+    # Loop over all nodes whose values have been defined as commands to evaluate at run time.
+    for nodeId, data in self.updateValues:
+      values = graph.getGraphNodeAttribute(nodeId, 'values')
+
+      # Only add values if there are instructions to do so.
+      for instructions in data:
+        associatedNodeId = instructions['node id']
+        associatedValues = graph.getGraphNodeAttribute(associatedNodeId, 'values')
+        textId           = instructions['id']
+
+        # If the number of values for the current node is different to the number of values for the associated node,
+        # terminate. For every value in the node being modified, there must be a value in the associated node.
+        # TODO ERROR
+        if len(associatedValues) != len(values): print('ERROR - evaluateCommands.addValues'); exit(1)
+
+        # Loop over all values for the node.
+        updatedValues = []
+        for value, associatedValue in zip(values, associatedValues):
+          updatedValues.append(str(value.replace(textId, associatedValue)))
+          
+      # Replace the values for the node with the updated values.
+      graph.setGraphNodeAttribute(nodeId, 'values', updatedValues)
