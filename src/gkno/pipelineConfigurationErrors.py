@@ -205,7 +205,7 @@ class pipelineErrors:
   def externalNodeForTask(self, pipeline, nodeType, nodeId, task, externalNodeId):
     self.text.append('Invalid external node id in configuration file node.')
     self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains a node with id \'' + nodeId + '\' in the \'' + \
-    nodeType + ' graph nodes\' section. This node connects with the task \'' + task + '\', which is a task that runs  a tool. When this ' + \
+    nodeType + ' graph nodes\' section. This node connects with the task \'' + task + '\', which is a task that runs a tool. When this ' + \
     'is the case, the \'task argument\' field must also be present to define which of the tools arguments this node connects with. Instead, ' + \
     'the \'node id\' field has been provided. This is only valid for tasks that themselves run pipelines.')
     self.errors.writeFormattedText(self.text, errorType = 'error')

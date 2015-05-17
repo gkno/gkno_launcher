@@ -1,0 +1,126 @@
+{
+  "id" : "rufus-overlap",
+  "description" : "A greedy overlap assembler that attempts to assemble all reads.",
+  "configuration type" : "tool",
+  "categories" : ["FASTQ-processing", "Marthlab-software"],
+  "tools" : ["Rufus"],
+  "path" : "Rufus/bin",
+  "executable" : "OverlapRegion2",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "Input fastqd file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["fastqd"],
+        "modify argument" : "omit"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output fastq and fastqd files.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "modify argument" : "omit",
+        "is filename stub" : true,
+        "stub extensions" : [
+          "fastq",
+          "fastqd"
+        ],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_overlap-region"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "This string is prepended to all contigs in the output FASTQD file.",
+        "long form argument" : "--stub",
+        "short form argument" : "-s",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The minimum percentage identity between the overlapped portion of two reads required to consider two reads similar and possible candidates for assembly. For example, a value of 0.98 will mean that no more than 2 mismatches out of 100 bases are allowed between the two reads.",
+        "long form argument" : "--minimum-percent-match",
+        "short form argument" : "-m",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "float",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The minimum overlap length between two reads in order to consider them a possible candidate for assembly.",
+        "long form argument" : "--minimum-overlap",
+        "short form argument" : "-mo",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "Only report contigs that have at least this coverage at a minimum of one base in the contig.",
+        "long form argument" : "--minimum-coverage",
+        "short form argument" : "-mc",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "When reading in a fastqd file, any previously overlapped contig will have any hanging ends less than this depth trimmed off (this reduces the effect of high quality singleton errors that can block extension of contigs).",
+        "long form argument" : "--trim-depth",
+        "short form argument" : "-d",
+        "command line argument" : "--lc",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "Number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
+        "command line argument" : "--threads",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--in",
+    "--minimum-percent-match",
+    "--minimum-overlap",
+    "--minimum-coverage",
+    "--out",
+    "--stub",
+    "--trim-depth",
+    "--threads"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : []
+    }
+  ]
+}

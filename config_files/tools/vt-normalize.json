@@ -1,6 +1,11 @@
 {
   "id" : "vt-normalize",
   "configuration type" : "tool",
+  "web page" : {
+    "tool" : "vt",
+    "web" : "http://genome.sph.umich.edu/wiki/Vt",
+    "paper" : "Unified representation of genetic variants, Adrian Tan, Goncalo R. Abecasis and Hyun Min Kang, Bioinformatics, 2015, 1-3, doi: 10.1093/bioinformatics/btv112"
+  },
   "description" : "Normalizes variants in a VCF file.",
   "categories" : ["VCF-processing"],
   "tools" : ["vt"],

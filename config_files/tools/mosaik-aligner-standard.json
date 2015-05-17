@@ -1,5 +1,6 @@
 {
   "id" : "mosaik-aligner-standard",
+  "configuration type" : "tool",
   "description" : "Pairwise alignment of a read archive.",
   "categories" : ["Aligners", "Mosaik", "Marthlab-software"],
   "tools" : ["mosaik"],

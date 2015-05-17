@@ -77,10 +77,10 @@
         "modify argument" : "omit"
       },
       {
-        "description" : "Maximum depth.",
-        "long form argument" : "--max-depth",
+        "description" : "Maximum count.",
+        "long form argument" : "--max-count",
         "short form argument" : "-d",
-        "command line argument" : "--max-depth",
+        "command line argument" : "--max-count",
         "required" : true,
         "data type" : "integer",
         "modify argument" : "omit"
@@ -104,7 +104,7 @@
     "--kmer",
     "--max-depth-reference",
     "--min-depth-query",
-    "--max-depth",
+    "--max-count",
     "--threads"
   ],
 

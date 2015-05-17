@@ -165,6 +165,9 @@ class toolConfiguration:
     # times, if a problem is encountered, execution should terminate. Keep track of this.
     self.allowTermination = True
 
+    # Store information about the tool for display on the web page.
+    self.webPage = {}
+
     # As pipeline configuration files are processed, success will identify whether a problem was
     # encountered.
     self.success = True
@@ -197,10 +200,10 @@ class toolConfiguration:
   def processConfigurationFile(self, data):
 
     # Check that the configuration file is a pipeline configuration file.
-    self.checkIsTool(data)
+    self.success = self.checkIsTool(data)
 
     # Check the top level information, e.g. pipeline description.
-    self.checkTopLevelInformation(data)
+    if self.success: self.checkTopLevelInformation(data)
 
     # Validate input arguments.
     if self.success: self.checkInputArguments(data['arguments'])
@@ -210,6 +213,9 @@ class toolConfiguration:
 
     # Validate all other arguments.
     if self.success: self.checkRemainingArguments(data['arguments'])
+
+    # Check the information supplied for display on the web page.
+    if self.success: self.success = self.checkWeb()
 
     # Check that certain required combinations of attributes are adhered to.
     if self.success: self.checkAttributeCombinations()
@@ -245,9 +251,16 @@ class toolConfiguration:
     # Get the configuration type field. If this is not present, terminate, since this is the field that
     # defines if the configuration file is for a tool or for a pipeline.
     try: configurationType = data['configuration type']
-    except: self.errors.noConfigurationType(self.name)
+    except:
+      if self.allowTermination: self.errors.noConfigurationType(self.name)
+      else: return False
 
-    if configurationType != 'tool': self.errors.invalidConfigurationType(self.name, configurationType)
+    if configurationType != 'tool':
+      if self.allowTermination: self.errors.invalidConfigurationType(self.name, configurationType)
+      else: return False
+
+    # Return true if this was completed succesfully.
+    return True
 
   # Process the top level pipeline configuration information.
   def checkTopLevelInformation(self, data):
@@ -270,6 +283,7 @@ class toolConfiguration:
     allowedAttributes['precommand']         = (str, False, True, 'precommand')
     allowedAttributes['tools']              = (list, True, True, 'requiredCompiledTools')
     allowedAttributes['url']                = (str, False, True, 'url')
+    allowedAttributes['web page']           = (dict, False, True, 'webPage')
 
     # Define a set of information to be used in help messages.
     helpInfo = (self.name, None, None)
@@ -402,6 +416,24 @@ class toolConfiguration:
       if isInput: attributes.isInput = True
       elif isOutput: attributes.isOutput = True
       self.arguments[attributes.longFormArgument] = attributes
+
+  # Check the contents of the information supplied for the web page.
+  def checkWeb(self):
+    allowedAttributes           = {}
+    allowedAttributes['author'] = (str, False)
+    allowedAttributes['email']  = (str, False)
+    allowedAttributes['paper']  = (str, False)
+    allowedAttributes['tool']   = (str, False)
+    allowedAttributes['web']    = (str, False)
+
+    # If web information was provided, ensure that only valid fields were provided
+    for field in self.webPage:
+      if field not in allowedAttributes:
+        if self.allowTermination: print('ERROR - toolConfiguration - checkWeb', field); exit(1)
+        else: return False
+
+    # Return True if this was successfully parsed.
+    return True
 
   # Check that required attributes combinations are available. For example, if the 'is filename stub'
   # attribute is set, the stub extensions field must also be present.

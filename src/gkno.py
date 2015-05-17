@@ -31,7 +31,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.9.12"
+__version__ = "2.9.13"
 __date__ = "May 2015"
 
 def main():
@@ -74,7 +74,7 @@ def main():
   write.printHeader(__version__, __date__, os.getenv('GKNOCOMMITID'))
 
   # Check to see if the configuration files are to be found in a directory other than the default.
-  path = command.getConfigurationFilePath(gknoConfiguration.options)
+  path                  = command.getConfigurationFilePath(gknoConfiguration.options)
   userConfigurationPath = path if path else None
 
   # Define a class for handling files. In the initialisation, determine the names of all available
@@ -189,9 +189,13 @@ def main():
       web.updateCategories(superpipeline.pipelineConfigurationData[superpipeline.pipeline])
       web.updatePipelineInformation(superpipeline.pipelineConfigurationData[superpipeline.pipeline], args.arguments)
       plot.plot(superpipeline, graph, str(superpipeline.pipeline + '.dot'), isReduced = True)
+      web.convertToPng(str(superpipeline.pipeline))
 
-  # Write out web content and terminate.
-  if mode == 'web': web.writeContent(); exit(0)
+  # Get information about individual tools, write out web content and terminate.
+  if mode == 'web':
+    web.updateTools(files, toolConfigurationFilesPath)
+    web.writeContent(os.getenv('GKNOCOMMITID'), __version__, __date__)
+    exit(0)
 
   # Generate the workflow.
   workflow = graph.generateWorkflow()

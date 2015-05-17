@@ -1,0 +1,127 @@
+{
+  "id" : "rufus-filter",
+  "configuration type" : "tool",
+  "description" : "Filter a fastq file for reads that contain kmers defined in an input list.",
+  "categories" : ["FASTQ-processing", "Marthlab-software"],
+  "tools" : ["Rufus"],
+  "path" : "Rufus/bin",
+  "executable" : "RUFUSv5.Filter",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "Input hash list.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--hash-list",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["hl"],
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The input fastq file.",
+        "long form argument" : "--fastq",
+        "short form argument" : "-q",
+        "command line argument" : "--fastq",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["fq", "fq.gz", "fastq", "fastq.gz"],
+        "modify argument" : "omit",
+        "if input is stream" : {
+          "argument" : "stdin",
+          "value" : ""
+        }
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output filtered FASTQ file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--output",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["fq", "fastq"],
+        "modify argument" : "omit",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fastq",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_filtered"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The length of k-mer.",
+        "long form argument" : "--kmer",
+        "short form argument" : "-k",
+        "command line argument" : "--kmer",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "Minimum base quality.",
+        "long form argument" : "--min-base-quality",
+        "short form argument" : "-mq",
+        "command line argument" : "--min-base-quality",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "Hash count threshold.",
+        "long form argument" : "--hash-threshold",
+        "short form argument" : "-ht",
+        "command line argument" : "--hash-threshold",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "Window.",
+        "long form argument" : "--window",
+        "short form argument" : "-w",
+        "command line argument" : "--window",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "Number of threads.",
+        "long form argument" : "--threads",
+        "short form argument" : "-t",
+        "command line argument" : "--threads",
+        "required" : true,
+        "data type" : "integer",
+        "modify argument" : "omit"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--in",
+    "--fastq",
+    "--out",
+    "--kmer",
+    "--min-base-quality",
+    "--hash-threshold",
+    "--window",
+    "--threads"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : []
+    }
+  ]
+}

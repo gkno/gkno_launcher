@@ -1,5 +1,6 @@
 {
   "id" : "bamtools-filter",
+  "configuration type" : "tool",
   "description" : "Filter a BAM file on many parameters or combinations of parameters.",
   "categories" : ["BAM-processing", "Bamtools", "Marthlab-software"],
   "tools" : ["bamtools"],

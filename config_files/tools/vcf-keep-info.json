@@ -79,6 +79,7 @@
 
   "argument order" : [
     "--in",
+    "--index",
     "--out",
     "--info"
   ],
