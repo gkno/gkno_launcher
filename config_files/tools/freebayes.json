@@ -1,6 +1,14 @@
 {
   "id" : "freebayes",
   "configuration type" : "tool",
+  "web page" : {
+    "author" : "Erik Garrison",
+    "citation" : "Garrison E, Marth G. Haplotype-based variant detection from short-read sequencing. arXiv preprint arXiv:1207.3907 [q-bio.GN] 2012",
+    "email" : "erik.garrison@gmail.com",
+    "paper" : "http://arxiv.org/abs/1207.3907",
+    "tool" : "freebayes",
+    "web" : "https://github.com/ekg/freebayes"
+  },
   "description" : "Bayesian variant and haplotype calling",
   "categories" : ["Variant-discovery", "Short-variant-discovery", "Marthlab-software"],
   "tools" : ["freebayes"],

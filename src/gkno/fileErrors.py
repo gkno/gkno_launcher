@@ -25,6 +25,18 @@ class fileErrors:
     # For a list of all error code values, see adminErrors.py.
     self.errorCode = '4'
 
+  # Attempt to open a non-existent file.
+  def noFile(self, filename):
+    self.text.append('Unable to open configuration file.')
+    self.text.append('In order to execute the requested pipeline, the configuration file:')
+    self.text.append('\t')
+    self.text.append('\t' + filename)
+    self.text.append('\t')
+    self.text.append('This filename cannot be found. Please check the names of all pipelines and tools and ensure that they ' + \
+    'are valid')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   # The opened file is not a valid json file.
   def notJson(self, filename, info):
 

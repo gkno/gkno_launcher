@@ -142,6 +142,30 @@ def updateArgumentsInInstructions(graph, instructions, task):
       block = {'add argument values' : addArguments}
       instructions['modify text'].append(block)
 
+# Extend a single value to a set of values and introduce an integer identifier to each new value.
+def addIndexToSingleBaseValue(graph, superpipeline, task, argument, values, subphases):
+
+  # Get the configuration data for this tool and get the long form version of the argument to 
+  # use for building the filenames.
+  tool             = superpipeline.tasks[task]
+  toolData         = superpipeline.getToolData(tool)
+
+  # Determine the allowed extensions for the input argument as well as whether it is a stub.
+  extensions = toolData.getArgumentAttribute(argument, 'extensions')
+
+  # Get the extension on this file (this method is for an array of values of length 1).
+  extension = getExtension(values[0], extensions)
+
+  # Extract the extension.
+  value = values[0].replace('.' + extension, '')
+
+  # Generate a set of values of length len(subphases).
+  updatedValues = []
+  for i in range(1, subphases + 1): updatedValues.append(value + '_' + str(i) + '.' + extension)
+
+  # Return the modified values. 
+  return updatedValues
+
 # Construct the filename from an input file from the same task.
 def constructFromFilename(graph, superpipeline, instructions, task, nodeId, argument, baseValues):
 

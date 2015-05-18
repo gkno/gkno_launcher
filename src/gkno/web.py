@@ -119,9 +119,10 @@ class webContent:
     fileHandle = open(filename, 'w')
 
     # Include the current version of gkno.
-    webContent['__version__'] = version
-    webContent['__commit__']  = commitId
-    webContent['__date__']    = date
+    webContent['__gkno__']            = {}
+    webContent['__gkno__']['version'] = version
+    webContent['__gkno__']['commit']  = commitId
+    webContent['__gkno__']['date']    = date
 
     # Get the commit ids for all tools.
     execute       = Popen(['git', 'submodule'], stdin=PIPE, stdout=PIPE, stderr=PIPE)

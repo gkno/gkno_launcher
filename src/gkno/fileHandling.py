@@ -88,7 +88,7 @@ class fileHandling:
     try: jsonData = open(filename)
     except:
       # TODO ERROR
-      if allowTermination: print('ERROR - failed to open json file - ' + str(filename)); exit(1)
+      if allowTermination: errors.fileErrors().noFile(filename)
       else: return False
   
     try: data = json.load(jsonData)

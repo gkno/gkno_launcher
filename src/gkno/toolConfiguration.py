@@ -419,12 +419,13 @@ class toolConfiguration:
 
   # Check the contents of the information supplied for the web page.
   def checkWeb(self):
-    allowedAttributes           = {}
-    allowedAttributes['author'] = (str, False)
-    allowedAttributes['email']  = (str, False)
-    allowedAttributes['paper']  = (str, False)
-    allowedAttributes['tool']   = (str, False)
-    allowedAttributes['web']    = (str, False)
+    allowedAttributes             = {}
+    allowedAttributes['author']   = (str, False)
+    allowedAttributes['citation'] = (str, False)
+    allowedAttributes['email']    = (str, False)
+    allowedAttributes['paper']    = (str, False)
+    allowedAttributes['tool']     = (str, False)
+    allowedAttributes['web']      = (str, False)
 
     # If web information was provided, ensure that only valid fields were provided
     for field in self.webPage:

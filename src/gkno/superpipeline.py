@@ -6,7 +6,7 @@ from copy import deepcopy
 import fileHandling
 import parameterSets
 import pipelineConfiguration
-import pipelineConfigurationErrors as perr
+import pipelineConfigurationErrors as pce
 import stringOperations as strOps
 import toolConfiguration
 
@@ -19,7 +19,7 @@ class superpipelineClass:
   def __init__(self, pipeline):
 
     # Define errors.
-    self.pipelineErrors = perr.pipelineErrors()
+    self.pipelineErrors = pce.pipelineErrors()
 
     # Record the name of the top level pipeline, e.g. that defined on the command line.
     self.pipeline = None
@@ -290,6 +290,9 @@ class superpipelineClass:
 
       # If the tool is not available in the user defined path, default to the standard gkno path.
       if not isTool: filename = str(gknoPath + '/' + tool + '.json')
+
+      # Check that the tool exists. If not, terminate since the configuration file will not be found.
+      if tool not in files.tools: self.pipelineErrors.invalidTool(tool)
 
       # Get the configuration file data.
       toolData.getConfigurationData(tool, filename)

@@ -51,6 +51,15 @@ class pipelineErrors:
   ## Errors with the tasks section ##
   ###################################
 
+  # Invalid tool.
+  def invalidTool(self, tool):
+    self.text.append('Invalid tool in pipeline tasks.')
+    self.text.append('The pipeline tasks section of the pipeline configuration file contains a user defined task name and the tool or ' + \
+    'pipeline with which it is associated. In this section, the tool \'' + tool + '\' is defined, but this is not a tool within gkno. ' + \
+    'Please check the pipeline configuration file and ensure that all defined tasks point to valid tools or pipelines.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   # If two tasks have been given the same name.
   def repeatedTaskName(self, pipeline, task):
     self.text.append('Repeated task name in pipeline: ' + pipeline + '.')

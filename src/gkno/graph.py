@@ -1600,8 +1600,15 @@ class pipelineGraph:
           # values, but this is not the input file used to generate the output file names.
           subphases = self.getGraphNodeAttribute(task, 'subphases')
           if len(baseValues) != subphases:
-            shortFormArgument = self.getArgumentAttribute(task, nodeId, 'shortFormArgument')
-            cfe.constructFilenameErrors().numberBaseValues(task, argument, shortFormArgument, len(baseValues), subphases)
+
+            # If there is a single base value, generate a new set of base values with the same number as there are
+            # subphases by introducing an index into the filename.
+            if len(baseValues) == 1: baseValues = construct.addIndexToSingleBaseValue(self.graph, superpipeline, task, argument, baseValues, subphases)
+        
+            # Otherwise, terminate.
+            else:
+              shortFormArgument = self.getArgumentAttribute(task, nodeId, 'shortFormArgument')
+              cfe.constructFilenameErrors().numberBaseValues(task, argument, shortFormArgument, len(baseValues), subphases)
 
           # If the input argument being used to construct the output filenames is the greedy argument, then this
           # means that there should only be a single output (not an output for each of the input arguments). In

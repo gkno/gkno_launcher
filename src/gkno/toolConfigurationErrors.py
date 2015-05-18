@@ -25,6 +25,12 @@ class toolErrors:
     # For a list of all error code values, see adminErrors.py.
     self.errorCode = '6'
 
+  ###########################################
+  ## Error opening the configuratiuon file ##
+  ###########################################
+
+  # If the configuration file could not be opened.
+
   ##################################
   ## Errors with top level fields ##
   ##################################
