@@ -402,34 +402,32 @@ class helpInformation:
         print(file = sys.stdout)
 
     # Write out all of the values included in the selected parameter set, if there are any.
-    self.parameterSets(graph, superpipeline)
+    self.parameterSets(graph, superpipeline, arguments)
 
     # Terminate.
     exit(0)
 
   # Write out all arguments defined in the default parameter set as well values from a defined parameter set.
-  def parameterSets(self, graph, superpipeline):
+  def parameterSets(self, graph, superpipeline, arguments):
 
     # Store the values set by the parameter sets in the following dictionary.
     self.setArguments = {}
 
     # Start by getting information on the default parameter set, then the defined set.
-    self.setParameterSetValues(graph, superpipeline, 'default')
-    if graph.parameterSet: self.setParameterSetValues(graph, superpipeline, graph.parameterSet)
+    self.setParameterSetValues(graph, superpipeline, arguments, 'default')
+    if graph.parameterSet: self.setParameterSetValues(graph, superpipeline, arguments, graph.parameterSet)
 
     # Set the parameter set name.
     setName = graph.parameterSet if graph.parameterSet else 'default'
 
     # Loop over all of the set arguments and write out the values.
-    if len(self.setArguments) > 1:
+    if len(self.setArguments) > 0:
 
       # Find the length of the longest argument.
       length = len(max(self.setArguments, key=len))
 
       # Write out general header information.
-      print(file = sys.stdout)
       self.writeSimpleLine('Parameter set information for parameter set: ' + setName, isIndent = False, noLeadingTabs = 0)
-      print(file = sys.stdout)
       for argument in sorted(self.setArguments):
 
         # Loop over all the values for the argument.
@@ -439,16 +437,22 @@ class helpInformation:
           self.writeComplexLine(strings, [length + 5, 1], noLeadingTabs = 1)
 
   # Set parameter set values.
-  def setParameterSetValues(self, graph, superpipeline, setName):
+  def setParameterSetValues(self, graph, superpipeline, arguments, setName):
     parameterSet = superpipeline.getPipelineParameterSet(superpipeline.pipeline, setName)
     nodeIds      = ps.parameterSets.SM_getNodeIds(parameterSet)
     for nodeId in nodeIds:
 
+      # Find the pipeline argument that corresponds to this node id.
+      useArgument = None
+      for argument in arguments.keys():
+        if arguments[argument].nodeId == nodeId:
+          useArgument = arguments[argument].longFormArgument
+          break
+
       # For each node, determine if an argument exists for the node. Only show set arguments (rather than nodes
       # within the pipeline that are hidded).
-      argument = graph.getGraphNodeAttribute(nodeId, 'longFormArgument')
-      values   = nodeIds[nodeId]
-      if argument and values: self.setArguments[argument] = values
+      values = nodeIds[nodeId]
+      if useArgument and values: self.setArguments[useArgument] = values
 
   ###############################################
   ##  Routines to write information to screen  ##

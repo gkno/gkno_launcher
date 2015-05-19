@@ -14,7 +14,7 @@ import sys
 # at the start of the message.  Print these here.
 def printHeader(version, date, gknoCommitID):
   print(file = sys.stdout)
-  commitLength = len(gknoCommitID) + 14
+  commitLength = len(gknoCommitID) + 16
   length       = max(commitLength, 29)
   print('=' * length, file = sys.stdout)
   print('  University of Utah gkno package', file = sys.stdout)
