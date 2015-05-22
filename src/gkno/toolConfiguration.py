@@ -394,7 +394,7 @@ class toolConfiguration:
     for argumentInformation in arguments:
 
       # Define a set of information to be used in help messages.
-      helpInfo = (self.name, 'arguments', None)
+      helpInfo = (self.name, 'arguments', category)
 
       # Define a class to store task attribtues.
       attributes = argumentAttributes()

@@ -154,16 +154,17 @@ class helpInformation:
         pipeline = pc.pipelineConfiguration()
         pipeline.getConfigurationData(path + '/' + filename)
 
-        # Store the pipeline description.
-        descriptions[pipeline.name] = pipeline.description
+        # Store the pipeline description if the pipeline is not developmental.
+        if not pipeline.isDevelopment:
+          descriptions[pipeline.name] = pipeline.description
 
-        # Loop over the categories and populate the data structure.
-        for category in pipeline.categories:
+          # Loop over the categories and populate the data structure.
+          for category in pipeline.categories:
 
-          # Check that the category is allowed.
-          if category not in self.helpCategories: self.errors.invalidCategory(pipeline.name, category, self.helpCategories)
-          if category not in categories: categories[str(category)] = [str(pipeline.name)]
-          else: categories[str(category)].append(str(pipeline.name))
+            # Check that the category is allowed.
+            if category not in self.helpCategories: self.errors.invalidCategory(pipeline.name, category, self.helpCategories)
+            if category not in categories: categories[str(category)] = [str(pipeline.name)]
+            else: categories[str(category)].append(str(pipeline.name))
 
     # Return the dictionary containing all the tools connected to each category.
     return categories, descriptions
@@ -199,8 +200,10 @@ class helpInformation:
         pipeline.allowTermination = False
         success                   = pipeline.getConfigurationData(path + '/' + filename)
 
-        # If the pipeline configuration was successfully parsed, get and store the description.
-        if success: descriptions[pipeline.name] = pipeline.description
+        # If the pipeline configuration was successfully parsed, get and store the description if the pipeline
+        # is not developmental.
+        if success:
+          if not pipeline.isDevelopment: descriptions[pipeline.name] = pipeline.description
 
         # If there are errors with the pipeline configuration file, mark it as having errors.
         else: failedPipelines.append(pipeline.name)

@@ -157,12 +157,12 @@ class plotGraph():
       # Modify node attributes.
       graphToDraw.node[taskNodeId]["color"]     = self.lightColour
       graphToDraw.node[taskNodeId]["style"]     = 'filled'
-      graphToDraw.node[taskNodeId]["shape"]     = 'doublecircle'
+      graphToDraw.node[taskNodeId]["shape"]     = 'circle'
       graphToDraw.node[taskNodeId]["label"]     = taskName
       graphToDraw.node[taskNodeId]["fillcolor"] = 'white'#self.lightColour
-      graphToDraw.node[taskNodeId]["fontcolor"] = self.lightColour#self.fontColour
+      graphToDraw.node[taskNodeId]["fontcolor"] = '#5A5A5A'#self.lightColour#self.fontColour
       graphToDraw.node[taskNodeId]["fontname"]  = self.fontName
-      graphToDraw.node[taskNodeId]["penwidth"]    = '2.5'
+      graphToDraw.node[taskNodeId]["penwidth"]    = '4'
 
     # Remove nodes marked for removal, handling edges that are left dangling.
     if isReduced: self.removeNodes(graphToDraw)
@@ -178,7 +178,7 @@ class plotGraph():
       graphToDraw.node[nodeId]["style"]     = 'filled'
       graphToDraw.node[nodeId]["fillcolor"] = 'white'#self.darkColour
       graphToDraw.node[nodeId]["fontname"]  = self.fontName
-      graphToDraw.node[nodeId]["fontcolor"] = self.darkColour#self.fontColour
+      graphToDraw.node[nodeId]["fontcolor"] = '#5A5A5A'#self.darkColour#self.fontColour
       graphToDraw.node[nodeId]["penwidth"]    = '2.5'
 
     # Draw the graph from left to right, rather than default top to bottom.

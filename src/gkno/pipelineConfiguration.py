@@ -229,6 +229,10 @@ class pipelineConfiguration:
     # file nodes.
     self.generatesMultipleNodes = False
 
+    # Pipelines can be marked as developmental. This will keep them out of help messages and not include
+    # them in the web json.
+    self.isDevelopment = False
+
     # As pipeline configuration files are processed, success will identify whether a problem was
     # encountered.
     self.success = True
@@ -333,6 +337,7 @@ class pipelineConfiguration:
     allowedAttributes['id']                 = (str, True, True, 'id')
     allowedAttributes['arguments']          = (dict, True, False, None)
     allowedAttributes['description']        = (str, True, True, 'description')
+    allowedAttributes['development']        = (bool, False, True, 'isDevelopment')
     allowedAttributes['categories']         = (list, True, True, 'categories')
     allowedAttributes['configuration type'] = (str, True, False, None)
     allowedAttributes['connect nodes']      = (list, False, False, None)
