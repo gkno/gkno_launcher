@@ -151,11 +151,11 @@ class helpInformation:
     descriptions = {}
     for filename in os.listdir(path):
       if filename.endswith(".json"):
-        pipeline = pc.pipelineConfiguration()
-        pipeline.getConfigurationData(path + '/' + filename)
+        pipeline = pc.pipelineConfiguration(allowTermination = False)
+        success  = pipeline.getConfigurationData(path + '/' + filename)
 
         # Store the pipeline description if the pipeline is not developmental.
-        if not pipeline.isDevelopment:
+        if success and not pipeline.isDevelopment:
           descriptions[pipeline.name] = pipeline.description
 
           # Loop over the categories and populate the data structure.

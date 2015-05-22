@@ -164,7 +164,7 @@ class edgeDefinitions:
 
 # Define a class to store general pipeline attributes,
 class pipelineConfiguration:
-  def __init__(self):
+  def __init__(self, allowTermination = True):
 
     # Handle errors.
     self.errors = errors.pipelineErrors()
@@ -223,7 +223,7 @@ class pipelineConfiguration:
 
     # It is sometimes desirable to allow all steps to be processed without termination. Other
     # times, if a problem is encountered, execution should terminate. Keep track of this.
-    self.allowTermination = True
+    self.allowTermination = allowTermination
 
     # Flag if this pipeline contains instructions for building tasks that generate multiple output
     # file nodes.
@@ -351,7 +351,7 @@ class pipelineConfiguration:
     helpInfo = (self.name, None, None)
 
     # Check the attributes against the allowed attributes and make sure everything is ok.
-    self = methods.checkAttributes(data, allowedAttributes, self, self.allowTermination, helpInfo)
+    self.success, self = methods.checkAttributes(data, allowedAttributes, self, self.allowTermination, helpInfo)
 
   # Check the pipeline tasks. Ensure that all of the tasks are either available tools or other pipelines.
   def checkPipelineTasks(self, data):
