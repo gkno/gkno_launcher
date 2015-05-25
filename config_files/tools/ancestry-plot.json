@@ -1,0 +1,130 @@
+{
+  "id" : "ancestry-plot",
+  "configuration type" : "tool",
+  "description" : "Plot the PCA of a single sample in a reference panel space.",
+  "categories" : ["Visualisation"],
+  "tools" : [],
+  "path" : "none",
+  "executable" : "Rscript",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The reference panel PCA coordinates.",
+        "long form argument" : "--reference-panel",
+        "short form argument" : "-r",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["coord"]
+      },
+      {
+        "description" : "The sample PCA coordinates.",
+        "long form argument" : "--sample",
+        "short form argument" : "-s",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["coord"]
+      },
+      {
+        "description" : "R script to process.",
+        "long form argument" : "--script",
+        "short form argument" : "-s",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["r"]
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output pdf file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["pdf"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--sample",
+          "modify extension" : "replace"
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The x axis label [Principal component 1].",
+        "long form argument" : "--x-label",
+        "short form argument" : "-x",
+        "command line argument" : "none",
+        "include value in quotations" : true,
+        "data type" : "string",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The y axis label [Principal component 2].",
+        "long form argument" : "--y-label",
+        "short form argument" : "-y",
+        "command line argument" : "none",
+        "include value in quotations" : true,
+        "data type" : "string",
+        "modify argument" : "omit"
+      },
+      {
+        "description" : "The plot title.",
+        "long form argument" : "--title",
+        "short form argument" : "-t",
+        "command line argument" : "none",
+        "include value in quotations" : true,
+        "data type" : "string",
+        "modify argument" : "omit"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--script",
+    "--reference-panel",
+    "--sample",
+    "--out",
+    "--title",
+    "--x-label",
+    "--y-label"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+        {
+          "id" : "script",
+          "argument" : "--script",
+          "values" : ["$(TOOL_BIN)/R/ancestry-plot.r"]
+        },
+        {
+          "id" : "title",
+          "argument" : "--title",
+          "values" : ["PCA of a single sample with the HGDP reference panel."]
+        },
+        {
+          "id" : "xlabel",
+          "argument" : "--x-label",
+          "values" : ["Principal component 1"]
+        },
+        {
+          "id" : "ylabel",
+          "argument" : "--y-label",
+          "values" : ["Principal component 2"]
+        }
+      ]
+    }
+  ]
+}

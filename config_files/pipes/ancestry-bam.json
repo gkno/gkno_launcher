@@ -1,0 +1,222 @@
+{
+  "id" : "ancestry-bam",
+  "configuration type" : "pipeline",
+  "development" : true,
+  "description" : "Place a sample in the PCA space of a set of reference samples in order to determine the ancestry of the sample, using the pileup of reads from the BAM file.",
+  "categories" : ["Ancestry"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "generate-bed",
+      "tool" : "generate-laser-bed"
+    },
+    {
+      "task" : "pileup",
+      "tool" : "samtools-mpileup"
+    },
+    {
+      "task" : "convert-to-seq",
+      "tool" : "laser-pileup"
+    },
+    {
+      "task" : "estimate-ancestry",
+      "tool" : "laser"
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input compressed BAM file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "input"
+      },
+      {
+        "description" : "The FASTA reference.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "node id" : "reference"
+      },
+      {
+        "description" : "The reference panel SNP sites file.",
+        "long form argument" : "--sites-file",
+        "short form argument" : "-s",
+        "node id" : "sites"
+      },
+      {
+        "description" : "The reference panel SNP genotypes file.",
+        "long form argument" : "--genotypes-file",
+        "short form argument" : "-g",
+        "node id" : "genotypes"
+      },
+      {
+        "description" : "The reference panel PCA coordinates file.",
+        "long form argument" : "--coordinates-file",
+        "short form argument" : "-c",
+        "node id" : "coordinates"
+      }
+    ],
+
+    "Outputs" : [
+    ],
+
+    "Options" : [
+      { 
+        "description" : "Exclude reads with mapping quality lower than this value.",
+        "long form argument" : "--mapping-quality",
+        "short form argument" : "-mq",
+        "node id" : "mapping-quality"
+      },
+      { 
+        "description" : "Exclude bases with base quality lower than this value.",
+        "long form argument" : "--base-quality",
+        "short form argument" : "-bq",
+        "node id" : "base-quality"
+      },
+      {
+        "description" : "The number of PCs to compute (must be a positive integer). This number must be smaller than the number of individuals and the number of loci in the genotypefile, and cannot be greater than the number of PCs in the coordinatefile if a coordinatefile is provided [2].",
+        "long form argument" : "--dimension",
+        "short form argument" : "-d",
+        "node id" : "dimension"
+      },
+      {
+        "description" : "Dimension of the sample-specific PCA map to project from (must be a positive integer). This number must be smaller than the number of individuals and the number of loci in the genotypefile, and cannot be smaller than DIM. LASER will project each study sample from a DIM HIGH dimensional PC space to the DIM dimensional reference ancestry map. If set to 0, the program will use the number of significant PCs based on TracyWidom tests for each sample [20].",
+        "long form argument" : "--dimension-high",
+        "short form argument" : "-m",
+        "node id" : "dimension-high"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "input",
+      "task" : "pileup",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "reference",
+      "task" : "pileup",
+      "task argument" : "--fasta-reference"
+    },
+    {
+      "id" : "mapping-quality",
+      "task" : "pileup",
+      "task argument" : "--mapping-quality"
+    },
+    {
+      "id" : "base-quality",
+      "task" : "pileup",
+      "task argument" : "--base-quality"
+    },
+    {
+      "id" : "genotypes",
+      "task" : "estimate-ancestry",
+      "task argument" : "--genotypes-file"
+    },
+    {
+      "id" : "coordinates",
+      "task" : "estimate-ancestry",
+      "task argument" : "--coordinates-file"
+    },
+    {
+      "id" : "dimension",
+      "task" : "estimate-ancestry",
+      "task argument" : "--dimension"
+    },
+    {
+      "id" : "dimension-high",
+      "task" : "estimate-ancestry",
+      "task argument" : "--dimension-high"
+    }
+  ],
+
+  "shared graph nodes" : [
+    {
+      "id" : "sites",
+      "arguments sharing node" : [
+        {
+          "task" : "generate-bed",
+          "task argument" : "--in"
+        },
+        {
+          "task" : "convert-to-seq",
+          "task argument" : "--sites"
+        }
+      ]
+    },
+    {
+      "id" : "bed",
+      "arguments sharing node" : [
+        {
+          "task" : "generate-bed",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "pileup",
+          "task argument" : "--intervals-file"
+        },
+        {
+          "task" : "convert-to-seq",
+          "task argument" : "--intervals-file"
+        }
+      ]
+    },
+    {
+      "id" : "pileup-file",
+      "arguments sharing node" : [
+        {
+          "task" : "pileup",
+          "task argument" : "--out"
+        },
+        {
+          "task" : "convert-to-seq",
+          "task argument" : "--in"
+        }
+      ]
+    },
+    {
+      "id" : "sequences",
+      "arguments sharing node" : [
+        {
+          "task" : "convert-to-seq",
+          "task argument" : "--out",
+          "stub extension" : "SeqPC.coord"
+        },
+        {
+          "task" : "estimate-ancestry",
+          "task argument" : "--sequences-file"
+        }
+      ]
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for human.",
+      "data" : [
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        }
+      ]
+    }
+  ]
+}

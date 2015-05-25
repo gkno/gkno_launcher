@@ -196,6 +196,9 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeId, argu
   # Get the node corresponding to the input argument.
   inputNodeId = gr.pipelineGraph.CM_getNodeForInputArgument(graph, task, inputArgument)
 
+  # Get the associated stub extension, if one exists.
+  stubExtension = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeId, 'stubExtension')
+
   # Determine if this is an intermediate file.
   isIntermediate = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, nodeId, 'isIntermediate')
 
@@ -223,9 +226,9 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeId, argu
     # with the superpipeline to the filename to ensure that there are no conflicts.
     updatedValue = handleRandomString(updatedValue, isIntermediate, superpipeline.randomString)
 
-    # Determine the extension to place on the filename. If the file is a stub, do not attach the extension, just store
-    # it on the node.
-    newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeId, 'extensions')
+    # Determine the extension to place on the filename. If the file is a stub, attach the stub extension associated with this node.
+    if isOutputAStub: newExtensions = [stubExtension]
+    else: newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, task, nodeId, 'extensions')
     updatedValue  = furnishExtension(instructions, updatedValue, extension, newExtensions)
 
     # Add the updated value to the modifiedValues list.
