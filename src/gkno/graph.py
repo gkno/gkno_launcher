@@ -105,6 +105,10 @@ class dataNodeAttributes:
     # Store values for this node.
     self.values = []
 
+    # Store the stub extension associated with the node. If the task takes (or outputs) a stub,
+    # multiple file nodes are created, each of which is associated with a particular extension.
+    self.stubExtension = None
+
     # Store if the node is an intermediate node (e.g. all files associated with this node
     # will be deleted. In addition, store the task after which the files associated with
     # the node should be deleted.
@@ -234,8 +238,9 @@ class pipelineGraph:
               # Define the name of the new file node.
               fileNodeId = str(graphNodeId + '.' + str(extension))
   
-              # Add the file node.
+              # Add the file node and attache the stub extensions to the node.
               self.addFileNode(fileNodeId, graphNodeId)
+              self.setGraphNodeAttribute(fileNodeId, 'stubExtension', extension)
   
               # Identify the source and target node (depending on whether this is an input or an output)
               # and add the edges to the graph.
@@ -1042,7 +1047,14 @@ class pipelineGraph:
     for argument in arguments:
       values       = arguments[argument]
       graphNodeIds = args.arguments[argument].graphNodeIds
-      for graphNodeId in graphNodeIds: self.setGraphNodeAttribute(graphNodeId, 'values', values)
+      for graphNodeId in graphNodeIds:
+
+        # Get the stub extension associated with this node. If this is not a stub, then this will be set
+        # to None. If a stub extension is defined, add this to the file name.
+        stubExtension = self.getGraphNodeAttribute(graphNodeId, 'stubExtension')
+        if stubExtension: updatedValues = [str(value + '.' + stubExtension) for value in values]
+        else: updatedValues = values
+        self.setGraphNodeAttribute(graphNodeId, 'values', updatedValues)
 
     # Loop over the list of nodes and extract those for which a node requires creating.
     for taskAddress, nodeAddress, tool, argument, values, isCreate in nodeList:
