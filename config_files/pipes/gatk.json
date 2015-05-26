@@ -55,51 +55,42 @@
   },
 
   "unique graph nodes" : [
-  ],
-
-  "shared graph nodes" : [
     {
       "id" : "reference",
-      "arguments sharing node" : [
-        {
-          "task" : "generate-gvcf",
-          "node id" : "reference"
-        },
-        {
-          "task" : "genotype",
-          "node id" : "reference"
-        },
-        {
-          "task" : "vqsr",
-          "node id" : "reference"
-        }
-      ]
+      "task" : "generate-gvcf",
+      "node id" : "reference"
     },
     {
       "id" : "genotype-gvcfs",
-      "arguments sharing node" : [
-        {
-          "task" : "generate-gvcf",
-          "node id" : "output"
-        },
-        {
-          "task" : "genotype",
-          "node id" : "gvcf"
-        }
-      ]
+      "task" : "generate-gvcf",
+      "node id" : "output"
     },
     {
       "id" : "joint-vcf",
-      "arguments sharing node" : [
-        {
-          "task" : "genotype",
-          "node id" : "out"
-        },
-        {
-          "task" : "vqsr",
-          "node id" : "input"
-        }
-      ]
+      "task" : "genotype",
+      "node id" : "out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "reference",
+      "target" : "genotype.reference"
+    },
+    {
+      "source" : "reference",
+      "target" : "vqsr",
+      "node id" : "reference"
+    },
+    {
+      "source" : "genotype-gvcfs",
+      "target" : "genotype",
+      "node id" : "gvcf"
+    },
+    {
+      "source" : "joint-vcf",
+      "target" : "vqsr",
+      "node id" : "input"
     }
   ],
 

@@ -237,6 +237,12 @@
       "task argument" : "--platform"
     },
     {
+      "id" : "archive",
+      "delete files" : true,
+      "task" : "build-read-archive",
+      "task argument" : "--out"
+    },
+    {
       "id" : "prefix",
       "task" : "align",
       "task argument" : "--special-reference-prefix"
@@ -260,55 +266,40 @@
       "id" : "seed",
       "task" : "align",
       "task argument" : "--maximum-hashes-per-seed"
-    }
-  ],
-
-  "shared graph nodes" : [
-    {
-      "id" : "archive",
-      "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "build-read-archive",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "align",
-          "task argument" : "--in"
-        }
-      ]
     },
     {
       "id" : "bam",
       "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "align",
-          "task argument" : "--out",
-          "stub extension" : "bam"
-        },
-        {
-          "task" : "sort",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "align",
+      "task argument" : "--out"
     },
     {
       "id" : "output-bam",
-      "arguments sharing node" : [
-        {
-          "task" : "sort",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "index",
-          "task argument" : "--in"
-        },
-        {
-          "task" : "stats",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "sort",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "archive",
+      "target" : "align",
+      "argument" : "--in"
+    },
+    {
+      "source" : "bam.bam",
+      "target" : "sort",
+      "argument" : "--in"
+    },
+    {
+      "source" : "output-bam",
+      "target" : "index",
+      "argument" : "--in"
+    },
+    {
+      "source" : "output-bam",
+      "target" : "stats",
+      "argument" : "--in"
     }
   ],
 

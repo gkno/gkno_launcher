@@ -1,0 +1,112 @@
+{
+  "id" : "samtools-mpileup",
+  "configuration type" : "tool",
+  "description" : "Generates pileup information for one or more BAM files.",
+  "categories" : ["BAM-processing", "Samtools"],
+  "tools" : ["samtools"],
+  "path" : "samtools",
+  "executable" : "samtools",
+  "modifier" : "mpileup",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "Input BAM file(s).",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["bam"],
+        "modify argument" : "omit",
+        "allow multiple values" : true
+      },
+      { 
+        "description" : "The indexed reference FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "-f",
+        "required" : true,
+        "extensions" : ["fa", "fasta"],
+        "data type" : "string"
+      },
+      { 
+        "description" : "The FASTA reference index file.",
+        "long form argument" : "--fasta-index",
+        "short form argument" : "-fx",
+        "command line argument" : "none",
+        "modify value" : "omit",
+        "required" : true,
+        "extensions" : ["fai"],
+        "data type" : "string",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "append"
+        },
+        "include in reduced plot" : false
+      },
+      { 
+        "description" : "A list of regions in which to calculate the pileup.",
+        "long form argument" : "--intervals-file",
+        "short form argument" : "-l",
+        "command line argument" : "-l",
+        "extensions" : ["bed"],
+        "data type" : "string"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output pileup file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["pileup"],
+        "modify argument" : "stdout",
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace"
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Skip alignments with mapping quality smaller than this [0].",
+        "long form argument" : "--mapping-quality",
+        "short form argument" : "-mq",
+        "command line argument" : "-q",
+        "data type" : "integer"
+      },
+      {
+        "description" : "Skip bases with base quality smaller than this [13].",
+        "long form argument" : "--base-quality",
+        "short form argument" : "-bq",
+        "command line argument" : "-Q",
+        "data type" : "integer"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--in",
+    "--fasta-reference",
+    "--fasta-index",
+    "--intervals-file",
+    "--mapping-quality",
+    "--base-quality",
+    "--out"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+      ]
+    }
+  ]
+}

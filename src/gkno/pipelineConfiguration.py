@@ -141,6 +141,9 @@ class uniqueGraphNodes:
     # Record if this node is greedy.
     self.isGreedy = False
 
+    # Store if the files associated with this node should be deleted.
+    self.isDelete = False
+
     # If the task associated with this node is being run multiple times and this node points to an output
     # file, then there is a node for each of the multiple executions of the task. This flag indicates that
     # all these versions of this node should be consolidated into a single node.
@@ -419,6 +422,7 @@ class pipelineConfiguration:
 
     # Define the allowed nodes attributes.
     allowedAttributes                             = {}
+    allowedAttributes['delete files']             = (bool, False, True, 'isDelete')
     allowedAttributes['evaluate command']         = (dict, False, True, 'evaluateCommand')
     allowedAttributes['id']                       = (str, True, True, 'id')
     allowedAttributes['omit from reduced plot']   = (bool, False, True, 'omitFromReducedPlot')
@@ -596,7 +600,7 @@ class pipelineConfiguration:
     for i, information in enumerate(data['connect nodes']):
 
       # Define a set of information to be used in help messages.
-      helpInfo = (self.name, 'connect nodes', i)
+      helpInfo = (self.name, 'connect nodes', str(i))
 
       # Check that the supplied structure is a dictionary.
       if not methods.checkIsDictionary(information, self.allowTermination): return
@@ -606,20 +610,6 @@ class pipelineConfiguration:
 
       # Check the attributes conform to expectations.
       self.success, attributes = methods.checkAttributes(information, allowedAttributes, attributes, self.allowTermination, helpInfo)
-
-      # Loop over all the listed sources and check the information.
-#      for source in information['sources']:
-#        if not methods.checkIsDictionary(source, self.allowTermination): return
-#        sourceAttributes = nodeTaskAttributes()
-#        self.success, sourceAttributes = methods.checkAttributes(source, allowedSourceAttributes, sourceAttributes, self.allowTermination, helpInfo)
-#        attributes.sourceInformation.append(sourceAttributes)
-#
-#      # Loop over all the listed targets and check the information.
-#      for target in information['targets']:
-#        if not methods.checkIsDictionary(target, self.allowTermination): return
-#        targetAttributes = nodeTaskAttributes()
-#        self.success, targetAttributes = methods.checkAttributes(target, allowedTargetAttributes, targetAttributes, self.allowTermination, helpInfo)
-#        attributes.targetInformation.append(targetAttributes)
 
       # Store the connection.
       attributes.source   = str(information['source'])

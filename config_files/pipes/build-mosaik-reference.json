@@ -74,49 +74,44 @@
       "task argument" : "--in2"
     },
     {
+      "id" : "output",
+      "task" : "merge",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "mosaik-reference",
+      "task" : "reference",
+      "task argument" : "--out"
+    },
+    {
       "id" : "hash",
       "task" : "jump-database",
       "task argument" : "--hash-size"
     }
   ],
 
-  "shared graph nodes" : [
+  "connect nodes" : [
     {
-      "id" : "output",
-      "arguments sharing node" : [
-        {
-          "task" : "merge",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "index",
-          "task argument" : "--fasta-reference"
-        },
-        {
-          "task" : "dictionary",
-          "task argument" : "--fasta-reference"
-        },
-        {
-          "task" : "reference",
-          "task argument" : "--fasta-reference"
-        }
-      ]
+      "source" : "output",
+      "target" : "index",
+      "argument" : "--fasta-reference"
     },
     {
-      "id" : "mosaik-reference",
-      "arguments sharing node" : [
-        {
-          "task" : "reference",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "jump-database",
-          "task argument" : "--mosaik-reference"
-        }
-      ]
+      "source" : "output",
+      "target" : "dictionary",
+      "argument" : "--fasta-reference"
+    },
+    {
+      "source" : "output",
+      "target" : "reference",
+      "argument" : "--fasta-reference"
+    },
+    {
+      "source" : "mosaik-reference",
+      "target" : "jump-database",
+      "argument" : "--mosaik-reference"
     }
   ],
-
 
   "parameter sets" : [
     {

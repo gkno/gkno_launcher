@@ -69,36 +69,30 @@
       "id" : "region",
       "task" : "convert",
       "task argument" : "--region"
-    }
-  ],
-
-  "shared graph nodes" : [
+    },
     {
       "id" : "convert-sort",
       "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "convert",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "sort",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "convert",
+      "task argument" : "--out"
     },
     {
       "id" : "sort-index",
-      "arguments sharing node" : [
-        {
-          "task" : "sort",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "index",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "sort",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "convert-sort",
+      "target" : "sort",
+      "argument" : "--in"
+    },
+    {
+      "source" : "sort-index",
+      "target" : "index",
+      "argument" : "--in"
     }
   ],
 

@@ -152,6 +152,21 @@
 
   "unique graph nodes" : [
     {
+      "id" : "input",
+      "task" : "recalibrate-snps",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "reference",
+      "task" : "recalibrate-snps",
+      "task argument" : "--fasta-reference"
+    },
+    {
+      "id" : "annotation",
+      "task" : "recalibrate-snps",
+      "task argument" : "--annotation"
+    },
+    {
       "id" : "hapmap",
       "task" : "recalibrate-snps",
       "task argument" : "--resource-hapmap"
@@ -172,14 +187,59 @@
       "task argument" : "--resource-dbsnp"
     },
     {
+      "id" : "snp-tranche",
+      "task" : "recalibrate-snps",
+      "task argument" : "--tranches-file"
+    },
+    {
+      "id" : "snp-mode",
+      "task" : "recalibrate-snps",
+      "task argument" : "--mode"
+    },
+    {
+      "id" : "tranche",
+      "task" : "recalibrate-snps",
+      "task argument" : "--tranche"
+    },
+    {
+      "id" : "snp-recal",
+      "task" : "recalibrate-snps",
+      "task argument" : "--out"
+    },
+    {
       "id" : "mills",
       "task" : "recalibrate-indels",
       "task argument" : "--resource-indel"
     },
     {
+      "id" : "indel-tranche",
+      "task" : "recalibrate-indels",
+      "task argument" : "--tranches-file"
+    },
+    {
       "id" : "gaussians",
       "task" : "recalibrate-indels",
       "task argument" : "--max-gaussians"
+    },
+    {
+      "id" : "indel-mode",
+      "task" : "recalibrate-indels",
+      "task argument" : "--mode"
+    },
+    {
+      "id" : "indel-recal",
+      "task" : "recalibrate-indels",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "sensitivity",
+      "task" : "apply-snp-recalibration",
+      "task argument" : "--truth-sensitivity"
+    },
+    {
+      "id" : "recal-snp-vcf",
+      "task" : "apply-snp-recalibration",
+      "task argument" : "--out"
     },
     {
       "id" : "output",
@@ -188,174 +248,81 @@
     }
   ],
 
-  "shared graph nodes" : [
+  "connect nodes" : [
     {
-      "id" : "input",
-      "arguments sharing node" : [
-        {
-          "task" : "recalibrate-snps",
-          "task argument" : "--in"
-        },
-        {
-          "task" : "apply-snp-recalibration",
-          "task argument" : "--in"
-        }
-      ]
+      "source" : "input",
+      "target" : "apply-snp-recalibration",
+      "argument" : "--in"
     },
     {
-      "id" : "reference",
-      "arguments sharing node" : [
-        {
-          "task" : "recalibrate-snps",
-          "task argument" : "--fasta-reference"
-        },
-        {
-          "task" : "apply-snp-recalibration",
-          "task argument" : "--fasta-reference"
-        },
-        {
-          "task" : "recalibrate-indels",
-          "task argument" : "--fasta-reference"
-        },
-        {
-          "task" : "apply-indel-recalibration",
-          "task argument" : "--fasta-reference"
-        }
-      ]
+      "source" : "reference",
+      "target" : "apply-snp-recalibration",
+      "argument" : "--fasta-reference"
     },
     {
-      "id" : "annotation",
-      "arguments sharing node" : [
-        {
-          "task" : "recalibrate-snps",
-          "task argument" : "--annotation"
-        },
-        {
-          "task" : "recalibrate-indels",
-          "task argument" : "--annotation"
-        }
-      ]
+      "source" : "reference",
+      "target" : "recalibrate-indels",
+      "argument" : "--fasta-reference"
     },
     {
-      "id" : "snp-mode",
-      "arguments sharing node" : [
-        {
-          "task" : "recalibrate-snps",
-          "task argument" : "--mode"
-        },
-        {
-          "task" : "apply-snp-recalibration",
-          "task argument" : "--mode"
-        }
-      ]
+      "source" : "reference",
+      "target" : "apply-indel-recalibration",
+      "argument" : "--fasta-reference"
     },
     {
-      "id" : "indel-mode",
-      "arguments sharing node" : [
-        {
-          "task" : "recalibrate-indels",
-          "task argument" : "--mode"
-        },
-        {
-          "task" : "apply-indel-recalibration",
-          "task argument" : "--mode"
-        }
-      ]
+      "source" : "annotation",
+      "target" : "recalibrate-indels",
+      "argument" : "--annotation"
     },
     {
-      "id" : "tranche",
-      "arguments sharing node" : [
-        {
-          "task" : "recalibrate-snps",
-          "task argument" : "--tranche"
-        },
-        {
-          "task" : "recalibrate-indels",
-          "task argument" : "--tranche"
-        }
-      ]
+      "source" : "snp-mode",
+      "target" : "apply-snp-recalibration",
+      "argument" : "--mode"
     },
     {
-      "id" : "snp-recal",
-      "arguments sharing node" : [
-        {
-          "task" : "recalibrate-snps",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "apply-snp-recalibration",
-          "task argument" : "--recal-file"
-        }
-      ]
+      "source" : "indel-mode",
+      "target" : "apply-indel-recalibration",
+      "argument" : "--mode"
     },
     {
-      "id" : "indel-recal",
-      "arguments sharing node" : [
-        {
-          "task" : "recalibrate-indels",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "apply-indel-recalibration",
-          "task argument" : "--recal-file"
-        }
-      ]
+      "source" : "tranche",
+      "target" : "recalibrate-indels",
+      "argument" : "--tranche"
     },
     {
-      "id" : "snp-tranche",
-      "arguments sharing node" : [
-        {
-          "task" : "recalibrate-snps",
-          "task argument" : "--tranches-file"
-        },
-        {
-          "task" : "apply-snp-recalibration",
-          "task argument" : "--tranches-file"
-        }
-      ]
+      "source" : "snp-recal",
+      "target" : "apply-snp-recalibration",
+      "argument" : "--recal-file"
     },
     {
-      "id" : "indel-tranche",
-      "arguments sharing node" : [
-        {
-          "task" : "recalibrate-indels",
-          "task argument" : "--tranches-file"
-        },
-        {
-          "task" : "apply-indel-recalibration",
-          "task argument" : "--tranches-file"
-        }
-      ]
+      "source" : "indel-recal",
+      "target" : "apply-indel-recalibration",
+      "argument" : "--recal-file"
     },
     {
-      "id" : "sensitivity",
-      "arguments sharing node" : [
-        {
-          "task" : "apply-snp-recalibration",
-          "task argument" : "--truth-sensitivity"
-        },
-        {
-          "task" : "apply-indel-recalibration",
-          "task argument" : "--truth-sensitivity"
-        }
-      ]
+      "source" : "snp-tranche",
+      "target" : "apply-snp-recalibration",
+      "argument" : "--tranches-file"
     },
     {
-      "id" : "recal-snp-vcf",
-      "arguments sharing node" : [
-        {
-          "task" : "apply-snp-recalibration",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "recalibrate-indels",
-          "task argument" : "--in"
-        },
-        {
-          "task" : "apply-indel-recalibration",
-          "task argument" : "--in"
-        }
-      ]
+      "source" : "indel-tranche",
+      "target" : "apply-indel-recalibration",
+      "argument" : "--tranches-file"
+    },
+    {
+      "source" : "sensitivity",
+      "target" : "apply-indel-recalibration",
+      "argument" : "--truth-sensitivity"
+    },
+    {
+      "source" : "recal-snp-vcf",
+      "target" : "recalibrate-indels",
+      "argument" : "--in"
+    },
+    {
+      "source" : "recal-snp-vcf",
+      "target" : "apply-indel-recalibration",
+      "argument" : "--in"
     }
   ],
 

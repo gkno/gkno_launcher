@@ -370,8 +370,8 @@ class superpipelineClass:
               #TODO ERROR
               if not isStreamSet: print('NO STREAM SET - superpipeline.checkStreams'); exit(1)
 
-  # Determine which nodes are intermediate (e.g. are listed in the shared nodes section of the
-  # pipeline configuration file with the 'delete files' set).
+  # Determine which nodes are intermediate (e.g. are listed in the nodes section of the pipeline configuration file 
+  # with the 'delete files' set).
   def determineFilesToDelete(self, graph):
 
     # Loop over all pipelines in the superpipeline.
@@ -379,16 +379,16 @@ class superpipelineClass:
       for pipeline in self.pipelinesByTier[tier]:
 
         # Loop over all of the shared nodes.
-        for nodeId in self.pipelineConfigurationData[pipeline].getSharedNodeIds():
+        for nodeId in self.pipelineConfigurationData[pipeline].getUniqueNodeIds():
           address     = self.pipelineConfigurationData[pipeline].address
           nodeAddress = str(address + '.' + nodeId) if address else str(nodeId)
 
           # Check if the file is marked for deletion.
-          if self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeId, 'isDelete'):
+          if self.pipelineConfigurationData[pipeline].getUniqueNodeAttribute(nodeId, 'isDelete'):
             for graphNodeId in graph.configurationFileToGraphNodeId[nodeAddress]: graph.setGraphNodeAttribute(graphNodeId, 'isIntermediate', True)
 
           # Check if the file is marked as having additional text to add when filenames are constructed.
-          text = self.pipelineConfigurationData[pipeline].getSharedNodeAttribute(nodeId, 'addTextToFilename')
+          text = self.pipelineConfigurationData[pipeline].getUniqueNodeAttribute(nodeId, 'addTextToFilename')
           if text:
             for graphNodeId in graph.configurationFileToGraphNodeId[nodeAddress]: graph.setGraphNodeAttribute(graphNodeId, 'addTextToFilename', text)
 

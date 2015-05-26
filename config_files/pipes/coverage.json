@@ -151,6 +151,16 @@
       "task argument" : "--in"
     },
     {
+      "id" : "max-depth",
+      "task" : "calculate-coverage",
+      "task argument" : "--combine-max-depth"
+    },
+    {
+      "id" : "convert",
+      "task" : "calculate-coverage",
+      "task argument" : "--out"
+    },
+    {
       "id" : "refs",
       "task" : "convert-to-txt",
       "task argument" : "--reference-sequences"
@@ -169,6 +179,18 @@
       "id" : "zero",
       "task" : "convert-to-txt",
       "task argument" : "--include-zero"
+    },
+    {
+      "id" : "pass-to-r",
+      "delete files" : true,
+      "task" : "convert-to-txt",
+      "task argument" : "--out-absolute"
+    },
+    {
+      "id" : "pass-to-r2",
+      "delete files" : true,
+      "task" : "convert-to-txt",
+      "task argument" : "--out-proportional"
     },
     {
       "id" : "abs-output",
@@ -211,6 +233,11 @@
       "task argument" : "--y-label"
     },
     {
+      "id" : "plot",
+      "task" : "plot-absolute",
+      "task argument" : "--script"
+    },
+    {
       "id" : "xp",
       "task" : "plot-proportional",
       "task argument" : "--x-label"
@@ -219,89 +246,44 @@
       "id" : "yp",
       "task" : "plot-proportional",
       "task argument" : "--y-label"
-    }
-  ],
-
-  "shared graph nodes" : [
-    {
-      "id" : "max-depth",
-      "arguments sharing node" : [
-        {
-          "task" : "calculate-coverage",
-          "task argument" : "--combine-max-depth"
-        },
-        {
-          "task" : "convert-to-txt",
-          "task argument" : "--maximum-coverage-bin"
-        }
-      ]
-    },
-    {
-      "id" : "convert",
-      "arguments sharing node" : [
-        {
-          "task" : "calculate-coverage",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "convert-to-txt",
-          "task argument" : "--in"
-        }
-      ]
-    },
-    {
-      "id" : "pass-to-r",
-      "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "convert-to-txt",
-          "task argument" : "--out-absolute"
-        },
-        {
-          "task" : "plot-absolute",
-          "task argument" : "--in"
-        }
-      ]
-    },
-    {
-      "id" : "pass-to-r2",
-      "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "convert-to-txt",
-          "task argument" : "--out-proportional"
-        },
-        {
-          "task" : "plot-proportional",
-          "task argument" : "--in"
-        }
-      ]
-    },
-    {
-      "id" : "plot",
-      "arguments sharing node" : [
-        {
-          "task" : "plot-absolute",
-          "task argument" : "--script"
-        },
-        {
-          "task" : "plot-proportional",
-          "task argument" : "--script"
-        }
-      ]
     },
     {
       "id" : "legend",
-      "arguments sharing node" : [
-        {
-          "task" : "plot-absolute",
-          "task argument" : "--legend"
-        },
-        {
-          "task" : "plot-proportional",
-          "task argument" : "--legend"
-        }
-      ]
+      "task" : "plot-absolute",
+      "task argument" : "--legend"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "max-depth",
+      "target" : "convert-to-txt",
+      "argument" : "--maximum-coverage-bin"
+    },
+    {
+      "source" : "convert",
+      "target" : "convert-to-txt",
+      "argument" : "--in"
+    },
+    {
+      "source" : "pass-to-r",
+      "target" : "plot-absolute",
+      "argument" : "--in"
+    },
+    {
+      "source" : "pass-to-r2",
+      "target" : "plot-proportional",
+      "argument" : "--in"
+    },
+    {
+      "source" : "plot",
+      "target" : "plot-proportional",
+      "argument" : "--script"
+    },
+    {
+      "source" : "legend",
+      "target" : "plot-proportional",
+      "argument" : "--legend"
     }
   ],
 

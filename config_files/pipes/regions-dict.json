@@ -44,9 +44,6 @@
     }
   ],
 
-  "shared graph nodes" : [
-  ],
-
   "parameter sets" : [
     {
       "id" : "default",

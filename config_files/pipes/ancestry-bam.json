@@ -21,6 +21,10 @@
     {
       "task" : "estimate-ancestry",
       "tool" : "laser"
+    },
+    {
+      "task" : "plot-results",
+      "tool" : "ancestry-plot"
     }
   ],
 
@@ -59,6 +63,24 @@
     ],
 
     "Outputs" : [
+      {
+        "description" : "The output sequences file stub.",
+        "long form argument" : "--sequences",
+        "short form argument" : "-q",
+        "node id" : "sequences"
+      },
+      {
+        "description" : "The output PCA coordinates file stub.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      },
+      {
+        "description" : "The output PCA plot.",
+        "long form argument" : "--plot",
+        "short form argument" : "-p",
+        "node id" : "plot-name"
+      }
     ],
 
     "Options" : [
@@ -86,10 +108,41 @@
         "short form argument" : "-m",
         "node id" : "dimension-high"
       }
+    ],
+
+    "Plotting options" : [
+      {
+        "description" : "The x axis label [Principal component 1].",
+        "long form argument" : "--x-label",
+        "short form argument" : "-x",
+        "node id" : "x-label"
+      },
+      {
+        "description" : "The y axis label [Principal component 2].",
+        "long form argument" : "--y-label",
+        "short form argument" : "-y",
+        "node id" : "y-label"
+      },
+      {
+        "description" : "The plot title.",
+        "long form argument" : "--title",
+        "short form argument" : "-t",
+        "node id" : "title"
+      }
     ]
   },
 
   "unique graph nodes" : [
+    {
+      "id" : "sites",
+      "task" : "generate-bed",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "bed",
+      "task" : "generate-bed",
+      "task argument" : "--out"
+    },
     {
       "id" : "input",
       "task" : "pileup",
@@ -111,6 +164,16 @@
       "task argument" : "--base-quality"
     },
     {
+      "id" : "pileup-file",
+      "task" : "pileup",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "sequences",
+      "task" : "convert-to-seq",
+      "task argument" : "--out"
+    },
+    {
       "id" : "genotypes",
       "task" : "estimate-ancestry",
       "task argument" : "--genotypes-file"
@@ -129,66 +192,69 @@
       "id" : "dimension-high",
       "task" : "estimate-ancestry",
       "task argument" : "--dimension-high"
+    },
+    {
+      "id" : "output",
+      "task" : "estimate-ancestry",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "title",
+      "task" : "plot-results",
+      "task argument" : "--title"
+    },
+    {
+      "id" : "x-label",
+      "task" : "plot-results",
+      "task argument" : "--x-label"
+    },
+    {
+      "id" : "y-label",
+      "task" : "plot-results",
+      "task argument" : "--y-label"
+    },
+    {
+      "id" : "plot-name",
+      "task" : "plot-results",
+      "task argument" : "--out"
     }
   ],
 
-  "shared graph nodes" : [
+  "connect nodes" : [
     {
-      "id" : "sites",
-      "arguments sharing node" : [
-        {
-          "task" : "generate-bed",
-          "task argument" : "--in"
-        },
-        {
-          "task" : "convert-to-seq",
-          "task argument" : "--sites"
-        }
-      ]
+      "source" : "sites",
+      "target" : "convert-to-seq",
+      "argument" : "--sites"
     },
     {
-      "id" : "bed",
-      "arguments sharing node" : [
-        {
-          "task" : "generate-bed",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "pileup",
-          "task argument" : "--intervals-file"
-        },
-        {
-          "task" : "convert-to-seq",
-          "task argument" : "--intervals-file"
-        }
-      ]
+      "source" : "bed",
+      "target" : "pileup",
+      "argument" : "--intervals-file"
     },
     {
-      "id" : "pileup-file",
-      "arguments sharing node" : [
-        {
-          "task" : "pileup",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "convert-to-seq",
-          "task argument" : "--in"
-        }
-      ]
+      "source" : "pileup-file",
+      "target" : "convert-to-seq",
+      "argument" : "--in"
     },
     {
-      "id" : "sequences",
-      "arguments sharing node" : [
-        {
-          "task" : "convert-to-seq",
-          "task argument" : "--out",
-          "stub extension" : "SeqPC.coord"
-        },
-        {
-          "task" : "estimate-ancestry",
-          "task argument" : "--sequences-file"
-        }
-      ]
+      "source" : "bed",
+      "target" : "convert-to-seq",
+      "argument" : "--intervals-file"
+    },
+    {
+      "source" : "sequences.seq",
+      "target" : "estimate-ancestry",
+      "argument" : "--sequences-file"
+    },
+    {
+      "source" : "coordinates",
+      "target" : "plot-results",
+      "argument" : "--reference-panel"
+    },
+    {
+      "source" : "output.SeqPC.coord",
+      "target" : "plot-results",
+      "argument" : "--sample"
     }
   ],
 
@@ -197,6 +263,16 @@
       "id" : "default",
       "description" : "Default parameter set requires user to input all input filenames.",
       "data" : [
+        {
+          "id" : "dimension",
+          "node" : "dimension",
+          "values" : [8]
+        },
+        {
+          "id" : "dimension-high",
+          "node" : "dimension-high",
+          "values" : [20]
+        }
       ]
     },
 
@@ -204,6 +280,31 @@
       "id" : "test",
       "description" : "Test parameter set for the test harness.",
       "data" : [
+        {
+          "id" : "input",
+          "node" : "input",
+          "values" : ["$(RESOURCES)/tutorial/current/ancestry.bam"]
+        },
+        {
+          "id" : "sites",
+          "node" : "sites",
+          "values" : ["$(RESOURCES)/tutorial/current/HGDP_700_chr22.site"]
+        },
+        {
+          "id" : "genotypes",
+          "node" : "genotypes",
+          "values" : ["$(RESOURCES)/tutorial/current/HGDP_700_chr22.geno"]
+        },
+        {
+          "id" : "coordinates",
+          "node" : "coordinates",
+          "values" : ["$(RESOURCES)/tutorial/current/HGDP_700_chr22.coord"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr22_fragment.fa"]
+        }
       ]
     },
 

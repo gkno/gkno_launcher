@@ -50,7 +50,7 @@
         "is filename stub" : true,
         "stub extensions" : [
           "log",
-          "SeqPC.coord"
+          "seq"
         ],
         "construct filename" : {
           "method" : "from tool argument",

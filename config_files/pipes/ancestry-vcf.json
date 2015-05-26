@@ -214,7 +214,7 @@
         {
           "id" : "dimension",
           "node" : "dimension",
-          "values" : [4]
+          "values" : [8]
         },
         {
           "id" : "dimension-high",
@@ -228,6 +228,26 @@
       "id" : "test",
       "description" : "Test parameter set for the test harness.",
       "data" : [
+        {
+          "id" : "input",
+          "node" : "input",
+          "values" : ["$(RESOURCES)/tutorial/current/ancestry.vcf.gz"]
+        },
+        {
+          "id" : "sites",
+          "node" : "sites",
+          "values" : ["$(RESOURCES)/tutorial/current/HGDP_700_chr22.site"]
+        },
+        {
+          "id" : "genotypes",
+          "node" : "genotypes",
+          "values" : ["$(RESOURCES)/tutorial/current/HGDP_700_chr22.geno"]
+        },
+        {
+          "id" : "coordinates",
+          "node" : "coordinates",
+          "values" : ["$(RESOURCES)/tutorial/current/HGDP_700_chr22.coord"]
+        }
       ]
     },
 

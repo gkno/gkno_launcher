@@ -136,9 +136,24 @@
       "task argument" : "--canonical"
     },
     {
+      "id" : "threads",
+      "task" : "count-kmers",
+      "task argument" : "--threads"
+    },
+    {
+      "id" : "counts",
+      "task" : "count-kmers",
+      "task argument" : "--out"
+    },
+    {
       "id" : "full-histogram",
       "task" : "build-histogram",
       "task argument" : "--full"
+    },
+    {
+      "id" : "plot",
+      "task" : "build-histogram",
+      "task argument" : "--out"
     },
     {
       "id" : "title",
@@ -167,45 +182,21 @@
     }
   ],
 
-  "shared graph nodes" : [
+  "connect nodes" : [
     {
-      "id" : "counts",
-      "arguments sharing node" : [
-        {
-          "task" : "count-kmers",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "build-histogram",
-          "task argument" : "--in"
-        }
-      ]
+      "source" : "counts",
+      "target" : "build-histogram",
+      "argument" : "--in"
     },
     {
-      "id" : "threads",
-      "arguments sharing node" : [
-        {
-          "task" : "count-kmers",
-          "task argument" : "--threads"
-        },
-        {
-          "task" : "build-histogram",
-          "task argument" : "--threads"
-        }
-      ]
+      "source" : "threads",
+      "target" : "build-histogram",
+      "argument" : "--threads"
     },
     {
-      "id" : "plot",
-      "arguments sharing node" : [
-        {
-          "task" : "build-histogram",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "plot-histogram",
-          "task argument" : "--in"
-        }
-      ]
+      "source" : "plot",
+      "target" : "plot-histogram",
+      "argument" : "--in"
     }
   ],
 

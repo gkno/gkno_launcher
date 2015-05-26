@@ -79,38 +79,32 @@
       "task argument" : "--filter-expression"
     },
     {
+      "id" : "subsetted-vcf",
+      "task" : "subset",
+      "task argument" : "--out"
+    },
+    {
       "id" : "reference",
       "task" : "normalize",
       "task argument" : "--fasta-reference"
-    }
-  ],
-
-  "shared graph nodes" : [
-    {
-      "id" : "subsetted-vcf",
-      "arguments sharing node" : [
-        {
-          "task" : "subset",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "normalize",
-          "task argument" : "--in"
-        }
-      ]
     },
     {
       "id" : "output",
-      "arguments sharing node" : [
-        {
-          "task" : "normalize",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "index",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "normalize",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "subsetted-vcf",
+      "target" : "normalize",
+      "argument" : "--in"
+    },
+    {
+      "source" : "output",
+      "target" : "index",
+      "argument" : "--in"
     }
   ],
 

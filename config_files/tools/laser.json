@@ -31,7 +31,7 @@
         "long form argument" : "--sequences-file",
         "short form argument" : "-s",
         "command line argument" : "-s",
-        "extensions" : ["SeqPC.coord"],
+        "extensions" : ["seq"],
         "data type" : "string"
       }
     ],
@@ -52,7 +52,7 @@
         "construct filename" : {
           "method" : "from tool argument",
           "use argument" : "--sequences-file",
-          "modify extension" : "omit",
+          "modify extension" : "replace",
           "modify text" : [
             {
               "add text" : "_laser"

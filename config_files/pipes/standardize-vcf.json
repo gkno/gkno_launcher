@@ -98,101 +98,84 @@
       "task argument" : "--fasta-reference"
     },
     {
+      "id" : "normalized-vcf",
+      "task" : "normalize",
+      "task argument" : "--out"
+    },
+    {
       "id" : "samples",
       "task" : "subset",
       "task argument" : "--samples-file"
     },
     {
-      "id" : "region",
-      "task" : "normalize",
-      "task argument" : "--region"
-    }
-  ],
-
-  "shared graph nodes" : [
-    {
-      "id" : "normalized-vcf",
-      "arguments sharing node" : [
-        {
-          "task" : "normalize",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "subset",
-          "task argument" : "--in"
-        }
-      ]
-    },
-    {
       "id" : "subsetted-vcf",
-      "arguments sharing node" : [
-        {
-          "task" : "subset",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "remove-duplicates",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "subset",
+      "task argument" : "--out"
     },
     {
       "id" : "unique-vcf",
       "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "remove-duplicates",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "index-precombined",
-          "task argument" : "--in"
-        },
-        {
-          "task" : "combine-vcf",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "remove-duplicates",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "region",
+      "task" : "normalize",
+      "task argument" : "--region"
     },
     {
       "id" : "precombined-index",
       "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "index-precombined",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "combine-vcf",
-          "task argument" : "--index"
-        }
-      ]
+      "task" : "index-precombined",
+      "task argument" : "--out"
     },
     {
       "id" : "combined-vcf",
-      "arguments sharing node" : [
-        {
-          "task" : "combine-vcf",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "compress",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "combine-vcf",
+      "task argument" : "--out"
     },
     {
       "id" : "output",
-      "arguments sharing node" : [
-        {
-          "task" : "compress",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "index",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "compress",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "normalized-vcf",
+      "target" : "subset",
+      "argument" : "--in"
+    },
+    {
+      "source" : "subsetted-vcf",
+      "target" : "remove-duplicates",
+      "argument" : "--in"
+    },
+    {
+      "source" : "unique-vcf",
+      "target" : "index-precombined",
+      "argument" : "--in"
+    },
+    {
+      "source" : "unique-vcf",
+      "target" : "combine-vcf",
+      "argument" : "--in"
+    },
+    {
+      "source" : "precombined-index",
+      "target" : "combine-vcf",
+      "argument" : "--index"
+    },
+    {
+      "source" : "combined-vcf",
+      "target" : "compress",
+      "argument" : "--in"
+    },
+    {
+      "source" : "output",
+      "target" : "index",
+      "argument" : "--in"
     }
   ],
 

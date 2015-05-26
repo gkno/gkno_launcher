@@ -97,19 +97,11 @@
     }
   ],
 
-  "shared graph nodes" : [
+  "connect nodes" : [
     {
-      "id" : "filtered-vcf",
-      "arguments sharing node" : [
-        {
-          "task" : "filter",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "standardize",
-          "node id" : "input"
-        }
-      ]
+      "source" : "filter",
+      "target" : "standardize.input",
+      "argument" : "--out"
     }
   ],
 
