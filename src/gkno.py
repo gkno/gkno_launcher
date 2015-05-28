@@ -31,7 +31,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.9.21"
+__version__ = "2.10.0"
 __date__ = "May 2015"
 
 def main():
@@ -189,7 +189,6 @@ def main():
       web.updateCategories(superpipeline.pipelineConfigurationData[superpipeline.pipeline])
       web.updatePipelineInformation(superpipeline.pipelineConfigurationData[superpipeline.pipeline], args.arguments)
       plot.plot(superpipeline, graph, str(superpipeline.pipeline + '.dot'), isReduced = True)
-      web.convertToPng(str(superpipeline.pipeline))
 
   # Get information about individual tools, write out web content and terminate.
   if mode == 'web':

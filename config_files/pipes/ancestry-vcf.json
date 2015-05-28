@@ -255,6 +255,21 @@
       "id" : "human",
       "description" : "Parameter set for human.",
       "data" : [
+        {
+          "id" : "sites",
+          "node" : "sites",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/HGDP_938.site"]
+        },
+        {
+          "id" : "genotypes",
+          "node" : "genotypes",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/HGDP_938.geno"]
+        },
+        {
+          "id" : "coordinates",
+          "node" : "coordinates",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/HGDP_938.RefPC.coord"]
+        }
       ]
     }
   ]

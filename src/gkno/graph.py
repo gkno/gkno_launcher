@@ -612,38 +612,51 @@ class pipelineGraph:
           source = address + connection.source
           target = address + connection.target
 
-          # Check that the source and target both exist in the graph.
-          #TODO ERRORS
-          if source not in self.graph: print('ERROR - graph.connectNodes - source', source); exit(1)
-          if target not in self.graph: print('ERROR - graph.connectNodes - target', target); exit(1)
+          # Either the source or the target must be a task and the other must be a data node. The data node can be found by membership of
+          # self.configurationFileToGraphNodeId. This will also define the graph node for the configuration node id. First check if the
+          # source is a data node. Set all the necessary parameters according to this.
+          if source in self.configurationFileToGraphNodeId:
 
-          # Determine which of the nodes is a task node and which is not.
-          isSourceATask = True if self.getGraphNodeAttribute(source, 'nodeType') == 'task' else False
-          isTargetATask = True if self.getGraphNodeAttribute(target, 'nodeType') == 'task' else False
+            # Check that the target is a task.
+            if target not in self.graph: self.errors.connectionToInvalidNode(tier, pipelineName, 'target', source, target, self.graph.nodes(data = False))
+            targetIsATask = True if self.getGraphNodeAttribute(target, 'nodeType') == 'task' else False
 
-          # Throw an error if both the source and connection are tasks or neither of them are.
+            # Redefine the source to be the node id stored in the graph.
+            source        = self.configurationFileToGraphNodeId[source][0]
+            sourceIsATask = False
+
+          # Now check if it is the target that is a data node.
+          elif target in self.configurationFileToGraphNodeId:
+
+            # Check that the source is a task.
+            if source not in self.graph: self.errors.connectionToInvalidNode(tier, pipelineName, 'source', source, target, self.graph.nodes(data = False))
+            sourceIsATask = True if self.getGraphNodeAttribute(source, 'nodeType') == 'task' else False
+
+            # Redefine the source to be the node id stored in the graph.
+            target        = self.configurationFileToGraphNodeId[target][0]
+            targetIsATask = False
+
+          # Throw an error if neither of the source and target connection are tasks.
           # TODO ERROR
-          if isSourceATask and isTargetATask: print('ERROR - graph.connectNodes - both tasks'); exit(1)
-          elif not isSourceATask and not isTargetATask: print('ERROR - graph.connectNodes - neither tasks'); exit(1)
+          if not sourceIsATask and not targetIsATask: print('ERROR - graph.connectNodes - neither tasks'); exit(1)
 
-          # Get the tool and argument information.
-          else:
-            if isSourceATask: tool = self.getGraphNodeAttribute(source, 'tool')
-            elif isTargetATask: tool = self.getGraphNodeAttribute(target, 'tool')
+          # Determine the tool associated with the task.
+          if sourceIsATask: tool = self.getGraphNodeAttribute(source, 'tool')
+          elif targetIsATask: tool = self.getGraphNodeAttribute(target, 'tool')
 
-            # Get the data associated with the task and the long form of the supplied argument.
-            toolData         = superpipeline.getToolData(tool)
-            longFormArgument = toolData.getLongFormArgument(connection.argument)
+          # Get the data associated with the task and the long form of the supplied argument.
+          toolData         = superpipeline.getToolData(tool)
+          longFormArgument = toolData.getLongFormArgument(connection.argument)
 
-            # Terminate if the argument is not valid for the tool.
-            #TODO ERROR
-            if not longFormArgument: print('ERROR - graph.connectNodes - argument'); exit(1)
+          # Terminate if the argument is not valid for the tool.
+          #TODO ERROR
+          if not longFormArgument: print('ERROR - graph.connectNodes - argument'); exit(1)
 
-            # Get the argument attributes.
-            attributes = toolData.getArgumentData(longFormArgument)
+          # Get the argument attributes.
+          attributes = toolData.getArgumentData(longFormArgument)
 
-            # Add the edge to the graph.
-            self.graph.add_edge(source, target, attributes = attributes)
+          # Add the edge to the graph.
+          self.graph.add_edge(source, target, attributes = attributes)
 
   # Associate the configuration node ids for unique nodes that point to nodes in nested pipelines with the
   # created graph nodes.

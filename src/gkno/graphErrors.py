@@ -63,3 +63,27 @@ class graphErrors:
     'gkno will construct the correct number of output files (if instructions are included in the configuration files).')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  ##################################
+  ## Errors with node connections ##
+  ##################################
+
+  # A connection is requested, but either the source or target node is not present in the graph.
+  def connectionToInvalidNode(self, tier, pipeline, definition, source, target, nodeIds):
+
+    # Tailor the message based on whether this is a nested pipeline.
+    text = 'nested ' if tier != 1 else ''
+
+    # Write the message.
+    self.text.append('Error connecting nodes.')
+    self.text.append('The "connect nodes" section of the pipeline configuration file defines which nodes should be connected with an edge. The ' + \
+    text + 'pipeline \'' + pipeline + '\' contains a connection between the nodes:')
+    self.text.append('\t')
+    self.text.append('\t' + source + ' --> ' + target)
+    self.text.append('\t')
+    self.text.append('The ' + definition + ' node does not exist in the graph. Please ensure that connections are only made between defined ' + \
+    'nodes in the graph. Below is a list of all nodes in this pipeline graph:')
+    self.text.append('\t')
+    for nodeId in nodeIds: self.text.append('\t' + nodeId)
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
