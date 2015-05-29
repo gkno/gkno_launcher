@@ -105,6 +105,10 @@ class dataNodeAttributes:
     # Store values for this node.
     self.values = []
 
+    # Store the stub extension associated with the node. If the task takes (or outputs) a stub,
+    # multiple file nodes are created, each of which is associated with a particular extension.
+    self.stubExtension = None
+
     # Store if the node is an intermediate node (e.g. all files associated with this node
     # will be deleted. In addition, store the task after which the files associated with
     # the node should be deleted.
@@ -234,8 +238,9 @@ class pipelineGraph:
               # Define the name of the new file node.
               fileNodeId = str(graphNodeId + '.' + str(extension))
   
-              # Add the file node.
+              # Add the file node and attache the stub extensions to the node.
               self.addFileNode(fileNodeId, graphNodeId)
+              self.setGraphNodeAttribute(fileNodeId, 'stubExtension', extension)
   
               # Identify the source and target node (depending on whether this is an input or an output)
               # and add the edges to the graph.
@@ -603,40 +608,55 @@ class pipelineGraph:
         # Loop over all the pipeline connections.
         for connection in pipelineData.connections:
 
-          # Check that the source and target both exist in the graph.
-          #TODO ERRORS
-          if connection.source not in self.graph: print('ERROR - graph.connectNodes - source', connection.source); exit(1)
-          if connection.target not in self.graph: print('ERROR - graph.connectNodes - target', connection.target); exit(1)
+          # Define the source and target nodes based on the address of the current pipeline.
+          source = address + connection.source
+          target = address + connection.target
 
-          # Determine which of the nodes is a task node and which is not.
-          isSourceATask = True if self.getGraphNodeAttribute(connection.source, 'nodeType') == 'task' else False
-          isTargetATask = True if self.getGraphNodeAttribute(connection.target, 'nodeType') == 'task' else False
+          # Either the source or the target must be a task and the other must be a data node. The data node can be found by membership of
+          # self.configurationFileToGraphNodeId. This will also define the graph node for the configuration node id. First check if the
+          # source is a data node. Set all the necessary parameters according to this.
+          if source in self.configurationFileToGraphNodeId:
 
-          # Throw an error if both the source and connection are tasks or neither of them are.
+            # Check that the target is a task.
+            if target not in self.graph: self.errors.connectionToInvalidNode(tier, pipelineName, 'target', source, target, self.graph.nodes(data = False))
+            targetIsATask = True if self.getGraphNodeAttribute(target, 'nodeType') == 'task' else False
+
+            # Redefine the source to be the node id stored in the graph.
+            source        = self.configurationFileToGraphNodeId[source][0]
+            sourceIsATask = False
+
+          # Now check if it is the target that is a data node.
+          elif target in self.configurationFileToGraphNodeId:
+
+            # Check that the source is a task.
+            if source not in self.graph: self.errors.connectionToInvalidNode(tier, pipelineName, 'source', source, target, self.graph.nodes(data = False))
+            sourceIsATask = True if self.getGraphNodeAttribute(source, 'nodeType') == 'task' else False
+
+            # Redefine the source to be the node id stored in the graph.
+            target        = self.configurationFileToGraphNodeId[target][0]
+            targetIsATask = False
+
+          # Throw an error if neither of the source and target connection are tasks.
           # TODO ERROR
-          if isSourceATask and isTargetATask: print('ERROR - graph.connectNodes - both tasks'); exit(1)
-          elif not isSourceATask and not isTargetATask: print('ERROR - graph.connectNodes - neither tasks'); exit(1)
+          if not sourceIsATask and not targetIsATask: print('ERROR - graph.connectNodes - neither tasks'); exit(1)
 
-          # If the source is the task, the target must be an output file node.
-          elif isSourceATask: print('ERROR - graph.connectNode - not handled source as task'); exit(1)
+          # Determine the tool associated with the task.
+          if sourceIsATask: tool = self.getGraphNodeAttribute(source, 'tool')
+          elif targetIsATask: tool = self.getGraphNodeAttribute(target, 'tool')
 
-          # If the target is the task, determine the argument whose attributes should be attached to the edge.
-          else:
+          # Get the data associated with the task and the long form of the supplied argument.
+          toolData         = superpipeline.getToolData(tool)
+          longFormArgument = toolData.getLongFormArgument(connection.argument)
 
-            # Get the tool associated with the task and the long form of the supplied argument.
-            tool             = self.getGraphNodeAttribute(connection.target, 'tool')
-            toolData         = superpipeline.getToolData(tool)
-            longFormArgument = toolData.getLongFormArgument(connection.argument)
+          # Terminate if the argument is not valid for the tool.
+          #TODO ERROR
+          if not longFormArgument: print('ERROR - graph.connectNodes - argument'); exit(1)
 
-            # Terminate if the argument is not valid for the tool.
-            #TODO ERROR
-            if not longFormArgument: print('ERROR - graph.connectNodes - argument'); exit(1)
+          # Get the argument attributes.
+          attributes = toolData.getArgumentData(longFormArgument)
 
-            # Get the argument attributes.
-            attributes = toolData.getArgumentData(longFormArgument)
-
-            # Add the edge to the graph.
-            self.graph.add_edge(connection.source, connection.target, attributes = attributes)
+          # Add the edge to the graph.
+          self.graph.add_edge(source, target, attributes = attributes)
 
   # Associate the configuration node ids for unique nodes that point to nodes in nested pipelines with the
   # created graph nodes.
@@ -1042,7 +1062,14 @@ class pipelineGraph:
     for argument in arguments:
       values       = arguments[argument]
       graphNodeIds = args.arguments[argument].graphNodeIds
-      for graphNodeId in graphNodeIds: self.setGraphNodeAttribute(graphNodeId, 'values', values)
+      for graphNodeId in graphNodeIds:
+
+        # Get the stub extension associated with this node. If this is not a stub, then this will be set
+        # to None. If a stub extension is defined, add this to the file name.
+        stubExtension = self.getGraphNodeAttribute(graphNodeId, 'stubExtension')
+        if stubExtension: updatedValues = [str(value + '.' + stubExtension) for value in values]
+        else: updatedValues = values
+        self.setGraphNodeAttribute(graphNodeId, 'values', updatedValues)
 
     # Loop over the list of nodes and extract those for which a node requires creating.
     for taskAddress, nodeAddress, tool, argument, values, isCreate in nodeList:

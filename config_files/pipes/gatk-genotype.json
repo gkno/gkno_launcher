@@ -43,35 +43,29 @@
       "id" : "region",
       "task" : "genotype",
       "task argument" : "--region"
-    }
-  ],
-
-  "shared graph nodes" : [
+    },
     {
       "id" : "out",
-      "arguments sharing node" : [
-        {
-          "task" : "genotype",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "compress",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "genotype",
+      "task argument" : "--out"
     },
     {
       "id" : "index-vcf",
-      "arguments sharing node" : [
-        {
-          "task" : "compress",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "index",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "compress",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "out",
+      "target" : "compress",
+      "argument" : "--in"
+    },
+    {
+      "source" : "index-vcf",
+      "target" : "index",
+      "argument" : "--in"
     }
   ],
 

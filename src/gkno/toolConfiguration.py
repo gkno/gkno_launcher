@@ -151,6 +151,9 @@ class toolConfiguration:
     # Store the tools that need to be compiled for this tool to be available.
     self.requiredCompiledTools = []
 
+    # Keep track of any R packages that are required by the tool.
+    self.rPackages = []
+
     # Store the URL for the tool.
     self.url = None
 
@@ -281,6 +284,7 @@ class toolConfiguration:
     allowedAttributes['modifier']           = (str, False, True, 'modifier')
     allowedAttributes['path']               = (str, True, True, 'path')
     allowedAttributes['precommand']         = (str, False, True, 'precommand')
+    allowedAttributes['R packages']         = (list, False, True, 'rPackages')
     allowedAttributes['tools']              = (list, True, True, 'requiredCompiledTools')
     allowedAttributes['url']                = (str, False, True, 'url')
     allowedAttributes['web page']           = (dict, False, True, 'webPage')
@@ -419,13 +423,13 @@ class toolConfiguration:
 
   # Check the contents of the information supplied for the web page.
   def checkWeb(self):
-    allowedAttributes             = {}
-    allowedAttributes['author']   = (str, False)
-    allowedAttributes['citation'] = (str, False)
-    allowedAttributes['email']    = (str, False)
-    allowedAttributes['paper']    = (str, False)
-    allowedAttributes['tool']     = (str, False)
-    allowedAttributes['web']      = (str, False)
+    allowedAttributes              = {}
+    allowedAttributes['authors']   = (list, False)
+    allowedAttributes['citations'] = (list, False)
+    allowedAttributes['emails']    = (list, False)
+    allowedAttributes['papers']    = (list, False)
+    allowedAttributes['tool']      = (list, False)
+    allowedAttributes['web pages'] = (list, False)
 
     # If web information was provided, ensure that only valid fields were provided
     for field in self.webPage:

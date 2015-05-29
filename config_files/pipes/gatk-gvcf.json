@@ -84,9 +84,71 @@
 
   "unique graph nodes" : [
     {
+      "id" : "bam",
+      "task" : "create-target-intervals",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "reference",
+      "task" : "create-target-intervals",
+      "task argument" : "--fasta-reference"
+    },
+    {
+      "id" : "reference-index",
+      "task" : "create-target-intervals",
+      "task argument" : "--fasta-index"
+    },
+    {
+      "id" : "known",
+      "task" : "create-target-intervals",
+      "task argument" : "--known-sites"
+    },
+    {
+      "id" : "region",
+      "task" : "create-target-intervals",
+      "task argument" : "--region"
+    },
+    {
+      "id" : "threads",
+      "task" : "create-target-intervals",
+      "task argument" : "--threads"
+    },
+    {
+      "id" : "intervals",
+      "task" : "create-target-intervals",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "indel",
+      "delete files" : true,
+      "task" : "realign-indels",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "realigned-bam-index",
+      "delete files" : true,
+      "task" : "realign-indels",
+      "task argument" : "--out-index"
+    },
+    {
       "id" : "known-for-recalibration",
       "task" : "recalibrate",
       "task argument" : "--known-sites"
+    },
+    {
+      "id" : "recalibration-output",
+      "task" : "recalibrate",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "recalibrated-bam",
+      "task" : "print-reads",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "recalibrated-bam-index",
+      "task" : "print-reads",
+      "task argument" : "--out-index"
     },
     {
       "id" : "output",
@@ -95,208 +157,122 @@
     }
   ],
 
-  "shared graph nodes" : [
+  "connect nodes" : [
     {
-      "id" : "bam",
-      "arguments sharing node" : [
-        {
-          "task" : "create-target-intervals",
-          "task argument" : "--in"
-        },
-        {
-          "task" : "realign-indels",
-          "task argument" : "--in"
-        }
-      ]
+      "source" : "bam",
+      "target" : "realign-indels",
+      "argument" : "--in"
     },
     {
-      "id" : "reference",
-      "arguments sharing node" : [
-        {
-          "task" : "create-target-intervals",
-          "task argument" : "--fasta-reference"
-        },
-        {
-          "task" : "realign-indels",
-          "task argument" : "--fasta-reference"
-        },
-        {
-          "task" : "recalibrate",
-          "task argument" : "--fasta-reference"
-        },
-        {
-          "task" : "print-reads",
-          "task argument" : "--fasta-reference"
-        },
-        {
-          "task" : "single-sample-call",
-          "task argument" : "--fasta-reference"
-        }
-      ]
+      "source" : "reference",
+      "target" : "realign-indels",
+      "argument" : "--fasta-reference"
     },
     {
-      "id" : "reference-index",
-      "arguments sharing node" : [
-        {
-          "task" : "create-target-intervals",
-          "task argument" : "--fasta-index"
-        },
-        {
-          "task" : "realign-indels",
-          "task argument" : "--fasta-index"
-        },
-        {
-          "task" : "recalibrate",
-          "task argument" : "--fasta-index"
-        },
-        {
-          "task" : "print-reads",
-          "task argument" : "--fasta-index"
-        },
-        {
-          "task" : "single-sample-call",
-          "task argument" : "--fasta-index"
-        }
-      ]
+      "source" : "reference",
+      "target" : "recalibrate",
+      "argument" : "--fasta-reference"
     },
     {
-      "id" : "threads",
-      "arguments sharing node" : [
-        {
-          "task" : "create-target-intervals",
-          "task argument" : "--threads"
-        },
-        {
-          "task" : "recalibrate",
-          "task argument" : "--threads"
-        },
-        {
-          "task" : "print-reads",
-          "task argument" : "--threads"
-        },
-        {
-          "task" : "single-sample-call",
-          "task argument" : "--threads"
-        }
-      ]
+      "source" : "reference",
+      "target" : "print-reads",
+      "argument" : "--fasta-reference"
     },
     {
-      "id" : "known",
-      "arguments sharing node" : [
-        {
-          "task" : "create-target-intervals",
-          "task argument" : "--known-sites"
-        },
-        {
-          "task" : "realign-indels",
-          "task argument" : "--known-sites"
-        },
-        {
-          "task" : "recalibrate",
-          "task argument" : "--known-sites"
-        }
-      ]
+      "source" : "reference",
+      "target" : "single-sample-call",
+      "argument" : "--fasta-reference"
     },
     {
-      "id" : "region",
-      "arguments sharing node" : [
-        {
-          "task" : "create-target-intervals",
-          "task argument" : "--region"
-        },
-        {
-          "task" : "single-sample-call",
-          "task argument" : "--region"
-        }
-      ]
+      "source" : "reference-index",
+      "target" : "realign-indels",
+      "argument" : "--fasta-index"
     },
     {
-      "id" : "intervals",
-      "arguments sharing node" : [
-        {
-          "task" : "create-target-intervals",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "realign-indels",
-          "task argument" : "--intervals"
-        }
-      ]
+      "source" : "reference-index",
+      "target" : "recalibrate",
+      "argument" : "--fasta-index"
     },
     {
-      "id" : "indel",
-      "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "realign-indels",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "recalibrate",
-          "task argument" : "--in"
-        },
-        {
-          "task" : "print-reads",
-          "task argument" : "--in"
-        }
-      ]
+      "source" : "reference-index",
+      "target" : "print-reads",
+      "argument" : "--fasta-index"
     },
     {
-      "id" : "realigned-bam-index",
-      "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "realign-indels",
-          "task argument" : "--out-index"
-        },
-        {
-          "task" : "recalibrate",
-          "task argument" : "--in-index"
-        },
-        {
-          "task" : "print-reads",
-          "task argument" : "--in-index"
-        }
-      ]
+      "source" : "reference-index",
+      "target" : "single-sample-call",
+      "argument" : "--fasta-index"
     },
     {
-      "id" : "recalibration-output",
-      "arguments sharing node" : [
-        {
-          "task" : "recalibrate",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "print-reads",
-          "task argument" : "--recalibration-table"
-        }
-      ]
+      "source" : "threads",
+      "target" : "recalibrate",
+      "argument" : "--threads"
     },
     {
-      "id" : "recalibrated-bam",
-      "arguments sharing node" : [
-        {
-          "task" : "print-reads",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "single-sample-call",
-          "task argument" : "--in"
-        }
-      ]
+      "source" : "threads",
+      "target" : "print-reads",
+      "argument" : "--threads"
     },
     {
-      "id" : "recalibrated-bam-index",
-      "arguments sharing node" : [
-        {
-          "task" : "print-reads",
-          "task argument" : "--out-index"
-        },
-        {
-          "task" : "single-sample-call",
-          "task argument" : "--in-index"
-        }
-      ]
+      "source" : "threads",
+      "target" : "single-sample-call",
+      "argument" : "--threads"
+    },
+    {
+      "source" : "known",
+      "target" : "realign-indels",
+      "argument" : "--known-sites"
+    },
+    {
+      "source" : "known",
+      "target" : "recalibrate",
+      "argument" : "--known-sites"
+    },
+    {
+      "source" : "region",
+      "target" : "single-sample-call",
+      "argument" : "--region"
+    },
+    {
+      "source" : "intervals",
+      "target" : "realign-indels",
+      "argument" : "--intervals"
+    },
+    {
+      "source" : "indel",
+      "target" : "recalibrate",
+      "argument" : "--in"
+    },
+    {
+      "source" : "indel",
+      "target" : "print-reads",
+      "argument" : "--in"
+    },
+    {
+      "source" : "realigned-bam-index",
+      "target" : "recalibrate",
+      "argument" : "--in-index"
+    },
+    {
+      "source" : "realigned-bam-index",
+      "target" : "print-reads",
+      "argument" : "--in-index"
+    },
+    {
+      "source" : "recalibration-output",
+      "target" : "print-reads",
+      "argument" : "--recalibration-table"
+    },
+    {
+      "source" : "recalibrated-bam",
+      "target" : "single-sample-call",
+      "argument" : "--in"
+      
+    },
+    {
+      "source" : "recalibrated-bam-index",
+      "target" : "single-sample-call",
+      "argument" : "--in-index"
     }
   ],
 

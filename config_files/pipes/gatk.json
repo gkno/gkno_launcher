@@ -93,7 +93,7 @@
       "arguments sharing node" : [
         {
           "task" : "genotype",
-          "node id" : "out"
+          "node id" : "index-vcf"
         },
         {
           "task" : "vqsr",

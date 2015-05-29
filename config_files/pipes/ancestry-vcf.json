@@ -1,0 +1,276 @@
+{
+  "id" : "ancestry-vcf",
+  "configuration type" : "pipeline",
+  "development" : true,
+  "description" : "Place a sample in the PCA space of a set of reference samples in order to determine the ancestry of the sample using the genotypes from an input VCF file.",
+  "categories" : ["Ancestry"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "generate-bed",
+      "tool" : "generate-laser-bed"
+    },
+    {
+      "task" : "generate-genotypes",
+      "tool" : "laser-vcf-to-genotypes"
+    },
+    {
+      "task" : "estimate-ancestry",
+      "tool" : "trace"
+    },
+    {
+      "task" : "plot-results",
+      "tool" : "ancestry-plot"
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input VCF file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "input"
+      },
+      {
+        "description" : "The reference panel SNP sites file.",
+        "long form argument" : "--sites-file",
+        "short form argument" : "-s",
+        "node id" : "sites"
+      },
+      {
+        "description" : "The reference panel SNP genotypes file.",
+        "long form argument" : "--genotypes-file",
+        "short form argument" : "-g",
+        "node id" : "genotypes"
+      },
+      {
+        "description" : "The reference panel PCA coordinates file.",
+        "long form argument" : "--coordinates-file",
+        "short form argument" : "-c",
+        "node id" : "coordinates"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output sequences file stub.",
+        "long form argument" : "--sequences",
+        "short form argument" : "-q",
+        "node id" : "sequences"
+      },
+      {
+        "description" : "The output PCA coordinates file stub.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      },
+      {
+        "description" : "The output PCA plot.",
+        "long form argument" : "--plot",
+        "short form argument" : "-p",
+        "node id" : "plot-name"
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The number of PCs to compute (must be a positive integer). This number must be smaller than the number of individuals and the number of loci in the genotypefile, and cannot be greater than the number of PCs in the coordinatefile if a coordinatefile is provided [2].",
+        "long form argument" : "--dimension",
+        "short form argument" : "-d",
+        "node id" : "dimension"
+      },
+      {
+        "description" : "Dimension of the sample-specific PCA map to project from (must be a positive integer). This number must be smaller than the number of individuals and the number of loci in the genotypefile, and cannot be smaller than DIM. LASER will project each study sample from a DIM HIGH dimensional PC space to the DIM dimensional reference ancestry map. If set to 0, the program will use the number of significant PCs based on TracyWidom tests for each sample [20].",
+        "long form argument" : "--dimension-high",
+        "short form argument" : "-m",
+        "node id" : "dimension-high"
+      }
+    ],
+
+    "Plotting options" : [
+      {
+        "description" : "The x axis label [Principal component 1].",
+        "long form argument" : "--x-label",
+        "short form argument" : "-x",
+        "node id" : "x-label"
+      },
+      {
+        "description" : "The y axis label [Principal component 2].",
+        "long form argument" : "--y-label",
+        "short form argument" : "-y",
+        "node id" : "y-label"
+      },
+      {
+        "description" : "The plot title.",
+        "long form argument" : "--title",
+        "short form argument" : "-t",
+        "node id" : "title"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "sites",
+      "task" : "generate-bed",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "bed",
+      "task" : "generate-bed",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "input",
+      "task" : "generate-genotypes",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "genotypes",
+      "task" : "estimate-ancestry",
+      "task argument" : "--genotypes-file"
+    },
+    {
+      "id" : "coordinates",
+      "task" : "estimate-ancestry",
+      "task argument" : "--coordinates-file"
+    },
+    {
+      "id" : "dimension",
+      "task" : "estimate-ancestry",
+      "task argument" : "--dimension"
+    },
+    {
+      "id" : "dimension-high",
+      "task" : "estimate-ancestry",
+      "task argument" : "--dimension-high"
+    },
+    {
+      "id" : "title",
+      "task" : "plot-results",
+      "task argument" : "--title"
+    },
+    {
+      "id" : "x-label",
+      "task" : "plot-results",
+      "task argument" : "--x-label"
+    },
+    {
+      "id" : "y-label",
+      "task" : "plot-results",
+      "task argument" : "--y-label"
+    },
+    {
+      "id" : "sequences",
+      "task" : "generate-genotypes",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "output",
+      "task" : "estimate-ancestry",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "plot-name",
+      "task" : "plot-results",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "bed",
+      "target" : "generate-genotypes",
+      "argument" : "--intervals-file"
+    },
+    {
+      "source" : "sequences.geno",
+      "target" : "estimate-ancestry",
+      "argument" : "--sample-genotypes-file"
+    },
+    {
+      "source" : "sequences.site",
+      "target" : "estimate-ancestry",
+      "argument" : "--sample-sites-file"
+    },
+    {
+      "source" : "coordinates",
+      "target" : "plot-results",
+      "argument" : "--reference-panel"
+    },
+    {
+      "source" : "output.ProPC.coord",
+      "target" : "plot-results",
+      "argument" : "--sample"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+        {
+          "id" : "dimension",
+          "node" : "dimension",
+          "values" : [8]
+        },
+        {
+          "id" : "dimension-high",
+          "node" : "dimension-high",
+          "values" : [20]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "input",
+          "node" : "input",
+          "values" : ["$(RESOURCES)/tutorial/current/ancestry.vcf.gz"]
+        },
+        {
+          "id" : "sites",
+          "node" : "sites",
+          "values" : ["$(RESOURCES)/tutorial/current/HGDP_700_chr22.site"]
+        },
+        {
+          "id" : "genotypes",
+          "node" : "genotypes",
+          "values" : ["$(RESOURCES)/tutorial/current/HGDP_700_chr22.geno"]
+        },
+        {
+          "id" : "coordinates",
+          "node" : "coordinates",
+          "values" : ["$(RESOURCES)/tutorial/current/HGDP_700_chr22.coord"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for human.",
+      "data" : [
+        {
+          "id" : "sites",
+          "node" : "sites",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/HGDP_938.site"]
+        },
+        {
+          "id" : "genotypes",
+          "node" : "genotypes",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/HGDP_938.geno"]
+        },
+        {
+          "id" : "coordinates",
+          "node" : "coordinates",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/HGDP_938.RefPC.coord"]
+        }
+      ]
+    }
+  ]
+}

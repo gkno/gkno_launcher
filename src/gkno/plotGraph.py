@@ -7,6 +7,7 @@ import graph as gr
 import plotErrors as er
 
 import os
+import subprocess
 import sys
 
 # Define the plotting class.
@@ -186,6 +187,7 @@ class plotGraph():
 
     # Draw the graph.
     nx.write_dot(graphToDraw, filename)
+    self.convertToPng(filename)
 
   # Remove marked nodes. When removing a node, check all edges coming in and out of the node and
   # connect the previous task to the next task.
@@ -252,3 +254,14 @@ class plotGraph():
     # are not passed to other tools, so just clutter the plot.
     for nodeId in gr.pipelineGraph.CM_getNodes(graphToDraw, 'file'):
       if graphToDraw.node[nodeId]['label'] == 'NA': graphToDraw.remove_node(nodeId)
+
+  # Convert the .dot plots to png.
+  def convertToPng(self, filename):
+
+    # Define the command to execute.
+    execute = 'dot -Tpng ' + filename + ' -o ' + filename + '.png'
+    success = subprocess.call(execute.split())
+
+    # Delete the original dot file.
+    execute = 'rm -f ' + filename
+    success = subprocess.call(execute.split())

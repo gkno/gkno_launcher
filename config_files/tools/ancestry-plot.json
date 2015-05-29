@@ -1,7 +1,7 @@
 {
-  "id" : "r-plot",
+  "id" : "ancestry-plot",
   "configuration type" : "tool",
-  "description" : "Run an R script to plot.",
+  "description" : "Plot the PCA of a single sample in a reference panel space.",
   "categories" : ["Visualisation"],
   "tools" : [],
   "R packages" : ["ggplot2"],
@@ -10,15 +10,24 @@
   "arguments" : {
     "Inputs" : [
       {
-        "description" : "Input data file.",
-        "long form argument" : "--in",
-        "short form argument" : "-i",
+        "description" : "The reference panel PCA coordinates.",
+        "long form argument" : "--reference-panel",
+        "short form argument" : "-r",
         "command line argument" : "none",
         "modify argument" : "omit",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["txt"],
-        "allow multiple values" : true
+        "extensions" : ["coord"]
+      },
+      {
+        "description" : "The sample PCA coordinates.",
+        "long form argument" : "--sample",
+        "short form argument" : "-s",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["coord"]
       },
       {
         "description" : "R script to process.",
@@ -34,7 +43,7 @@
 
     "Outputs" : [
       {
-        "description" : "The output tab delimited file.",
+        "description" : "The output pdf file.",
         "long form argument" : "--out",
         "short form argument" : "-o",
         "command line argument" : "none",
@@ -44,7 +53,7 @@
         "extensions" : ["pdf"],
         "construct filename" : {
           "method": "from tool argument",
-          "use argument" : "--in",
+          "use argument" : "--sample",
           "modify extension" : "replace"
         }
       }
@@ -52,42 +61,29 @@
 
     "Options" : [
       {
-        "description" : "The minimum value for the x axis [determined by the data].",
-        "long form argument" : "--x-axis-minimum",
-        "short form argument" : "-xi",
-        "command line argument" : "none",
-        "data type" : "integer",
-        "modify argument" : "omit"
-      },
-      {
-        "description" : "The maximum value for the x axis [determined by the data].",
-        "long form argument" : "--x-axis-maximum",
-        "short form argument" : "-xa",
-        "command line argument" : "none",
-        "data type" : "integer",
-        "modify argument" : "omit"
-      },
-      {
-        "description" : "The x axis label [bin].",
+        "description" : "The x axis label [Principal component 1].",
         "long form argument" : "--x-label",
         "short form argument" : "-x",
         "command line argument" : "none",
+        "include value in quotations" : true,
         "data type" : "string",
         "modify argument" : "omit"
       },
       {
-        "description" : "The y axis label [value].",
+        "description" : "The y axis label [Principal component 2].",
         "long form argument" : "--y-label",
         "short form argument" : "-y",
         "command line argument" : "none",
+        "include value in quotations" : true,
         "data type" : "string",
         "modify argument" : "omit"
       },
       {
-        "description" : "The legend title [legend].",
-        "long form argument" : "--legend",
-        "short form argument" : "-l",
+        "description" : "The plot title.",
+        "long form argument" : "--title",
+        "short form argument" : "-t",
         "command line argument" : "none",
+        "include value in quotations" : true,
         "data type" : "string",
         "modify argument" : "omit"
       }
@@ -96,13 +92,12 @@
 
   "argument order" : [
     "--script",
-    "--in",
+    "--reference-panel",
+    "--sample",
     "--out",
+    "--title",
     "--x-label",
-    "--y-label",
-    "--legend",
-    "--x-axis-minimum",
-    "--x-axis-maximum"
+    "--y-label"
   ],
 
   "parameter sets" : [
@@ -111,37 +106,25 @@
       "description" : "Default parameter set requires the users input for all files.",
       "data" : [
         {
-          "id" : "xmin",
-          "argument" : "--x-axis-minimum",
-          "values" : [-1]
+          "id" : "script",
+          "argument" : "--script",
+          "values" : ["$(TOOL_BIN)/R/ancestry-plot.r"]
         },
         {
-          "id" : "xmax",
-          "argument" : "--x-axis-maximum",
-          "values" : [-1]
+          "id" : "title",
+          "argument" : "--title",
+          "values" : ["PCA of a single sample with the HGDP reference panel."]
         },
         {
-          "id" : "x",
+          "id" : "xlabel",
           "argument" : "--x-label",
-          "values" : ["bin"]
+          "values" : ["Principal component 1"]
         },
         {
-          "id" : "y",
+          "id" : "ylabel",
           "argument" : "--y-label",
-          "values" : ["value"]
-        },
-        {
-          "id" : "legend",
-          "argument" : "--legend",
-          "values" : ["legend"]
+          "values" : ["Principal component 2"]
         }
-      ]
-    },
-
-    {
-      "id" : "test",
-      "description" : "Parameter set for use with the test-harness.",
-      "data" : [
       ]
     }
   ]

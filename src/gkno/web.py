@@ -63,17 +63,6 @@ class webContent:
         # Add the information to the pipeline information.
         self.pipelineInformation[pipeline]['arguments'].append(information)
 
-  # Convert the .dot plots to png.
-  def convertToPng(self, filename):
-
-    # Define the command to execute.
-    execute = 'dot -Tpng ' + filename + '.dot -o ' + filename + '.png'
-    success = subprocess.call(execute.split())
-
-    # Delete the original dot file.
-    execute = 'rm -f ' + filename + '.dot'
-    success = subprocess.call(execute.split())
-
   # Get web site information for all tools.
   def updateTools(self, files, path):
 
@@ -106,7 +95,9 @@ class webContent:
           for attribute in webInfo:
             if attribute != 'tool':
               if attribute not in self.toolInformation[lower]: self.toolInformation[lower][str(attribute)] = []
-              self.toolInformation[lower][attribute].append(str(webInfo[attribute]))
+
+              # Loop over all entries in the list.
+              for value in webInfo[attribute]: self.toolInformation[lower][attribute].append(value)
 
   # Write out the web content and terminate.
   def writeContent(self, commitId, version, date):

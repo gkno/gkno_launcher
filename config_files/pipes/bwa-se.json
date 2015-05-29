@@ -138,68 +138,54 @@
       "id" : "threads",
       "task" : "align",
       "task argument" : "--threads"
-    }
-  ],
-
-  "shared graph nodes" : [
+    },
     {
       "id" : "aligned-sam",
-      "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "align",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "dedup",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "align",
+      "task argument" : "--out"
     },
     {
       "id" : "marked-sam",
-      "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "dedup",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "convert-to-bam",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "dedup",
+      "task argument" : "--out"
     },
     {
       "id" : "unsorted-bam",
-      "delete files" : true,
-      "arguments sharing node" : [
-        {
-          "task" : "convert-to-bam",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "sort",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "convert-to-bam",
+      "task argument" : "--out"
     },
     {
       "id" : "output",
-      "arguments sharing node" : [
-        {
-          "task" : "sort",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "index",
-          "task argument" : "--in"
-        },
-        {
-          "task" : "stats",
-          "task argument" : "--in"
-        }
-      ]
+      "task" : "sort",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "aligned-sam",
+      "target" : "dedup",
+      "argument" : "--in"
+    },
+    {
+      "source" : "marked-sam",
+      "target" : "convert-to-bam",
+      "argument" : "--in"
+    },
+    {
+      "source" : "unsorted-bam",
+      "target" : "sort",
+      "argument" : "--in"
+    },
+    {
+      "source" : "output",
+      "target" : "index",
+      "argument" : "--in"
+    },
+    {
+      "source" : "output",
+      "target" : "stats",
+      "argument" : "--in"
     }
   ],
 

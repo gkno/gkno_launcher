@@ -25,22 +25,19 @@
       "id" : "vcf",
       "task" : "compress",
       "task argument" : "--in"
+    },
+    {
+      "id" : "out",
+      "task" : "compress",
+      "task argument" : "--out"
     }
   ],
 
-  "shared graph nodes" : [
+  "connect nodes" : [
     {
-      "id" : "out",
-      "arguments sharing node" : [
-        {
-          "task" : "compress",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "index",
-          "task argument" : "--in"
-        }
-      ]
+      "source" : "out",
+      "target" : "index",
+      "argument" : "--in"
     }
   ],
 

@@ -30,22 +30,19 @@
       "id" : "reference",
       "task" : "normalize",
       "task argument" : "--fasta-reference"
+    },
+    {
+      "id" : "out",
+      "task" : "normalize",
+      "task argument" : "--out"
     }
   ],
 
-  "shared graph nodes" : [
+  "connect nodes" : [
     {
-      "id" : "out",
-      "arguments sharing node" : [
-        {
-          "task" : "normalize",
-          "task argument" : "--out"
-        },
-        {
-          "task" : "index",
-          "task argument" : "--in"
-        }
-      ]
+      "source" : "out",
+      "target" : "index",
+      "argument" : "--in"
     }
   ],
 
