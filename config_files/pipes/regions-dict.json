@@ -18,7 +18,7 @@
 
   "unique graph nodes" : [
     {
-      "id" : "dict",
+      "id" : "dictionary",
       "task" : "regions",
       "task argument" : "--in"
     },
@@ -75,9 +75,21 @@
       "description" : "Test parameter set for the test harness.",
       "data" : [
         {
-          "id" : "dict",
-          "node" : "dict",
+          "id" : "dictionary",
+          "node" : "dictionary",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.dict"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for human.",
+      "data" : [
+        {
+          "id" : "dictionary",
+          "node" : "dictionary",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.dict"]
         }
       ]
     }

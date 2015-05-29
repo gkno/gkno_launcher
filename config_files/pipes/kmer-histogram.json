@@ -32,6 +32,7 @@
         "description" : "The second mate FASTQ file.",
         "long form argument" : "--fastq2",
         "short form argument" : "-q2",
+        "required" : false,
         "node id" : "fastq2"
       }
     ],
@@ -217,7 +218,7 @@
         {
           "id" : "kmer",
           "node" : "kmer-size",
-          "values" : [23]
+          "values" : [25]
         },
         {
           "id" : "initial size",
@@ -232,7 +233,7 @@
         { 
           "id" : "threads-kmer",
           "node" : "threads",
-          "values" : [8]
+          "values" : [10]
         },
         { 
           "id" : "full-histogram",
