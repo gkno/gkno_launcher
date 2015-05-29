@@ -4,6 +4,7 @@
   "description" : "Plot the PCA of a single sample in a reference panel space.",
   "categories" : ["Visualisation"],
   "tools" : [],
+  "R packages" : ["ggplot2"],
   "path" : "none",
   "executable" : "Rscript",
   "arguments" : {

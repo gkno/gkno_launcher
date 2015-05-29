@@ -151,6 +151,9 @@ class toolConfiguration:
     # Store the tools that need to be compiled for this tool to be available.
     self.requiredCompiledTools = []
 
+    # Keep track of any R packages that are required by the tool.
+    self.rPackages = []
+
     # Store the URL for the tool.
     self.url = None
 
@@ -281,6 +284,7 @@ class toolConfiguration:
     allowedAttributes['modifier']           = (str, False, True, 'modifier')
     allowedAttributes['path']               = (str, True, True, 'path')
     allowedAttributes['precommand']         = (str, False, True, 'precommand')
+    allowedAttributes['R packages']         = (list, False, True, 'rPackages')
     allowedAttributes['tools']              = (list, True, True, 'requiredCompiledTools')
     allowedAttributes['url']                = (str, False, True, 'url')
     allowedAttributes['web page']           = (dict, False, True, 'webPage')

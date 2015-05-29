@@ -4,6 +4,7 @@
   "description" : "Run an R script to plot.",
   "categories" : ["Visualisation"],
   "tools" : [],
+  "R packages" : ["ggplot2"],
   "path" : "none",
   "executable" : "Rscript",
   "arguments" : {
