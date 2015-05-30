@@ -101,8 +101,7 @@ class adminUtils:
       elif self.mode == "update-resource": success = self.updateResource(resourceName)
 
     # If admin mode ran successfully, update our user settings file
-    if success:
-      self.exportUserSettings()
+    if success: self.exportUserSettings()
 
     # Return success/failure
     return success
