@@ -3,7 +3,7 @@
   "configuration type" : "tool",
   "description" : "Use a samples genotype data from a VCF file to place the sample in the reference PCA space.",
   "categories" : ["Ancestry"],
-  "tools" : ["laser"],
+  "tools" : [],
   "path" : "LASER",
   "executable" : "trace",
   "arguments" : {

@@ -3,7 +3,7 @@
   "configuration type" : "tool",
   "description" : "Convert a VCF file into a genotypes file for use with Laser/TRACE.",
   "categories" : ["Ancestry"],
-  "tools" : ["laser"],
+  "tools" : [],
   "path" : "LASER/vcf2geno",
   "executable" : "vcf2geno",
   "arguments" : {

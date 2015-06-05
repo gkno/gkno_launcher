@@ -21,6 +21,10 @@
     {
       "task" : "plot-results",
       "tool" : "ancestry-plot"
+    },
+    {
+      "task" : "determine-populations",
+      "tool" : "population-from-ancestry"
     }
   ],
 
@@ -70,6 +74,12 @@
         "long form argument" : "--plot",
         "short form argument" : "-p",
         "node id" : "plot-name"
+      },
+      {
+        "description" : "The output file containing a list of populations with which the sample clusters.",
+        "long form argument" : "--populations",
+        "short form argument" : "-l",
+        "node id" : "populations"
       }
     ],
 
@@ -175,6 +185,11 @@
       "id" : "plot-name",
       "task" : "plot-results",
       "task argument" : "--out"
+    },
+    {
+      "id" : "populations",
+      "task" : "determine-populations",
+      "task argument" : "--out"
     }
   ],
 
@@ -200,8 +215,18 @@
       "argument" : "--reference-panel"
     },
     {
+      "source" : "coordinates",
+      "target" : "determine-populations",
+      "argument" : "--reference-panel"
+    },
+    {
       "source" : "output.ProPC.coord",
       "target" : "plot-results",
+      "argument" : "--sample"
+    },
+    {
+      "source" : "output.ProPC.coord",
+      "target" : "determine-populations",
       "argument" : "--sample"
     }
   ],
@@ -220,6 +245,11 @@
           "id" : "dimension-high",
           "node" : "dimension-high",
           "values" : [20]
+        },
+        {
+          "id" : "populations-file",
+          "node" : "populations",
+          "values" : ["populations.txt"]
         }
       ]
     },

@@ -3,7 +3,7 @@
   "configuration type" : "tool",
   "description" : "Generate a sequence file from a samples pileup for use with Laser.",
   "categories" : ["Ancestry"],
-  "tools" : ["laser"],
+  "tools" : [],
   "path" : "LASER/pileup2seq",
   "precommand" : "python",
   "executable" : "pileup2seq.py",

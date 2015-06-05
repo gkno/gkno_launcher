@@ -31,6 +31,7 @@ class helpInformation:
     self.helpCategories['FASTA-processing']  = 'Pipelines involving manipulation of reference FASTA files.'
     self.helpCategories['kmer-processing']   = 'Perform analyses involving the processing of kmers.'
     self.helpCategories['Reference-free']    = 'Analysis of genomes without use of the genome reference.'
+    self.helpCategories['R']                 = 'R scripts for all manner of statistical calculations.'
     self.helpCategories['Scripts']           = 'Scripts to perform many commonly performed tasks.'
     self.helpCategories['Simulation']        = 'Simulation-based pipelines.'
     self.helpCategories['SV-discovery']      = 'Pipelines including detection of structural variations.'
