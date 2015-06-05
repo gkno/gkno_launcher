@@ -1,15 +1,9 @@
 {
   "id" : "freebayes",
-  "configuration type" : "pipeline",
   "description" : "Population call variants using Freebayes, filtering the results with standard filtering methods.",
   "categories" : ["Variant-discovery"],
 
   "pipeline tasks" : [
-    {
-      "task" : "call",
-      "tool" : "freebayes",
-      "greedy argument" : "--in"
-    },
     {
       "task" : "call",
       "tool" : "freebayes",

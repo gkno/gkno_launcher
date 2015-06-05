@@ -8,12 +8,7 @@
     {
       "task" : "call",
       "tool" : "freebayes",
-      "greedy argument" : "--in"
-    },
-    {
-      "task" : "call",
-      "tool" : "freebayes",
-      "greedy argument" : "--in"
+      "greedy argument" : "--ins"
     },
     {
       "task" : "combine-vcf",

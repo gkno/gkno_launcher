@@ -189,7 +189,7 @@ def testErrorCase(code, text, keep):
   # Loop over all the malformed configuration files.
   for filename in os.listdir(path):
     pipeline = filename.rsplit('.json')[0]
-    command  = harness.executable + ' ' + pipeline + ' -cp ' + path
+    command  = harness.executable + ' ' + pipeline + ' -dnl -ps test -cp ' + path
     success  = subprocess.call(command.split(), stdout = harness.devnull, stderr = harness.devnull)
     if success == harness.errorCode: harness.successes += 1
     else: harness.failures.append(str(pipeline + '. Command: '  + command))
@@ -213,7 +213,7 @@ def helpCommands():
                ('top-level', executable, 0),
                ('categories (long form)', executable + ' --categories', 0),
                ('categories (short form)', executable + ' -cat', 0),
-               ('specific category', executable + ' -cat test', 0),
+               ('specific category', executable + ' -cat Alignment', 0),
                ('all pipelines (long form)', executable + ' --all-pipelines', 0),
                ('all pipelines (short form)', executable + ' -api', 0),
                ('pipeline (long form)', executable + ' freebayes --help', 0),

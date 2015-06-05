@@ -26,8 +26,7 @@
     {
       "id" : "bam",
       "task" : "call",
-      "task argument" : "--in",
-      "is greedy" : true
+      "task argument" : "--in"
     },
     {
       "id" : "reference",
@@ -66,6 +65,23 @@
           "id" : "region",
           "node" : "region",
           "values" : [20]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "bam",
+          "node" : "bam",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         }
       ]
     }
