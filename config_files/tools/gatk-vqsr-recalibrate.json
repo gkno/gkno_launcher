@@ -3,7 +3,7 @@
   "configuration type" : "tool",
   "description" : "Recalibrate the VCF files.",
   "categories" : ["GATK"],
-  "tools" : ["gatk"],
+  "tools" : [],
   "path" : "gatk",
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx2g -jar",

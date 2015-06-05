@@ -3,7 +3,7 @@
   "configuration type" : "tool",
   "description" : "Create a list of target intervals.",
   "categories" : ["GATK"],
-  "tools" : ["gatk"],
+  "tools" : [],
   "path" : "gatk",
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx2g -jar",

@@ -3,7 +3,7 @@
   "configuration type" : "tool",
   "description" : "Generate variants using the haplotype caller.",
   "categories" : ["GATK"],
-  "tools" : ["gatk"],
+  "tools" : [],
   "path" : "gatk",
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx2g -jar",

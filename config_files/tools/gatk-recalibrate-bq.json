@@ -3,7 +3,7 @@
   "configuration type" : "tool",
   "description" : "Recalibrate base qualities.",
   "categories" : ["GATK"],
-  "tools" : ["gatk"],
+  "tools" : [],
   "path" : "gatk",
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx2g -jar",

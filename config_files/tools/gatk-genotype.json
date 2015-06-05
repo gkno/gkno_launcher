@@ -3,7 +3,7 @@
   "configuration type" : "tool",
   "description" : "Joint call genotypes from a list of GVCF files.",
   "categories" : ["GATK"],
-  "tools" : ["gatk"],
+  "tools" : [],
   "path" : "gatk",
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx2g -jar",

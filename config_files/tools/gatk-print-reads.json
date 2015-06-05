@@ -3,7 +3,7 @@
   "configuration type" : "tool",
   "description" : "Write out reads to a BAM file.",
   "categories" : ["GATK"],
-  "tools" : ["gatk"],
+  "tools" : [],
   "path" : "gatk",
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx2g -jar",

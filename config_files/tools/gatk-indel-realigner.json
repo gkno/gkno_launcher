@@ -3,7 +3,7 @@
   "configuration type" : "tool",
   "description" : "Realign a BAM file around indels.",
   "categories" : ["GATK"],
-  "tools" : ["gatk"],
+  "tools" : [],
   "path" : "gatk",
   "executable" : "GenomeAnalysisTK.jar",
   "precommand" : "java -Xmx16g -jar",
