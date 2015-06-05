@@ -510,7 +510,7 @@ class adminUtils:
 
     # If no organism name provided, list all organisms we can update
     # ("gkno update-resource")
-    if resourceName == "":
+    if resourceName == '':
       updates = self.getUpdatableResources()
       self.listUpdatableResources(updates)
       return True
@@ -518,9 +518,9 @@ class adminUtils:
     # Otherwise, add the current release for this organism
     # ("gkno update-resource <organism>")
     else:
-      print("Updating "+resourceName+":", file=sys.stdout)
+      print('Updating ' + resourceName + ':', file=sys.stdout)
       sys.stdout.flush()
-      return self.addCurrentRelease(resourceName, "  ")
+      return self.addCurrentRelease(resourceName, '  ')
 
   # -------------------------------------------
   # Build/update helper methods
@@ -636,17 +636,19 @@ class adminUtils:
 
     # Fetch the name resource's "current" release
     currentReleaseName = self.getCurrentReleaseName(resourceName)
-    if currentReleaseName == "":
+    if currentReleaseName == '':
       self.error.noCurrentReleaseAvailable(resourceName)
       return False
 
     # Add named release
-    if not self.addRelease(resourceName, currentReleaseName, outputIndent):
-      return False
+    if not self.addRelease(resourceName, currentReleaseName, outputIndent): return False
 
     # Make a symlink-ed directory "current" that points to release's directory
     currentDir = self.resourcesPath + resourceName + "/current"
     releaseDir = self.resourcesPath + resourceName + "/" + currentReleaseName
+
+    # If there is already a symbolic link, remove it.
+    if os.path.exists(currentDir): os.unlink(currentDir)
     os.symlink(releaseDir, currentDir)
     
     # Update settings & return success
@@ -658,14 +660,14 @@ class adminUtils:
   def addRelease(self, resourceName, releaseName, outputIndent=""):
 
     # If this is the first release for a requested organism resource, initialize its settings
-    if resourceName not in self.userSettings["resources"]:
-      self.userSettings["resources"][resourceName] = {}
-      self.userSettings["resources"][resourceName]["current"]    = ""
-      self.userSettings["resources"][resourceName]["isTracking"] = False
-      self.userSettings["resources"][resourceName]["releases"]   = []
+    if resourceName not in self.userSettings['resources']:
+      self.userSettings['resources'][resourceName]               = {}
+      self.userSettings['resources'][resourceName]['current']    = ''
+      self.userSettings['resources'][resourceName]['isTracking'] = False
+      self.userSettings['resources'][resourceName]['releases']   = []
 
     # Make sure we don't already have this release
-    if releaseName in self.userSettings["resources"][resourceName]["releases"]:
+    if releaseName in self.userSettings['resources'][resourceName]['releases']:
       self.error.resourceAlreadyAdded(resourceName)
       return False
 
@@ -674,33 +676,32 @@ class adminUtils:
 
     # Get URL for release's tarball
     tarballUrl = self.getUrlForRelease(resourceName, releaseName)
-    if tarballUrl == "":
+    if tarballUrl == '':
       self.error.noReleaseUrlFound(resourceName, releaseName)
       return False
 
     # Download release tarball
-    print(outputIndent+"Downloading files...  0%", end="", file=sys.stdout)
+    print(outputIndent + 'Downloading files...  0%', end = '', file = sys.stdout)
     sys.stdout.flush()
-    try:
-      filename, headers = urllib.urlretrieve(tarballUrl, reporthook=downloadProgress) 
+    try: filename, headers = urllib.urlretrieve(tarballUrl, reporthook = downloadProgress) 
     except IOError:
       self.error.urlRetrieveFailed(tarballUrl)
       return False
-    print("", file=sys.stdout)
+    print('', file=sys.stdout)
   
     # Extract files from tarball
     # N.B. - tarball should be set up so that all of its contents are 
     #        in a parent directory whose name matches its 'releaseName'
-    print(outputIndent+"Unpacking files...", end="", file=sys.stdout)
+    print(outputIndent + 'Unpacking files...', end = '', file = sys.stdout)
     sys.stdout.flush()
     try:
       tar = tarfile.open(filename)
-      tar.extractall()
+      tar.extractall(self.resourcesPath + resourceName)
       tar.close()
     except tarfile.TarError:
       self.error.extractTarballFailed(filename)
       return False
-    print("done.", file=sys.stdout)
+    print('done.', file = sys.stdout)
 
     # Delete tarball
     os.remove(filename)
@@ -752,15 +753,14 @@ class adminUtils:
   # Return the name of a resource's "current" release
   def getCurrentReleaseName(self, resourceName):
     targetSettings = self.readTargetsFile(resourceName)
-    return targetSettings["current"]
+    return targetSettings['current']
 
   # Return the URL for a resource's named release ("" if not found)
   def getUrlForRelease(self, resourceName, releaseName):
     targetSettings = self.readTargetsFile(resourceName)
-    for targetInfo in targetSettings["targets"]:
-      if targetInfo["name"] == releaseName:
-        return targetInfo["url"]
-    return ""
+    for targetInfo in targetSettings['targets']:
+      if targetInfo['name'] == releaseName: return targetInfo['url']
+    return ''
 
   # Fetch & return resource's target data (JSON)
   def readTargetsFile(self, resourceName):
