@@ -85,10 +85,15 @@ class arguments:
         # Find the node that the argument points to, if one exists.
         graphNodeId = toolArgumentNodes[argument] if argument in toolArgumentNodes else None
 
+        # Determine if this graph node has successors.
+        if graphNodeId:
+          hasSuccessors = True if graph.graph.successors(graphNodeId) else False
+        else: hasSuccessors = False
+
         # If this is an output file and the output file is passed on to another tool, do not offer
         # this as a command line argument. The description provided could be confusing, so if it is
         # required that this argument is set, a pipeline argument must be provided.
-        if not (superpipeline.getToolArgumentAttribute(tool, argument, 'isOutput') and graph.graph.successors(graphNodeId)):
+        if not (superpipeline.getToolArgumentAttribute(tool, argument, 'isOutput') and hasSuccessors):
 
           # Check if the long form version of this argument conflicts with an argument already set.
           if argument in definedLongFormArguments: isLongFormDefined = True

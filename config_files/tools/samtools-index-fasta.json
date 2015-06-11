@@ -1,0 +1,51 @@
+{
+  "id" : "samtools-index-fasta",
+  "configuration type" : "tool",
+  "description" : "Index a FASTA file.",
+  "categories" : ["FASTA-processing", "Samtools"],
+  "tools" : ["samtools"],
+  "path" : "samtools",
+  "executable" : "samtools",
+  "modifier" : "faidx",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "--fasta-reference",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fasta", ".fa"],
+        "modify argument" : "omit"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output FASTA index file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--output",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : [".fai"],
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "construct filename" : {
+          "method" : "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "append"
+        }
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : []
+    }
+  ]
+}
