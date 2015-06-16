@@ -259,6 +259,19 @@ class pipelineErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  ##################################
+  ## Errors with connecting nodes ##
+  ##################################
+
+  # A node connection references a non-existent node.
+  def invalidNodeConnection(self, source, target, text):
+    self.text.append('Error with node connections.')
+    self.text.append('In the \'connect nodes\' section of the pipeline configuration file, a connection is defined between the nodes \'' + \
+    source + '\' and \'' + target + '\'. The ' + text + ' node is not a valid node in the graph. Please ensure that all of the connections ' + \
+    'are defined between a valid pair of graph nodes.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   ##################################################
   ## Errors generated while dealing with streams. ##
   ##################################################

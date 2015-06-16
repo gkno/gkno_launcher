@@ -429,7 +429,8 @@ def furnishExtension(instructions, value, originalExtension, newExtensions):
 
     # If no extension exists, fail.
     if not newExtension: print('constructionInstructions - no new extension'); exit(1)
-    return str(value + '.' + originalExtension + '.' + newExtension)
+    if originalExtension: return str(value + '.' + originalExtension + '.' + newExtension)
+    else: return str(value + '.' + newExtension)
 
   # If the extension is to omitted, just return the value with no extension added.
   elif extensionInstructions == 'omit': return str(value)

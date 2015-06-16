@@ -612,6 +612,10 @@ class pipelineGraph:
           source = address + connection.source
           target = address + connection.target
 
+          # Check that the source and target are both nodes in the graph.
+          if source not in self.graph: pce.pipelineErrors().invalidNodeConnection(source, target, 'source')
+          if target not in self.graph: pce.pipelineErrors().invalidNodeConnection(source, target, 'target')
+
           # Either the source or the target must be a task and the other must be a data node. The data node can be found by membership of
           # self.configurationFileToGraphNodeId. This will also define the graph node for the configuration node id. First check if the
           # source is a data node. Set all the necessary parameters according to this.
@@ -2001,7 +2005,8 @@ class pipelineGraph:
 
         # Determine which of these tasks is the latest task in the pipeline.
         index = 0
-        for taskNodeId in taskNodeIds: index = max(index, self.workflow.index(taskNodeId))
+        for taskNodeId in taskNodeIds:
+          if not self.getGraphNodeAttribute(taskNodeId, 'isChild'): index = max(index, self.workflow.index(taskNodeId))
         task = self.workflow[index]
 
         # Append the original extension and check if the task exists.

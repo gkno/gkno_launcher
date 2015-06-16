@@ -111,7 +111,6 @@ class consistencyErrors:
 
   # A node required for constructing filenames is not present.
   def noNodeForConstruction(self, task, tool, argument, requiredArgument):
-    print('TEST', task, tool, argument, requiredArgument)
     text = ' (this task is part of a pipeline called by the main pipeline)' if '.' in task else ''
     self.text.append('A node required for constructing a filename is not present.')
     self.text.append('In order to construct values for the argument \'' + argument + '\' in the task with address \'' + task + '\' using tool \'' + \

@@ -8,13 +8,7 @@
     {
       "task" : "call",
       "tool" : "freebayes",
-      "greedy argument" : "--in"
-    },
-    {
-      "task" : "combine-vcf",
-      "tool" : "vcf-combine",
-      "consolidate divisions" : true,
-      "omit from reduced plot" : true,
+      "greedy argument" : "--in",
       "output to stream" : true
     },
     {
@@ -35,6 +29,22 @@
     {
       "task" : "normalize",
       "tool" : "vt-normalize",
+      "input is stream" : true
+    },
+    {
+      "task" : "index-normalized",
+      "tool" : "vcf-index",
+      "omit from reduced plot" : true
+    },
+    {
+      "task" : "combine-vcf",
+      "tool" : "vcf-combine",
+      "consolidate divisions" : true,
+      "output to stream" : true
+    },
+    {
+      "task" : "compress-final",
+      "tool" : "bgzip-stream",
       "input is stream" : true
     },
     {
@@ -109,20 +119,19 @@
     },
     {
       "id" : "freebayes-vcf",
-      "delete files" : true,
       "task" : "call",
-      "task argument" : "--out"
-    },
-    {
-      "id" : "combined-vcf",
-      "delete files" : true,
-      "task" : "combine-vcf",
       "task argument" : "--out"
     },
     {
       "id" : "compressed-vcf",
       "delete files" : true,
       "task" : "compress",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "compressed-vcf-index",
+      "task" : "index-calls",
+      "delete files" : true,
       "task argument" : "--out"
     },
     {
@@ -136,12 +145,6 @@
       "task argument" : "--tag-description"
     },
     {
-      "id" : "compressed-vcf-index",
-      "delete files" : true,
-      "task" : "index-calls",
-      "task argument" : "--out"
-    },
-    {
       "id" : "filter-expression",
       "task" : "filter",
       "task argument" : "--filter-expression"
@@ -152,8 +155,25 @@
       "task argument" : "--out"
     },
     {
-      "id" : "output",
+      "id" : "normalized-vcf",
       "task" : "normalize",
+      "task argument" : "--out",
+      "delete files" : true
+    },
+    {
+      "id" : "normalized-index",
+      "task" : "index-normalized",
+      "task argument" : "--out",
+      "delete files" : true
+    },
+    {
+      "id" : "combined-vcf",
+      "task" : "combine-vcf",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "output",
+      "task" : "compress-final",
       "task argument" : "--out"
     }
   ],
@@ -161,16 +181,6 @@
   "connect nodes" : [
     {
       "source" : "freebayes-vcf",
-      "target" : "combine-vcf",
-      "argument" : "--in"
-    },
-    {
-      "source" : "reference",
-      "target" : "normalize",
-      "argument" : "--fasta-reference"
-    },
-    {
-      "source" : "combined-vcf",
       "target" : "compress",
       "argument" : "--in"
     },
@@ -185,6 +195,11 @@
       "argument" : "--in"
     },
     {
+      "source" : "reference",
+      "target" : "normalize",
+      "argument" : "--fasta-reference"
+    },
+    {
       "source" : "compressed-vcf-index",
       "target" : "filter",
       "argument" : "--index"
@@ -192,6 +207,26 @@
     {
       "source" : "filtered-vcf",
       "target" : "normalize",
+      "argument" : "--in"
+    },
+    {
+      "source" : "normalized-vcf",
+      "target" : "index-normalized",
+      "argument" : "--in"
+    },
+    {
+      "source" : "normalized-vcf",
+      "target" : "combine-vcf",
+      "argument" : "--in"
+    },
+    {
+      "source" : "normalized-index",
+      "target" : "combine-vcf",
+      "argument" : "--index"
+    },
+    {
+      "source" : "combined-vcf",
+      "target" : "compress-final",
       "argument" : "--in"
     },
     {
@@ -232,6 +267,11 @@
           "id" : "bam",
           "node" : "bam",
           "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "id" : "region",
+          "node" : "region",
+          "values" : ["20:1-50000", "20:50000-100000"]
         },
         {
           "id" : "reference",
