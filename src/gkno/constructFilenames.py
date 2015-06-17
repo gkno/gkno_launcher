@@ -239,7 +239,7 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeId, argu
 
 # Given the base value from which to construct filenames, add the argument with multiple values and
 # the specific value for this division to the filename.
-def addDivisionToValue(graph, superpipeline, task, nodeId, instructions, baseValues, argument, optionValue, randomString):
+def addDivisionToValue(graph, superpipeline, task, nodeId, instructions, baseValues, optionArgument, optionValue, randomString):
 
   # If there are no base values, no values can be constructed. Return an empty list and when values are checked,
   # gkno will terminate.
@@ -248,6 +248,9 @@ def addDivisionToValue(graph, superpipeline, task, nodeId, instructions, baseVal
   # Get tool information for this task.
   tool     = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'tool')
   toolData = superpipeline.getToolData(tool)
+
+  # Get the argument with ehich the filename construction is associated.
+  argument = toolData.getLongFormArgument(instructions['use argument'])
 
   # Determine the allowed extensions for the input argument as well as whether this is a stub.
   inputExtensions = toolData.getArgumentAttribute(argument, 'extensions')
@@ -273,7 +276,7 @@ def addDivisionToValue(graph, superpipeline, task, nodeId, instructions, baseVal
     extension = getExtension(updatedValue, inputExtensions)
     if extension == False: print('ERROR WITH EXTENSION - constructFilenames'); exit(1)
     if extension: updatedValue = updatedValue.replace('.' + str(extension), '')
-    updatedValue = str(updatedValue + '_' + argument.strip('-') + optionValue)
+    updatedValue = str(updatedValue + '_' + optionArgument.strip('-') + optionValue)
 
     # Check if there are instructions from the pipeline configuration file to add an extra text field
     # to the filename.

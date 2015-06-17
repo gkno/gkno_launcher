@@ -1479,14 +1479,20 @@ class pipelineGraph:
             # should be the same number of values as there are subphases.
             if instructions['method'] == 'from tool argument':
           
-              # Remove the text that was added to the filename to distinguish between the different divisions.
-              values = [value.replace(self.getGraphNodeAttribute(predecessor, 'divisionText'), '') for value in self.getGraphNodeAttribute(predecessor, 'values')]
+              # Only construct the filenames if the argument associated with this node is the correct argument from the instructions.
+              if instructions['use argument'] == argument:
 
-              # Check if random text has been added and if this isn't an intermediate file, remove it.
-              values = self.checkRandomText(nodeId, predecessor, values)
+                # Remove the text that was added to the filename to distinguish between the different divisions.
+                values = [value.replace(self.getGraphNodeAttribute(predecessor, 'divisionText'), '') for value in self.getGraphNodeAttribute(predecessor, 'values')]
+  
+                # Check if random text has been added and if this isn't an intermediate file, remove it.
+                values = self.checkRandomText(nodeId, predecessor, values)
+  
+                # Add the values to the node.
+                self.setGraphNodeAttribute(nodeId, 'values', construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeId, argument, values))
 
-              # Add the values to the node.
-              self.setGraphNodeAttribute(nodeId, 'values', construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeId, argument, values))
+            # FIXME OTHER METHODS OF CONSTRUCTION
+            else: print('ERROR - Haven\'t handled other construction methods - graph.consolidateDivisions'); exit(1)
 
           # Now link all of the outputs from the previous division nodes to this task.
           for child in self.getGraphNodeAttribute(predecessor, 'children'): self.graph.add_edge(child, task, attributes = deepcopy(self.getEdgeAttributes(predecessor, task)))
@@ -1696,7 +1702,7 @@ class pipelineGraph:
           # text is removed from files that are not intermediate, so when consolidation occurs, all files from the same
           # phase/subphase, but different divisions need to have the same text.
           isIntermediate = self.getGraphNodeAttribute(nodeId, 'isIntermediate')
-          randomString     = strOps.getRandomString(8)
+          randomString   = strOps.getRandomString(8)
 
           # Loop over the base values (except the first - that will be dealt with at the end when updating the file node
           # that already exists), construct the output filenames, then build and add the node with an edge from the task.

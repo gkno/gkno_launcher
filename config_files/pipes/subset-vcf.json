@@ -16,6 +16,21 @@
       "input is stream" : true
     },
     {
+      "task" : "index-normalized",
+      "tool" : "vcf-index"
+    },
+    {
+      "task" : "combine",
+      "tool" : "vcf-combine",
+      "consolidate divisions" : true,
+      "output to stream" : true
+    },
+    {
+      "task" : "compress",
+      "tool" : "bgzip-stream",
+      "input is stream" : true
+    },
+    {
       "task" : "index",
       "tool" : "vcf-index"
     }
@@ -40,6 +55,12 @@
         "long form argument" : "--samples-file",
         "short form argument" : "-s",
         "node id" : "samples"
+      },
+      {
+        "description" : "A file containing a list of genomic regions to analyse.",
+        "long form argument" : "--regions-file",
+        "short form argument" : "-rgf",
+        "node id" : "regions"
       }
     ],
 
@@ -58,6 +79,12 @@
         "long form argument" : "--filter-expression",
         "short form argument" : "-f",
         "node id" : "filter-expression"
+      },
+      {
+        "description" : "The genomic region in which to perform the analysis.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "node id" : "region"
       }
     ]
   },
@@ -72,6 +99,16 @@
       "id" : "samples",
       "task" : "subset",
       "task argument" : "--samples-file"
+    },
+    {
+      "id" : "region",
+      "task" : "subset",
+      "task argument" : "--region"
+    },
+    {
+      "id" : "regions",
+      "task" : "subset",
+      "task argument" : "--regions-file"
     },
     {
       "id" : "filter-expression",
@@ -89,8 +126,26 @@
       "task argument" : "--fasta-reference"
     },
     {
-      "id" : "output",
+      "id" : "normalized-vcf",
       "task" : "normalize",
+      "task argument" : "--out",
+      "delete files" : true
+    },
+    {
+      "id" : "normalized-index",
+      "task" : "index-normalized",
+      "task argument" : "--out",
+      "delete files" : true
+    },
+    {
+      "id" : "combined-vcf",
+      "task" : "combine",
+      "task argument" : "--out",
+      "delete files" : true
+    },
+    {
+      "id" : "output",
+      "task" : "compress",
       "task argument" : "--out"
     }
   ],
@@ -99,6 +154,26 @@
     {
       "source" : "subsetted-vcf",
       "target" : "normalize",
+      "argument" : "--in"
+    },
+    {
+      "source" : "normalized-vcf",
+      "target" : "combine",
+      "argument" : "--in"
+    },
+    {
+      "source" : "normalized-index",
+      "target" : "combine",
+      "argument" : "--index"
+    },
+    {
+      "source" : "normalized-vcf",
+      "target" : "index-normalized",
+      "argument" : "--in"
+    },
+    {
+      "source" : "combined-vcf",
+      "target" : "compress",
       "argument" : "--in"
     },
     {
