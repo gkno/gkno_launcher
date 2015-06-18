@@ -15,7 +15,8 @@
     },
     {
       "task": "recalibrate",
-      "tool" : "gatk-recalibrate-bq"
+      "tool" : "gatk-recalibrate-bq",
+      "greedy argument" : "--known-sites"
     },
     {
       "task" : "print-reads",
@@ -319,6 +320,16 @@
           "id" : "reference",
           "node" : "reference",
           "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "id" : "known-sites",
+          "node" : "known",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/Mills_and_1000G_gold_standard.indels.b37.vcf.gz"]
+        },
+        {
+          "id" : "known-recal",
+          "node" : "known-for-recalibration",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/dbsnp_138.b37.excluding_sites_after_129.vcf.gz"]
         }
       ]
     }

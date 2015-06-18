@@ -1182,31 +1182,6 @@ class pipelineGraph:
           longFormArgument = self.getArgumentAttribute(predecessor, task, 'longFormArgument')
           if longFormArgument == greedyArgument: self.setArgumentAttribute(predecessor, task, 'isGreedy', True)
 
-  # Loop over all inputs to each task and determine if any of them are listed as greedy. If so, mark the task
-  # as greedy.
-  def markGreedyTasks(self, superpipeline):
-
-    # Loop over all the tasks.
-    for task in self.workflow:
-
-      # Get the tool associated with the task.
-      tool = superpipeline.tasks[task]
-  
-      # Loop over the input files.
-      for fileNodeId in self.getInputFileNodes(task):
-  
-        # Determine the tool argument that uses the values from this node.
-        argument = self.getArgumentAttribute(fileNodeId, task, 'longFormArgument')
-  
-        # Check the greedy attribute for the task and update if necessary.
-        if self.getArgumentAttribute(fileNodeId, task, 'isGreedy'):
-          #TODO ERROR
-          if not superpipeline.toolConfigurationData[tool].getArgumentAttribute(argument, 'allowMultipleValues'): print('ERROR - GREEDY'); exit(0)
-  
-          # Mark the task node to indicate that this task is greedy.
-          self.setGraphNodeAttribute(task, 'isGreedy', True)
-    exit(0)
-
   # Loop over all of the tasks in the workflow and construct missing filenames where there are instructions to do so. In
   # addition, where multiple options are provided to a task, the task is divided into multiple tasks and handling of input
   # and output files and their relation to other tasks is handled.

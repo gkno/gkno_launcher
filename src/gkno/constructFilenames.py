@@ -147,8 +147,8 @@ def addIndexToSingleBaseValue(graph, superpipeline, task, argument, values, subp
 
   # Get the configuration data for this tool and get the long form version of the argument to 
   # use for building the filenames.
-  tool             = superpipeline.tasks[task]
-  toolData         = superpipeline.getToolData(tool)
+  tool     = superpipeline.tasks[task]
+  toolData = superpipeline.getToolData(tool)
 
   # Determine the allowed extensions for the input argument as well as whether it is a stub.
   extensions = toolData.getArgumentAttribute(argument, 'extensions')
