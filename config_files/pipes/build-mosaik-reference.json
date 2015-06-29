@@ -197,7 +197,7 @@
         {
           "id" : "output",
           "node" : "output",
-          "values" : ["human_reference_v37.fa"]
+          "values" : ["human_reference_v37_moblist.fa"]
         }
       ]
     }
