@@ -364,6 +364,7 @@ class pipelineConfiguration:
     allowedAttributes['consolidate divisions']          = (bool, False, True, 'consolidate')
     allowedAttributes['input is stream']                = (bool, False, True, 'isInputStream')
     allowedAttributes['greedy argument']                = (str, False, True, 'greedyArgument')
+    allowedAttributes['greedy task']                    = (bool, False, True, 'isGreedy')
     allowedAttributes['omit from reduced plot']         = (bool, False, True, 'omitFromReducedPlot')
     allowedAttributes['output to stream']               = (bool, False, True, 'isOutputStream')
     allowedAttributes['pipeline']                       = (str, False, True, 'pipeline')

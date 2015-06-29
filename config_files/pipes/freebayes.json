@@ -9,6 +9,7 @@
       "task" : "call",
       "tool" : "freebayes",
       "greedy argument" : "--in",
+      "greedy task" : true,
       "output to stream" : true
     },
     {

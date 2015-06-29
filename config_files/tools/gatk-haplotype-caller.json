@@ -134,8 +134,8 @@
         "allow multiple values" : true
       },
       {
-        "description" : "The number of threads.",
-        "long form argument" : "--threads",
+        "description" : "The number of CPU threads allocated to each data thread. CPU threads share the memory allocated to the data thread, so increasing this value does not effect the memory usage.",
+        "long form argument" : "--cpu-threads",
         "short form argument" : "-t",
         "command line argument" : "--num_threads",
         "data type" : "integer"

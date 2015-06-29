@@ -219,10 +219,6 @@ class pipelineGraph:
           # Determine if this is a file or an option.
           isInput  = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isInput')
           isOutput = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isOutput')
-  
-          # Determine if this argument is greedy.
-          #FIXME REMOVE?
-          #argumentAttributes.isGreedy = pipeline.getUniqueNodeAttribute(configurationNodeId, 'isGreedy')
     
           # Determine if this is a filename stub.
           isStub = superpipeline.toolConfigurationData[tool].getArgumentAttribute(longFormArgument, 'isStub')
@@ -1173,7 +1169,6 @@ class pipelineGraph:
       # Get any greedy arguments associated with the task and attach the argument to the task node.
       greedyArgument = self.getGreedyArgument(superpipeline, task)
       if greedyArgument:
-        self.setGraphNodeAttribute(task, 'isGreedy', True)
         self.setGraphNodeAttribute(task, 'greedyArgument', greedyArgument)
 
         # Loop over the tasks predecessors and find the inputs that correspond to the greedy argument. Set the
@@ -1605,7 +1600,12 @@ class pipelineGraph:
           # Get the values from which to construct the filenames. If there are multiple values, but only a single
           # execution, use the first value for constructing the filenames.
           baseValues = self.getBaseValues(superpipeline, instructions, task)
-          if self.getGraphNodeAttribute(task, 'isGreedy'): baseValues = [baseValues[0]]
+
+          # If the input argument being used to construct the output filenames is the greedy argument, then this
+          # means that there should only be a single output (not an output for each of the input arguments). In
+          # this case, reset the base values to be a list that only contains the first value from the input
+          # argument.
+          if instructions['use argument'] == greedyArgument: baseValues = [baseValues[0]]
 
           # Check that the number of base values is the same as the number of subphases. If not, throw an error.
           # This can happen where there are multiple subphases because an input file has been given multiple
@@ -1615,18 +1615,12 @@ class pipelineGraph:
 
             # If there is a single base value, generate a new set of base values with the same number as there are
             # subphases by introducing an index into the filename.
-            if len(baseValues) == 1: baseValues = construct.addIndexToSingleBaseValue(self.graph, superpipeline, task, argument, baseValues, subphases)
+            if len(baseValues) == 1: baseValues = construct.addIndexToSingleBaseValue(self.graph, superpipeline, task, instructions['use argument'], baseValues, subphases)
         
             # Otherwise, terminate.
             else:
               shortFormArgument = self.getArgumentAttribute(task, nodeId, 'shortFormArgument')
               cfe.constructFilenameErrors().numberBaseValues(task, argument, shortFormArgument, len(baseValues), subphases)
-
-          # If the input argument being used to construct the output filenames is the greedy argument, then this
-          # means that there should only be a single output (not an output for each of the input arguments). In
-          # this case, reset the base values to be a list that only contains the first value from the input
-          # argument.
-          if instructions['use argument'] == greedyArgument: baseValues = [baseValues[0]]
 
           # Construct the output filenames.
           values = construct.constructFromFilename(self.graph, superpipeline, instructions, task, nodeId, argument, baseValues)
@@ -1952,17 +1946,22 @@ class pipelineGraph:
     # Loop over all tasks in the workflow.
     for task in self.workflow:
 
+      # Determine information about the task.
+      greedyArgument = self.getGraphNodeAttribute(task, 'greedyArgument')
+      isGreedy       = self.getGraphNodeAttribute(task, 'isGreedy')
+      subphases      = self.getGraphNodeAttribute(task, 'subphases')
+
       # Determine the number of output files.
       for nodeId in self.getOutputFileNodes(task):
         argument = self.getArgumentAttribute(task, nodeId, 'longFormArgument')
 
         # If there are more or less output files than subphases, throw the relevant error. If the task is
         # greedy, then there should only be a single output file, regardless of the number of inputs.
-        subphases = self.getGraphNodeAttribute(task, 'subphases')
-        outputs   = len(self.getGraphNodeAttribute(nodeId, 'values'))
-        isGreedy  = self.getGraphNodeAttribute(task, 'isGreedy')
+        outputs = len(self.getGraphNodeAttribute(nodeId, 'values'))
+
+        # Terminate if inconsistencies are found.
         if outputs != subphases and not isGreedy: self.errors.outputsSubphases(task, argument, outputs, subphases)
-        if outputs > 1 and isGreedy: print('ERROR - graph.checkNumberOfOutputs'); exit(1)
+        if outputs > 1 and isGreedy: self.errors.multipleOutputsForGreedyTask(task, argument, outputs, subphases)
 
   # Determine after which task intermediate files should be deleted.
   def deleteFiles(self):

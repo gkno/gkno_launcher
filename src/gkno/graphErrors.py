@@ -64,6 +64,15 @@ class graphErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  # If a greedy task has multiple outputs.
+  def multipleOutputsForGreedyTask(self, task, argument, numberOutputs, subphases):
+    self.text.append('Greedy task has multiple outputs.')
+    self.text.append('The task \'' + task + '\' is listed as being greedy in the pipeline. This means that all input connections to the task ' + \
+    'are used in a single execution of the task, and a single output file results. In this case, the task is associated with \'' + str(subphases) + \
+    '\' subphases (rather than 1) and consequently there are multiple output files (' + str(numberOutputs) + ').')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   ##################################
   ## Errors with node connections ##
   ##################################

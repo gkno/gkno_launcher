@@ -112,9 +112,9 @@
         "data type" : "string"
       },
       {
-        "description" : "The number of threads.",
-        "long form argument" : "--threads",
-        "short form argument" : "-t",
+        "description" : "The number of data threads. Each data thread uses the full amount of memory normally given to a single run. For example, if a run typically uses 2Gb, using 2 data threads will require 4Gb of memory.",
+        "long form argument" : "--data-threads",
+        "short form argument" : "-dt",
         "command line argument" : "--num_threads",
         "data type" : "integer"
       }
