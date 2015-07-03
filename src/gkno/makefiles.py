@@ -713,6 +713,10 @@ class makefiles:
     # Add all the intermediates to the makefile.
     for intermediate in intermediates: print(intermediate, end = ' ', file = filehandle)
     print(file = filehandle)
+
+    print('.INTERMEDIATE: ', filename, end = ' ', file = filehandle)
+    for intermediate in intermediates: print(intermediate, end = ' ', file = filehandle)
+    print(file = filehandle)
     print(file = filehandle)
 
   # Add output files to the makefile.
