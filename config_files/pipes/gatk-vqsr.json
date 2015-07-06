@@ -344,7 +344,7 @@
         {
           "id" : "annotation",
           "node" : "annotation",
-          "values" : ["Coverage", "QualByDepth", "FisherStrand", "MappingQualityRankSumTest", "ReadPosRankSumTest"]
+          "values" : ["DP", "QD", "FS", "MQRankSum", "ReadPosRankSum"]
         },
         {
           "id" : "tranche",
