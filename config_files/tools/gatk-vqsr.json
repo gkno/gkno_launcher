@@ -243,28 +243,6 @@
     },
 
     {
-      "id" : "test",
-      "description" : "Parameter set for use with the test-harness.",
-      "data" : [
-        {
-          "id" : "reference",
-          "argument" : "--fasta-reference",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment_moblist.fa"]
-        },
-        {
-          "id" : "bam",
-          "argument" : "--in",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
-        },
-        {
-          "id" : "output path",
-          "values" : ["./"],
-          "argument" : "--output-path"
-        }
-      ]
-    },
-
-    {
       "id" : "human-snp",
       "description" : "Parameter set for calling SNPs in the human genome.",
       "data" : [

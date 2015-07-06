@@ -394,6 +394,43 @@
           "values" : ["$(RESOURCES)/tutorial/current/Mills_and_1000G_gold_standard.indels.b37.chr20_fragment.vcf.gz"]
         }
       ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for the human genome.",
+      "data" : [
+        {
+          "id" : "reference",
+          "node" : "fasta",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "id" : "hapmap",
+          "node" : "hapmap",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/hapmap_3.3.b37.vcf.gz"]
+        },
+        {
+          "id" : "omni",
+          "node" : "omni",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/1000G_omni2.5.b37.vcf.gz"]
+        },
+        {
+          "id" : "1000G",
+          "node" : "1000G",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/1000G_phase1.snps.high_confidence.b37.vcf.gz"]
+        },
+        {
+          "id" : "dbsnp",
+          "node" : "dbsnp",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/dbsnp_138.b37.excluding_sites_after_129.vcf.gz"]
+        },
+        {
+          "id" : "mills",
+          "node" : "mills",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/Mills_and_1000G_gold_standard.indels.b37.vcf.gz"]
+        }
+      ]
     }
   ]
 }
