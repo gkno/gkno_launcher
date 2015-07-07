@@ -320,12 +320,12 @@
         {
           "id" : "xa",
           "node" : "max-x",
-          "values" : [100]
+          "values" : [-1]
         },
         {
           "id" : "xp",
           "node" : "max-x2",
-          "values" : [100]
+          "values" : [-1]
         },
         {
           "id" : "depth",

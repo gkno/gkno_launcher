@@ -158,7 +158,6 @@ for counter in range(0, int(maxCoverage) + 1, 1):
 # Write out the information showing which bases have a greater coverage.
 for counter in range(0, int(maxCoverage) + 1, 1):
   for ref in requiredSequences:
-    print('TEST', ref, greaterThan[ref][counter], counter)
     if ref != 'bin' and counter != 0: value = float( 100. * greaterThan[ref][counter])
     else: value = greaterThan[ref][counter]
 

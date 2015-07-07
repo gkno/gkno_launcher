@@ -37,8 +37,6 @@
         "long form argument" : "--out-absolute",
         "short form argument" : "-oa",
         "command line argument" : "none",
-        "modify argument" : "omit",
-        "modify value" : "omit",
         "required" : true,
         "data type" : "string",
         "extensions" : ["coverage.txt"],

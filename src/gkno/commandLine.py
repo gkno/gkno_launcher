@@ -217,18 +217,27 @@ class commandLine:
         shortFormArgument = args.arguments[argument].shortFormArgument
         dataType          = args.arguments[argument].dataType
         if argument not in self.pipelineArguments: self.pipelineArguments[argument] = []
-        for value in values:
-          if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(argument, shortFormArgument, value, dataType, False)
-          self.pipelineArguments[argument].append(value)
+
+        # If the data type is flag, there are no values, so include 'set' as the value.
+        if dataType == 'flag': self.pipelineArguments[argument] = ['set']
+
+        # Handle non-flags.
+        else:
+          for value in values:
+            if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(argument, shortFormArgument, value, dataType, False)
+            self.pipelineArguments[argument].append(value)
 
       # Check if this is a valid short form pipeline argument.
       elif argument in shortFormArguments:
         longFormArgument = shortFormArguments[argument]
         dataType         = args.arguments[longFormArgument].dataType
         if longFormArgument not in self.pipelineArguments: self.pipelineArguments[longFormArgument] = []
-        for value in values:
-          if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(longFormArgument, argument, value, dataType, False)
-          self.pipelineArguments[longFormArgument].append(value)
+
+        if dataType == 'flag': self.pipelineArguments[argument] = ['set']
+        else:
+          for value in values:
+            if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(longFormArgument, argument, value, dataType, False)
+            self.pipelineArguments[longFormArgument].append(value)
 
       # If the argument is invalid.
       else: self.errors.invalidArgument(argument)
