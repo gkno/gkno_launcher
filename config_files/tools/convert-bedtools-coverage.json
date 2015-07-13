@@ -38,8 +38,26 @@
         "short form argument" : "-oa",
         "command line argument" : "none",
         "required" : true,
+        "modify argument" : "omit",
+        "modify value" : "omit",
         "data type" : "string",
         "extensions" : ["coverage.txt"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace"
+        }
+      },
+      {
+        "description" : "The converted coverage file for the number of bases covered by a certain coverage, scaled by the number of bases with zero coverage.",
+        "long form argument" : "--out-scaled",
+        "short form argument" : "-os",
+        "command line argument" : "none",
+        "required" : true,
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "data type" : "string",
+        "extensions" : ["coverage.scaled.txt"],
         "construct filename" : {
           "method": "from tool argument",
           "use argument" : "--in",
@@ -52,8 +70,27 @@
         "short form argument" : "-ot",
         "command line argument" : "none",
         "required" : true,
+        "modify argument" : "omit",
+        "modify value" : "omit",
         "data type" : "string",
         "extensions" : ["coverage.proportional.txt"],
+        "modify argument" : "omit",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace"
+        }
+      },
+      {
+        "description" : "The converted coverage file showing the scaled percentage of bases covered by at least a certain coverage.",
+        "long form argument" : "--out-proportional-scaled",
+        "short form argument" : "-ops",
+        "command line argument" : "none",
+        "required" : true,
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "data type" : "string",
+        "extensions" : ["coverage.proportional.scaled.txt"],
         "modify argument" : "omit",
         "construct filename" : {
           "method": "from tool argument",
@@ -81,13 +118,6 @@
         "data type" : "flag"
       },
       {
-        "description" : "Normalise the read counts by the reference sequence size. For example, in a histogram, the coverage on chr1 and chr22 may be identical, however, the count of reads in each bin will be much larger for chr1, since there are far more bases with that coverage.",
-        "long form argument" : "--normalize",
-        "short form argument" : "-n",
-        "command line argument" : "normalize",
-        "data type" : "flag"
-      },
-      {
         "description" : "Include the bin of bases with zero coverage in the histogram.",
         "long form argument" : "--include-zero",
         "short form argument" : "-z",
@@ -102,9 +132,10 @@
     "--in",
     "--maximum-coverage-bin",
     "--out-absolute",
+    "--out-scaled",
     "--out-proportional",
+    "--out-proportional-scaled",
     "--read-counts",
-    "--normalize",
     "--include-zero"
   ],
 

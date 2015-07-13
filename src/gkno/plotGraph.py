@@ -28,20 +28,28 @@ class plotGraph():
 
     # Define the text font.
     self.fontName   = 'montserrat'
-    self.fontColour = 'black'#white'
 
-    # Define the node colours.
-    #self.darkColour  = '#6E915F'
-    #self.lightColour = '#005422'
+    # Define styles and colours for option nodes.
+    self.optionNodeFillColour = 'white'
+    self.optionNodeFontColour = 'black'
+    self.optionNodeShape      = 'rectangle'
+    self.optionNodeStyle      = 'filled, rounded'
 
-    #self.darkColour  = '#3F3E92' # purple
-    #self.lightColour = '#8A89D6' # purple
-    #dark blue: '#41788B' # blue
-    #light blue:'#AECFDD' # blue
-    self.darkColour  = '#F97308' # orange
-    self.lightColour = '#F59D51' # orange
-    #self.darkColour  = '#808080' # grey
-    #self.lightColour = '#C2C2C2' # grey
+    # Define styles and colours for task nodes.
+    self.taskNodeColour     = '#0E77A6'
+    self.taskNodeFillColour = 'white'
+    self.taskNodeFontColour = '#5A5A5A'
+    self.taskNodeShape      = 'circle'
+    self.taskNodeStyle      = 'filled'
+    self.taskNodeWidth      = '4'
+
+    # Define file node styles and colours.
+    self.fileNodeColour     = '#F97308'
+    self.fileNodeFillColour = 'white'
+    self.fileNodeFontColour = '#5A5A5A'
+    self.fileNodeShape      = 'oval'
+    self.fileNodeStyle      = 'filled'
+    self.fileNodeWidth      = '2.5'
 
   # Determine if a plot was requested and if so, the plot type. Ensure that the filename(s) are
   # set.
@@ -94,11 +102,11 @@ class plotGraph():
       if isReduced: graphToDraw.remove_node(optionNodeId)
       else:
         graphToDraw.node[optionNodeId]["label"]     = optionNodeId.rsplit('.', 1)[-1]
-        graphToDraw.node[optionNodeId]["shape"]     = 'rectangle'
-        graphToDraw.node[optionNodeId]["style"]     = 'filled, rounded'
-        graphToDraw.node[optionNodeId]["fillcolor"] = 'white'#self.darkColour
+        graphToDraw.node[optionNodeId]["shape"]     = self.optionNodeShape
+        graphToDraw.node[optionNodeId]["style"]     = self.optionNodeStyle
+        graphToDraw.node[optionNodeId]["fillcolor"] = self.optionNodeFillColour
         graphToDraw.node[optionNodeId]["fontname"]  = self.fontName
-        graphToDraw.node[optionNodeId]["fontcolor"] = self.fontColour
+        graphToDraw.node[optionNodeId]["fontcolor"] = self.optionNodeFontColour
 
     # Loop over file nodes. If the node has predecessors and successors, leave it in the graph. If it has only
     # predecessors or successors, check if it is listed as a node to be kept in the graph.
@@ -156,14 +164,14 @@ class plotGraph():
       taskName = taskNodeId.rsplit('.', 1)[-1]
 
       # Modify node attributes.
-      graphToDraw.node[taskNodeId]["color"]     = self.lightColour
-      graphToDraw.node[taskNodeId]["style"]     = 'filled'
-      graphToDraw.node[taskNodeId]["shape"]     = 'circle'
+      graphToDraw.node[taskNodeId]["color"]     = self.taskNodeColour
+      graphToDraw.node[taskNodeId]["style"]     = self.taskNodeStyle
+      graphToDraw.node[taskNodeId]["shape"]     = self.taskNodeShape
       graphToDraw.node[taskNodeId]["label"]     = taskName
-      graphToDraw.node[taskNodeId]["fillcolor"] = 'white'#self.lightColour
-      graphToDraw.node[taskNodeId]["fontcolor"] = '#5A5A5A'#self.lightColour#self.fontColour
+      graphToDraw.node[taskNodeId]["fillcolor"] = self.taskNodeFillColour
+      graphToDraw.node[taskNodeId]["fontcolor"] = self.taskNodeFontColour
       graphToDraw.node[taskNodeId]["fontname"]  = self.fontName
-      graphToDraw.node[taskNodeId]["penwidth"]    = '4'
+      graphToDraw.node[taskNodeId]["penwidth"]  = self.taskNodeWidth
 
     # Remove nodes marked for removal, handling edges that are left dangling.
     if isReduced: self.removeNodes(graphToDraw)
@@ -174,13 +182,13 @@ class plotGraph():
 
     # Loop over the nodes and add names, styles etc for file nodes.
     for nodeId in gr.pipelineGraph.CM_getNodes(graphToDraw, 'file'):
-      graphToDraw.node[nodeId]["color"]     = self.darkColour
-      graphToDraw.node[nodeId]["shape"]     = 'oval'
-      graphToDraw.node[nodeId]["style"]     = 'filled'
-      graphToDraw.node[nodeId]["fillcolor"] = 'white'#self.darkColour
+      graphToDraw.node[nodeId]["color"]     = self.fileNodeColour
+      graphToDraw.node[nodeId]["shape"]     = self.fileNodeShape
+      graphToDraw.node[nodeId]["style"]     = self.fileNodeStyle
+      graphToDraw.node[nodeId]["fillcolor"] = self.fileNodeFillColour
       graphToDraw.node[nodeId]["fontname"]  = self.fontName
-      graphToDraw.node[nodeId]["fontcolor"] = '#5A5A5A'#self.darkColour#self.fontColour
-      graphToDraw.node[nodeId]["penwidth"]    = '2.5'
+      graphToDraw.node[nodeId]["fontcolor"] = self.fileNodeFontColour
+      graphToDraw.node[nodeId]["penwidth"]  = self.fileNodeWidth
 
     # Draw the graph from left to right, rather than default top to bottom.
     graphToDraw.graph.setdefault('graph', {})['rankdir'] = 'LR'
@@ -259,7 +267,7 @@ class plotGraph():
   def convertToPng(self, filename):
 
     # Define the command to execute.
-    execute = 'dot -Tpng ' + filename + ' -o ' + filename + '.png'
+    execute = 'dot -Tpng -Gsize=9.5,16/! ' + filename + ' -o ' + filename + '.png'
     success = subprocess.call(execute.split())
 
     # Delete the original dot file.

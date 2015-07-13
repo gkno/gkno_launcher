@@ -434,11 +434,12 @@ class helpInformation:
       self.writeSimpleLine('Parameter set information for parameter set: ' + setName, isIndent = False, noLeadingTabs = 0)
       for argument in sorted(self.setArguments):
 
-        # Loop over all the values for the argument.
-        for i, value in enumerate(self.setArguments[argument]):
-          if i == 0: strings = [argument + ':', str(value)]
-          else: strings = ['', str(value)]
-          self.writeComplexLine(strings, [length + 5, 1], noLeadingTabs = 1)
+        # Loop over all the values for the argument, unless the argument is hidden.
+        if not arguments[argument].hideInHelp:
+          for i, value in enumerate(self.setArguments[argument]):
+            if i == 0: strings = [argument + ':', str(value)]
+            else: strings = ['', str(value)]
+            self.writeComplexLine(strings, [length + 5, 1], noLeadingTabs = 1)
 
   # Set parameter set values.
   def setParameterSetValues(self, graph, superpipeline, arguments, setName):

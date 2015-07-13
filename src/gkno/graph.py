@@ -1025,7 +1025,9 @@ class pipelineGraph:
         # If multiple edges were found, there are multiple nodes associated with this task using the
         # defined argument.
         #FIXME
-        else: print('NOT HANDLED PARAMETER SET WITH MULTIPLE EDGES.'); exit(0)
+        else:
+          print(task, argument, edges)
+          print('NOT HANDLED PARAMETER SET WITH MULTIPLE EDGES.'); exit(0)
 
   # Loop over the workflow adding parameter set data for all of the tasks.
   def addPipelineParameterSets(self, superpipeline, setName):

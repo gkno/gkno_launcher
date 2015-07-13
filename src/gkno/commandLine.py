@@ -233,7 +233,7 @@ class commandLine:
         dataType         = args.arguments[longFormArgument].dataType
         if longFormArgument not in self.pipelineArguments: self.pipelineArguments[longFormArgument] = []
 
-        if dataType == 'flag': self.pipelineArguments[argument] = ['set']
+        if dataType == 'flag': self.pipelineArguments[longFormArgument] = ['set']
         else:
           for value in values:
             if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(longFormArgument, argument, value, dataType, False)
