@@ -51,7 +51,7 @@ class webContent:
     for argument in arguments:
 
       # Only deal with top level arguments (e.g. not those that can address child pipelines).
-      if '.' not in argument:
+      if '.' not in argument and not arguments[argument].hideInHelp:
 
         # Update the necessary information for the pipeline.
         information                        = {}
