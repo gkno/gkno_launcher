@@ -1,0 +1,52 @@
+{
+  "id" : "find-cds",
+  "configuration type" : "pipeline",
+  "description" : "Search through a GFF (GTF) file and extract all CDS entries. Two output files are generated: a file containing a list of all genomic regions and a file with the corresponding gene name, transcript id and exon number.",
+  "categories" : ["Scripts"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "find-cds",
+      "tool" : "find-transcripts-from-gff"
+    }
+  ],
+
+  "import arguments" : "find-cds",
+
+  "arguments" : {
+    "Inputs" : [
+    ],
+
+    "Outputs" : [
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "gff",
+      "task" : "find-cds",
+      "task argument" : "--in"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "gff",
+          "node" : "gff",
+          "values" : ["$(RESOURCES)/tutorial/current/sample.gff3"]
+        }
+      ]
+    }
+  ]
+}

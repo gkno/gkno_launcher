@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.19.1"
+__version__ = "2.20.0"
 __date__ = "July 2015"
 
 def main():
@@ -208,12 +208,12 @@ def main():
   graph.addTaskParameterSets(superpipeline, 'default')
 
   # Now add the default parameter set for the pipelines.
-  graph.addPipelineParameterSets(superpipeline, 'default')
+  graph.addPipelineParameterSets(superpipeline, 'default', resourcesPath)
 
   # Determine the requested parameter set and add the parameters to the graph.
   parSet             = ps.parameterSets()
   graph.parameterSet = command.getParameterSetName(command.gknoArguments, gknoConfiguration)
-  if graph.parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, graph.parameterSet)
+  if graph.parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, graph.parameterSet, resourcesPath)
 
   # If help was requested, print out the relevent help information.
   # TODO ADMIN HELP
@@ -261,6 +261,10 @@ def main():
 
   # Check for greedy tasks in the pipeline and mark the relevant nodes and edges.
   graph.setGreedyTasks(superpipeline)
+
+  # If multiple outputs have been specified, but only single inputs with multiple options, ensure that there are
+  # the same number of input files as there output files.
+  graph.propogateInputs()
 
   # Loop over the tasks in the pipeline and construct filenames for arguments that require them, but weren't given
   # any on the command line. In addition, if multiple options are given to a task, this routine will generate new

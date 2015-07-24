@@ -35,6 +35,7 @@ class helpInformation:
     self.helpCategories['Scripts']           = 'Scripts to perform many commonly performed tasks.'
     self.helpCategories['Simulation']        = 'Simulation-based pipelines.'
     self.helpCategories['SV-discovery']      = 'Pipelines including detection of structural variations.'
+    self.helpCategories['Tools']             = 'Pipelines that provide single tool functionality.'
     self.helpCategories['Variant-discovery'] = 'Pipelines including variant discovery tasks.'
     self.helpCategories['Variant-graph']     = 'Alignments using a variant graph are incorporated.'
     self.helpCategories['VCF-processing']    = 'Process VCF files.'

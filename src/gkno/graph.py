@@ -1030,12 +1030,12 @@ class pipelineGraph:
           print('NOT HANDLED PARAMETER SET WITH MULTIPLE EDGES.'); exit(0)
 
   # Loop over the workflow adding parameter set data for all of the tasks.
-  def addPipelineParameterSets(self, superpipeline, setName):
+  def addPipelineParameterSets(self, superpipeline, setName, resourcesPath):
     for tier in reversed(superpipeline.pipelinesByTier.keys()):
-      for pipelineName in superpipeline.pipelinesByTier[tier]: self.addParameterSet(superpipeline, pipelineName, setName)
+      for pipelineName in superpipeline.pipelinesByTier[tier]: self.addParameterSet(superpipeline, pipelineName, setName, resourcesPath)
 
   # Add the values from a pipeline parameter set to the graph.
-  def addParameterSet(self, superpipeline, pipelineName, setName):
+  def addParameterSet(self, superpipeline, pipelineName, setName, resourcesPath):
     parameterSet = superpipeline.getPipelineParameterSet(pipelineName, setName)
 
     # If the parameter set is not available, there is a problem.
@@ -1053,8 +1053,17 @@ class pipelineGraph:
         ID = ps.parameterSets.SM_getDataAttributeFromNodeId(parameterSet, nodeId, 'id')
         pse.parameterSetErrors().invalidNodeInPipelineParameterSet(pipelineName, setName, nodeId, ID)
 
+      # Check if any of the values begin with $(RESOURCES) or $(PWD). If so. update them.
+      updatedValues = []
+      for value in values:
+        if isinstance(value, str) or isinstance(value, unicode):
+          if value.startswith('$(PWD)'): updatedValues.append(str(value.replace('($PWD)', '.')))
+          elif value.startswith('$(RESOURCES)'): updatedValues.append(str(value.replace('$(RESOURCES)', resourcesPath)))
+          else: updatedValues.append(str(value))
+        else: updatedValues.append(str(value))
+
       # Set the values for the graph node.
-      for graphNodeId in self.configurationFileToGraphNodeId[nodeAddress]: self.setGraphNodeAttribute(graphNodeId, 'values', values)
+      for graphNodeId in self.configurationFileToGraphNodeId[nodeAddress]: self.setGraphNodeAttribute(graphNodeId, 'values', updatedValues)
 
   # Loop over all of the nodes for which arguments are defined on the command line and create the nodes
   # that are missing.
@@ -1135,7 +1144,9 @@ class pipelineGraph:
       # Only look at option nodes or file nodes that are predecessors to a task, but are not simultaneously
       # successors of other tasks.
       isSuccessor = True if self.graph.predecessors(nodeId) else False
-      if (nodeType == 'option') or (nodeType == 'file' and not isSuccessor):
+      #if (nodeType == 'option') or (nodeType == 'file' and not isSuccessor):
+      # FIXME CHECK IF THIS IS ALLOWED
+      if True:
         values = self.getGraphNodeAttribute(nodeId, 'values')
   
         # Loop over the values and check if any of them end in '.list'. If so, this is a list of values which should be
@@ -1146,21 +1157,66 @@ class pipelineGraph:
           # If this is a list.
           if str(value).endswith('.list'):
   
-            # Open the file and terminate if it doesn't exist.
-            data = fh.fileHandling.openFileForReading(value)
-            if not data:
-              task     = self.graph.successors(nodeId)[0]
-              argument = self.getArgumentAttribute(nodeId, task, 'longFormArgument')
-              fe.fileErrors().missingList(task, value)
-  
-            # Loop over the values in the file, stripping off whitespace.
-            for dataValue in [name.strip() for name in data]: modifiedValues.append(dataValue)
+            # If this is a file, get all successor tasks and check if the expected extension is list for any arguments.
+            isListExtension = False
+            if nodeType == 'file':
+              for successorTask in self.graph.successors(nodeId):
+                for extension in self.getArgumentAttribute(nodeId, successorTask, 'extensions'):
+                  if extension == 'list': isListExtension = True
+
+            # Open the file and terminate if it doesn't exist, but only if the extension is not list.
+            if isListExtension: modifiedValues.append(value)
+            else: 
+              data = fh.fileHandling.openFileForReading(value)
+              if not data:
+                task     = self.graph.successors(nodeId)[0]
+                argument = self.getArgumentAttribute(nodeId, task, 'longFormArgument')
+                fe.fileErrors().missingList(task, value)
+    
+              # Loop over the values in the file, stripping off whitespace.
+              for dataValue in [name.strip() for name in data]: modifiedValues.append(dataValue)
   
           # If the value does not end with '.list', add it to the modifiedValues list.
           else: modifiedValues.append(value)
   
         # Replace the values with the modifiedValues.
         self.setGraphNodeAttribute(nodeId, 'values', modifiedValues)
+
+  # If multiple outputs have been specified, but only single inputs with multiple options, ensure that there are
+  # the same number of input files as there output files.
+  def propogateInputs(self):
+    for task in self.workflow:
+      noOutputs      = 0
+      noOptions      = 0
+      isGreedy       = self.getGraphNodeAttribute(task, 'isGreedy')
+      greedyArgument = self.getGraphNodeAttribute(task, 'greedyArgument')
+
+      # Loop over all output nodes and determine the number of output files.
+      for nodeId in self.graph.successors(task):
+        nodeType = self.getGraphNodeAttribute(nodeId, 'nodeType')
+        noValues = len(self.getGraphNodeAttribute(nodeId, 'values'))
+
+        # Find the maximum number of output files.
+        if nodeType == 'file': noOutputs = noValues if noValues > noOutputs else noOutputs
+
+      # Loop over all input nodes and determine the max values supplied to any options..
+      for nodeId in self.graph.predecessors(task):
+        if self.getGraphNodeAttribute(nodeId, 'nodeType') == 'option':
+          noValues  = len(self.getGraphNodeAttribute(nodeId, 'values'))
+          noOptions = noValues if noValues > noOptions else noOptions
+
+      # If there are the same number of inopur
+
+      # Now loop over all the input files. If there is a single input file and multiple output files, check that there
+      # are as many output files as the number of values supplied to options. If this is the case, there need to be as
+      # many input files as output files, so propogate the input file to the number of outputs.
+      for nodeId in self.graph.predecessors(task):
+        if self.getGraphNodeAttribute(nodeId, 'nodeType') == 'file':
+          values = self.getGraphNodeAttribute(nodeId, 'values')
+          if len(values) == 1 and noOutputs > 1 and (noOutputs == noOptions):
+
+            # Propogate the input file.
+            for i in range(1, noOutputs): values.append(values[0])
 
   # Identify tasks marked as greedy and mark the nodes and edges.
   def setGreedyTasks(self, superpipeline):
@@ -1808,7 +1864,7 @@ class pipelineGraph:
 
         # If the construction method is unknown, terminate.
         # TODO ERROR
-        else: print('constructFilenames.constructFilenames - unknown method', instructions.method); exit(0)
+        else: print('constructFilenames.constructFilenames - unknown method', instructions['method']); exit(0)
 
   # Find all of the predecessor nodes to a task that use a given argument and add the values to a list.
   def getBaseValues(self, superpipeline, instructions, task):

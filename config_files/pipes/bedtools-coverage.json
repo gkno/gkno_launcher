@@ -1,0 +1,67 @@
+{
+  "id" : "bedtools-coverage",
+  "configuration type" : "pipeline",
+  "description" : "Population call variants using Freebayes, filtering the results with standard filtering methods.",
+  "categories" : ["Tools", "BAM-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "coverage",
+      "tool" : "genome-coverage"
+    }
+  ],
+
+  "import arguments" : "coverage",
+
+  "arguments" : {
+    "Inputs" : [
+    ],
+
+    "Outputs" : [
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "bam",
+      "task" : "coverage",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "output",
+      "task" : "coverage",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "bam",
+          "node" : "bam",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for human.",
+      "data" : [
+      ]
+    }
+  ]
+}

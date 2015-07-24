@@ -1,0 +1,68 @@
+{
+  "id" : "find-transcripts-from-gff",
+  "configuration type" : "tool",
+  "description" : "Search through a GFF (GTF) file and extract all CDS entries. Two output files are generated: a file containing a list of all genomic regions and a file with the corresponding gene name, transcript id and exon number.",
+  "categories" : ["Scripts"],
+  "tools" : [],
+  "path" : "scripts",
+  "precommand" : "python",
+  "executable" : "find-transcripts-from-gff.py",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input gff file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["gff", "gff2", "gff3", "gff.gz", "gff2.gz", "gff3.gz"]
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The list of genomic region corresponding to the CDS (ordered to correspond with the transcripts file).",
+        "long form argument" : "--region-list",
+        "short form argument" : "-rl",
+        "command line argument" : "none",
+        "required" : true,
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "data type" : "string",
+        "extensions" : ["list"],
+        "hide argument in help" : true,
+        "construct filename" : {
+          "method": "define name",
+          "filename" : "gene_regions.list"
+        }
+      },
+      {
+        "description" : "The list of genomic region corresponding to the CDS (ordered to correspond with the transcripts file).",
+        "long form argument" : "--transcript-list",
+        "short form argument" : "-tl",
+        "command line argument" : "none",
+        "required" : true,
+        "modify argument" : "omit",
+        "modify value" : "omit",
+        "data type" : "string",
+        "extensions" : ["list"],
+        "hide argument in help" : true,
+        "construct filename" : {
+          "method": "define name",
+          "filename" : "gene_transcripts.list"
+        }
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+      ]
+    }
+  ]
+}

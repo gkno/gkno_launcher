@@ -1,0 +1,139 @@
+{
+  "id" : "freebayes",
+  "configuration type" : "pipeline",
+  "description" : "Population call variants using Freebayes, filtering the results with standard filtering methods.",
+  "categories" : ["Variant-discovery"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "pileup",
+      "tool" : "samtools-mpileup",
+      "output to stream" : true
+    },
+    {
+      "task" : "calculate-mean",
+      "tool" : "running-mean",
+      "input is stream" : true
+    },
+    {
+      "task" : "combine",
+      "tool" : "combine-cds-stats",
+      "greedy task" : true,
+      "greedy argument" : "--stats"
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input BAM file whose coverage will be calculated.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "bam"
+      },
+      {
+        "description" : "An input file list of all transcripts.",
+        "long form argument" : "--transcripts",
+        "short form argument" : "-t",
+        "node id" : "transcripts"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output pileup data.",
+        "long form argument" : "--pileup",
+        "short form argument" : "-p",
+        "node id" : "pileup-output"
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The genomic region to consider.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "required" : true,
+        "node id" : "region"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "bam",
+      "task" : "pileup",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "region",
+      "task" : "pileup",
+      "task argument" : "--region"
+    },
+    {
+      "id" : "pileup-output",
+      "task" : "pileup",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "output",
+      "task" : "calculate-mean",
+      "task argument" : "--out",
+      "delete files" : true
+    },
+    {
+      "id" : "transcripts",
+      "task" : "combine",
+      "task argument" : "--in"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "pileup-output",
+      "target" : "calculate-mean",
+      "argument" : "--in"
+    },
+    {
+      "source" : "output",
+      "target" : "combine",
+      "argument" : "--stats"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "bam",
+          "node" : "bam",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "id" : "region",
+          "node" : "region",
+          "values" : ["$(RESOURCES)/tutorial/current/gene_regions.list"]
+        },
+        {
+          "id" : "transcripts",
+          "node" : "transcripts",
+          "values" : ["$(RESOURCES)/tutorial/current/gene_transcripts.list"]
+        },
+        {
+          "id" : "pileup",
+          "node" : "pileup-output",
+          "values" : ["$(RESOURCES)/tutorial/current/gene_transcripts.list"]
+        }
+      ]
+    }
+  ]
+}

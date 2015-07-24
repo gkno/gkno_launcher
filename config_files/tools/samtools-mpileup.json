@@ -25,7 +25,6 @@
         "long form argument" : "--fasta-reference",
         "short form argument" : "-r",
         "command line argument" : "-f",
-        "required" : true,
         "extensions" : ["fa", "fasta"],
         "data type" : "string"
       },
@@ -35,7 +34,6 @@
         "short form argument" : "-fx",
         "command line argument" : "none",
         "modify value" : "omit",
-        "required" : true,
         "extensions" : ["fai"],
         "data type" : "string",
         "construct filename" : {
@@ -69,11 +67,22 @@
           "method" : "from tool argument",
           "use argument" : "--in",
           "modify extension" : "replace"
+        },
+        "if output to stream" : {
+          "argument" : "omit",
+          "value" : "omit"
         }
       }
     ],
 
     "Options" : [
+      {
+        "description" : "The genomic region to consider.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "command line argument" : "-r",
+        "data type" : "string"
+      },
       {
         "description" : "Skip alignments with mapping quality smaller than this [0].",
         "long form argument" : "--mapping-quality",
@@ -96,6 +105,7 @@
     "--fasta-reference",
     "--fasta-index",
     "--intervals-file",
+    "--region",
     "--mapping-quality",
     "--base-quality",
     "--out"
