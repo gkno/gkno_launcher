@@ -106,6 +106,21 @@
       "id" : "default",
       "description" : "Default parameter set requires user to input all input filenames.",
       "data" : [
+        {
+          "id" : "region",
+          "node" : "region",
+          "values" : ["$(PWD)/gene_regions.list"]
+        },
+        {
+          "id" : "transcripts",
+          "node" : "transcripts",
+          "values" : ["$(PWD)/gene_transcripts.list"]
+        },
+        {
+          "id" : "pileup",
+          "node" : "pileup-output",
+          "values" : ["$(PWD)/gene_transcripts.list"]
+        }
       ]
     },
 

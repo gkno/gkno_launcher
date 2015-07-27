@@ -59,7 +59,8 @@ length = len(array)
 isEven = True if (length % 2) == 0 else False
 
 # Calculate the median.
-if isEven:
+if length == 0: median = 0
+elif isEven:
   index  = length / 2
   first  = sorted(array)[index - 1]
   second = sorted(array)[index]

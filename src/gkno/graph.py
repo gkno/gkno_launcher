@@ -1057,7 +1057,7 @@ class pipelineGraph:
       updatedValues = []
       for value in values:
         if isinstance(value, str) or isinstance(value, unicode):
-          if value.startswith('$(PWD)'): updatedValues.append(str(value.replace('($PWD)', '.')))
+          if value.startswith('$(PWD)'): updatedValues.append(str(value.replace('$(PWD)', '.')))
           elif value.startswith('$(RESOURCES)'): updatedValues.append(str(value.replace('$(RESOURCES)', resourcesPath)))
           else: updatedValues.append(str(value))
         else: updatedValues.append(str(value))

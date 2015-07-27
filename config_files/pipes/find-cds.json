@@ -26,6 +26,11 @@
       "id" : "gff",
       "task" : "find-cds",
       "task argument" : "--in"
+    },
+    {
+      "id" : "sequences",
+      "task" : "find-cds",
+      "task argument" : "--sequences"
     }
   ],
 
@@ -45,6 +50,11 @@
           "id" : "gff",
           "node" : "gff",
           "values" : ["$(RESOURCES)/tutorial/current/sample.gff3"]
+        },
+        {
+          "id" : "sequences",
+          "node" : "sequences",
+          "values" : ["$(RESOURCES)/tutorial/current/autosome_sex.txt"]
         }
       ]
     }

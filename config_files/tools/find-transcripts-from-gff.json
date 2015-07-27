@@ -18,6 +18,16 @@
         "required" : true,
         "data type" : "string",
         "extensions" : ["gff", "gff2", "gff3", "gff.gz", "gff2.gz", "gff3.gz"]
+      },
+      {
+        "description" : "The input list of reference sequences to consider.",
+        "long form argument" : "--sequences",
+        "short form argument" : "-s",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["txt", "list"]
       }
     ],
 
@@ -56,6 +66,13 @@
       }
     ]
   },
+
+  "argument order" : [
+    "--in",
+    "--sequences",
+    "--region-list",
+    "--transcript-list"
+  ],
 
   "parameter sets" : [
     {
