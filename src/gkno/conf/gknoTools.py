@@ -190,12 +190,12 @@ class Bedtools(GknoTool):
     self.installDir = "bedtools"
 
   # Initial tool build.
-  def doBuild(self): return self.make()
+  def doBuild(self): return self.make(cpus = 1)
 
   # Update the tool.
   def doUpdate(self):
     if not self.makeClean(): return False
-    return self.make()
+    return self.make(cpus = 1)
 
 # NCBI BLAST
 class Blast(GknoTool):
