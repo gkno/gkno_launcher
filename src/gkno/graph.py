@@ -1076,7 +1076,7 @@ class pipelineGraph:
 
       # If there are no graph node Ids, check if the argument is imported from a tool. If so, add this argument
       # to the node list to ensure that a node is created.
-      if graphNodeIds[0] == None:
+      if not graphNodeIds:
         if args.arguments[argument].isImported:
           taskAddress = args.arguments[argument].importedFromTask
           tool        = graph.getGraphNodeAttribute(taskAddress, 'tool')
@@ -1136,6 +1136,11 @@ class pipelineGraph:
 
           # Attach the values to the node attributes.
           self.setGraphNodeAttribute(nodeAddress, 'values', values)
+
+          # Add the argument to the arguments data structure.
+          shortFormArgument = argumentAttributes.shortFormArgument
+          description       = argumentAttributes.description
+          args.setAttributes(graph, [nodeAddress], argument, argumentAttributes.shortFormArgument, description)
 
           # Add the edge.
           if isOutput: self.addEdge(taskAddress, nodeAddress, argumentAttributes)

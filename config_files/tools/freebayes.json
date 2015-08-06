@@ -182,7 +182,7 @@
         "data type" : "flag"
       },
       {
-        "description" : "Output all alleles which pass input filters, regardles of genotyping outcome or model.",
+        "description" : "Output all alleles which pass input filters, regardless of genotyping outcome or model.",
         "long form argument" : "--pooled-continuous",
         "short form argument" : "-pc",
         "command line argument" : "--pooled-continuous",
@@ -532,6 +532,7 @@
         "long form argument" : "--genotype-qualities",
         "short form argument" : "-gq",
         "command line argument" : "--genotype-qualities",
+        "required" : true,
         "data type" : "flag"
       }
     ]
