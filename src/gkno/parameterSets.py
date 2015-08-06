@@ -117,7 +117,7 @@ class parameterSets:
     except: return None
 
   # Export a parameter set.
-  def export(self, superpipeline, args, setName, arguments):
+  def export(self, graph, superpipeline, args, setName, arguments):
     pipeline = superpipeline.pipeline
 
     # Get the configuration file information for the pipeline and the available parameter sets.

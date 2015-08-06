@@ -32,8 +32,8 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.20.4"
-__date__ = "July 2015"
+__version__ = "2.20.5"
+__date__ = "August 2015"
 
 def main():
 
@@ -231,7 +231,7 @@ def main():
 
   # Create nodes for all of the defined arguments for which a node does not already exist and add the
   # argument values to the node.
-  graph.attachArgumentValuesToNodes(superpipeline, args, command.pipelineArguments, associatedNodes)
+  graph.attachArgumentValuesToNodes(graph, superpipeline, args, command.pipelineArguments, associatedNodes)
 
   # Loop over all nodes and expand lists of arguments. This is only valid for arguments that are either options,
   # or inputs to a task that are not simulateously outputs of another task.
@@ -269,7 +269,7 @@ def main():
   # Loop over the tasks in the pipeline and construct filenames for arguments that require them, but weren't given
   # any on the command line. In addition, if multiple options are given to a task, this routine will generate new
   # nodes for the task and files and link them together as necessary.
-  graph.constructFiles(superpipeline)
+  graph.constructFiles(superpipeline, isExportSet)
 
   # Check that all of the streams are correctly marked in the superpipeline. This checks to see if a task is
   # marked as accepting a stream, but the task is itelf a pipeline, for example. In this case, the first task
@@ -295,7 +295,7 @@ def main():
   dc.checkValues(graph, superpipeline)
 
   # If the user has requested that a parameter set is to be exported, export the parameter set and terminate.
-  if isExportSet: parSet.export(superpipeline, args, isExportSet[0], command.pipelineArguments)
+  if isExportSet: parSet.export(graph, superpipeline, args, isExportSet, command.pipelineArguments)
 
   # Having reached this point, all of the required values have been checked, are present and have the correct data
   # type. In the construction of the graph, a number of non-required nodes could have been created and, since they

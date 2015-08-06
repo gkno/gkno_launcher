@@ -1067,12 +1067,29 @@ class pipelineGraph:
 
   # Loop over all of the nodes for which arguments are defined on the command line and create the nodes
   # that are missing.
-  def attachArgumentValuesToNodes(self, superpipeline, args, arguments, nodeList):
+  def attachArgumentValuesToNodes(self, graph, superpipeline, args, arguments, nodeList):
 
     # Loop over all of the set pipeline arguments.
     for argument in arguments:
       values       = arguments[argument]
       graphNodeIds = args.arguments[argument].graphNodeIds
+
+      # If there are no graph node Ids, check if the argument is imported from a tool. If so, add this argument
+      # to the node list to ensure that a node is created.
+      if graphNodeIds[0] == None:
+        if args.arguments[argument].isImported:
+          taskAddress = args.arguments[argument].importedFromTask
+          tool        = graph.getGraphNodeAttribute(taskAddress, 'tool')
+          nodeAddress = str(taskAddress + '.' + argument)
+
+          # Add to the nodeList.
+          nodeList.append((taskAddress, nodeAddress, tool, argument, values, True))
+
+        # If the argument isn't imported, no node will be created and this argument will never make it to the command
+        # line. Terminate if this is the case.
+        else: print('ERROR - attachArgumentValuesToNodes. No graph nodes created'); exit(1)
+
+      # If nodes are defined, set necessary attributes.
       for graphNodeId in graphNodeIds:
 
         # Get the stub extension associated with this node. If this is not a stub, then this will be set
@@ -1102,13 +1119,6 @@ class pipelineGraph:
         isStub         = toolData.getArgumentAttribute(argument, 'isStub')
         stubExtensions = toolData.getArgumentAttribute(argument, 'stubExtensions')
 
-        # Define the node attributes.
-        if isInput or isOutput: nodeAttributes = dataNodeAttributes('file')
-        else: nodeAttributes = dataNodeAttributes('option')
-
-        # Attach the values to the node attributes.
-        nodeAttributes.values = values
-
         # Add the node (or nodes if this is a stub).
         if isStub:
           for extension in stubExtensions:
@@ -1121,7 +1131,11 @@ class pipelineGraph:
 
         # If this is not a stub, add a single node.
         else:
-          self.addFileNode(nodeAddress, nodeAddress)
+          if isInput or isOutput: self.addFileNode(nodeAddress, nodeAddress)
+          else: self.addOptionNode(nodeAddress)
+
+          # Attach the values to the node attributes.
+          self.setGraphNodeAttribute(nodeAddress, 'values', values)
 
           # Add the edge.
           if isOutput: self.addEdge(taskAddress, nodeAddress, argumentAttributes)
@@ -1238,7 +1252,7 @@ class pipelineGraph:
   # Loop over all of the tasks in the workflow and construct missing filenames where there are instructions to do so. In
   # addition, where multiple options are provided to a task, the task is divided into multiple tasks and handling of input
   # and output files and their relation to other tasks is handled.
-  def constructFiles(self, superpipeline):
+  def constructFiles(self, superpipeline, isExportSet):
 
     # Loop over all of the tasks in the pipeline.
     for task in self.workflow:
@@ -1334,7 +1348,7 @@ class pipelineGraph:
 
       # If there are no divisions, no new task nodes need to be constructed, or equivalently, no new output nodes. The
       # existing output nodes need to be checked to ensure that they contain the correct number of values.
-      else: self.checkOutputFiles(superpipeline, task, greedyArgument)
+      else: self.checkOutputFiles(superpipeline, task, greedyArgument, isExportSet)
 
   # Determine the number of subphases for a tsak. This is based on the number of values given to an individual non-greedy
   # task.
@@ -1639,7 +1653,7 @@ class pipelineGraph:
 
   # Loop over all output file nodes (for tasks with no divisions), checking that all of the filenames are
   # defined. If not, construct them if instructions are provided.
-  def checkOutputFiles(self, superpipeline, task, greedyArgument):
+  def checkOutputFiles(self, superpipeline, task, greedyArgument, isExportSet):
 
     # Loop over the output files nodes and check if filenames have been defined.
     for nodeId in self.graph.successors(task):
@@ -1663,13 +1677,15 @@ class pipelineGraph:
           # means that there should only be a single output (not an output for each of the input arguments). In
           # this case, reset the base values to be a list that only contains the first value from the input
           # argument.
-          if instructions['use argument'] == greedyArgument: baseValues = [baseValues[0]]
+          if instructions['use argument'] == greedyArgument and len(baseValues) > 0: baseValues = [baseValues[0]]
 
           # Check that the number of base values is the same as the number of subphases. If not, throw an error.
           # This can happen where there are multiple subphases because an input file has been given multiple
           # values, but this is not the input file used to generate the output file names.
+          #
+          # Allow the pipeline to continue if a parameter set is being exported.
           subphases = self.getGraphNodeAttribute(task, 'subphases')
-          if len(baseValues) != subphases:
+          if len(baseValues) != subphases and not isExportSet:
 
             # If there is a single base value, generate a new set of base values with the same number as there are
             # subphases by introducing an index into the filename.
