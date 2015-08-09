@@ -1184,16 +1184,25 @@ class pipelineGraph:
             # If this is a file, get all successor tasks and check if the expected extension is list for any arguments.
             isListExtension = False
             if nodeType == 'file':
-              for successorTask in self.graph.successors(nodeId):
-                for extension in self.getArgumentAttribute(nodeId, successorTask, 'extensions'):
-                  if extension == 'list': isListExtension = True
+              if isSuccessor:
+                for predecessorTask in self.graph.predecessors(nodeId):
+                  for extension in self.getArgumentAttribute(predecessorTask, nodeId, 'extensions'):
+                    if extension == 'list': isListExtension = True
+
+              # If this is not a successor, check the successors to the task to determine the extensions to the arguments
+              # and check if the extension is 'list'.
+              else:
+                for successorTask in self.graph.successors(nodeId):
+                  for extension in self.getArgumentAttribute(nodeId, successorTask, 'extensions'):
+                    if extension == 'list': isListExtension = True
 
             # Open the file and terminate if it doesn't exist, but only if the extension is not list.
             if isListExtension: modifiedValues.append(value)
             else: 
               data = fh.fileHandling.openFileForReading(value)
               if not data:
-                task     = self.graph.successors(nodeId)[0]
+                try: task     = self.graph.successors(nodeId)[0]
+                except: task = 'None'
                 argument = self.getArgumentAttribute(nodeId, task, 'longFormArgument')
                 fe.fileErrors().missingList(task, value)
     
