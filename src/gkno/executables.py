@@ -9,6 +9,7 @@ import subprocess
 import sys
 
 import errors as er
+import adminErrors as ae
 import fileHandling as fh
 
 # Define a class for handling executable files.
