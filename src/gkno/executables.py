@@ -126,6 +126,10 @@ class executables:
     print('library(' + str(package) + ')', sep = '', file = filehandle)
     filehandle.flush()
 
+    # Check if Rscript can be executed.
+    try: p = subprocess.Popen('Rscript'.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except OSError: ae.adminErrors().noRscript()
+
     # Execute the r script and retrieve the error code. If the package exists, this will be zero, otherwise 1.
     execute       = Popen(['Rscript', 'test-R-package.XGU382HD2.r'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     output, error = execute.communicate()

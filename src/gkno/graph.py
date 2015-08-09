@@ -180,6 +180,11 @@ class pipelineGraph:
     # Add shared nodes.
     self.addSharedNodes(superpipeline, pipeline)
 
+    # If the pipeline imports arguments from a tool, check all of the arguments for that tool for required
+    # arguments.
+    if pipeline.importArgumentsFromTool:
+      print('TEST')
+
   # Add unique graph nodes to the graph.
   def addUniqueNodes(self, superpipeline, pipeline):
     for configurationNodeId in pipeline.uniqueNodeAttributes:
