@@ -105,6 +105,12 @@
         "node id" : "plot"
       },
       {
+        "description" : "Use a log scale for the y-axis.",
+        "long form argument" : "--log-scale",
+        "short form argument" : "-l",
+        "node id" : "log"
+      },
+      {
         "description" : "The minimum value for the x axis for the absolute coverage plot [determined by data].",
         "long form argument" : "--x-axis-minimum",
         "short form argument" : "-xmin",
@@ -141,7 +147,7 @@
       {
         "description" : "The legend title [reference sequence].",
         "long form argument" : "--legend",
-        "short form argument" : "-l",
+        "short form argument" : "-g",
         "hide in help" : true,
         "node id" : "legend"
       }
@@ -227,6 +233,11 @@
       "id" : "prop-scaled-output",
       "task" : "plot-proportional-scaled",
       "task argument" : "--out"
+    },
+    {
+      "id" : "log",
+      "task" : "plot-absolute",
+      "task argument" : "--log-scale"
     },
     {
       "id" : "min-x",
@@ -320,6 +331,21 @@
       "source" : "legend",
       "target" : "plot-proportional-scaled",
       "argument" : "--legend"
+    },
+    {
+      "source" : "log",
+      "target" : "plot-scaled",
+      "argument" : "--log-scale"
+    },
+    {
+      "source" : "log",
+      "target" : "plot-proportional",
+      "argument" : "--log-scale"
+    },
+    {
+      "source" : "log",
+      "target" : "plot-proportional-scaled",
+      "argument" : "--log-scale"
     },
     {
       "source" : "min-x",

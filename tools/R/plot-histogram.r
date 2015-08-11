@@ -29,4 +29,14 @@ pdf(args[2])
 if (as.integer(args[6]) != -1) {min <- as.integer(args[6])}
 if (as.integer(args[7]) != -1) {max <- as.integer(args[7])}
 
-ggplot() + geom_line(data=hist.melted, aes(x=bin, y=value, group=variable, colour=variable)) + xlim(min, max) + xlab(args[3]) + ylab(args[4]) + theme_bw(12) + scale_colour_discrete(name=args[5])
+if (exists(args[8])) {
+  if (args[8] == "log") {log = TRUE}
+  else {log = FALSE}
+} else {
+  log = FALSE
+}
+if (log == TRUE) {
+  ggplot() + geom_line(data=hist.melted, aes(x=bin, y=value, group=variable, colour=variable)) + xlim(min, max) + xlab(args[3]) + ylab(args[4]) + theme_bw(12) + scale_colour_discrete(name=args[5]) + scale_y_log10()
+} else {
+  ggplot() + geom_line(data=hist.melted, aes(x=bin, y=value, group=variable, colour=variable)) + xlim(min, max) + xlab(args[3]) + ylab(args[4]) + theme_bw(12) + scale_colour_discrete(name=args[5])
+}

@@ -84,9 +84,16 @@
         "modify argument" : "omit"
       },
       {
+        "description" : "Use a log scale for the y-axis.",
+        "long form argument" : "--log-scale",
+        "short form argument" : "-l",
+        "command line argument" : "log",
+        "data type" : "flag"
+      },
+      {
         "description" : "The legend title [legend].",
         "long form argument" : "--legend",
-        "short form argument" : "-l",
+        "short form argument" : "-g",
         "command line argument" : "none",
         "data type" : "string",
         "modify argument" : "omit"
@@ -102,7 +109,8 @@
     "--y-label",
     "--legend",
     "--x-axis-minimum",
-    "--x-axis-maximum"
+    "--x-axis-maximum",
+    "--log-scale"
   ],
 
   "parameter sets" : [
@@ -110,6 +118,11 @@
       "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
       "data" : [
+        {
+          "id" : "log",
+          "argument" : "--log-scale",
+          "values" : ["unset"]
+        },
         {
           "id" : "xmin",
           "argument" : "--x-axis-minimum",
