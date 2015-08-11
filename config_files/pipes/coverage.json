@@ -114,14 +114,13 @@
       {
         "description" : "The maximum value for the x axis for the absolute coverage plot [determined by data, or --combine-max-depth].",
         "long form argument" : "--x-axis-maximum",
-        "short form argument" : "-xmax",
-        "hide in help" : true,
+        "short form argument" : "-x",
         "node id" : "max-x"
       },
       {
         "description" : "The x axis label for the coverage plots [Coverage].",
         "long form argument" : "--x-label",
-        "short form argument" : "-x",
+        "short form argument" : "-xlab",
         "hide in help" : true,
         "node id" : "x-label"
       },
