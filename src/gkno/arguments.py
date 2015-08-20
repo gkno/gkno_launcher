@@ -230,3 +230,12 @@ class arguments:
   # Import arguments from a pipeline contained within the pipeline.
   def importPipelineArguments(self, pipeline, superpipeline):
     print('IMPORT ARGUMENTS FROM PIPELINE')
+
+  # Now that arguments have been imported from tools, check that there are no problems.
+  def checkArguments(self, superpipeline):
+
+    # Loop over all of the arguments.
+    for argument in self.arguments.keys():
+
+      # Check that no arguments have the same name as a pipeline task.
+      if argument.strip('-') in superpipeline.tasks: self.errors.argumentIsTask(argument)

@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.20.11"
+__version__ = "2.20.12"
 __date__ = "August 2015"
 
 def main():
@@ -179,6 +179,9 @@ def main():
     # valid, that none of the arguments conflict with the pipeline and then add the arguments to the
     # allowed arguments.
     args.importArguments(graph, superpipeline)
+
+    # Now that arguments have been imported from tools, check that there are no problems.
+    args.checkArguments(superpipeline)
 
     # Now that the graph is built, parse all of the arguments in the pipelines and associate them with the
     # graph nodes and vice versa.

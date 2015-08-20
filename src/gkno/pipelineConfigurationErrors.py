@@ -185,6 +185,17 @@ class pipelineErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  # If an argument shares a name with a pipeline task.
+  def argumentIsTask(self, longFormArgument, shortFormArgument, isLongForm):
+    text = 'long' if isLongForm else 'short'
+    self.text.append('A pipeline argument shares a name with a pipeline task.')
+    self.text.append('The user is permitted to define the name of a pipeline task on the command line in order to set parameters for that task ' + \
+    'that have not been given specific pipeline arguments. In order for this to work, no arguments for the pipeline may share a name with a ' + \
+    'pipeline task. There is a defined pipeline argument \'' + longFormArgument + ' (' + shortFormArgument + ')\', where the ' + text + ' ' + \
+    'form of the argument is the name of a pipeline task. Please change the name of the pipeline task or the argument to remove this conflict')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   ##########################################
   ## Errors in the unique or shared nodes ##
   ##########################################

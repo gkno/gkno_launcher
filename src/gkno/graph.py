@@ -183,7 +183,7 @@ class pipelineGraph:
     # If the pipeline imports arguments from a tool, check all of the arguments for that tool for required
     # arguments.
     if pipeline.importArgumentsFromTool:
-      print('TEST')
+      pass
 
   # Add unique graph nodes to the graph.
   def addUniqueNodes(self, superpipeline, pipeline):

@@ -6,12 +6,12 @@
 
   "pipeline tasks" : [
     {
-      "task" : "index",
+      "task" : "index-fasta",
       "tool" : "bwa-index"
     }
   ],
 
-  "import arguments" : "index",
+  "import arguments" : "index-fasta",
 
   "arguments" : {
   },
@@ -19,17 +19,17 @@
   "unique graph nodes" : [
     {
       "id" : "fasta",
-      "task" : "index",
+      "task" : "index-fasta",
       "task argument" : "--fasta-reference"
     },
     {
       "id" : "fm",
-      "task" : "index",
+      "task" : "index-fasta",
       "task argument" : "--index"
     },
     {
       "id" : "algorithm",
-      "task" : "index",
+      "task" : "index-fasta",
       "task argument" : "--bwt-algorithm"
     }
   ],

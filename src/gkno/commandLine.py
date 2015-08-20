@@ -346,7 +346,7 @@ class commandLine:
   
           # If this entry does not begin with a dash and there is no defined argument, then the previous
           # entry also did not start with a '-' and so there is a problem with the supplied arguments.
-          elif not argument: print('ERROR - command.associateArgumentsWithGraphNodes - 1'); exit(0)
+          elif not argument: print('ERROR - command.associateArgumentsWithGraphNodes - 1', argument); exit(0)
   
           # If this entry does not begin with a '-'. but the argument is set, this is a value for the argument,
           # so associate the value with the argument.

@@ -80,3 +80,11 @@ class argumentErrors:
     'with the imported tool arguments.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  # If an argument has the same name as a task.
+  def argumentIsTask(self, argument):
+    self.text.append('Imported tool argument conflicts with a pipeline task.')
+    self.text.append('No arguments for the pipeline may share a name with a pipeline task. The imported argument \'' + argument + '\' is, ' + \
+    'however, the name of a pipeline task. Please change the name of the pipeline task or the argument to remove this conflict')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

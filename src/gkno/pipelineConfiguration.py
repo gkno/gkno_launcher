@@ -580,11 +580,16 @@ class pipelineConfiguration:
         if longFormArgument in self.longFormArguments: self.errors.repeatedLongFormArgument(helpInfo)
   
         # Also check that the node id is not the name of a task.
-        if attributes.shortFormArgument in self.shortFormArguments: self.errors.repeatedShortFormArgument(helpInfo)
-  
+        shortFormArgument = attributes.shortFormArgument
+        if shortFormArgument in self.shortFormArguments: self.errors.repeatedShortFormArgument(helpInfo)
+
+        # If the argument shares a name with a pipeline task.
+        if longFormArgument.strip('-') in self.pipelineTasks: self.errors.argumentIsTask(longFormArgument, shortFormArgument, isLongForm = True)
+        if shortFormArgument.strip('-') in self.pipelineTasks: self.errors.argumentIsTask(longFormArgument, shortFormArgument, isLongForm = False)
+
         # Store the attributes.
-        self.longFormArguments[longFormArgument]              = attributes
-        self.shortFormArguments[attributes.shortFormArgument] = longFormArgument
+        self.longFormArguments[longFormArgument]   = attributes
+        self.shortFormArguments[shortFormArgument] = longFormArgument
 
   # Check that defined edges are correctly included.
   def checkDefinedEdges(self, data):
