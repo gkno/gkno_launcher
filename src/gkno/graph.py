@@ -1035,12 +1035,12 @@ class pipelineGraph:
           print('NOT HANDLED PARAMETER SET WITH MULTIPLE EDGES.'); exit(0)
 
   # Loop over the workflow adding parameter set data for all of the tasks.
-  def addPipelineParameterSets(self, superpipeline, setName, resourcesPath):
+  def addPipelineParameterSets(self, superpipeline, args, setName, resourcesPath):
     for tier in reversed(superpipeline.pipelinesByTier.keys()):
-      for pipelineName in superpipeline.pipelinesByTier[tier]: self.addParameterSet(superpipeline, pipelineName, setName, resourcesPath)
+      for pipelineName in superpipeline.pipelinesByTier[tier]: self.addParameterSet(superpipeline, args, pipelineName, setName, resourcesPath)
 
   # Add the values from a pipeline parameter set to the graph.
-  def addParameterSet(self, superpipeline, pipelineName, setName, resourcesPath):
+  def addParameterSet(self, superpipeline, args, pipelineName, setName, resourcesPath):
     parameterSet = superpipeline.getPipelineParameterSet(pipelineName, setName)
 
     # If the parameter set is not available, there is a problem.
@@ -1049,14 +1049,28 @@ class pipelineGraph:
     # Loop over the nodes in the parameter set.
     nodeIds = ps.parameterSets.SM_getNodeIds(parameterSet)
     for nodeId in nodeIds:
+      isAddedNode  = False
       values       = nodeIds[nodeId]
       pipelineData = superpipeline.getPipelineData(pipelineName)
       nodeAddress  = pipelineData.address + '.' + nodeId if pipelineData.address else nodeId
 
       # Check that the nodeAddress is valid.
       if nodeAddress not in self.configurationFileToGraphNodeId:
-        ID = ps.parameterSets.SM_getDataAttributeFromNodeId(parameterSet, nodeId, 'id')
-        pse.parameterSetErrors().invalidNodeInPipelineParameterSet(pipelineName, setName, nodeId, ID)
+
+        # Check if this parameter set node is not a defined pipeline node, but is a valid combination of task and argument.
+        # If so, the node can be added to the graph.
+        if '.--' in nodeAddress:
+          task, argument = nodeAddress.split('.--')
+          argument       = str('--' + argument)
+
+          # If this node is invalid, terminate.
+          if task not in superpipeline.tasks or argument not in args.arguments.keys():
+            Id = ps.parameterSets.SM_getDataAttributeFromNodeId(parameterSet, nodeId, 'id')
+            pse.parameterSetErrors().invalidNodeInPipelineParameterSet(pipelineName, setName, nodeId, Id)
+
+          # The task and argument are valid, so a node can be created in the graph with this node address.
+          self.addNode(superpipeline, args, task, argument, values)
+          isAddedNode  = True
 
       # Check if any of the values begin with $(RESOURCES) or $(PWD). If so. update them.
       updatedValues = []
@@ -1068,7 +1082,8 @@ class pipelineGraph:
         else: updatedValues.append(str(value))
 
       # Set the values for the graph node.
-      for graphNodeId in self.configurationFileToGraphNodeId[nodeAddress]: self.setGraphNodeAttribute(graphNodeId, 'values', updatedValues)
+      if not isAddedNode:
+        for graphNodeId in self.configurationFileToGraphNodeId[nodeAddress]: self.setGraphNodeAttribute(graphNodeId, 'values', updatedValues)
 
   # Loop over all of the nodes for which arguments are defined on the command line and create the nodes
   # that are missing.
@@ -2139,6 +2154,31 @@ class pipelineGraph:
 
     # Link this configuration node ID with the created graph node ID.
     self.configurationFileToGraphNodeId[graphNodeId] = [graphNodeId]
+
+  # Given a task and an argument, add a new node to the graph.
+  def addNode(self, superpipeline, args, task, argument, values):
+    tool   = superpipeline.tasks[task]
+    nodeId = str(task + '.' + argument)
+
+    # Get the attributes for the argument.
+    toolData           = superpipeline.getToolData(tool)
+    argumentAttributes = toolData.getArgumentData(argument)
+
+    # Determine if this is an input file, output file or an option.
+    isInput  = argumentAttributes.isInput
+    isOutput = argumentAttributes.isOutput
+    if isInput or isOutput: nodeAttributes = dataNodeAttributes('file')
+    else: nodeAttributes = dataNodeAttributes('option')
+
+    # Add the values to the nodeAttributes.
+    nodeAttributes.values = values
+
+    # Add the option node to the graph.
+    self.graph.add_node(str(nodeId), attributes = nodeAttributes)
+
+    # Add the necessary edges.
+    if isOutput: self.graph.add_edge(task, str(nodeId), attributes = argumentAttributes)
+    else: self.graph.add_edge(str(nodeId), task, attributes = argumentAttributes)
 
   # Add an edge to the graph.
   def addEdge(self, source, target, attributes):

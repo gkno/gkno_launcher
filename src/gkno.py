@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.21.1"
+__version__ = "2.21.2"
 __date__ = "August 2015"
 
 def main():
@@ -211,12 +211,12 @@ def main():
   graph.addTaskParameterSets(superpipeline, 'default')
 
   # Now add the default parameter set for the pipelines.
-  graph.addPipelineParameterSets(superpipeline, 'default', resourcesPath)
+  graph.addPipelineParameterSets(superpipeline, args, 'default', resourcesPath)
 
   # Determine the requested parameter set and add the parameters to the graph.
   parSet             = ps.parameterSets()
   graph.parameterSet = command.getParameterSetName(command.gknoArguments, gknoConfiguration)
-  if graph.parameterSet: graph.addParameterSet(superpipeline, superpipeline.pipeline, graph.parameterSet, resourcesPath)
+  if graph.parameterSet: graph.addParameterSet(superpipeline, args, superpipeline.pipeline, graph.parameterSet, resourcesPath)
 
   # If help was requested, print out the relevent help information.
   # TODO ADMIN HELP

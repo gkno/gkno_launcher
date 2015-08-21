@@ -140,16 +140,16 @@ class parameterSets:
     attributes.isExternal  = True
     sets[setName]          = attributes
 
-    # Add the arguments and values to the nodes.
-    for counter, argument in enumerate(arguments):
-      values = arguments[argument]
+    # First, loop over all file nodes and find those with values.
+    self.counter = 1
+    for nodeId in graph.getNodes('file'):
+      values         = graph.getGraphNodeAttribute(nodeId, 'values')
+      if len(values) > 0: attributes.data.append(self.getNodeAttributes(nodeId, values))
 
-      # Put all of the values in a list.
-      nodeAttributes           = parameterSetArguments()
-      nodeAttributes.nodeId    = str(args.arguments[argument].nodeId)
-      nodeAttributes.id        = str('node' + str(counter))
-      nodeAttributes.values    = values
-      attributes.data.append(nodeAttributes)
+    # Then loop over all options nodes.
+    for nodeId in graph.getNodes('option'):
+      values = graph.getGraphNodeAttribute(nodeId, 'values')
+      if len(values) > 0: attributes.data.append(self.getNodeAttributes(nodeId, values))
 
     # Put all of the parameter set information in a dictionary that can be dumped to a json file.
     jsonParameterSets                  = OrderedDict()
@@ -191,6 +191,18 @@ class parameterSets:
     print('=' * 66, file = sys.stdout)
     sys.stdout.flush()
     exit(0)
+
+  # Given a graph node with values, return node attributes to be added to the parameter set.
+  def getNodeAttributes(self, nodeId, values):
+
+    # Put all of the values in a list.
+    nodeAttributes           = parameterSetArguments()
+    nodeAttributes.nodeId    = str(nodeId)
+    nodeAttributes.id        = str('node' + str(self.counter))
+    nodeAttributes.values    = values
+    self.counter += 1
+
+    return nodeAttributes
 
   ######################
   ### Static methods ###
