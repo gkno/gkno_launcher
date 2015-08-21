@@ -18,7 +18,7 @@
       "input is stream" : true
     },
     {
-      "task" : "index",
+      "task" : "index-vcf",
       "tool" : "vcf-index",
       "omit from reduced plot" : true
     }
@@ -56,7 +56,7 @@
       "task argument" : "--out"
     },
     {
-      "id" : "index-vcf",
+      "id" : "vcf",
       "task" : "compress",
       "task argument" : "--out"
     }
@@ -69,8 +69,8 @@
       "argument" : "--in"
     },
     {
-      "source" : "index-vcf",
-      "target" : "index",
+      "source" : "vcf",
+      "target" : "index-vcf",
       "argument" : "--in"
     }
   ],

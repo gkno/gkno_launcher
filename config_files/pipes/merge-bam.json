@@ -12,7 +12,7 @@
       "greedy argument" : "--in"
     },
     {
-      "task" : "index",
+      "task" : "index-bam",
       "tool" : "bamtools-index"
     },
     {
@@ -53,7 +53,7 @@
   "connect nodes" : [
     {
       "source" : "output",
-      "target" : "index",
+      "target" : "index-bam",
       "argument" : "--in"
     },
     {

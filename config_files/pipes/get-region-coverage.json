@@ -6,7 +6,7 @@
 
   "pipeline tasks" : [
     {
-      "task" : "pileup",
+      "task" : "read-pileup",
       "tool" : "samtools-mpileup",
       "output to stream" : true
     },
@@ -62,17 +62,17 @@
   "unique graph nodes" : [
     {
       "id" : "bam",
-      "task" : "pileup",
+      "task" : "read-pileup",
       "task argument" : "--in"
     },
     {
       "id" : "region",
-      "task" : "pileup",
+      "task" : "read-pileup",
       "task argument" : "--region"
     },
     {
       "id" : "pileup-output",
-      "task" : "pileup",
+      "task" : "read-pileup",
       "task argument" : "--out"
     },
     {

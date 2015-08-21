@@ -532,7 +532,6 @@
         "long form argument" : "--genotype-qualities",
         "short form argument" : "-gq",
         "command line argument" : "--genotype-qualities",
-        "required" : true,
         "data type" : "flag"
       }
     ]

@@ -49,7 +49,7 @@
       "input is stream" : true
     },
     {
-      "task" : "index",
+      "task" : "index-vcf",
       "tool" : "vcf-index",
       "omit from reduced plot" : true
     }
@@ -232,7 +232,7 @@
     },
     {
       "source" : "output",
-      "target" : "index",
+      "target" : "index-vcf",
       "argument" : "--in"
     }
   ],
