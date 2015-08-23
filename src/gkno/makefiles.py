@@ -93,6 +93,7 @@ class makefiles:
 
     # For each intermediate file, store where in the pipeline it can be deleted.
     self.deleteAfterTask = {}
+    self.fileDeletion = {}
 
     # Record if multiple makefiles are to be generated.
     self.isMultipleMakefiles = False
@@ -458,11 +459,15 @@ class makefiles:
 
           # Determine the task after which the file can be deleted.
           deleteAfterTask = graph.getGraphNodeAttribute(nodeId, 'deleteAfterTask')
-          if deleteAfterTask not in self.deleteAfterTask: self.deleteAfterTask[deleteAfterTask] = []
+          if deleteAfterTask not in self.deleteAfterTask: self.deleteAfterTask[deleteAfterTask] = {}
+          if subphase + 1 not in self.deleteAfterTask[deleteAfterTask]: self.deleteAfterTask[deleteAfterTask][subphase + 1] = {}
+          if 1 not in self.deleteAfterTask[deleteAfterTask][subphase + 1]: self.deleteAfterTask[deleteAfterTask][subphase + 1][1] = []
 
           # Determine the phase that the task is in.
-          key = str(subphase + 1) + str(1)
-          self.deleteAfterTask[deleteAfterTask].append((key, str(value)))
+          #key = str(subphase + 1) + str(1)
+          #self.deleteAfterTask[deleteAfterTask].append((key, str(value)))
+          self.deleteAfterTask[deleteAfterTask][subphase + 1][1].append(str(value))
+          self.fileDeletion[str(value)] = deleteAfterTask
 
     # If there are multiple divisions, values for division 2 onwards are stored in the child nodes which are dealt with here.
     if isParent:
@@ -494,11 +499,15 @@ class makefiles:
     
               # Determine the task after which the file can be deleted.
               deleteAfterTask = graph.getGraphNodeAttribute(nodeId, 'deleteAfterTask')
-              if deleteAfterTask not in self.deleteAfterTask: self.deleteAfterTask[deleteAfterTask] = []
+              if deleteAfterTask not in self.deleteAfterTask: self.deleteAfterTask[deleteAfterTask] = {}
+              if subphase + 1 not in self.deleteAfterTask[deleteAfterTask]: self.deleteAfterTask[deleteAfterTask][subphase + 1] = {}
+              if division not in self.deleteAfterTask[deleteAfterTask][subphase + 1]: self.deleteAfterTask[deleteAfterTask][subphase + 1][division] = []
     
               # Determine the phase that the task is in.
-              key = str(subphase + 1) + str(division)
-              self.deleteAfterTask[deleteAfterTask].append((key, str(value)))
+              #key = str(subphase + 1) + str(division)
+              #self.deleteAfterTask[deleteAfterTask].append((key, str(value)))
+              self.deleteAfterTask[deleteAfterTask][subphase + 1][division].append(str(value))
+              self.fileDeletion[str(value)] = deleteAfterTask
 
   # Check if the value has the given extension and, if not, add it.
   def addStubExtension(self, value, extension, includeStubDot):
@@ -506,6 +515,89 @@ class makefiles:
     else:
       updatedValue = str(value + '.' + extension) if includeStubDot else str(value + extension)
       return updatedValue
+
+  # Move intermediate files so that they appear associated with the task after which they are deleted.
+  def updateIntermediates(self, struct):
+
+    # Define a new dictionary for the intermediates. Intermediate files that are to be deleted after a task in a later
+    # phase will be moved to be associated with the task after which they are deleted and will be listed as outputs for
+    # the phase where they are generated. This ensures that where multiple phases exist, temporary files which cannot be
+    # deleted in the makefile in which they are generated are listed as outputs in that makefile, but are listed as
+    # intermediate files for the phase in which they are deleted.
+    intermediates = {}
+
+    # Loop over all tasks.
+    for task in self.executionInfo: 
+      phase = struct.task[task]
+      if task not in intermediates: intermediates[task] = {}
+      for subphase in self.executionInfo[task].intermediates:
+        if subphase not in intermediates[task]: intermediates[task][subphase] = {}
+        for division in self.executionInfo[task].intermediates[subphase]:
+          if division not in intermediates[task][subphase]: intermediates[task][subphase][division] = []
+          for value in self.executionInfo[task].intermediates[subphase][division]:
+            deleteAfterTask = self.fileDeletion[str(value)]
+            deletePhase     = struct.task[deleteAfterTask]
+
+            # If the file is deleted in another phase, move the intermediate file to be associated with the task after which
+            # it is deleted.
+            if deletePhase > phase:
+              numberDivisions = struct.phaseInformation[deletePhase].numberDivisions
+              numberSubphases = struct.phaseInformation[deletePhase].numberSubphases
+              if deleteAfterTask not in intermediates: intermediates[deleteAfterTask] = {}
+              if subphase not in intermediates[deleteAfterTask]: intermediates[deleteAfterTask][subphase] = {}
+              if division not in intermediates[deleteAfterTask][subphase]: intermediates[deleteAfterTask][subphase][division] = []
+              self.updateIntermediatesDictionary(deleteAfterTask, numberSubphases, numberDivisions, intermediates, value, subphase, division)
+            else:
+              numberDivisions = struct.phaseInformation[phase].numberDivisions
+              numberSubphases = struct.phaseInformation[phase].numberSubphases
+              self.updateIntermediatesDictionary(task, numberSubphases, numberDivisions, intermediates, value, subphase, division)
+
+    # Replace the intermediates in the executionInfo with the update values.
+    for task in intermediates: self.executionInfo[task].intermediates = deepcopy(intermediates[task])
+
+    # Consolidate subphases and divisions for files in deleteAfterTask.
+    deleteAfterTask = {}
+    for task in self.deleteAfterTask:
+      deleteAfterTask[task] = {}
+      phase                 = struct.task[task]
+      numberDivisions       = struct.phaseInformation[phase].numberDivisions
+      numberSubphases       = struct.phaseInformation[phase].numberSubphases
+      for subphase in self.deleteAfterTask[task]:
+        for division in self.deleteAfterTask[task][subphase]:
+          for value in self.deleteAfterTask[task][subphase][division]:
+            self.updateIntermediatesDictionary(task, numberSubphases, numberDivisions, deleteAfterTask, value, subphase, division)
+
+    # Update the stored dictionary.
+    self.deleteAfterTask = deleteAfterTask
+
+  # Update the intermediates dictionary based on whether the task is greedy, consolidates or otherwise. e.g. if the task has
+  # a single subphase and division, only the subphase = 1 and division = 1 elements are populated.
+  def updateIntermediatesDictionary(self, task, numberSubphases, numberDivisions, dictionary, value, subphase, division):
+
+    # If this task only has a single phase and division, all values should be deleted after this execution.
+    if numberSubphases == 1:
+      if numberDivisions == 1: 
+        if 1 not in dictionary[task]: dictionary[task][1] = {}
+        if 1 not in dictionary[task][1]: dictionary[task][1][1] = []
+        dictionary[task][1][1].append(str(value))
+  
+      # If the task has a single subphase, but multiple divisions, append values associated with the correct division.
+      else:
+        if 1 not in dictionary[task]: dictionary[task][1] = {}
+        if division not in dictionary[task][1]: dictionary[task][1][division] = []
+        dictionary[task][1][division].append(str(value))
+
+    # If the task has a single division and multiple subphases, append values associated with the correct subphase.
+    elif numberDivisions == 1: 
+      if subphase not in dictionary[task]: dictionary[task][subphase] = {}
+      if 1 not in dictionary[task][1]: dictionary[task][subphase][1] = []
+      dictionary[task][subphase][1].append(str(value))
+
+    # If the task has multiple subphases and divisions, append the value if associated with the correct key.
+    else: 
+      if subphase not in dictionary[task]: dictionary[task][subphase] = {}
+      if division not in dictionary[task][subphase]: dictionary[task][subphase][division] = []
+      dictionary[task][subphase][division].append(str(value))
 
   # If a single makefile is being generated, set the name and open the file.
   def openSingleMakefile(self, pipeline):
@@ -828,32 +920,7 @@ class makefiles:
     intermediates = []
     for task in info.tasks:
       if task in self.deleteAfterTask:
-
-        # Define the key for this phase and division.
-        key = str(subphase) + str(division)
-
-        # Determine the number of subphases and divisions for the task.
-        numberSubphases = struct.phaseInformation[struct.task[task]].numberSubphases
-        numberDivisions = struct.phaseInformation[struct.task[task]].numberDivisions
-
-        # Loop over the values marked as to be deleted after this task.
-        for storedKey, value in self.deleteAfterTask[task]:
-          if numberSubphases == 1:
-
-            # If this task only has a single phase and division, all values should be deleted after this execution.
-            if numberDivisions == 1: intermediates.append(value)
-
-            # If the task has a single subphase, but multiple divisions, append values whose key ends with the
-            # division.
-            elif storedKey.endswith(str(division)): intermediates.append(value)
-
-          # If the task has a single division and multiple subphases, append values whose key begins with the correct
-          # subphase.
-          elif numberDivisions == 1:
-            if storedKey.startswith(str(subphase)): intermediates.append(value)
-
-          # If the task has multiple subphases and divisions, append the value if associated with the correct key.
-          elif storedKey == key: intermediates.append(value)
+        for value in self.deleteAfterTask[task][subphase][division]: intermediates.append(value)
 
     # Delete the files.
     if intermediates:
@@ -892,12 +959,13 @@ class makefiles:
     # If any files are to be deleted after this task, delete them.
     if task in self.deleteAfterTask:
       intermediates = []
-      key           = str(subphase) + str(division)
 
       # If the task is greedy, delete all files, otherwise just the files associated with this subphase.
-      isGreedy = graph.getGraphNodeAttribute(task, 'isGreedy')
-      for storedKey, value in self.deleteAfterTask[task]:
-        if storedKey == key or isGreedy: intermediates.append(value)
+      if graph.getGraphNodeAttribute(task, 'isGreedy'):
+        for subphase in self.deleteAfterTask[task]:
+          for division in self.deleteAfterTask[task][subhpase]:
+            for value in self.deleteAfterTask[task][subhpase][division]: intermediates.append(value)
+      else: intermediates = self.deleteAfterTask[task][subhpase][division]
 
       # If there are files to delete, include instructions to delete them.
       if intermediates:
