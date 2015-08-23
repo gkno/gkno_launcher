@@ -516,44 +516,47 @@ class makefiles:
       updatedValue = str(value + '.' + extension) if includeStubDot else str(value + extension)
       return updatedValue
 
-  # Move intermediate files so that they appear associated with the task after which they are deleted.
+  # Move intermediate files so that they appear associated with the task after which they are deleted. This is only
+  # necessary if multiple makefiles are being generated.
   def updateIntermediates(self, struct):
 
-    # Define a new dictionary for the intermediates. Intermediate files that are to be deleted after a task in a later
-    # phase will be moved to be associated with the task after which they are deleted and will be listed as outputs for
-    # the phase where they are generated. This ensures that where multiple phases exist, temporary files which cannot be
-    # deleted in the makefile in which they are generated are listed as outputs in that makefile, but are listed as
-    # intermediate files for the phase in which they are deleted.
-    intermediates = {}
+    if self.isMultipleMakefiles:
 
-    # Loop over all tasks.
-    for task in self.executionInfo: 
-      phase = struct.task[task]
-      if task not in intermediates: intermediates[task] = {}
-      for subphase in self.executionInfo[task].intermediates:
-        if subphase not in intermediates[task]: intermediates[task][subphase] = {}
-        for division in self.executionInfo[task].intermediates[subphase]:
-          if division not in intermediates[task][subphase]: intermediates[task][subphase][division] = []
-          for value in self.executionInfo[task].intermediates[subphase][division]:
-            deleteAfterTask = self.fileDeletion[str(value)]
-            deletePhase     = struct.task[deleteAfterTask]
-
-            # If the file is deleted in another phase, move the intermediate file to be associated with the task after which
-            # it is deleted.
-            if deletePhase > phase:
-              numberDivisions = struct.phaseInformation[deletePhase].numberDivisions
-              numberSubphases = struct.phaseInformation[deletePhase].numberSubphases
-              if deleteAfterTask not in intermediates: intermediates[deleteAfterTask] = {}
-              if subphase not in intermediates[deleteAfterTask]: intermediates[deleteAfterTask][subphase] = {}
-              if division not in intermediates[deleteAfterTask][subphase]: intermediates[deleteAfterTask][subphase][division] = []
-              self.updateIntermediatesDictionary(deleteAfterTask, numberSubphases, numberDivisions, intermediates, value, subphase, division)
-            else:
-              numberDivisions = struct.phaseInformation[phase].numberDivisions
-              numberSubphases = struct.phaseInformation[phase].numberSubphases
-              self.updateIntermediatesDictionary(task, numberSubphases, numberDivisions, intermediates, value, subphase, division)
-
-    # Replace the intermediates in the executionInfo with the update values.
-    for task in intermediates: self.executionInfo[task].intermediates = deepcopy(intermediates[task])
+      # Define a new dictionary for the intermediates. Intermediate files that are to be deleted after a task in a later
+      # phase will be moved to be associated with the task after which they are deleted and will be listed as outputs for
+      # the phase where they are generated. This ensures that where multiple phases exist, temporary files which cannot be
+      # deleted in the makefile in which they are generated are listed as outputs in that makefile, but are listed as
+      # intermediate files for the phase in which they are deleted.
+      intermediates = {}
+  
+      # Loop over all tasks.
+      for task in self.executionInfo: 
+        phase = struct.task[task]
+        if task not in intermediates: intermediates[task] = {}
+        for subphase in self.executionInfo[task].intermediates:
+          if subphase not in intermediates[task]: intermediates[task][subphase] = {}
+          for division in self.executionInfo[task].intermediates[subphase]:
+            if division not in intermediates[task][subphase]: intermediates[task][subphase][division] = []
+            for value in self.executionInfo[task].intermediates[subphase][division]:
+              deleteAfterTask = self.fileDeletion[str(value)]
+              deletePhase     = struct.task[deleteAfterTask]
+  
+              # If the file is deleted in another phase, move the intermediate file to be associated with the task after which
+              # it is deleted.
+              if deletePhase > phase:
+                numberDivisions = struct.phaseInformation[deletePhase].numberDivisions
+                numberSubphases = struct.phaseInformation[deletePhase].numberSubphases
+                if deleteAfterTask not in intermediates: intermediates[deleteAfterTask] = {}
+                if subphase not in intermediates[deleteAfterTask]: intermediates[deleteAfterTask][subphase] = {}
+                if division not in intermediates[deleteAfterTask][subphase]: intermediates[deleteAfterTask][subphase][division] = []
+                self.updateIntermediatesDictionary(deleteAfterTask, numberSubphases, numberDivisions, intermediates, value, subphase, division)
+              else:
+                numberDivisions = struct.phaseInformation[phase].numberDivisions
+                numberSubphases = struct.phaseInformation[phase].numberSubphases
+                self.updateIntermediatesDictionary(task, numberSubphases, numberDivisions, intermediates, value, subphase, division)
+  
+      # Replace the intermediates in the executionInfo with the update values.
+      for task in intermediates: self.executionInfo[task].intermediates = deepcopy(intermediates[task])
 
     # Consolidate subphases and divisions for files in deleteAfterTask.
     deleteAfterTask = {}

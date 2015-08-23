@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.21.3"
+__version__ = "2.21.4"
 __date__ = "August 2015"
 
 def main():
@@ -337,8 +337,8 @@ def main():
   # Determine if multiple makefiles have been requested and whether to add a unique id to the makefiles.
   make.isMultipleMakefiles, make.makefileId = command.checkMakefiles(gknoConfiguration.options)
 
-  # Update the intermediate files if there are multiple makefiles generated.
-  if make.isMultipleMakefiles: make.updateIntermediates(struct)
+  # Update the intermediate files.
+  make.updateIntermediates(struct)
 
   # Open the required makefiles. This is either a single makefile that will run all tasks, or a set of makefiles broken
   # up by the phase, subphase and division
