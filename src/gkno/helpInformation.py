@@ -290,9 +290,7 @@ class helpInformation:
     zipped = zip(argumentStrings, dataTypes, descriptions)
     zipped.sort()
     for argument, dataType, description in zipped: self.writeComplexLine([argument, dataType, description], lengths, noLeadingTabs = 1)
-
-    # Terminate gkno.
-    exit(0)
+    print(file = sys.stdout)
 
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
@@ -450,12 +448,17 @@ class helpInformation:
     nodeIds      = ps.parameterSets.SM_getNodeIds(parameterSet)
     for nodeId in nodeIds:
 
+      # If the argument is imported from a tool within the pipeline, the nodeId will have the form [task].--argument.
+      # If this is the case, the argument can be extracted immediately, by splitting on the '.'.
+      if '.--' in nodeId: useArgument = nodeId.split('.')[1]
+
       # Find the pipeline argument that corresponds to this node id.
-      useArgument = None
-      for argument in arguments.keys():
-        if arguments[argument].nodeId == nodeId:
-          useArgument = arguments[argument].longFormArgument
-          break
+      else:
+        useArgument = None
+        for argument in arguments.keys():
+          if arguments[argument].nodeId == nodeId:
+            useArgument = arguments[argument].longFormArgument
+            break
 
       # For each node, determine if an argument exists for the node. Only show set arguments (rather than nodes
       # within the pipeline that are hidded).
