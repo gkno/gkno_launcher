@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.21.4"
+__version__ = "2.21.5"
 __date__ = "August 2015"
 
 def main():
@@ -220,13 +220,10 @@ def main():
 
   # If help was requested, print out the relevent help information.
   # TODO ADMIN HELP
-  if mode == 'help' or mode == 'gkno help':
+  if mode == 'help': gknoHelp.pipelineHelp(superpipeline, graph, args.arguments, False)
 
-    # Write out help on gkno specific (e.g. not associated with a specific pipeline) arguments.
-    if mode == 'gkno help': gknoHelp.gknoArgumentHelp(gknoConfiguration.arguments)
-
-    # Otherwise, write out help for the pipeline being run.
-    else: gknoHelp.pipelineHelp(superpipeline, graph, args.arguments)  
+  # Write out help on gkno specific (e.g. not associated with a specific pipeline) arguments.
+  elif mode == 'gkno help': gknoHelp.pipelineHelp(superpipeline, graph, args.arguments, gknoConfiguration.arguments)
 
   # Parse the command line arguments and associate the supplied command line argument values with the graph node.
   command.parseTasksAsArguments(superpipeline)

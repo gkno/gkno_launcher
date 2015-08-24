@@ -7,13 +7,6 @@
       "data type" : "flag",
       "values" : ["unset"]
     },
-    "GKNO-ARGUMENTS" : {
-      "description" : "Print help information for gkno arguments.",
-      "long form argument" : "--gkno-arguments",
-      "short form argument" : "-ga",
-      "data type" : "flag",
-      "values" : ["unset"]
-    },
     "GKNO-CATEGORIES" : {
       "description" : "Display all available help categories.",
       "long form argument" : "--categories",
@@ -83,6 +76,13 @@
       "short form argument" : "-ep",
       "data type" : "string",
       "values" : []
+    },
+    "GKNO-ARGUMENTS" : {
+      "description" : "Print help information for gkno arguments.",
+      "long form argument" : "--gkno-arguments",
+      "short form argument" : "-ga",
+      "data type" : "flag",
+      "values" : ["unset"]
     },
     "GKNO-HELP" : {
       "description" : "Print requested help message.",

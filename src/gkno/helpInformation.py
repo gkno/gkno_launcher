@@ -55,6 +55,7 @@ class helpInformation:
       if category == None: self.writeHelpCategories()
       else: self.specificHelpCategory(category, path)
 
+    # If all pipelines are to be listed.
     elif mode == 'list-all': self.listAllPipelines(path)
 
     # Otherwise, provide general help.
@@ -222,13 +223,12 @@ class helpInformation:
       print(file = sys.stdout)
       length = len(max(failedPipelines, key = len)) + 3
       for pipeline in sorted(failedPipelines): self.writeComplexLine([pipeline], [length], noLeadingTabs = 1)
-      #print(file = sys.stdout)
 
   # Print usage information on the admin mode of operation.
   def adminModeUsage(self, admin):
-    self.writeSimpleLine('================', isIndent = False, noLeadingTabs = 0)
-    self.writeSimpleLine('=  admin mode  =', isIndent = False, noLeadingTabs = 0)
-    self.writeSimpleLine('================', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('====================', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('===  admin mode  ===', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('====================', isIndent = False, noLeadingTabs = 0)
     print(file = sys.stdout)
     self.writeSimpleLine('Usage: gkno <admin operation> [options]', isIndent = True, noLeadingTabs = 0)
     print(file = sys.stdout)
@@ -244,9 +244,9 @@ class helpInformation:
 
   # Print out how to use pipelines.
   def pipelineUsage(self):
-    self.writeSimpleLine('=======================', isIndent = False, noLeadingTabs = 0)
-    self.writeSimpleLine('= gkno pipeline usage =', isIndent = False, noLeadingTabs = 0)
-    self.writeSimpleLine('=======================', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('===========================', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('=== gkno pipeline usage ===', isIndent = False, noLeadingTabs = 0)
+    self.writeSimpleLine('===========================', isIndent = False, noLeadingTabs = 0)
     print(file = sys.stdout)
     self.writeSimpleLine('Usage: gkno [pipeline] [options]', isIndent = True, noLeadingTabs = 0)
     print(file = sys.stdout)
@@ -261,17 +261,16 @@ class helpInformation:
     self.writeSimpleLine('To see a list of all available pipelines, type:', isIndent = False, noLeadingTabs = 2)
     self.writeSimpleLine('gkno --all-pipelines (-api)', isIndent = False, noLeadingTabs = 4)
     print(file = sys.stdout)
+    self.writeSimpleLine('To see help for a particular pipeline, use the command line:', isIndent = False, noLeadingTabs = 2)
+    self.writeSimpleLine('gkno <pipeline> --help (-h)', isIndent = False, noLeadingTabs = 4)
+    print(file = sys.stdout)
+    self.writeSimpleLine('To see help for a particular pipeline, including general gkno arguments, use the command line:', isIndent = False, noLeadingTabs = 2)
+    self.writeSimpleLine('gkno <pipeline> --gkno-arguments (-ga)', isIndent = False, noLeadingTabs = 4)
+    print(file = sys.stdout)
 
   # Print out help on gkno arguments.
   def gknoArgumentHelp(self, arguments):
-    print(file = sys.stdout)
-    self.writeSimpleLine('==================', isIndent = True, noLeadingTabs = 0)
-    self.writeSimpleLine('= gkno arguments =', isIndent = True, noLeadingTabs = 0)
-    self.writeSimpleLine('==================', isIndent = True, noLeadingTabs = 0)
-    print(file = sys.stdout)
-    text = 'There is a set of arguments that can be applied to all gkno pipelines. The operation of these arguments are explained below:'
-    self.writeSimpleLine(text, isIndent = True, noLeadingTabs = 1)
-    print(file = sys.stdout)
+    self.writeSimpleLine('General gkno arguments', isIndent = False, noLeadingTabs = 0)
 
     # Loop over the arguments.
     argumentStrings = []
@@ -290,14 +289,14 @@ class helpInformation:
     # Print out the arguments.
     zipped = zip(argumentStrings, dataTypes, descriptions)
     zipped.sort()
-    for argument, dataType, description in zipped: self.writeComplexLine([argument, dataType, description], lengths, noLeadingTabs = 3)
+    for argument, dataType, description in zipped: self.writeComplexLine([argument, dataType, description], lengths, noLeadingTabs = 1)
 
     # Terminate gkno.
     exit(0)
 
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
-  def pipelineHelp(self, superpipeline, graph, arguments):
+  def pipelineHelp(self, superpipeline, graph, arguments, gknoArguments):
 
     # Write out general header information.
     print(file = sys.stdout)
@@ -405,6 +404,9 @@ class helpInformation:
         for argumentInformation in sorted(argumentHelp[category]):
           self.writeComplexLine(argumentInformation, argumentLengths[category], noLeadingTabs = 1)
         print(file = sys.stdout)
+
+    # If gkno specific arguments are to be displayed, display them after all of the pipeline arguments.
+    if gknoArguments: self.gknoArgumentHelp(gknoArguments)
 
     # Write out all of the values included in the selected parameter set, if there are any.
     self.parameterSets(graph, superpipeline, arguments)
