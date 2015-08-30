@@ -156,8 +156,17 @@ class makefiles:
       # to have the same length as the commands.
       for i in range(1, data.numberSubphases + 1):
         for j in range(1, data.numberDivisions + 1):
-          if not isInputStream: data.commands[i][j].append('\t@' + command + ' \\')
-          else: data.commands[i][j].append('\t' + command + ' \\')
+
+          # If the task uses an input data stream, only include the name of the command.
+          if isInputStream: data.commands[i][j].append('\t' + command + ' \\')
+
+          # If the task isn't accepting an input stream, but does output to a stream, then it is the first
+          # in the set of streamed tasks. The variable TOT requires initializing to ensure that the pipe
+          # ran successfully.
+          elif isOutputStream: data.commands[i][j].append('\t@TOT=0; ' + command  + ' \\')
+
+          # If this is a standalone task, just the '@' symbol and the command are required.
+          else: data.commands[i][j].append('\t@' + command + ' \\')
 
       # Search predecessor nodes to find if there are any predecessor nodes that are links only. Any values
       # for these links should be included as dependencies for this task.
@@ -178,10 +187,28 @@ class makefiles:
       # These values are modified based on whether the task is outputting to a stream or not.
       for i in range(1, data.numberSubphases + 1):
         for j in range(1, data.numberDivisions + 1):
+
+          # If the task outputs to a stream, include the pipe.
           if isOutputStream:
             data.commands[i][j].append('\t2>> $(STDERR) \\')
             data.commands[i][j].append('\t| \\')
-  
+
+          # If the task doesn't output to a stream, but accepts a stream as input, include text to ensure that the
+          # exist status of the pipeline and not just the last task is handled.
+          elif isInputStream:
+            data.commands[i][j].append(data.stdouts[i][j])
+            data.commands[i][j].append('\t2>> $(STDERR); \\')
+            data.commands[i][j].append('\tfor i in $${PIPESTATUS[@]}; do TOT=$$(( $$TOT + $$i )); done; \\')
+            data.commands[i][j].append('\tif [[ $$TOT != 0 ]]; \\')
+            data.commands[i][j].append('\tthen rm -f ' + str(data.outputs[i][j][0]) + '; \\')
+            data.commands[i][j].append('\techo -e "failed."; \\')
+            data.commands[i][j].append('\telse \\') 
+            data.commands[i][j].append('\techo -e "completed successfully."; \\')
+            data.commands[i][j].append('\tfi')
+            data.commands[i][j].append('\t@touch $(EXECUTED)')
+            data.commands[i][j].append('')
+
+          # If this was a single task, finish the task.
           else:
             data.commands[i][j].append(data.stdouts[i][j])
             data.commands[i][j].append('\t2>> $(STDERR)')
@@ -916,7 +943,6 @@ class makefiles:
     for line in info.commands: print(line, file = filehandle)
   
     # Include an additional rule if the task created multiple output files.
-    # FIXME
     if len(info.outputs) > 1: self.multipleOutputFiles(filehandle, filename, info, subphase, division)
 
     # If any files are to be deleted after these tasks, delete them.
@@ -968,7 +994,7 @@ class makefiles:
         for subphase in self.deleteAfterTask[task]:
           for division in self.deleteAfterTask[task][subhpase]:
             for value in self.deleteAfterTask[task][subhpase][division]: intermediates.append(value)
-      else: intermediates = self.deleteAfterTask[task][subhpase][division]
+      else: intermediates = self.deleteAfterTask[task][subphase][division]
 
       # If there are files to delete, include instructions to delete them.
       if intermediates:
