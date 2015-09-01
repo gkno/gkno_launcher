@@ -1072,6 +1072,11 @@ class pipelineGraph:
           self.addNode(superpipeline, args, task, argument, values)
           isAddedNode  = True
 
+        # If this node is invalid, terminate.
+        else:
+          Id = ps.parameterSets.SM_getDataAttributeFromNodeId(parameterSet, nodeId, 'id')
+          pse.parameterSetErrors().invalidNodeInPipelineParameterSet(pipelineName, setName, nodeId, Id)
+
       # Check if any of the values begin with $(RESOURCES) or $(PWD). If so. update them.
       updatedValues = []
       for value in values:

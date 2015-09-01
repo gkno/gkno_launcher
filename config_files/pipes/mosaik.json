@@ -404,7 +404,7 @@
         },
         {
           "id" : "sphash",
-          "node" : "sphash",
+          "node" : "sphashes",
           "values" : [50]
         },
         {
