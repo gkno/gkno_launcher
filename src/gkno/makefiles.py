@@ -620,7 +620,7 @@ class makefiles:
     # If the task has a single division and multiple subphases, append values associated with the correct subphase.
     elif numberDivisions == 1: 
       if subphase not in dictionary[task]: dictionary[task][subphase] = {}
-      if 1 not in dictionary[task][1]: dictionary[task][subphase][1] = []
+      if 1 not in dictionary[task][subphase]: dictionary[task][subphase][1] = []
       dictionary[task][subphase][1].append(str(value))
 
     # If the task has multiple subphases and divisions, append the value if associated with the correct key.

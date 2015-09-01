@@ -380,12 +380,12 @@
         {
           "id" : "jump",
           "node" : "jump",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_15"]
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_moblist_15"]
         },
         {
           "id" : "reference",
           "node" : "reference",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37.dat"]
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_moblist.dat"]
         },
         {
           "id" : "annse",
