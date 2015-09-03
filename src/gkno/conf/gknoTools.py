@@ -142,6 +142,20 @@ class GknoTool(object):
 
 ###############################################################
 
+# bamaddrg
+class BamAddRg(GknoTool):
+  def __init__(self):
+    super(BamAddRg, self).__init__()
+    self.name       = "bamaddrg"
+    self.installDir = "bamaddrg"
+
+  def doBuild(self):
+    return self.make()
+
+  # Same as doBuild()
+  def doUpdate(self):
+    return self.make()
+
 # bamtools
 class BamTools(GknoTool):
   def __init__(self):
@@ -801,6 +815,7 @@ class Wham(GknoTool):
 ##############################################################
 
 List = [ 
+        BamAddRg(),
         BamTools(),
         Bedtools(),
         Blast(),
