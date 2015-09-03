@@ -1,0 +1,77 @@
+{
+  "id" : "add-read-group",
+  "configuration type" : "pipeline",
+  "description" : "Add or remove sample and read group information to a BAM file.",
+  "categories" : ["BAM-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "add-read-group",
+      "tool" : "bamaddrg"
+    }
+  ],
+
+  "import arguments" : "add-read-group",
+
+  "arguments" : {
+    "Inputs" : [
+    ],
+
+    "Outputs" : [
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "bam",
+      "task" : "add-read-group",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "region",
+      "task" : "add-read-group",
+      "task argument" : "--region"
+    },
+    {
+      "id" : "output",
+      "task" : "add-read-group",
+      "task argument" : "--out"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "bam",
+          "node" : "bam",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "id" : "clear",
+          "node" : "add-read-group.--clear",
+          "values" : ["set"]
+        },
+        {
+          "id" : "sample",
+          "node" : "add-read-group.--sample",
+          "values" : ["TEST"]
+        },
+        {
+          "id" : "read-group",
+          "node" : "add-read-group.--read-group",
+          "values" : ["TEST-READ-GROUP"]
+        }
+      ]
+    }
+  ]
+}

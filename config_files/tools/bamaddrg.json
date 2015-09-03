@@ -1,0 +1,95 @@
+{
+  "id" : "bamaddrg",
+  "configuration type" : "tool",
+  "description" : "Adds or removes sample and read-group information to a BAM file.",
+  "categories" : ["BAM-processing", "Marthlab-software"],
+  "tools" : ["bamaddrg"],
+  "path" : "bamaddrg",
+  "executable" : "bamaddrg",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input BAM file(s).",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--bam",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["bam"]
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output BAM file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "modify argument" : "stdout",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["bam"],
+        "if output to stream" : {
+          "argument" : "omit",
+          "value" : "omit"
+        },
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_rg"]
+            }
+          ]
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "Apply this sample name to the BAM file.",
+        "long form argument" : "--sample",
+        "short form argument" : "-s",
+        "command line argument" : "--sample",
+        "data type" : "string"
+      },
+      {
+        "description" : "Removes this sample name and all associated read groups from the header.",
+        "long form argument" : "--remove",
+        "short form argument" : "-v",
+        "command line argument" : "--delete",
+        "data type" : "string"
+      },
+      {
+        "description" : "Removes all read groups from the header.",
+        "long form argument" : "--clear",
+        "short form argument" : "-c",
+        "command line argument" : "--clear",
+        "data type" : "flag"
+      },
+      {
+        "description" : "Apply this read group to the BAM file.",
+        "long form argument" : "--read-group",
+        "short form argument" : "-g",
+        "command line argument" : "--read-group",
+        "data type" : "string"
+      },
+      {
+        "description" : "only read data from this genomic region.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "command line argument" : "--region",
+        "data type" : "string"
+      }
+    ]
+  },
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : []
+    }
+  ]
+}
