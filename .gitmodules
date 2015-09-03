@@ -103,3 +103,6 @@
 [submodule "tools/samblaster"]
 	path = tools/samblaster
 	url = https://github.com/gkno/samblaster
+[submodule "tools/bamaddrg"]
+	path = tools/bamaddrg
+	url = https://github.com/gkno/bamaddrg
