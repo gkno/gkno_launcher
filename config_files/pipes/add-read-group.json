@@ -8,6 +8,10 @@
     {
       "task" : "add-read-group",
       "tool" : "bamaddrg"
+    },
+    {
+      "task" : "index-bam",
+      "tool" : "bamtools-index"
     }
   ],
 
@@ -36,6 +40,14 @@
       "id" : "output",
       "task" : "add-read-group",
       "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "output",
+      "target" : "index-bam",
+      "argument" : "--in"
     }
   ],
 
