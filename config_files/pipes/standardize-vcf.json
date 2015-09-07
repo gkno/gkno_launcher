@@ -45,6 +45,26 @@
     }
   ],
 
+  "terminate pipeline" : {
+    "condition" : "no consolidation",
+    "consolidating task" : "combine-vcf",
+    "delete tasks" : [
+      "combine-vcf",
+      "compress",
+      "index"
+    ],
+    "replace nodes" : [
+      {
+        "from" : "output",
+        "to" : "unique-vcf"
+      },
+      {
+        "from" : "final-index",
+        "to" : "precombined-index"
+      }
+    ]
+  },
+
   "arguments" : {
     "Inputs" : [
       {
@@ -137,6 +157,11 @@
     {
       "id" : "output",
       "task" : "compress",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "final-index",
+      "task" : "index",
       "task argument" : "--out"
     }
   ],

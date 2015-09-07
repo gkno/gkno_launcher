@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.24.0"
+__version__ = "2.25.0"
 __date__ = "September 2015"
 
 def main():
@@ -297,9 +297,13 @@ def main():
   # If the user has requested that a parameter set is to be exported, export the parameter set and terminate.
   if isExportSet: parSet.export(graph, superpipeline, args, isExportSet, command.pipelineArguments)
 
+  # If the pipeline has instructions to terminate based on input conditions, modify the pipeline.
+  graph.terminatePipeline(superpipeline)
+
   # Having reached this point, all of the required values have been checked, are present and have the correct data
   # type. In the construction of the graph, a number of non-required nodes could have been created and, since they
-  # are not required, they could be unpopoulated. March through the graph and purge any nodes that have no values.
+  # are not required, they could be unpopoulated. March through the graph and purge any nodes that have no values or
+  # are isolated.
   dc.purgeEmptyNodes(graph)
 
   # Check if any tasks have been listed as outputting to a stream. If so, check that the task can output to a

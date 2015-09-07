@@ -373,15 +373,23 @@ def purgeEmptyNodes(graph):
 
   # Loop over all the option nodes in the graph.
   for nodeId in graph.getNodes('option'):
+
+    # Remove empty nodes.
     if not graph.getGraphNodeAttribute(nodeId, 'values'):
       if graph.getGraphNodeAttribute(nodeId, 'isRequired'): print('ERROR - dataConsistency - purgeEmpythNodes'); exit(1)
       graph.graph.remove_node(nodeId)
+
+    # Remove isolated nodes.
+    elif not graph.graph.predecessors(nodeId) and not graph.graph.successors(nodeId): graph.graph.remove_node(nodeId)
 
   # Then loop over all file nodes, removing valueless nodes.
   for nodeId in graph.getNodes('file'):
     if not graph.getGraphNodeAttribute(nodeId, 'values'):
       if graph.getGraphNodeAttribute(nodeId, 'isRequired'): print('ERROR - dataConsistency - purgeEmpythNodes'); exit(1)
       graph.graph.remove_node(nodeId)
+
+    # Remove isolated nodes.
+    elif not graph.graph.predecessors(nodeId) and not graph.graph.successors(nodeId): graph.graph.remove_node(nodeId)
 
 # Set the aboslute paths of all the files used in the pipeline.
 def setFilePaths(graph, gknoArguments, gkno):

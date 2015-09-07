@@ -61,8 +61,7 @@ def checkAttributes(data, allowedAttributes, attributes, allowTermination, helpI
 
     # At this point, the attribute in the configuration file is allowed and of valid type. Check that 
     # the value itself is valid (if necessary) and store the value.
-    #if allowedAttributes[attribute][2]: setattr(self, attribute, value)
-    if allowedAttributes[attribute][2]: setAttribute(attributes, allowedAttributes[attribute][3], value)
+    if allowedAttributes[attribute][2]: setAttribute(attributes, allowedAttributes[attribute][3], value, helpInfo)
 
   # Having parsed all of the general attributes attributes, check that all those that are required
   # are present.
@@ -74,13 +73,13 @@ def checkAttributes(data, allowedAttributes, attributes, allowTermination, helpI
   return True, attributes
 
 # Set a value in the toolAttributes.
-def setAttribute(attributes, attribute, value):
+def setAttribute(attributes, attribute, value, helpInfo):
+  errors  = er.generalConfigurationFileErrors()
   try: test = getattr(attributes, attribute)
 
   # If the attribute can't be set, determine the source of the problem and provide an
   # error message.
-  #TODO ERROR
-  except: print('generalConfig.setAttributes - 1 ', attribute); exit(0) # invalidAttributeInSetAttribute
+  except: errors.invalidAttributeInSetAttribute(attribute, helpInfo)
 
   # Set the attribute.
   setattr(attributes, attribute, value)

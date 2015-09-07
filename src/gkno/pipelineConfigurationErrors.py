@@ -152,6 +152,15 @@ class pipelineErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  # If a task is marked as being terminated if there are no files to consolidate, but the task is not marked as a consolidating task.
+  def terminateConsolidateError(self, name, task):
+    self.text.append('Invalid termination instructions.')
+    self.text.append('The configuration file for the \'' + name + '\' pipeline contains information for the task \'' + task + '\'. This task has ' + \
+    'the attribute \'terminate if no consolidation\' set, but this attribute is only valid for tasks that also have \'consolidate divisions\' set ' + \
+    'to true, which this task does not. Please correct the errors in the pipeline configuration file.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   #####################################
   ## Errors in the arguments section ##
   #####################################

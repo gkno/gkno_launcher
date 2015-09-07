@@ -1954,6 +1954,66 @@ class pipelineGraph:
     # If no input nodes have the divisionText defined, return False.
     return False
 
+  # Check if the pipeline should be terminated earlier based on arguments and instructions in the pipeline
+  # configuration file.
+  def terminatePipeline(self, superpipeline):
+    instructions = superpipeline.getPipelineData(superpipeline.pipeline).terminatePipeline
+    if instructions:
+      isTerminate = False
+
+      # If the instructions require checking if a consolidating task has multiple files to consolidate,
+      # check if the conditions are met.
+      if instructions.condition == 'no consolidation': isTerminate = self.terminateConsolidate(instructions)
+
+      # If the pipeline is to be terminated, perform the necessary actions.
+      if isTerminate:
+
+        # Begin by replacing nodes. For each definition, leave the nodes as is and move the edges to achieve
+        # the replacement.
+        for nodes in instructions.replaceNodes:
+
+          # Check that a 'to' node and a 'from' node are defined.
+          #FIXME ERRORS
+          if 'to' not in nodes: print('ERROR - terminate pipeline 1'); exit(1)
+          if 'from' not in nodes: print('ERROR - terminate pipeline 1'); exit(1)
+
+          # Take all edges from the 'to' node and attach them to the 'from' node.
+          for predecessor in self.getPredecessors(nodes['to']):
+            attributes = deepcopy(self.getEdgeAttributes(predecessor, nodes['to']))
+            self.graph.add_edge(predecessor, nodes['from'], attributes = attributes)
+            self.graph.remove_edge(predecessor, nodes['to'])
+
+          # Connect the noew node to all the successors of the old node.
+          for successor in self.getSuccessors(nodes['to']):
+            attributes = deepcopy(self.getEdgeAttributes(nodes['to'], successor))
+            self.graph.add_edge(nodes['from'], successor, attributes = attributes)
+            self.graph.remove_edge(nodes['to'], successor)
+
+          # Remove the node, now the connections have been remade.
+          self.graph.remove_node(nodes['to'])
+
+        # Delete all specified tasks and the successors.
+        for task in instructions.deleteTasks:
+          self.graph.remove_node(task)
+
+          # Remove the task from the workflow.
+          self.workflow.remove(task)
+
+  # Check if a pipeline should terminate based on a consolidating task.
+  def terminateConsolidate(self, instructions):
+    task = instructions.consolidatingTask
+ 
+    #FIXME ERROR
+    if not task: print('ERROR - terminateConsolidate 1'); exit(1)
+    if task not in self.workflow: print('ERROR - terminateConsolidate 2'); exit(1)
+    if not self.getGraphNodeAttribute(task, 'consolidate'): print('ERROR - terminateConsolidate 3'); exit(1)
+
+    # Check if the consolidating task has any predecessors that are children. If so, the pipeline should not
+    # terminate early.
+    for predecessor in self.getPredecessors(task):
+      if self.getGraphNodeAttribute(predecessor, 'isChild'): return False
+    return True
+
   # Check that tasks listed as streaming can be streamed in te pipeline.
   def checkStreams(self, superpipeline):
     for task in self.workflow:

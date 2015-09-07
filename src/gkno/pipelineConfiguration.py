@@ -156,6 +156,22 @@ class uniqueGraphNodes:
     # the information required to construct the command.
     self.evaluateCommand = None
 
+# Define a class to hold instructions on terminating a pipeline early.
+class terminationInstructions:
+  def __init__(self):
+
+    # Define the conditions under which the pipeline should be terminated.
+    self.condition = None
+
+    # Define additional condition requirements.
+    self.consolidatingTask = None
+
+    # Define the tasks to be deleted.
+    self.deleteTasks = []
+
+    # Define which nodes need to be replaced.
+    self.replaceNodes = []
+
 # Define a class to store information on edges to be created. These are defined using the
 # 'connect nodes and edges' section in the pipeline configuration file.
 class edgeDefinitions:
@@ -232,6 +248,9 @@ class pipelineConfiguration:
     # file nodes.
     self.generatesMultipleNodes = False
 
+    # Store information on how to terminate a pipeline early.
+    self.terminatePipeline = False
+
     # Pipelines can be marked as developmental. This will keep them out of help messages and not include
     # them in the web json.
     self.isDevelopment = False
@@ -295,6 +314,9 @@ class pipelineConfiguration:
     # Parse all of the arguments for the pipeline.
     if self.success: self.checkArguments(data)
 
+    # Parse instructions on terminating a pipeline early.
+    if self.success: self.checkTerminationInstructions(data)
+
     # Now check that the contents of each 'node' within the shared node information is valid.
     if self.success: self.checkSharedNodeTasks()
 
@@ -348,6 +370,7 @@ class pipelineConfiguration:
     allowedAttributes['parameter sets']     = (list, True, False, None)
     allowedAttributes['pipeline tasks']     = (list, True, False, None)
     allowedAttributes['shared graph nodes'] = (list, False, False, None)
+    allowedAttributes['terminate pipeline'] = (dict, False, False, None)
     allowedAttributes['unique graph nodes'] = (list, False, False, None)
 
     # Define a set of information to be used in help messages.
@@ -459,6 +482,31 @@ class pipelineConfiguration:
 
       # Store the attributes.
       self.uniqueNodeAttributes[attributes.id] = attributes
+
+  # If there are termination instructions, check that they are valid.
+  def checkTerminationInstructions(self, data):
+
+    # If there are not termination instructions, return.
+    if 'terminate pipeline' not in data: return
+
+    # Define the allowed attributes.
+    allowedAttributes                       = {}
+    allowedAttributes['condition']          = (str, False, True, 'condition')
+    allowedAttributes['consolidating task'] = (str, False, True, 'consolidatingTask')
+    allowedAttributes['delete tasks']       = (list, False, True, 'deleteTasks')
+    allowedAttributes['replace nodes']      = (list, False, True, 'replaceNodes')
+
+    # Define a set of information to be used in help messages.
+    helpInfo = (self.name, 'terminate pipeline', None)
+
+    # Define the attributes object.
+    attributes = terminationInstructions()
+
+    # Check the attributes conform to expectations.
+    self.success, attributes = methods.checkAttributes(data['terminate pipeline'], allowedAttributes, attributes, self.allowTermination, helpInfo)
+
+    # Store the attributes.
+    self.terminatePipeline = attributes
 
   # If information on shared nodes exists, check that everything is valid.
   def checkSharedNodes(self, data):

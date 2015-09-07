@@ -129,3 +129,14 @@ class generalConfigurationFileErrors:
     'and ensure that every node in the section has the \'id\' attribute defined.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode) 
+
+  # If an attribute to be set isn't defined for the class.
+  def invalidAttributeInSetAttribute(self, attribute, helpInfo):
+    pipeline = helpInfo[0]
+    section  = helpInfo[1]
+    self.text.append('Attempt to set an invalid attribute.')
+    self.text.append('The configuration file for pipeline \'' + pipeline + '\' contains the section \'' + section + '\'. Within the section, the ' + \
+    'attribute \'' + attribute + '\' is defined. This attribute is allowed in the pipeline file, but the attribute has not been defined and ' + \
+    'initialised.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode) 
