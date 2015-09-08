@@ -450,7 +450,7 @@
       {
         "description" : "An estimate of contamination to use for all samples.  default: 10e-9",
         "long form argument" : "--prob-contamination",
-        "short form argument" : "pco-",
+        "short form argument" : "-pco",
         "command line argument" : "--prob-contamination",
         "data type" : "float"
       },

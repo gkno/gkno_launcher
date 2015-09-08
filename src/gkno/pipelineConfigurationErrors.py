@@ -161,6 +161,19 @@ class pipelineErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  #############################################
+  ## Errors in the terminate pipeline section #
+  #############################################
+
+  # If a node in the 'replace nodes' section is invalid.
+  def invalidNodeInTermination(self, name, nodeId, text):
+    self.text.append('Invalid node Id in the \'terminate pipeline\' section.')
+    self.text.append('The configuration file for the \'' + name + '\' pipeline contains information in the \'terminate pipeline\' section ' + \
+    'that describes conditions and instructions for creating a pipeline that doesn\'t use all of the defined tasks. In the \'replace nodes\' ' + \
+    'section, one of the \'' + text + '\' nodes (' + nodeId + ') is invalid for the pipeline.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   #####################################
   ## Errors in the arguments section ##
   #####################################

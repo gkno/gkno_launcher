@@ -57,6 +57,26 @@
 
   "import arguments" : "call",
 
+  "terminate pipeline" : {
+    "condition" : "no consolidation",
+    "consolidating task" : "combine-vcf",
+    "delete tasks" : [
+      "combine-vcf",
+      "compress-final",
+      "index-vcf"
+    ],
+    "replace nodes" : [
+      {
+        "from" : "output",
+        "to" : "normalized-vcf"
+      },
+      {
+        "from" : "final-index",
+        "to" : "normalized-index"
+      }
+    ]
+  },
+
   "arguments" : {
     "Inputs" : [
     ],
@@ -176,6 +196,11 @@
       "id" : "output",
       "task" : "compress-final",
       "task argument" : "--out"
+    },
+    {
+      "id" : "final-index",
+      "task" : "index-vcf",
+      "task argument" : "--out"
     }
   ],
 
@@ -290,6 +315,58 @@
           "id" : "reference",
           "node" : "reference",
           "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        }
+      ]
+    },
+
+    {
+      "id" : "somatic-exome",
+      "description" : "Parameter set for calling somatic variants in human exome data.",
+      "data" : [
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "id" : "min-alt-count",
+          "node" : "call.--min-alternate-count",
+          "values" : [5]
+        },
+        {
+          "id" : "min-alt-fraction",
+          "node" : "call.--min-alternate-fraction",
+          "values" : [0.12]
+        },
+        {
+          "id" : "min-repeat-entropy",
+          "node" : "call.--min-repeat-entropy",
+          "values" : [1]
+        },
+        {
+          "id" : "allele-balance",
+          "node" : "call.--allele-balance-priors-off",
+          "values" : ["set"]
+        },
+        {
+          "id" : "report-gl",
+          "node" : "call.--report-genotype-likelihood-max",
+          "values" : ["set"]
+        },
+        {
+          "id" : "gq",
+          "node" : "call.--genotype-qualities",
+          "values" : ["set"]
+        },
+        {
+          "id" : "pooled-discrete",
+          "node" : "call.--pooled-discrete",
+          "values" : ["set"]
+        },
+        {
+          "id" : "pooled-continuous",
+          "node" : "call.--pooled-continuous",
+          "values" : ["set"]
         }
       ]
     }

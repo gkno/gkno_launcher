@@ -1975,7 +1975,11 @@ class pipelineGraph:
           # Check that a 'to' node and a 'from' node are defined.
           #FIXME ERRORS
           if 'to' not in nodes: print('ERROR - terminate pipeline 1'); exit(1)
-          if 'from' not in nodes: print('ERROR - terminate pipeline 1'); exit(1)
+          if 'from' not in nodes: print('ERROR - terminate pipeline 2'); exit(1)
+
+          # Ensure that the supplied values are valid.
+          if not self.getPredecessors(nodes['to']): pce.pipelineErrors().invalidNodeInTermination(superpipeline.pipeline, nodes['to'], 'to')
+          if not self.getPredecessors(nodes['from']): pce.pipelineErrors().invalidNodeInTermination(superpipeline.pipeline, nodes['from'], 'from')
 
           # Take all edges from the 'to' node and attach them to the 'from' node.
           for predecessor in self.getPredecessors(nodes['to']):
