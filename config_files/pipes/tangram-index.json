@@ -1,0 +1,77 @@
+{
+  "id" : "freebayes",
+  "configuration type" : "pipeline",
+  "description" : "Population call variants using Freebayes, filtering the results with standard filtering methods.",
+  "categories" : ["FASTA-processing", "Variant-discovery", "SV-discovery"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "index",
+      "tool" : "tangram-index"
+    }
+  ],
+
+  "import arguments" : "index",
+
+  "arguments" : {
+    "Inputs" : [
+    ],
+
+    "Outputs" : [
+    ]
+  },
+
+  "unique graph nodes" : [
+  ],
+
+  "connect nodes" : [
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "ref",
+          "node" : "index.--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "id" : "sp-ref",
+          "node" : "index.--special-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for human.",
+      "data" : [
+        {
+          "id" : "reference",
+          "node" : "index.--fasta-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        },
+        {
+          "id" : "special-reference",
+          "node" : "index.--special-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/mobile_element_sequences.fa"]
+        },
+        {
+          "id" : "output",
+          "node" : "index.--tangram-reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_tangram.dat"]
+        }
+      ]
+    }
+  ]
+}
