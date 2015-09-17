@@ -64,8 +64,10 @@
           "modify extension" : "replace"
         },
         "if output to stream" : {
-          "argument" : "omit",
-          "value" : "omit"
+          "default" : {
+            "argument" : "omit",
+            "value" : "omit"
+          }
         }
       }
     ],

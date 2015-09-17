@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.27.0"
+__version__ = "2.28.0"
 __date__ = "September 2015"
 
 def main():
@@ -152,7 +152,7 @@ def main():
 
     # Define the graph object that will contain the pipeline graph and necessary operations and methods
     # to build and modify it.
-    graph = gr.pipelineGraph()
+    graph = gr.pipelineGraph(superpipeline.pipeline)
 
     # Loop over the tiers of nested pipelines and build them into the graph.
     for tier in superpipeline.pipelinesByTier.keys():

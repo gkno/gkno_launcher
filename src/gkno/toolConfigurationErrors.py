@@ -168,6 +168,30 @@ class toolErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  ##############################################
+  ## Errors with argument stream instructions ##
+  ##############################################
+
+  # No default instructions for input or output stream.
+  def noDefaultStream(self, tool, argument, isInput):
+    text = 'input' if isInput else 'output'
+    self.text.append('Missing default stream instructions.')
+    self.text.append('The configuration file for tool \'' + tool + '\' has information for the argument \'' + argument + '\'. This argument ' + \
+    'has instructions on how to proceed if the associated value is an ' + text + ' stream. There can be multiple sets of instructions, but ' + \
+    'it is required that there is a default set of instructions to be used if no instruction set is specifically specified.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # No argument in instructions for input or output stream.
+  def noArgumentInStreamInstructions(self, tool, argument, name, isInput, value):
+    text = 'input' if isInput else 'output'
+    self.text.append('No \'' + value + '\' attribute in stream instructions.')
+    self.text.append('The configuration file for tool \'' + tool + '\' has information for the argument \'' + argument + '\'. This argument ' + \
+    'has instructions on how to proceed if the associated value is an ' + text + ' stream. In the set of instructions associated with set \'' + \
+    name + '\', the required \'' + value + '\' attribute is missing.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   ####################################
   ## Errors with the argument order ##
   ####################################

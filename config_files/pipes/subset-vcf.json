@@ -8,12 +8,14 @@
     {
       "task" : "subset",
       "tool" : "vt-subset",
-      "output to stream" : true
+      "output to stream" : true,
+      "output stream instruction set" : "bcf"
     },
     {
       "task" : "normalize",
       "tool" : "vt-normalize",
-      "input is stream" : true
+      "input is stream" : true,
+      "input stream instruction set" : "bcf"
     },
     {
       "task" : "index-normalized",

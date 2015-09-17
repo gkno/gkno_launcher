@@ -49,8 +49,10 @@
         "data type" : "string",
         "extensions" : ["bam"],
         "if output to stream" : {
-          "argument" : "omit",
-          "value" : "omit"
+          "default" : {
+            "argument" : "omit",
+            "value" : "omit"
+          }
         },
         "construct filename" : {
           "method": "from tool argument",

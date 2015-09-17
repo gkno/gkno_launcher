@@ -8,18 +8,22 @@
     {
       "task" : "normalize",
       "tool" : "vt-normalize",
-      "output to stream" : true
+      "output to stream" : true,
+      "output stream instruction set" : "bcf"
     },
     {
       "task" : "subset",
       "tool" : "vt-subset",
       "input is stream" : true,
-      "output to stream" : true
+      "input stream instruction set" : "bcf",
+      "output to stream" : true,
+      "output stream instruction set" : "bcf"
     },
     {
       "task" : "remove-duplicates",
       "tool" : "vt-unique",
-      "input is stream" : true
+      "input is stream" : true,
+      "input stream instruction set" : "bcf"
     },
     {
       "task" : "index-precombined",

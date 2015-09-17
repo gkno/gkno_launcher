@@ -19,8 +19,10 @@
         "required" : true,
         "data type" : "string",
         "if input is stream" : {
-          "argument" : "omit",
-          "value" : "omit"
+          "default" : {
+            "argument" : "omit",
+            "value" : "omit"
+          }
         },
         "extensions" : ["pileup"]
       }

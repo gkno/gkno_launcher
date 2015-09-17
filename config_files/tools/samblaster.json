@@ -17,8 +17,10 @@
         "data type" : "string",
         "extensions" : ["sam"],
         "if input is stream" : {
-          "argument" : "",
-          "value" : ""
+          "default" : {
+            "argument" : "",
+            "value" : ""
+          }
         }
       }
     ],
@@ -43,8 +45,10 @@
           ]
         },
         "if output to stream" : {
-          "argument" : "omit",
-          "value" : "omit"
+          "default" : {
+            "argument" : "omit",
+            "value" : "omit"
+          }
         }
       },
       {

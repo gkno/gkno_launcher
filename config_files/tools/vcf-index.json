@@ -16,8 +16,10 @@
         "command line argument" : "--in",
         "modify argument" : "omit",
         "if input is stream" : {
-          "argument" : "omit",
-          "value" : "omit"
+          "default" : {
+            "argument" : "omit",
+            "value" : "omit"
+          }
         },
         "required" : true,
         "data type" : "string",

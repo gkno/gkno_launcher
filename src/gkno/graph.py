@@ -141,10 +141,13 @@ class dataNodeAttributes:
 
 # Define a class to store and manipulate the pipeline graph.
 class pipelineGraph:
-  def __init__(self):
+  def __init__(self, pipeline):
 
     # Handle errors associated with graph construction.
     self.errors = graphErrors.graphErrors()
+
+    # Store the name of the pipeline.
+    self.pipeline = pipeline
 
     # Define the graph.
     self.graph = nx.DiGraph()

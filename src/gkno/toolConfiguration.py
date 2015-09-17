@@ -233,6 +233,9 @@ class toolConfiguration:
     # Check the values supplied to attributes.
     if self.success: self.checkAttributeValues()
 
+    # Check that input and output stream instructions are correct.
+    if self.success: self.checkStreamInstructions()
+
     # If any of the arguments have instructions on how to construct filenames, check
     # that the values are valid.
     if self.success: self.checkConstructionInstructions()
@@ -486,6 +489,32 @@ class toolConfiguration:
           else:
             self.success = False
             return False
+
+  # Check that instructions for handling an input stream are correct.
+  def checkStreamInstructions(self):
+
+    # Loop over all of the tools arguments.
+    for argument in self.arguments:
+
+      # Find arguments with input stream instructions.
+      inputInstructions  = self.arguments[argument].inputStreamInstructions
+      outputInstructions = self.arguments[argument].outputStreamInstructions
+      if inputInstructions: self.checkStreamInstructionsSets(argument, inputInstructions, isInput = True) 
+      if outputInstructions: self.checkStreamInstructionsSets(argument, outputInstructions, isInput = False) 
+
+
+  # Check the streaming instructions.
+  def checkStreamInstructionsSets(self, argument, instructions, isInput):
+
+     # Check that the 'default' instructions are present.
+     if 'default' not in instructions.keys(): self.errors.noDefaultStream(self.name, argument, isInput)
+
+     # Loop over each of the sets of instructions and check they are valid.
+     for setName in instructions.keys():
+
+       # Check that there is a valid argument.
+       if 'argument' not in instructions[setName]: self.errors.noArgumentInStreamInstructions(self.name, argument, setName, isInput, 'argument')
+       if 'value' not in instructions[setName]: self.errors.noArgumentInStreamInstructions(self.name, argument, setName, isInput, 'value')
 
   # Check values supplied to construction instructions.
   def checkConstructionInstructions(self):

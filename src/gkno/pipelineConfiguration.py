@@ -34,6 +34,10 @@ class taskAttributes:
     self.isInputStream  = False
     self.isOutputStream = False
 
+    # If a particular set of stream instructions is specified.
+    self.inputStreamInstructionSet  = 'default'
+    self.outputStreamInstructionSet = 'default'
+
     # Record if the unique node should be included in any plots.
     self.omitFromReducedPlot = False
 
@@ -383,16 +387,18 @@ class pipelineConfiguration:
   def checkPipelineTasks(self, data):
 
     # Define the allowed general attributes.
-    allowedAttributes                                   = {}
-    allowedAttributes['consolidate divisions']          = (bool, False, True, 'consolidate')
-    allowedAttributes['input is stream']                = (bool, False, True, 'isInputStream')
-    allowedAttributes['greedy argument']                = (str, False, True, 'greedyArgument')
-    allowedAttributes['greedy task']                    = (bool, False, True, 'isGreedy')
-    allowedAttributes['omit from reduced plot']         = (bool, False, True, 'omitFromReducedPlot')
-    allowedAttributes['output to stream']               = (bool, False, True, 'isOutputStream')
-    allowedAttributes['pipeline']                       = (str, False, True, 'pipeline')
-    allowedAttributes['task']                           = (str, True, True, 'task')
-    allowedAttributes['tool']                           = (str, False, True, 'tool')
+    allowedAttributes                                  = {}
+    allowedAttributes['consolidate divisions']         = (bool, False, True, 'consolidate')
+    allowedAttributes['input is stream']               = (bool, False, True, 'isInputStream')
+    allowedAttributes['input stream instruction set']  = (str, False, True, 'inputStreamInstructionSet')
+    allowedAttributes['greedy argument']               = (str, False, True, 'greedyArgument')
+    allowedAttributes['greedy task']                   = (bool, False, True, 'isGreedy')
+    allowedAttributes['omit from reduced plot']        = (bool, False, True, 'omitFromReducedPlot')
+    allowedAttributes['output to stream']              = (bool, False, True, 'isOutputStream')
+    allowedAttributes['output stream instruction set'] = (str, False, True, 'outputStreamInstructionSet')
+    allowedAttributes['pipeline']                      = (str, False, True, 'pipeline')
+    allowedAttributes['task']                          = (str, True, True, 'task')
+    allowedAttributes['tool']                          = (str, False, True, 'tool')
 
     for taskInformation in data:
 

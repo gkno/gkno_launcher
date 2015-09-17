@@ -25,8 +25,10 @@
         "extensions" : ["bam"],
         "data type" : "string",
         "if input is stream" : {
-          "argument" : "--stdin",
-          "value" : "omit"
+          "default" : {
+            "argument" : "--stdin",
+            "value" : "omit"
+          }
         },
         "allow multiple values" : true
       },
@@ -133,8 +135,10 @@
           "modify extension" : "replace"
         },
         "if output to stream" : {
-          "argument" : "omit",
-          "value" : "omit"
+          "default" : {
+            "argument" : "omit",
+            "value" : "omit"
+          }
         }
       }
     ],

@@ -19,8 +19,10 @@
         "extensions" : ["bam"],
         "modify argument" : "omit",
         "if input is stream" : {
-          "argument" : "-",
-          "value" : ""
+          "default" : {
+            "argument" : "-",
+            "value" : ""
+          }
         }
       }
     ],
@@ -46,8 +48,10 @@
           ]
         },
         "if output to stream" : {
-          "argument" : "",
-          "value" : "keep"
+          "default" : {
+            "argument" : "",
+            "value" : "keep"
+          }
         }
       }
     ],

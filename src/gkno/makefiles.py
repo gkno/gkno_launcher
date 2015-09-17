@@ -6,6 +6,7 @@ import collections
 
 import fileHandling as fh
 import makefileErrors
+import pipelineConfigurationErrors as pce
 import stringOperations as stringOps
 
 import json
@@ -1073,29 +1074,41 @@ class makefiles:
   # data structure). It is usually the case that the gkno argument does not correspond to the tool
   # argument.
   def getToolArgument(self, graph, task, nodeId, isInput):
+
+    # Determine if a particular set of instructions was requested. If not, use the default set.
+    inputSet  = graph.getGraphNodeAttribute(task, 'inputStreamInstructionSet')
+    outputSet = graph.getGraphNodeAttribute(task, 'outputStreamInstructionSet')
+
+    # Get the correct set of input stream instructions.
     inputInstructions  = graph.getArgumentAttribute(nodeId, task, 'inputStreamInstructions')
     outputInstructions = graph.getArgumentAttribute(task, nodeId, 'outputStreamInstructions')
 
     # Determine streaming instructions, beginning with if this is an input accepting a stream.
     if graph.getGraphNodeAttribute(task, 'isInputStream') and inputInstructions:
 
+      # Get the correct set of stream instructions.
+      if inputSet not in inputInstructions: pce.pipelineErrors().invalidStreamSet(graph.pipeline, task, inputSet, inputInstructions.keys(), isInput = True)
+
       # If the argument should be omitted.
-      if inputInstructions['argument'] == 'omit': return None
+      if inputInstructions[inputSet]['argument'] == 'omit': return None
  
       # Return the supplied value to use as the argument.
-      else: return str(inputInstructions['argument'])
+      else: return str(inputInstructions[inputSet]['argument'])
 
     # Now handle outputting to a stream.
     elif graph.getGraphNodeAttribute(task, 'isOutputStream') and outputInstructions:
+
+      # Get the correct set of stream instructions.
+      if outputSet not in outputInstructions: pce.pipelineErrors().invalidStreamSet(graph.pipeline, task, outputSet, outputInstructions.keys(), isInput = False)
   
       # Check for the different allowed modifications to the argument. If the argument is listed as omit,
       # the argument should be omitted from the command line (not replaced with another value). In this
       # case, return None.
-      if outputInstructions['argument'] == 'omit': return None
+      if outputInstructions[outputSet]['argument'] == 'omit': return None
   
       # If the instructions are none of the above, the argument should be replaced with the supplied value.
       # In this case, return the value supplied.
-      else: return str(outputInstructions['argument'])
+      else: return str(outputInstructions[outputSet]['argument'])
 
     # Otherwise, use the other instructions.
     else:
@@ -1124,8 +1137,12 @@ class makefiles:
   # If the input/output is a stream, determine how the value should be written to the command line.
   @staticmethod
   def getStreamValue(graph, source, target, value, isInput, isStub):
-    if isInput: instructions = graph.getArgumentAttribute(source, target, 'inputStreamInstructions')
-    else: instructions = graph.getArgumentAttribute(source, target, 'outputStreamInstructions')
+    if isInput:
+      inputSet     = graph.getGraphNodeAttribute(target, 'inputStreamInstructionSet')
+      instructions = graph.getArgumentAttribute(source, target, 'inputStreamInstructions')[inputSet]
+    else:
+      outputSet    = graph.getGraphNodeAttribute(source, 'outputStreamInstructionSet')
+      instructions = graph.getArgumentAttribute(source, target, 'outputStreamInstructions')[outputSet]
 
     # Return the value based on the instructions.
     if instructions['value'] == 'omit': return None

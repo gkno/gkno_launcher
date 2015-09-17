@@ -161,6 +161,18 @@ class pipelineErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  # If an invalid set of streaming instructions is requested.
+  def invalidStreamSet(self, pipeline, task, name, validSets, isInput):
+    text = 'input' if isInput else 'output'
+    self.text.append('Invalid ' + text + ' streaming instruction set.')
+    self.text.append('The configuration file for the \'' + pipeline + '\' pipeline contains information for the task \'' + task + '\'. This task ' + \
+    'deals with streaming files and, in particular, the ' + text + ' stream has the instruction set \'' + name + '\' specified. This is an invalid ' + \
+    'set of instructions; the valid values are:')
+    self.text.append('\t')
+    for setName in validSets: self.text.append('\t' + setName)
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   #############################################
   ## Errors in the terminate pipeline section #
   #############################################

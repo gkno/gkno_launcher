@@ -14,8 +14,10 @@
         "short form argument" : "-i",
         "command line argument" : "none",
         "if input is stream" : {
-          "argument" : "omit",
-          "value" : "omit"
+          "default" : {
+            "argument" : "omit",
+            "value" : "omit"
+          }
         },
         "required" : true,
         "data type" : "string"
