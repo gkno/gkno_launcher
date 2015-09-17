@@ -17,8 +17,10 @@
         "data type" : "string",
         "extensions" : ["bam"],
         "if input is stream" : {
-          "argument" : "--input",
-          "value" : "stdin"
+          "default" : {
+            "argument" : "--input",
+            "value" : "stdin"
+          }
         }
       },
       {
@@ -42,8 +44,10 @@
         "data type" : "string",
         "extensions" : ["bam"],
         "if output to stream" : {
-          "argument" : "--output",
-          "value" : "stdout"
+          "default" : {
+            "argument" : "--output",
+            "value" : "stdout"
+          }
         },
         "construct filename" : {
           "method": "from tool argument",
