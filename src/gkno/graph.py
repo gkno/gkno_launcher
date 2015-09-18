@@ -1787,7 +1787,7 @@ class pipelineGraph:
           # text is removed from files that are not intermediate, so when consolidation occurs, all files from the same
           # phase/subphase, but different divisions need to have the same text.
           isIntermediate = self.getGraphNodeAttribute(nodeId, 'isIntermediate')
-          randomString   = strOps.getRandomString(8)
+          randomString   = superpipeline.randomString
 
           # Loop over the base values (except the first - that will be dealt with at the end when updating the file node
           # that already exists), construct the output filenames, then build and add the node with an edge from the task.
@@ -1801,7 +1801,7 @@ class pipelineGraph:
             # Construct the filenames for this node. If this is the task that has first split into divisions, the argument
             # and value for the division needs to be built into the filename. If this is a task following on from the task
             # that created the divisions, this is not required.
-            values       = construct.addDivisionToValue(self.graph, superpipeline, task, nodeId, instructions, baseValues, argument, divisionValues[i], randomString)
+            values       = construct.addDivisionToValue(self.graph, superpipeline, task, nodeId, instructions, baseValues, argument, divisionValues[i])
             divisionText = str('_' + argument.strip('-') + str(divisionValues[i]))
 
             # Copy the attributes from the existing node and update the values.
@@ -1825,7 +1825,7 @@ class pipelineGraph:
             self.graph.add_edge(str(taskNodeId), str(fileNodeId), attributes = deepcopy(self.getEdgeAttributes(task, nodeId)))
 
           # Now perform the same tasks for the existing node.
-          values       = construct.addDivisionToValue(self.graph, superpipeline, task, nodeId, instructions, baseValues, argument, divisionValues[0], randomString)
+          values       = construct.addDivisionToValue(self.graph, superpipeline, task, nodeId, instructions, baseValues, argument, divisionValues[0])
           divisionText = str('_' + argument.strip('-') + str(divisionValues[0]))
           self.setGraphNodeAttribute(nodeId, 'children', children)
           self.setGraphNodeAttribute(nodeId, 'divisionID', 0)

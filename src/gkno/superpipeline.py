@@ -385,7 +385,19 @@ class superpipelineClass:
 
           # Check if the file is marked for deletion.
           if self.pipelineConfigurationData[pipeline].getUniqueNodeAttribute(nodeId, 'isDelete'):
-            for graphNodeId in graph.configurationFileToGraphNodeId[nodeAddress]: graph.setGraphNodeAttribute(graphNodeId, 'isIntermediate', True)
+            for graphNodeId in graph.configurationFileToGraphNodeId[nodeAddress]:
+              graph.setGraphNodeAttribute(graphNodeId, 'isIntermediate', True)
+
+              # Prepend all intermediate files (and child nodes) with the superpipeline random string.
+              updatedValues = []
+              for value in graph.getGraphNodeAttribute(graphNodeId, 'values'): updatedValues.append(self.randomString + '.' + value)
+              graph.setGraphNodeAttribute(graphNodeId, 'values', updatedValues)
+
+              # Handle child nodes.
+              for child in graph.getGraphNodeAttribute(graphNodeId, 'children'):
+                updatedValues = []
+                for value in graph.getGraphNodeAttribute(child, 'values'): updatedValues.append(self.randomString + '.' + value)
+                graph.setGraphNodeAttribute(child, 'values', updatedValues)
 
           # Check if the file is marked as having additional text to add when filenames are constructed.
           text = self.pipelineConfigurationData[pipeline].getUniqueNodeAttribute(nodeId, 'addTextToFilename')
