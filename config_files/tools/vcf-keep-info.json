@@ -16,8 +16,10 @@
         "required" : true,
         "extensions" : ["vcf", "vcf.gz"],
         "if input is stream" : {
-          "argument" : "omit",
-          "value" : "omit"
+          "default" : {
+            "argument" : "omit",
+            "value" : "omit"
+          }
         },
         "data type" : "string",
         "modify argument" : "omit"

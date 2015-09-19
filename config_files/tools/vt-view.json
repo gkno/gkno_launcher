@@ -18,8 +18,14 @@
         "modify argument" : "omit",
         "data type" : "string",
         "if input is stream" : {
-          "argument" : "",
-          "value" : "+"
+          "default" : {
+            "argument" : "",
+            "value" : "-"
+          },
+          "bcf" : {
+            "argument" : "",
+            "value" : "+"
+          }
         },
         "extensions" : ["vcf", "vcf.gz"]
       },
@@ -42,8 +48,14 @@
         "data type" : "string",
         "extensions" : ["vcf.gz"],
         "if output to stream" : {
-          "argument" : "-o",
-          "value" : "+"
+          "default" : {
+            "argument" : "-o",
+            "value" : "-"
+          },
+          "bcf" : {
+            "argument" : "-o",
+            "value" : "+"
+          }
         },
         "construct filename" : {
           "method": "from tool argument",
