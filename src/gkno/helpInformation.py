@@ -326,6 +326,10 @@ class helpInformation:
 
       # Loop over the parameter sets and get their descriptions.
       length = len(max(parameterSets, key = len)) + 3
+
+      # Include the 'none' parameter set.
+      description = 'Do not include any parameter set information.'
+      self.writeComplexLine(['none:', description], [length, 0], noLeadingTabs = 1)
       for parameterSet in parameterSets:
         description = superpipeline.pipelineConfigurationData[superpipeline.pipeline].getParameterSetDescription(parameterSet)
         self.writeComplexLine([parameterSet + ':', description], [length, 0], noLeadingTabs = 1)
