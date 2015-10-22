@@ -418,29 +418,33 @@ class helpInformation:
     # Store the values set by the parameter sets in the following dictionary.
     self.setArguments = {}
 
-    # Start by getting information on the default parameter set, then the defined set.
-    self.setParameterSetValues(graph, superpipeline, arguments, 'default')
-    if graph.parameterSet: self.setParameterSetValues(graph, superpipeline, arguments, graph.parameterSet)
+    # If no parameter set was specified, do not print out parameter set information.
+    if graph.parameterSet != 'none' and graph.parameterSet != 'None':
 
-    # Set the parameter set name.
-    setName = graph.parameterSet if graph.parameterSet else 'default'
+      # Start by getting information on the default parameter set, then the defined set.
+      if not graph.parameterSet: self.setParameterSetValues(graph, superpipeline, arguments, 'default')
 
-    # Loop over all of the set arguments and write out the values.
-    if len(self.setArguments) > 0:
-
-      # Find the length of the longest argument.
-      length = len(max(self.setArguments, key=len))
-
-      # Write out general header information.
-      self.writeSimpleLine('Parameter set information for parameter set: ' + setName, isIndent = False, noLeadingTabs = 0)
-      for argument in sorted(self.setArguments):
-
-        # Loop over all the values for the argument, unless the argument is hidden.
-        if not arguments[argument].hideInHelp:
-          for i, value in enumerate(self.setArguments[argument]):
-            if i == 0: strings = [argument + ':', str(value)]
-            else: strings = ['', str(value)]
-            self.writeComplexLine(strings, [length + 5, 1], noLeadingTabs = 1)
+      if graph.parameterSet: self.setParameterSetValues(graph, superpipeline, arguments, graph.parameterSet)
+  
+      # Set the parameter set name.
+      setName = graph.parameterSet if graph.parameterSet else 'default'
+  
+      # Loop over all of the set arguments and write out the values.
+      if len(self.setArguments) > 0:
+  
+        # Find the length of the longest argument.
+        length = len(max(self.setArguments, key=len))
+  
+        # Write out general header information.
+        self.writeSimpleLine('Parameter set information for parameter set: ' + setName, isIndent = False, noLeadingTabs = 0)
+        for argument in sorted(self.setArguments):
+  
+          # Loop over all the values for the argument, unless the argument is hidden.
+          if not arguments[argument].hideInHelp:
+            for i, value in enumerate(self.setArguments[argument]):
+              if i == 0: strings = [argument + ':', str(value)]
+              else: strings = ['', str(value)]
+              self.writeComplexLine(strings, [length + 5, 1], noLeadingTabs = 1)
 
   # Set parameter set values.
   def setParameterSetValues(self, graph, superpipeline, arguments, setName):

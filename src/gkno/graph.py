@@ -164,8 +164,7 @@ class pipelineGraph:
     self.configurationFileToGraphNodeId = {}
 
     # Keep track of whether a parameter set is being exported.
-    self.isExportParameterSet = False
-    self.parameterSetName     = None
+    self.exportParameterSet = False
 
   # Using a pipeline configuration file, build and connect the defined nodes.
   def buildPipelineTasks(self, pipeline, superpipeline):

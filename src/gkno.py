@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.33.1"
+__version__ = "2.33.2"
 __date__ = "September 2015"
 
 def main():
@@ -206,17 +206,25 @@ def main():
   # Process the command line arguments.
   command.processArguments(superpipeline, args, gknoConfiguration)
 
-  # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
-  # the nodes with these task level default parameter sets, creating nodes where necessary.
-  graph.addTaskParameterSets(superpipeline, 'default')
-
-  # Now add the default parameter set for the pipelines.
-  graph.addPipelineParameterSets(superpipeline, args, 'default', resourcesPath)
+  # Determine if a parameter set is being exported. If so, there is no need to check that all required
+  # arguments are set, since the pipeline is not being executed.
+  graph.exportParameterSet = gknoConfiguration.getGknoArgument('GKNO-EXPORT-PARAMETER-SET', command.gknoArguments)
 
   # Determine the requested parameter set and add the parameters to the graph.
   parSet             = ps.parameterSets()
   graph.parameterSet = command.getParameterSetName(command.gknoArguments, gknoConfiguration)
-  if graph.parameterSet: graph.addParameterSet(superpipeline, args, superpipeline.pipeline, graph.parameterSet, resourcesPath)
+
+  # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
+  # the nodes with these task level default parameter sets, creating nodes where necessary. Only add
+  # default values if no parameter set is selected.
+  if not graph.parameterSet:
+    graph.addTaskParameterSets(superpipeline, 'default')
+
+    # Now add the default parameter set for the pipelines.
+    graph.addPipelineParameterSets(superpipeline, args, 'default', resourcesPath)
+
+  if graph.parameterSet and graph.parameterSet != 'none' and graph.parameterSet != 'None': 
+    graph.addParameterSet(superpipeline, args, superpipeline.pipeline, graph.parameterSet, resourcesPath)
 
   # If help was requested, print out the relevent help information.
   # TODO ADMIN HELP
@@ -241,13 +249,6 @@ def main():
   # and also that any files also have the correct extension.
   dc.checkValues(graph, superpipeline)
 
-  # Determine if a parameter set is being exported. If so, there is no need to check that all required
-  # arguments are set, since the pipeline is not being executed.
-  graph.isExportParameterSet = gknoConfiguration.getGknoArgument('GKNO-EXPORT-PARAMETER-SET', command.gknoArguments)
-  if graph.isExportParameterSet:
-    graph.parameterSetName     = graph.isExportParameterSet
-    graph.isExportParameterSet = True
-
   # Determine whether or not to output a visual representation of the pipeline graph.
   plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
   if plot.isFullPlot: plot.plot(superpipeline, graph, plot.fullPlotFilename, isReduced = False)
@@ -260,7 +261,7 @@ def main():
   # for which construction instructions are provided can be omitted from this check. This will ensure that all required
   # input files are set, ensuring that filename construction can proceed. The check will be performed again after
   # filenames have been constructed, without the omission of constructed files.
-  if not graph.isExportParameterSet: dc.checkRequiredArguments(graph, superpipeline, args)
+  if not graph.exportParameterSet: dc.checkRequiredArguments(graph, superpipeline, args)
 
   # Check for greedy tasks in the pipeline and mark the relevant nodes and edges.
   graph.setGreedyTasks(superpipeline)
@@ -270,7 +271,7 @@ def main():
   graph.propogateInputs()
 
   # If the user has requested that a parameter set is to be exported, export the parameter set and terminate.
-  if graph.isExportParameterSet: parSet.export(graph, superpipeline, args, command.pipelineArguments)
+  if graph.exportParameterSet: parSet.export(graph, superpipeline, args, command.pipelineArguments)
 
   # Loop over the tasks in the pipeline and construct filenames for arguments that require them, but weren't given
   # any on the command line. In addition, if multiple options are given to a task, this routine will generate new

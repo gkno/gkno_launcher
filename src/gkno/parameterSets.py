@@ -121,7 +121,7 @@ class parameterSets:
     pipeline = superpipeline.pipeline
 
     # Get the parameter set name.
-    setName = graph.parameterSetName
+    setName = graph.exportParameterSet
 
     # Get the configuration file information for the pipeline and the available parameter sets.
     pipelineConfigurationData = superpipeline.pipelineConfigurationData[pipeline]
