@@ -163,6 +163,10 @@ class pipelineGraph:
     # track of the node ID in the graph that the configuration file node is attached to.
     self.configurationFileToGraphNodeId = {}
 
+    # Keep track of whether a parameter set is being exported.
+    self.isExportParameterSet = False
+    self.parameterSetName     = None
+
   # Using a pipeline configuration file, build and connect the defined nodes.
   def buildPipelineTasks(self, pipeline, superpipeline):
 
@@ -1294,7 +1298,7 @@ class pipelineGraph:
   # Loop over all of the tasks in the workflow and construct missing filenames where there are instructions to do so. In
   # addition, where multiple options are provided to a task, the task is divided into multiple tasks and handling of input
   # and output files and their relation to other tasks is handled.
-  def constructFiles(self, superpipeline, isExportSet):
+  def constructFiles(self, superpipeline):
 
     # Loop over all of the tasks in the pipeline.
     for task in self.workflow:
@@ -1390,7 +1394,7 @@ class pipelineGraph:
 
       # If there are no divisions, no new task nodes need to be constructed, or equivalently, no new output nodes. The
       # existing output nodes need to be checked to ensure that they contain the correct number of values.
-      else: self.checkOutputFiles(superpipeline, task, greedyArgument, isExportSet)
+      else: self.checkOutputFiles(superpipeline, task, greedyArgument)
 
   # Determine the number of subphases for a tsak. This is based on the number of values given to an individual non-greedy
   # task.
@@ -1527,7 +1531,7 @@ class pipelineGraph:
 
           # If the instructions use the 'define name' method.
           if instructions['method'] == 'define name':
-           values = construct.constructKnownFilename(self.graph, superpipeline, instructions, task, nodeId, argument)
+            values = construct.constructKnownFilename(self.graph, superpipeline, instructions, task, nodeId, argument, not self.isExportParameterSet)
 
   # If the task is taking as input values from all previous divisions, thus terminating the division, 
   def consolidateDivisions(self, superpipeline, task):
@@ -1695,7 +1699,7 @@ class pipelineGraph:
 
   # Loop over all output file nodes (for tasks with no divisions), checking that all of the filenames are
   # defined. If not, construct them if instructions are provided.
-  def checkOutputFiles(self, superpipeline, task, greedyArgument, isExportSet):
+  def checkOutputFiles(self, superpipeline, task, greedyArgument):
 
     # Loop over the output files nodes and check if filenames have been defined.
     for nodeId in self.graph.successors(task):
@@ -1727,7 +1731,7 @@ class pipelineGraph:
           #
           # Allow the pipeline to continue if a parameter set is being exported.
           subphases = self.getGraphNodeAttribute(task, 'subphases')
-          if len(baseValues) != subphases and not isExportSet:
+          if len(baseValues) != subphases and not self.isExportParameterSet:
 
             # If there is a single base value, generate a new set of base values with the same number as there are
             # subphases by introducing an index into the filename.
@@ -1746,7 +1750,7 @@ class pipelineGraph:
 
         # If the method is 'define name', construct the values.
         elif instructions['method'] == 'define name':
-          values = construct.constructKnownFilename(self.graph, superpipeline, instructions, task, nodeId, argument)
+          values = construct.constructKnownFilename(self.graph, superpipeline, instructions, task, nodeId, argument, not self.isExportParameterSet)
 
         # If the construction method is unknown, terminate.
         else:

@@ -93,7 +93,7 @@ class gknoConfiguration:
     if longFormArgument in arguments:
 
        # TODO Check the data type is consistent with the configuration file description.
-       # TODO Check that therei s only a single value. No gkno options allow multiple values.
+       # TODO Check that there is only a single value. No gkno options allow multiple values.
        if arguments[longFormArgument][0] == None: return True
        else: return arguments[longFormArgument][0]
 

@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.33.0"
+__version__ = "2.33.1"
 __date__ = "September 2015"
 
 def main():
@@ -243,7 +243,10 @@ def main():
 
   # Determine if a parameter set is being exported. If so, there is no need to check that all required
   # arguments are set, since the pipeline is not being executed.
-  isExportSet = gknoConfiguration.getGknoArgument('GKNO-EXPORT-PARAMETER-SET', command.gknoArguments)
+  graph.isExportParameterSet = gknoConfiguration.getGknoArgument('GKNO-EXPORT-PARAMETER-SET', command.gknoArguments)
+  if graph.isExportParameterSet:
+    graph.parameterSetName     = graph.isExportParameterSet
+    graph.isExportParameterSet = True
 
   # Determine whether or not to output a visual representation of the pipeline graph.
   plot.isPlotRequired(command.gknoArguments, gknoConfiguration)
@@ -257,7 +260,7 @@ def main():
   # for which construction instructions are provided can be omitted from this check. This will ensure that all required
   # input files are set, ensuring that filename construction can proceed. The check will be performed again after
   # filenames have been constructed, without the omission of constructed files.
-  if not isExportSet: dc.checkRequiredArguments(graph, superpipeline, args)
+  if not graph.isExportParameterSet: dc.checkRequiredArguments(graph, superpipeline, args)
 
   # Check for greedy tasks in the pipeline and mark the relevant nodes and edges.
   graph.setGreedyTasks(superpipeline)
@@ -266,10 +269,13 @@ def main():
   # the same number of input files as there output files.
   graph.propogateInputs()
 
+  # If the user has requested that a parameter set is to be exported, export the parameter set and terminate.
+  if graph.isExportParameterSet: parSet.export(graph, superpipeline, args, command.pipelineArguments)
+
   # Loop over the tasks in the pipeline and construct filenames for arguments that require them, but weren't given
   # any on the command line. In addition, if multiple options are given to a task, this routine will generate new
   # nodes for the task and files and link them together as necessary.
-  graph.constructFiles(superpipeline, isExportSet)
+  graph.constructFiles(superpipeline)
 
   # Check that all of the streams are correctly marked in the superpipeline. This checks to see if a task is
   # marked as accepting a stream, but the task is itelf a pipeline, for example. In this case, the first task
@@ -293,9 +299,6 @@ def main():
   # extension 'ext2', the pipeline is invalid. The output filename has been constructed as file.ext1 and so the following
   # routine will flag the file as invalid as input to the next task.
   dc.checkValues(graph, superpipeline)
-
-  # If the user has requested that a parameter set is to be exported, export the parameter set and terminate.
-  if isExportSet: parSet.export(graph, superpipeline, args, isExportSet, command.pipelineArguments)
 
   # If the pipeline has instructions to terminate based on input conditions, modify the pipeline.
   graph.terminatePipeline(superpipeline)

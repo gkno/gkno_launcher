@@ -117,8 +117,11 @@ class parameterSets:
     except: return None
 
   # Export a parameter set.
-  def export(self, graph, superpipeline, args, setName, arguments):
+  def export(self, graph, superpipeline, args, arguments):
     pipeline = superpipeline.pipeline
+
+    # Get the parameter set name.
+    setName = graph.parameterSetName
 
     # Get the configuration file information for the pipeline and the available parameter sets.
     pipelineConfigurationData = superpipeline.pipelineConfigurationData[pipeline]
@@ -141,10 +144,25 @@ class parameterSets:
     sets[setName]          = attributes
 
     # First, loop over all file nodes and find those with values.
-    self.counter = 1
+    self.counter      = 1
+    observedArguments = []
     for nodeId in graph.getNodes('file'):
       values         = graph.getGraphNodeAttribute(nodeId, 'values')
-      if len(values) > 0: attributes.data.append(self.getNodeAttributes(nodeId, values))
+      if len(values) > 0:
+
+        # Check if this is a stub. If so, check if the stub has already been handled. If not, create
+        # the attributes for the parameter set and mark the argument as handled. If so, ignore.
+        stubExtension = graph.getGraphNodeAttribute(nodeId, 'stubExtension')
+        if stubExtension:
+          longFormArgument = graph.getGraphNodeAttribute(nodeId, 'longFormArgument')
+          if longFormArgument not in observedArguments:
+            observedArguments.append(longFormArgument)
+            updatedNodeId = nodeId.rstrip('.' + stubExtension)
+            updatedValues = [value.rstrip('.' + stubExtension) for value in values]
+            attributes.data.append(self.getNodeAttributes(updatedNodeId, updatedValues))
+
+        # If this is not a stub, handle the attribute.
+        else: attributes.data.append(self.getNodeAttributes(nodeId, values))
 
     # Then loop over all options nodes.
     for nodeId in graph.getNodes('option'):

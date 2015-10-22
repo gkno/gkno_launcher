@@ -93,7 +93,7 @@ def constructInputNode(graph, superpipeline, task, argument, nodeId, useNodeId):
     if extension: updatedValue = updatedValue.replace('.' + str(extension), '')
 
     # If there are instructions on text to add, add it.
-    if 'modify text' in instructions: updatedValue = modifyText(graph, task, argument, toolData, instructions, updatedValue)
+    if 'modify text' in instructions: updatedValue = modifyText(graph, task, argument, toolData, instructions, updatedValue, isTerminate = True)
 
     # Determine the extension to place on the filename.
     newExtensions = gr.pipelineGraph.CM_getArgumentAttribute(graph, nodeId, task, 'extensions')
@@ -215,7 +215,7 @@ def constructFromFilename(graph, superpipeline, instructions, task, nodeId, argu
     if extension: updatedValue = updatedValue.replace('.' + str(extension), '')
 
     # If there are instructions on text to add, add it.
-    if 'modify text' in instructions: updatedValue = modifyText(graph, task, argument, toolData, instructions, counter, updatedValue)
+    if 'modify text' in instructions: updatedValue = modifyText(graph, task, argument, toolData, instructions, counter, updatedValue, isTerminate = True)
 
     # Check if there are instructions from the pipeline configuration file to add an extra text field
     # to the filename.
@@ -286,7 +286,7 @@ def addDivisionToValue(graph, superpipeline, task, nodeId, instructions, baseVal
   return updatedValues
 
 # Construct a file of known name.
-def constructKnownFilename(graph, superpipeline, instructions, task, nodeId, argument):
+def constructKnownFilename(graph, superpipeline, instructions, task, nodeId, argument, isTerminate):
   tool     = gr.pipelineGraph.CM_getGraphNodeAttribute(graph, task, 'tool')
   toolData = superpipeline.getToolData(tool)
 
@@ -300,7 +300,7 @@ def constructKnownFilename(graph, superpipeline, instructions, task, nodeId, arg
 
   # Loop over the number of subphases.
   if 'modify text' in instructions:
-    values = [modifyText(graph, task, argument, toolData, instructions, counter, value) for counter in range(0, subphases)]
+    values = [modifyText(graph, task, argument, toolData, instructions, counter, value, isTerminate) for counter in range(0, subphases)]
   else: values = [value] * subphases
 
   # Check if the 'directory argument' field is set. This will determine if the filename should be
@@ -361,7 +361,7 @@ def getExtension(value, extensions):
     return False
 
 # Modify the text in a filename.
-def modifyText(graph, task, argument, toolData, instructions, counter, value):
+def modifyText(graph, task, argument, toolData, instructions, counter, value, isTerminate):
 
   # Loop over the operations to perform.
   for modify in instructions['modify text']:
@@ -397,7 +397,7 @@ def modifyText(graph, task, argument, toolData, instructions, counter, value):
         # If there are multiple values, terminate for now, until a method to decide which value to use
         # is introduced.
         if len(taskArgumentValues) == 0:
-          errors.constructFilenameErrors().noArgumentValuesToBuild(task, argument, constructionArgument)
+          if isTerminate: errors.constructFilenameErrors().noArgumentValuesToBuild(task, argument, constructionArgument)
 
         # If there is a value for this subphase, use it.
         elif isinstance(counter, int) and counter < len(taskArgumentValues): value += str(taskArgumentValues[counter])
@@ -490,7 +490,7 @@ def constructInputNodes(graph, superpipeline):
           if extension: modifiedValue = modifiedValue.replace('.' + str(extension), '')
 
           # If there are instructions on text to add, add it.
-          if 'modify text' in instructions: modifiedValue = modifyText(graph, task, argument, toolData, instructions, modifiedValue)
+          if 'modify text' in instructions: modifiedValue = modifyText(graph, task, argument, toolData, instructions, modifiedValue, isTerminate = True)
 
           # Determine the extension to place on the filename.
           newExtensions = graph.getArgumentAttribute(nodeId, task, 'extensions')
