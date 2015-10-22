@@ -76,6 +76,33 @@ class parameterSetErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  ##########################################
+  ## Errors with removing a parameter set ##
+  ##########################################
+
+  # Attempt to remove a non-existent set.
+  def removeNonSet(self, setName, sets):
+    self.text.append('Attempt to remove a non-existent parameter set.')
+    self.text.append('An attempt was made to remove the parameter set \'' + setName + '\', but this is not a valid parameter set for the pipeline. ' + \
+    'The following list contains all parameter sets that can be removed:')
+    self.text.append('\t')
+    for setName in sets: self.text.append('\t' + setName)
+    self.text.append('\t')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
+  # Attempt to remove a non-external set.
+  def removeNonExternalSet(self, setName, sets):
+    self.text.append('Attempt to remove a parameter set that is not user-generated.')
+    self.text.append('An attempt was made to remove the parameter set \'' + setName + '\'. gkno only permits the removal of parameter sets that are ' + \
+    'user-generated. It is recommended practice that none of the configuration files that come with gkno should be touched by the user. Personal ' + \
+    'parameter sets and pipelines can be generated and kept in the gkno directory, however. The following list contains all parameter sets that can be removed:')
+    self.text.append('\t')
+    for setName in sets: self.text.append('\t' + setName)
+    self.text.append('\t')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   ###########################################
   ## Errors with exporting a parameter set ##
   ###########################################

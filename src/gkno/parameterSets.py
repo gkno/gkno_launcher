@@ -111,6 +111,75 @@ class parameterSets:
 
     return success
 
+  # Remove a parameter set.
+  def removeParameterSet(self, graph, superpipeline, setName):
+    pipeline = graph.pipeline
+
+    # Get the configuration file information for the pipeline and the available parameter sets.
+    pipelineConfigurationData = superpipeline.pipelineConfigurationData[pipeline]
+    sets                      = pipelineConfigurationData.parameterSets.sets
+
+    # Only user-generated parameter sets can be removed, so trim the list.
+    externalSets = []
+    for pSet in sets.keys():
+      if sets[pSet].isExternal: externalSets.append(pSet)
+
+    # If the parameter set doesn't exist, it cannot be removed.
+    if setName not in sets: self.errors.removeNonSet(setName, externalSets)
+    else:
+
+      # If the defined pipeline is not a user-generated parameter set, it cannot be removed.
+      if setName not in externalSets: self.errors.removeNonExternalSet(setName, externalSets)
+
+      # Remove the parameter set.
+      else:
+
+        # Define the name of the configuration file that holds the parameter set information.
+        filename = str(pipeline + '-parameter-sets.json')
+
+        # Open the configuration file for writing.
+        filehandle = fh.fileHandling.openFileForWriting(filename)
+
+        # Put all of the parameter set information in a dictionary that can be dumped to a json file.
+        jsonParameterSets                  = OrderedDict()
+        jsonParameterSets['parameter sets'] = []
+
+        # Loop over the external parameter sets.
+        for parameterSet in externalSets:
+
+          # Do not include the parameter set to be removed.
+          if parameterSet != setName:
+            parameterSetInformation                = OrderedDict()
+            parameterSetInformation['id']          = parameterSet
+            parameterSetInformation['description'] = sets[parameterSet].description
+            parameterSetInformation['data']        = []
+    
+            # Set the nodes.
+            for data in sets[parameterSet].data:
+              nodeInformation             = OrderedDict()
+              nodeInformation['id']       = data.id
+              nodeInformation['node']     = data.nodeId
+              nodeInformation['values']   = data.values
+              parameterSetInformation['data'].append(nodeInformation)
+    
+            # Store this parameterSets data.
+            jsonParameterSets['parameter sets'].append(parameterSetInformation)
+    
+        # Dump all the parameterSets to file.
+        json.dump(jsonParameterSets, filehandle, indent = 2)
+        filehandle.close()
+    
+        # Move the configuration file.
+        shutil.copy(filename, pipelineConfigurationData.path)
+        os.remove(filename)
+
+    # Terminate gkno once the parameter set has been removed.
+    print('=' * 44, file = sys.stdout)
+    print('Parameter set \'' + setName + '\' successfully removed', file = sys.stdout)
+    print('=' * 44, file = sys.stdout)
+    sys.stdout.flush()
+    exit(0)
+
   # Return a parameter sets description.
   def getDescription(self, name):
     try: return self.sets[name].description

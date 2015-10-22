@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.33.3"
+__version__ = "2.33.4"
 __date__ = "September 2015"
 
 def main():
@@ -206,6 +206,9 @@ def main():
   # Process the command line arguments.
   command.processArguments(superpipeline, args, gknoConfiguration)
 
+  # Check if a parameter set is to be removed.
+  removeParameterSet = gknoConfiguration.getGknoArgument('GKNO-REMOVE-PARAMETER-SET', command.gknoArguments)
+
   # Determine if a parameter set is being exported. If so, there is no need to check that all required
   # arguments are set, since the pipeline is not being executed.
   graph.exportParameterSet = gknoConfiguration.getGknoArgument('GKNO-EXPORT-PARAMETER-SET', command.gknoArguments)
@@ -213,6 +216,7 @@ def main():
   # Determine the requested parameter set and add the parameters to the graph.
   parSet             = ps.parameterSets()
   graph.parameterSet = command.getParameterSetName(command.gknoArguments, gknoConfiguration)
+  if removeParameterSet: parSet.removeParameterSet(graph, superpipeline, removeParameterSet)
 
   # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
   # the nodes with these task level default parameter sets, creating nodes where necessary. Only add
