@@ -5,7 +5,7 @@
     "authors" : ["Chaolong Wang", "Xiaowei Zhan"],
     "emails" : ["chaolong@umich.edu"],
     "tool" : "laser",
-    "web pages" : ["http://csg.sph.umich.edu/chaolong/LASER/"],
+    "web_pages" : ["http://csg.sph.umich.edu/chaolong/LASER/"],
     "papers" : ["C Wang, X Zhan, J Bragg-Gresham, HM Kang, D Stambolian, E Chew, K Branham, J Heckenlively, The FUSION Study, RS Fulton, RK Wilson, ER Mardis, X Lin, A Swaroop, S Zöllner, GR Abecasis (2014) Ancestry estimation and control of population stratification for sequence-based association studies. Nature Genetics, 46: 409-415", "C Wang, X Zhan, L Liang, GR Abecasis, X Lin (2015) Improved Ancestry Estimation for both Genotyping and Sequencing Data using Projection Procrustes Analysis and Genotype Imputation. The American Journal of Human Genetics, Volume 96, Issue 6, 926-937"]
   },
   "description" : "Use a samples read pileup to place the sample in the reference PCA space.",

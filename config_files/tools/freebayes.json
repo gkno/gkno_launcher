@@ -7,7 +7,7 @@
     "emails" : ["erik.garrison@gmail.com"],
     "papers" : ["http://arxiv.org/abs/1207.3907"],
     "tool" : "freebayes",
-    "web pages" : ["https://github.com/ekg/freebayes"]
+    "web_pages" : ["https://github.com/ekg/freebayes"]
   },
   "description" : "Bayesian variant and haplotype calling",
   "categories" : ["Variant-discovery", "Short-variant-discovery", "Marthlab-software"],
