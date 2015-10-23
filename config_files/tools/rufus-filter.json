@@ -28,8 +28,10 @@
         "extensions" : ["fq", "fq.gz", "fastq", "fastq.gz"],
         "modify argument" : "omit",
         "if input is stream" : {
-          "argument" : "stdin",
-          "value" : ""
+          "default" : {
+            "argument" : "stdin",
+            "value" : ""
+          }
         }
       }
     ],

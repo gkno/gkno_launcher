@@ -32,8 +32,10 @@
         "extensions" : ["bam"],
         "modify argument" : "omit",
         "if output to stream" : {
-          "argument" : "",
-          "value" : ""
+          "default" : {
+            "argument" : "",
+            "value" : ""
+          }
         },
         "construct filename" : {
           "method" : "from tool argument",

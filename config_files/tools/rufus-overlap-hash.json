@@ -1,5 +1,6 @@
 {
   "id" : "rufus-overlap-hash",
+  "configuration type" : "tool",
   "description" : "A greedy overlap assembler that attempts to assemble all reads that share at least one k-mer.",
   "experimental" : true,
   "categories" : ["FASTQ-processing", "Rufus", "Marthlab-software"],
@@ -8,7 +9,7 @@
   "executable" : "Overlap19",
   "help" : "--help|-h",
   "arguments" : {
-    "inputs" : [
+    "Inputs" : [
       {
         "description" : "Input fastq file.",
         "long form argument" : "--fastq",
@@ -16,12 +17,12 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : [".fq", ".fastq", ".fastqd"],
-        "modify argument name on command line" : "hide"
+        "extensions" : ["fq", "fastq", "fastqd"],
+        "modify argument" : "omit"
       }
     ],
 
-    "outputs" : [
+    "Outputs" : [
       {
         "description" : "The output fastq and fastqd files.",
         "long form argument" : "--out",
@@ -29,12 +30,11 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide",
+        "modify argument" : "omit",
         "is filename stub" : true,
-        "filename extensions" : [
-          ".fastq",
-          ".fastqd"
+        "stub extensions" : [
+          "fastq",
+          "fastqd"
         ],
         "construct filename" : {
           "method": "from tool argument",
@@ -52,8 +52,7 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "float",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide"
+        "modify argument" : "omit"
       },
       {
         "description" : "The minimum overlap length between two reads in order to consider them a possible candidate for assembly.",
@@ -62,8 +61,7 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "integer",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide"
+        "modify argument" : "omit"
       },
       {
         "description" : "Only report contigs that have at least this coverage at a minimum of one base in the contig.",
@@ -72,8 +70,7 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "integer",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide"
+        "modify argument" : "omit"
       },
       {
         "description" : "The hash size used to seed the overlap.",
@@ -82,8 +79,7 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "integer",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide"
+        "modify argument" : "omit"
       },
       {
         "description" : "When reading in a fastqd file, any previously overlapped contig will have any hanging ends less than this depth trimmed off (this reduces the effect of high quality singleton errors that can block extension of contigs).",
@@ -92,8 +88,7 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "integer",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide"
+        "modify argument" : "omit"
       },
       {
         "description" : "Only attempt to overlap reads if they share at least this many k-mers.",
@@ -102,8 +97,7 @@
         "command line argument" : "none",
         "required" : true,
         "data type" : "integer",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide"
+        "modify argument" : "omit"
       },
       {
         "description" : "Number of threads.",
@@ -112,8 +106,7 @@
         "command line argument" : "--threads",
         "required" : true,
         "data type" : "integer",
-        "extensions" : ["no extension"],
-        "modify argument name on command line" : "hide"
+        "modify argument" : "omit"
       }
     ]
   },
@@ -132,16 +125,16 @@
 
   "parameter sets" : [
     {
-      "ID" : "default",
+      "id" : "default",
       "description" : "Default parameter set requires the users input for all files.",
-      "nodes" : [
+      "data" : [
         {
-          "ID" : "threads",
+          "id" : "threads",
           "argument" : "--threads",
           "values" : [1]
         },
         {
-          "ID" : "min-match",
+          "id" : "min-match",
           "argument" : "--minimum-percent-match",
           "values" : [0.98]
         }
@@ -149,9 +142,9 @@
     },
 
     {
-      "ID" : "test",
+      "id" : "test",
       "description" : "Parameter set for use with the test-harness.",
-      "nodes" : [
+      "data" : [
       ]
     }
   ]
