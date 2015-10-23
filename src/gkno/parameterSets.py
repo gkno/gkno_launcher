@@ -144,6 +144,9 @@ class parameterSets:
         jsonParameterSets                  = OrderedDict()
         jsonParameterSets['parameter sets'] = []
 
+        # Keep count of the number of parameter set remaining.
+        remainingSets = 0
+
         # Loop over the external parameter sets.
         for parameterSet in externalSets:
 
@@ -153,6 +156,7 @@ class parameterSets:
             parameterSetInformation['id']          = parameterSet
             parameterSetInformation['description'] = sets[parameterSet].description
             parameterSetInformation['data']        = []
+            remainingSets += 1
     
             # Set the nodes.
             for data in sets[parameterSet].data:
@@ -165,18 +169,26 @@ class parameterSets:
             # Store this parameterSets data.
             jsonParameterSets['parameter sets'].append(parameterSetInformation)
     
+        # If there are no parameter sets remaining, delete the parameter sets file.
+        if remainingSets == 0:
+          filehandle.close()
+          os.remove(filename)
+          os.remove(pipelineConfigurationData.path + '/' + filename)
+
         # Dump all the parameterSets to file.
-        json.dump(jsonParameterSets, filehandle, indent = 2)
-        filehandle.close()
+        else:
+          json.dump(jsonParameterSets, filehandle, indent = 2)
+          filehandle.close()
     
-        # Move the configuration file.
-        shutil.copy(filename, pipelineConfigurationData.path)
-        os.remove(filename)
+          # Move the configuration file.
+          shutil.copy(filename, pipelineConfigurationData.path)
+          os.remove(filename)
 
     # Terminate gkno once the parameter set has been removed.
-    print('=' * 44, file = sys.stdout)
+    length = len(setName) + 38
+    print('=' * length, file = sys.stdout)
     print('Parameter set \'' + setName + '\' successfully removed', file = sys.stdout)
-    print('=' * 44, file = sys.stdout)
+    print('=' * length, file = sys.stdout)
     sys.stdout.flush()
     exit(0)
 
