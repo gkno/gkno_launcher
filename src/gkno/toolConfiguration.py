@@ -432,7 +432,7 @@ class toolConfiguration:
     allowedAttributes['emails']    = (list, False)
     allowedAttributes['papers']    = (list, False)
     allowedAttributes['tool']      = (list, False)
-    allowedAttributes['web pages'] = (list, False)
+    allowedAttributes['web_pages'] = (list, False)
 
     # If web information was provided, ensure that only valid fields were provided
     for field in self.webPage:
