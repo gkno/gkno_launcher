@@ -43,7 +43,7 @@
       {
         "description" : "The reference FASTA file prefix.",
         "long form argument" : "--reference-prefix",
-        "short form argument" : "-rp",
+        "short form argument" : "-r",
         "node id" : "reference"
       },
       {
