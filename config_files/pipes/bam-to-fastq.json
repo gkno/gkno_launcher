@@ -1,0 +1,69 @@
+{
+  "id" : "bam-to-fastq",
+  "configuration type" : "pipeline",
+  "description" : "Convert a BAM file back into a FASTQ file.",
+  "categories" : ["BAM-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "convert",
+      "tool" : "bam-to-fastq"
+    }
+  ],
+
+  "import arguments" : "convert",
+
+  "arguments" : {
+    "Inputs" : [
+    ],
+
+    "Outputs" : [
+    ]
+  },
+
+  "unique graph nodes" : [
+    { 
+      "id" : "bam",
+      "task" : "convert",
+      "task argument" : "--in"
+    },
+    { 
+      "id" : "reference",
+      "task" : "convert",
+      "task argument" : "--fasta-reference"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "bam",
+          "node" : "bam",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for the human genome.",
+      "data" : [
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        }
+      ]
+    }
+  ]
+}

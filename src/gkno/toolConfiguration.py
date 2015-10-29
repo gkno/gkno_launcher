@@ -120,7 +120,8 @@ class toolConfiguration:
     self.id = None
 
     # Define the arguments associated with the tool.
-    self.arguments = {}
+    self.arguments          = {}
+    self.shortFormArguments = []
 
     # Define the order in which the argument should be written.
     self.argumentOrder = []
@@ -416,6 +417,12 @@ class toolConfiguration:
           self.success = False
           return
 
+      if attributes.shortFormArgument in self.shortFormArguments:
+        if self.allowTermination: self.errors.repeatedShortFormArgument(helpInfo, attributes.longFormArgument, attributes.shortFormArgument)
+        else:
+          self.success = False
+          return
+
       # Define the argument category.
       attributes.category = category
 
@@ -423,6 +430,7 @@ class toolConfiguration:
       if isInput: attributes.isInput = True
       elif isOutput: attributes.isOutput = True
       self.arguments[attributes.longFormArgument] = attributes
+      self.shortFormArguments.append(attributes.shortFormArgument)
 
   # Check the contents of the information supplied for the web page.
   def checkWeb(self):

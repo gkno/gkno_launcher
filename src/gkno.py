@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.35.2"
+__version__ = "2.36.0"
 __date__ = "October 2015"
 
 def main():
@@ -219,13 +219,11 @@ def main():
   if removeParameterSet: parSet.removeParameterSet(graph, superpipeline, removeParameterSet)
 
   # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
-  # the nodes with these task level default parameter sets, creating nodes where necessary. Only add
-  # default values if no parameter set is selected.
-  if not graph.parameterSet:
-    graph.addTaskParameterSets(superpipeline, 'default')
+  # the nodes with these task level default parameter sets, creating nodes where necessary.
+  graph.addTaskParameterSets(superpipeline, 'default')
 
-    # Now add the default parameter set for the pipelines.
-    graph.addPipelineParameterSets(superpipeline, args, 'default', resourcesPath)
+  # Now add the default parameter set for the pipelines.
+  graph.addPipelineParameterSets(superpipeline, args, 'default', resourcesPath)
 
   if graph.parameterSet and graph.parameterSet != 'none' and graph.parameterSet != 'None': 
     graph.addParameterSet(superpipeline, args, superpipeline.pipeline, graph.parameterSet, resourcesPath)

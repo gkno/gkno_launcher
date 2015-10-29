@@ -1152,13 +1152,24 @@ class pipelineGraph:
 
         # Add the node (or nodes if this is a stub).
         if isStub:
-          for extension in stubExtensions:
+          for i, extension in enumerate(stubExtensions):
+
+            # If this is the first file, designate it as the primary stub node.
+            if i == 0: argumentAttributes.isPrimaryStubNode = True
+            else: argumentAttributes.isPrimaryStubNode = False
+
+            # Add the stub extension to the argument attributes.
+            argumentAttributes.stubExtension = extension
+
             modifiedNodeAddress = str(nodeAddress + '.' + extension)
             self.addFileNode(modifiedNodeAddress, nodeAddress)
 
             # Add the edge.
             if isOutput: self.addEdge(taskAddress, modifiedNodeAddress, argumentAttributes)
             else: self.addEdge(modifiedNodeAddress, taskAddress, argumentAttributes)
+
+            # Add the values to the node.
+            self.setGraphNodeAttribute(modifiedNodeAddress, 'values', values)
 
         # If this is not a stub, add a single node.
         else:
@@ -1176,6 +1187,9 @@ class pipelineGraph:
           # Add the edge.
           if isOutput: self.addEdge(taskAddress, nodeAddress, argumentAttributes)
           else: self.addEdge(nodeAddress, taskAddress, argumentAttributes)
+
+          # Add the values to the node.
+          self.setGraphNodeAttribute(nodeAddress, 'values', values)
 
       # If the node already exists, just add the values to the node.
       else: self.setGraphNodeAttribute(nodeAddress, 'values', values)

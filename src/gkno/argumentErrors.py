@@ -50,7 +50,7 @@ class argumentErrors:
     self.text.append('Arguments for the task \'' + task + '\' using tool \'' + tool + '\' are being imported to be available on the command ' + \
     'line for the pipeline \'' + pipeline + '\'. The tool and pipeline share the argument \'' + longFormArgument + ' (' + shortFormArgument + \
     ')\'. It is likely that if these arguments are shared, they perform the same function. In order to operate, this conflict must be ' + \
-    'resolved by one of the following steps')
+    'resolved by one of the following steps:')
     self.text.append('\t')
     self.text.append('1. Identify the pipeline argument in the configuration file and the configuration file node that the argument sets. ' + \
     'Ensure that this node is a shared node, and then include the argument from the tool being imported as sharing this pipeline argument.')

@@ -105,6 +105,16 @@ class toolErrors:
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
 
+  # A short form argument is defined multiple times.
+  def repeatedShortFormArgument(self, helpInfo, longFormArgument, shortFormArgument):
+    self.text.append('Repeated short form argument in tool configuration file.')
+    self.text.append('The configuration file for tool \'' + helpInfo[0] + '\' contains information for a number of tool arguments. The \'' + \
+    helpInfo[1] + '\' section contains information for the argument \'' + longFormArgument + '\' which has the short form \'' + shortFormArgument + \
+    '\', but this short form argument has already been defined in the configuration file. Please ensure that all arguments in the configuration ' + \
+    'file are unique.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)
+
   ###########################################
   ## Errors with construction instructions ##
   ###########################################
