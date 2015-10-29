@@ -132,14 +132,14 @@
       {
         "description" : "Add MC and MQ tags to all output paired-end SAM lines.",
         "long form argument" : "--add-mate-tags",
-        "short form argument" : "-d",
+        "short form argument" : "-g",
         "command line argument" : "--addMateTags",
         "data type" : "flag"
       },
       {
         "description" : "Maximum number of split alignments for a read to be included in splitter file. [2].",
         "long form argument" : "--max-split-count",
-        "short form argument" : "-s",
+        "short form argument" : "-x",
         "command line argument" : "--maxSplitCount",
         "data type" : "integer"
       },

@@ -32,7 +32,7 @@
       {
         "description" : "R script to process.",
         "long form argument" : "--script",
-        "short form argument" : "-s",
+        "short form argument" : "-c",
         "command line argument" : "none",
         "modify argument" : "omit",
         "required" : true,
@@ -71,7 +71,7 @@
       {
         "description" : "The number of clusters to consider in the kmeans.",
         "long form argument" : "--clusters",
-        "short form argument" : "-c",
+        "short form argument" : "-l",
         "command line argument" : "none",
         "data type" : "integer",
         "modify argument" : "omit"

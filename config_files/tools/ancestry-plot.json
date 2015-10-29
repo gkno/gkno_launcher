@@ -32,7 +32,7 @@
       {
         "description" : "R script to process.",
         "long form argument" : "--script",
-        "short form argument" : "-s",
+        "short form argument" : "-c",
         "command line argument" : "none",
         "modify argument" : "omit",
         "required" : true,

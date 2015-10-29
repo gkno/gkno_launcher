@@ -202,7 +202,7 @@
       {
         "description" : "Read type. Setting -x changes multiple parameters unless overriden [null]. (pacbio: -k17 -W40 -r10 -A2 -B5 -O2 -E1 -L0; pbread: -k13 -W40 -c1000 -r10 -A2 -B5 -O2 -E1 -N25 -FeaD.001.",
         "long form argument" : "--read-type",
-        "short form argument" : "-x",
+        "short form argument" : "-y",
         "command line argument" : "-x",
         "data type" : "string"
       }

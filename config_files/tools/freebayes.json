@@ -157,7 +157,7 @@
       {
         "description" : "Report sites if the probability that there is a polymorphism at the site is greater than N.  default: 0.0001.",
         "long form argument" : "--pvar",
-        "short form argument" : "-v",
+        "short form argument" : "-pv",
         "command line argument" : "--pvar",
         "data type" : "float"
       }
