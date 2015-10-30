@@ -228,3 +228,17 @@ class toolErrors:
     self.text.append('Please ensure that this list contains all of the defined tool arguments.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)
+
+  ##############################################
+  ## Errors with the replace substring method ##
+  ##############################################
+
+  # The replace substring is malformed.
+  def invalidReplaceSubstring(self, tool, category, argument):
+    self.text.append('Malformed \'replace substring\' attribute.')
+    self.text.append('The configuration file for tool \'' + tool + '\' includes information for the argument \'' + argument + '\' in the \'' + \
+    category + '\' category. This argument contains the \'replace substring\' attribute which is used to replace all occurences of specific ' + \
+    'substrings in the provided string. This attribute must be a list of dictionaries, where each dictionary contains the \'replace\' and ' + \
+    '\'with\' fields that define the substring to be replaced and the string to replace it with. The attribute for this argument is malformed.')
+    self.errors.writeFormattedText(self.text, errorType = 'error')
+    self.errors.terminate(self.errorCode)

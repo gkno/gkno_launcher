@@ -1544,7 +1544,7 @@ class pipelineGraph:
 
           # If the instructions use the 'define name' method.
           if instructions['method'] == 'define name':
-            values = construct.constructKnownFilename(self.graph, superpipeline, instructions, task, nodeId, argument, not self.isExportParameterSet)
+            values = construct.constructKnownFilename(self.graph, superpipeline, instructions, task, nodeId, argument, not self.exportParameterSet)
 
   # If the task is taking as input values from all previous divisions, thus terminating the division, 
   def consolidateDivisions(self, superpipeline, task):
@@ -1763,7 +1763,7 @@ class pipelineGraph:
 
         # If the method is 'define name', construct the values.
         elif instructions['method'] == 'define name':
-          values = construct.constructKnownFilename(self.graph, superpipeline, instructions, task, nodeId, argument, not self.isExportParameterSet)
+          values = construct.constructKnownFilename(self.graph, superpipeline, instructions, task, nodeId, argument, not self.exportParameterSet)
 
         # If the construction method is unknown, terminate.
         else:

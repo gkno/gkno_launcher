@@ -63,6 +63,11 @@ class argumentAttributes:
     # Keep track of required arguments.
     self.isRequired = False
 
+    # If an argument accepts a string, the configuration file can contain information
+    # on replacing substrings within the string. Store this information.
+    self.isReplaceSubstring = False
+    self.replaceSubstring   = {}
+
     # Record id the argument points to a filename stub and store the 
     # associated extensions. Also, store the extension for this specific node.
     self.isStub            = False
@@ -241,6 +246,9 @@ class toolConfiguration:
     # that the values are valid.
     if self.success: self.checkConstructionInstructions()
 
+    # Check replace substring commands.
+    if self.success: self.checkReplaceSubstring(data['arguments'])
+
     # If instructtions have been provided on replacing a value with a command, check that the
     # instructions are valid.
     if self.success: self.checkValueCommand()
@@ -320,6 +328,7 @@ class toolConfiguration:
     allowedAttributes['long form argument']            = (str, True, True, 'longFormArgument')
     allowedAttributes['modify argument']               = (str, False, True, 'modifyArgument')
     allowedAttributes['modify value']                  = (str, False, True, 'modifyValue')
+    allowedAttributes['replace substring']             = (list, False, True, 'replaceSubstring')
     allowedAttributes['required']                      = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']           = (str, False, True, 'shortFormArgument')
     allowedAttributes['stub extensions']               = (list, False, True, 'stubExtensions')
@@ -354,6 +363,7 @@ class toolConfiguration:
     allowedAttributes['long form argument']            = (str, True, True, 'longFormArgument')
     allowedAttributes['modify argument']               = (str, False, True, 'modifyArgument')
     allowedAttributes['modify value']                  = (str, False, True, 'modifyValue')
+    allowedAttributes['replace substring']             = (list, False, True, 'replaceSubstring')
     allowedAttributes['required']                      = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']           = (str, False, True, 'shortFormArgument')
     allowedAttributes['stub extensions']               = (list, False, True, 'stubExtensions')
@@ -384,6 +394,7 @@ class toolConfiguration:
     allowedAttributes['long form argument']          = (str, True, True, 'longFormArgument')
     allowedAttributes['modify argument']             = (str, False, True, 'modifyArgument')
     allowedAttributes['modify value']                = (str, False, True, 'modifyValue')
+    allowedAttributes['replace substring']           = (list, False, True, 'replaceSubstring')
     allowedAttributes['required']                    = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']         = (str, False, True, 'shortFormArgument')
     allowedAttributes['value command']               = (dict, False, True, 'valueCommand')
@@ -575,6 +586,53 @@ class toolConfiguration:
     if 'path argument' in instructions:
       pathArgument = instructions['path argument']
       if pathArgument not in self.arguments: self.errors.invalidPathArgument(self.name, category, argument, pathArgument, 'define name')
+
+  # Check that substring replacement is valid.
+  def checkReplaceSubstring(self, arguments):
+    allowedFields = {}
+    allowedFields['replace'] = (str, True)
+    allowedFields['with']    = (str, True)
+
+    # Loop over all the arguments.
+    for category in arguments.keys():
+      for argumentAttributes in arguments[category]:
+
+        # Check if the argument has instructions on replacing substrings.
+        if 'replace substring' in argumentAttributes:
+
+          # Get the long form argument.
+          argument = argumentAttributes['long form argument']
+          replace  = argumentAttributes['replace substring']
+
+          # Loop over the list and check that each entry is a dictionary with the correct attributes.
+          for data in replace:
+            if not methods.checkIsDictionary(data, self.allowTermination):
+              if self.allowTermination: self.errors.invalidReplaceSubstring(self.name, category, argument)
+              else: return False
+
+            # Check the contained values.
+            observedFields = []
+            for key in data:
+              value = data[key]
+              if key not in allowedFields:
+                if self.allowTermination: self.errors.invalidReplaceSubstring(self.name, category, argument)
+                else: return False
+  
+              # Store the values.
+              self.arguments[argument].isReplaceSubstring    = True
+              self.arguments[argument].replaceSubstring[str(key)] = str(value)
+
+              # Record the field as having been observed.
+              observedFields.append(key)
+
+            # Check that all required fields have been set.
+            for field in allowedFields.keys():
+              if allowedFields[field][1] and field not in observedFields:
+                if self.allowTermination: self.errors.invalidReplaceSubstring(self.name, category, argument)
+                else: return False
+
+    # Return success.
+    return True
 
   # Check that instructions on replacing a value with a command are valid.
   def checkValueCommand(self):
