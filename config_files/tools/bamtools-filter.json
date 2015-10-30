@@ -2,6 +2,13 @@
   "id" : "bamtools-filter",
   "configuration type" : "tool",
   "description" : "Filter a BAM file on many parameters or combinations of parameters.",
+  "web page" : {
+    "authors" : ["Derek Barnett"],
+    "emails" : ["derekwbarnett@gmail.com"],
+    "papers" : ["Barnett D. W., et al. BamTools: a C++ API and toolkit for analyzing and managing BAM files. Bioinformatics 2011;27:1691-1692."],
+    "tool" : "bamtools",
+    "web_pages" : ["https://github.com/pezmaster31/bamtools"]
+  },
   "categories" : ["BAM-processing", "Bamtools", "Marthlab-software"],
   "tools" : ["bamtools"],
   "path" : "bamtools/bin",
@@ -57,7 +64,13 @@
         "long form argument" : "--region",
         "short form argument" : "-rg",
         "command line argument" : "-region",
-        "data type" : "string"
+        "data type" : "string",
+        "replace substring" : [
+          {
+            "replace" : "-",
+            "with" : ".."
+          }
+        ]
       }
     ],
 

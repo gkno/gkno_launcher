@@ -66,7 +66,7 @@ class argumentAttributes:
     # If an argument accepts a string, the configuration file can contain information
     # on replacing substrings within the string. Store this information.
     self.isReplaceSubstring = False
-    self.replaceSubstring   = {}
+    self.replaceSubstring   = []
 
     # Record id the argument points to a filename stub and store the 
     # associated extensions. Also, store the extension for this specific node.
@@ -328,7 +328,7 @@ class toolConfiguration:
     allowedAttributes['long form argument']            = (str, True, True, 'longFormArgument')
     allowedAttributes['modify argument']               = (str, False, True, 'modifyArgument')
     allowedAttributes['modify value']                  = (str, False, True, 'modifyValue')
-    allowedAttributes['replace substring']             = (list, False, True, 'replaceSubstring')
+    allowedAttributes['replace substring']             = (list, False, False, None)
     allowedAttributes['required']                      = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']           = (str, False, True, 'shortFormArgument')
     allowedAttributes['stub extensions']               = (list, False, True, 'stubExtensions')
@@ -363,7 +363,7 @@ class toolConfiguration:
     allowedAttributes['long form argument']            = (str, True, True, 'longFormArgument')
     allowedAttributes['modify argument']               = (str, False, True, 'modifyArgument')
     allowedAttributes['modify value']                  = (str, False, True, 'modifyValue')
-    allowedAttributes['replace substring']             = (list, False, True, 'replaceSubstring')
+    allowedAttributes['replace substring']             = (list, False, False, None)
     allowedAttributes['required']                      = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']           = (str, False, True, 'shortFormArgument')
     allowedAttributes['stub extensions']               = (list, False, True, 'stubExtensions')
@@ -394,7 +394,7 @@ class toolConfiguration:
     allowedAttributes['long form argument']          = (str, True, True, 'longFormArgument')
     allowedAttributes['modify argument']             = (str, False, True, 'modifyArgument')
     allowedAttributes['modify value']                = (str, False, True, 'modifyValue')
-    allowedAttributes['replace substring']           = (list, False, True, 'replaceSubstring')
+    allowedAttributes['replace substring']           = (list, False, False, None)
     allowedAttributes['required']                    = (bool, False, True, 'isRequired')
     allowedAttributes['short form argument']         = (str, False, True, 'shortFormArgument')
     allowedAttributes['value command']               = (dict, False, True, 'valueCommand')
@@ -612,18 +612,24 @@ class toolConfiguration:
 
             # Check the contained values.
             observedFields = []
+            toReplace      = None
+            replaceWith    = None
             for key in data:
               value = data[key]
               if key not in allowedFields:
                 if self.allowTermination: self.errors.invalidReplaceSubstring(self.name, category, argument)
                 else: return False
   
-              # Store the values.
-              self.arguments[argument].isReplaceSubstring    = True
-              self.arguments[argument].replaceSubstring[str(key)] = str(value)
+              # Store the value.
+              if key == 'replace': toReplace = value
+              elif key == 'with': replaceWith = value
 
               # Record the field as having been observed.
               observedFields.append(key)
+
+            # Store the values.
+            self.arguments[argument].isReplaceSubstring    = True
+            self.arguments[argument].replaceSubstring.append((str(toReplace), str(replaceWith)))
 
             # Check that all required fields have been set.
             for field in allowedFields.keys():

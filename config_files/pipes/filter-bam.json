@@ -1,0 +1,86 @@
+{
+  "id" : "filter-bam",
+  "configuration type" : "pipeline",
+  "description" : "Filter a set of BAM files.",
+  "categories" : ["BAM-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "filter",
+      "tool" : "bamtools-filter",
+      "greedy task" : true,
+      "greedy argument" : "--in"
+    },
+    {
+      "task" : "index-bam",
+      "tool" : "bamtools-index"
+    },
+    {
+      "task" : "stats",
+      "tool" : "bamtools-stats"
+    }
+  ],
+
+  "import arguments" : "filter",
+
+  "arguments" : {
+    "Inputs" : [
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output filtered and merged BAM file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "bam",
+      "task" : "filter",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "output",
+      "task" : "filter",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "output",
+      "target" : "index-bam",
+      "argument" : "--in"
+    },
+    {
+      "source" : "output",
+      "target" : "stats",
+      "argument" : "--in"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "bam",
+          "node" : "bam",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        }
+      ]
+    }
+  ]
+}

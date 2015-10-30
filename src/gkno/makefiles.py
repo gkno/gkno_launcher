@@ -265,6 +265,10 @@ class makefiles:
     values   = graph.getGraphNodeAttribute(nodeId, 'values')
     dataType = graph.getArgumentAttribute(nodeId, task, 'dataType')
 
+    # Check if this argument requires replacement of substrings.
+    if graph.getArgumentAttribute(nodeId, task, 'isReplaceSubstring'):
+      values = self.replaceSubstrings(graph.getArgumentAttribute(nodeId, task, 'replaceSubstring'), values)
+
     # Determine if this option can be specified multiple times on the command line, or if this
     # option is used to create divisions..
     isAllowMultipleValues = graph.getArgumentAttribute(nodeId, task, 'allowMultipleValues')
@@ -331,6 +335,24 @@ class makefiles:
 
         # Add the options to the command lines for each subphase.
         for j in range(1, data.numberSubphases + 1): data.commands[j][i].extend(lines)
+
+  # Replace substrings in a list of values.
+  def replaceSubstrings(self, substrings, values):
+    modifiedValues = []
+
+    # Loop over all values
+    for value in values:
+      modifiedValue = value
+
+      # Loop over all strings to be replaced.
+      for toReplace, replaceWith in substrings:
+        modifiedValue = modifiedValue.replace(toReplace, replaceWith)
+
+      # Add the complete value to the modified list.
+      modifiedValues.append(modifiedValue)
+
+    # Return the updated values.
+    return modifiedValues
 
   # Add input files to the command line.
   def addInput(self, graph, task, data, nodeId):

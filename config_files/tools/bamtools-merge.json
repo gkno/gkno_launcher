@@ -73,7 +73,13 @@
         "long form argument" : "--region",
         "short form argument" : "-rg",
         "command line argument" : "-region",
-        "data type" : "string"
+        "data type" : "string",
+        "replace substring" : [
+          {
+            "replace" : "-",
+            "with" : ".."
+          }
+        ]
       }
     ]
   },
