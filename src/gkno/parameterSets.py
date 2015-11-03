@@ -278,6 +278,7 @@ class parameterSets:
     filehandle.close()
 
     # Move the configuration file.
+    os.chmod(filename, 0666)
     shutil.copy(filename, pipelineConfigurationData.path)
     os.remove(filename)
 

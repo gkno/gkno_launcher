@@ -163,7 +163,6 @@ class arguments:
           # the configuration node. There may be more than one graph node if this is a stub argument.
           configurationNodeId = pipelineData.longFormArguments[argument].nodeId
           nodeAddress         = address + '.' + configurationNodeId if address else configurationNodeId
-          print('TEST', argument)
 
           # Check that the node address is present in the graph.configurationFileToGraphNodeId dictionary. If
           # it isn't, then no node with this address has been observed in the superpipeline and so, there is
