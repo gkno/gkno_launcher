@@ -1,0 +1,78 @@
+{
+  "id" : "vcf-extract",
+  "configuration type" : "pipeline",
+  "description" : "Extract VCF records with a given filter field value.",
+  "categories" : ["VCF-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "extract",
+      "tool" : "vt-view"
+    },
+    {
+      "task" : "index",
+      "tool" : "vcf-index"
+    }
+  ],
+
+  "import arguments" : "extract",
+
+  "arguments" : {
+    "Inputs" : [
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output VCF file with the requested records.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ],
+
+    "Options" : [
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "input",
+      "task" : "extract",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "output",
+      "task" : "extract",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "output",
+      "target" : "index",
+      "argument" : "--in"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "vcf",
+          "node" : "input",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+        }
+      ]
+    }
+  ]
+}
