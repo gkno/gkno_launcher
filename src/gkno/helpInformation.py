@@ -468,6 +468,11 @@ class helpInformation:
             useArgument = arguments[argument].longFormArgument
             break
 
+          # If no nodeId was present, find the argument from the graph.
+          if not useArgument and arguments[argument].graphNodeIds:
+            if arguments[argument].graphNodeIds[0] == nodeId:
+              useArgument = arguments[argument].longFormArgument
+
       # For each node, determine if an argument exists for the node. Only show set arguments (rather than nodes
       # within the pipeline that are hidded).
       values = nodeIds[nodeId]
