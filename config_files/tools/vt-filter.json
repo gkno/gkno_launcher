@@ -112,7 +112,7 @@
         "include value in quotations" : true
       },
       {
-        "description" : "The text to add to the filter field for each record in the VCF file that satisfies the filter expression.",
+        "description" : "The text to add to the filter field for each record in the VCF file that fails the filter expression.",
         "long form argument" : "--tag",
         "short form argument" : "-t",
         "command line argument" : "-t",
