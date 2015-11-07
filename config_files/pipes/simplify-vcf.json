@@ -1,0 +1,134 @@
+{
+  "id" : "simplify-vcf",
+  "configuration type" : "pipeline",
+  "description" : "Break up all complex alleles into their primitive components, e.g. SNPs and indels. Normalize and compress the resulting VCF file.",
+  "categories" : ["VCF-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "simplify",
+      "tool" : "vcf-primitives",
+      "output to stream" : true
+    },
+    {
+      "task" : "normalize",
+      "tool" : "vt-normalize",
+      "input is stream" : true
+    },
+    {
+      "task" : "index",
+      "tool" : "vcf-index",
+      "omit from reduced plot" : true
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input sorted VCF file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "input"
+      },
+      {
+        "description" : "The reference FASTA file.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "node id" : "reference"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output simplified VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "input",
+      "task" : "simplify",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "simplified-vcf",
+      "task" : "simplify",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "reference",
+      "task" : "normalize",
+      "task argument" : "--fasta-reference"
+    },
+    {
+      "id" : "output",
+      "task" : "normalize",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "index-file",
+      "task" : "index",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "simplified-vcf",
+      "target" : "normalize",
+      "argument" : "--in"
+    },
+    {
+      "source" : "output",
+      "target" : "index",
+      "argument" : "--in"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "vcf",
+          "node" : "input",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+        },
+        {
+          "id" : "output",
+          "node" : "output",
+          "values" : ["test.vcf.gz"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for human.",
+      "data" : [
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        }
+      ]
+    }
+  ]
+}
