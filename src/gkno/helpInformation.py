@@ -292,6 +292,9 @@ class helpInformation:
     for argument, dataType, description in zipped: self.writeComplexLine([argument, dataType, description], lengths, noLeadingTabs = 1)
     print(file = sys.stdout)
 
+    # Terminate gkno.
+    exit(0)
+
   # If help with a specific pipeline was requested, write out all of the commands available
   # for the requested pipeline.
   def pipelineHelp(self, superpipeline, graph, arguments, gknoArguments):

@@ -118,11 +118,6 @@
       "id" : "default",
       "description" : "Default parameter set requires user to input all input filenames.",
       "data" : [
-        {
-          "id" : "output",
-          "node" : "output",
-          "values" : ["merged_reference.fa"]
-        }
       ]
     },
 
@@ -144,33 +139,11 @@
           "id" : "hash size",
           "node" : "hash",
           "values" : [10]
-        }
-      ]
-    },
-
-    {
-      "id" : "tutorial",
-      "description" : "Parameter set to be used in conjuction with gkno tutorials.",
-      "data" : [
-        {
-          "id" : "fasta",
-          "node" : "fasta",
-          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
-        },
-        {
-          "id" : "moblist",
-          "node" : "moblist",
-          "values" : ["$(RESOURCES)/tutorial/current/mobile_element_sequences.fa"]
-        },
-        {
-          "id" : "hash size",
-          "node" : "hash",
-          "values" : [8]
         },
         {
           "id" : "output",
           "node" : "output",
-          "values" : ["tutorial-reference.fa"]
+          "values" : ["merged_reference.fa"]
         }
       ]
     },

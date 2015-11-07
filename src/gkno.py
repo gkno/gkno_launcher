@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.41.1"
+__version__ = "2.41.2"
 __date__ = "November 2015"
 
 def main():
@@ -203,6 +203,7 @@ def main():
   # Get information about individual tools, write out web content and terminate.
   if mode == 'web':
     web.updateTools(files, toolConfigurationFilesPath)
+    web.getGknoArguments(gknoConfiguration.arguments)
     web.writeContent(os.getenv('GKNOCOMMITID'), __version__, __date__)
     exit(0)
 

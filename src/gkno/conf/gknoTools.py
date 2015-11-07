@@ -315,9 +315,8 @@ class Freebayes(GknoTool):
 
   # $ make -j N   
   def doUpdate(self):
-    if not self.makeClean(): 
-      return False 
-    return self.make()
+    if not self.makeClean(): return False 
+    return self.make(cpus = 1)
 
 # glia
 class Glia(GknoTool):
@@ -784,12 +783,12 @@ class Vt(GknoTool):
   # $ make clean
   # $ make -j N
   def doBuild(self):
-    if not self.makeClean():
-      return False
+    if not self.makeClean(): return False
     return self.make()
 
   # $ make -j N
   def doUpdate(self):
+    if not self.makeClean(): return False
     return self.make()
 
 # wham-bam

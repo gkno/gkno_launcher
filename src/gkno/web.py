@@ -26,6 +26,9 @@ class webContent:
     # Define a dictionary to hold resources information.
     self.resourcesInformation = {}
 
+    # Store information on gkno specific arguments.
+    self.gknoArguments = {}
+
   # Update the categories.
   def updateCategories(self, pipelineData):
 
@@ -99,6 +102,21 @@ class webContent:
               # Loop over all entries in the list.
               for value in webInfo[attribute]: self.toolInformation[lower][attribute].append(value)
 
+  # Store information on the gkno specific arguments.
+  def getGknoArguments(self, arguments):
+    for argument in arguments:
+
+      # Get the long and short form arguments, the data type and description.
+      dataType    = arguments[argument].dataType
+      description = arguments[argument].description
+      shortForm   = arguments[argument].shortFormArgument
+
+      # Store the information.
+      self.gknoArguments[argument] = {}
+      self.gknoArguments[argument]['dataType']    = arguments[argument].dataType
+      self.gknoArguments[argument]['description'] = arguments[argument].description
+      self.gknoArguments[argument]['shortForm']   = arguments[argument].shortFormArgument
+
   # Write out the web content and terminate.
   def writeContent(self, commitId, version, date):
     webContent = {}
@@ -142,10 +160,11 @@ class webContent:
           if name in self.toolInformation: self.toolInformation[name]['commit'] = commit
 
     # Merge the content into a single structure.
-    webContent['categories'] = self.categories
-    webContent['tools']      = self.toolInformation
-    webContent['pipelines']  = self.pipelineInformation
-    webContent['resources']  = self.resourcesInformation
+    webContent['categories']    = self.categories
+    webContent['tools']         = self.toolInformation
+    webContent['pipelines']     = self.pipelineInformation
+    webContent['resources']     = self.resourcesInformation
+    webContent['gknoArguments'] = self.gknoArguments
 
     # Dump the information in json format.
     json.dump(webContent, fileHandle, sort_keys = True, indent = 2)

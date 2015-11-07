@@ -72,7 +72,7 @@
         "data type" : "string"
       },
       {
-        "description" : "Tag vcf records as filtered with this tag instead of suppressing them.",
+        "description" : "Tag vcf records passing filters with this tag,",
         "long form argument" : "--tag-pass",
         "short form argument" : "-tp",
         "command line argument" : "--tag-pass",
