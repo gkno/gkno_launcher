@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.41.0"
+__version__ = "2.41.1"
 __date__ = "November 2015"
 
 def main():
@@ -74,6 +74,9 @@ def main():
   # Print gkno title and version to the screen.
   write.printHeader(__version__, __date__, os.getenv('GKNOCOMMITID'))
 
+  # List the gkno arguments if requested.
+  #if mode == "gkno help": gknoHelp.gknoArgumentHelp()
+
   # Check to see if the configuration files are to be found in a directory other than the default.
   path                  = command.getConfigurationFilePath(gknoConfiguration.options)
   userConfigurationPath = path if path else None
@@ -103,6 +106,9 @@ def main():
       if admin.allBuilt: exit(0)
       else: adminErrors.adminErrors().failedToolBuilds(admin.builtTools)
     else: adminErrors.adminErrors().errors.terminate(adminErrors.adminErrors().errorCode)
+
+  # Display gkno arguments if requested.
+  if mode == 'gkno help': gknoHelp.gknoArgumentHelp(gknoConfiguration.arguments)
 
   # If the pipeline name has not been supplied, general help must be required.
   if not pipeline and mode != 'web': gknoHelp.generalHelp(mode, command.category, admin, pipelineConfigurationFilesPath)

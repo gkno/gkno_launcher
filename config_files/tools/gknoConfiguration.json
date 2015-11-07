@@ -105,13 +105,6 @@
       "data type" : "integer",
       "values" : ["1"]
     },
-    "GKNO-LOOP" : {
-      "description" : "Loop over a subsection of the pipeline.",
-      "short form argument" : "-il",
-      "long form argument" : "--internal-loop",
-      "data type" : "string",
-      "values" : []
-    },
     "GKNO-MAKEFILE-ID" : {
       "description" : "Append this text to all makefiles generated in this execution of gkno.",
       "long form argument" : "--makefile-id",
@@ -125,20 +118,6 @@
       "short form argument" : "-mm",
       "data type" : "flag",
       "values" : []
-    },
-    "GKNO-MULTIPLE-RUNS" : {
-      "description" : "Run the pipeline multiple times using the inputs defined in this file.",
-      "long form argument" : "--multiple-runs",
-      "short form argument" : "-mr",
-      "data type" : "string",
-      "values" : []
-    },
-    "GKNO-NO-HARD-WARNINGS" : {
-      "description" : "If not set, some warnings require the user to acknowledge that they have read it by pressing 'Enter'.",
-      "long form argument" : "--no-hard-warnings",
-      "short form argument" : "-nhw",
-      "data type" : "flag",
-      "values" : ["unset"]
     },
     "GKNO-OUTPUT-PATH" : {
       "description" : "Path for output files if not defined.  Default: current directory.",
@@ -161,45 +140,10 @@
       "data type" : "string",
       "values" : []
     },
-    "GKNO-TASK-STDOUT" : {
-      "description" : "Generate a stdout and stderr for each task.",
-      "long form argument" : "--task-stdout", 
-      "short form argument" : "-ts",
-      "data type" : "bool",
-      "values" : []
-    },
-    "GKNO-TIMING" : {
-      "description" : "Generate timing information for all tasks.",
-      "long form argument" : "--timing",
-      "short form argument" : "-tm",
-      "data type" : "flag",
-      "values" : ["unset"]
-    },
-    "GKNO-TIMING-ADVANCED" : {
-      "description" : "Generate extended timing information for all tasks.",
-      "long form argument" : "--timing-advanced",
-      "short form argument" : "-ta",
-      "data type" : "flag",
-      "values" : ["unset"]
-    },
-    "GKNO-VERBOSE" : {
-      "description" : "Flag to determine if verbose information should be output.  Default is not verbose.",
-      "long form argument" : "--verbose",
-      "short form argument" : "-vb",
-      "data type" : "flag",
-      "values" : ["unset"]
-    },
     "GKNO-WEB" : {
       "description" : "Write out json files for use with the web page.",
       "long form argument" : "--web-content",
       "short form argument" : "-web",
-      "data type" : "flag",
-      "values" : ["unset"]
-    },
-    "GKNO-WRITE-INCOMPLETE" : {
-      "description" : "List all of the makefiles that have not yet been completed successfully.",
-      "long form argument" : "--list-incomplete",
-      "short form argument" : "-li",
       "data type" : "flag",
       "values" : ["unset"]
     }
