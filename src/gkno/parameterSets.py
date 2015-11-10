@@ -181,7 +181,7 @@ class parameterSets:
           filehandle.close()
     
           # Move the configuration file.
-          shutil.copyfile(filename, str(pipelineConfigurationData + '/' + path))
+          shutil.copyfile(filename, str(pipelineConfigurationData.path + '/' + filename))
           os.remove(filename)
 
     # Terminate gkno once the parameter set has been removed.
