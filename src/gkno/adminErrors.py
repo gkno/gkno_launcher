@@ -46,7 +46,7 @@ class adminErrors:
   # The Rscript command is not available.
   def noRscript(self):
     self.text.append('R not available')
-    self.text.append('Unable to execute \'Rscript\' to run \'R\' scripts for plotting. In order to execute this pipeline, plotting is' + \
+    self.text.append('Unable to execute \'Rscript\' to run \'R\' scripts for plotting. In order to execute this pipeline, plotting is ' + \
     'required. Please ensure that \'R\' is installed on this system.')
     self.errors.writeFormattedText(self.text, errorType = 'error')
     self.errors.terminate(self.errorCode)

@@ -561,11 +561,18 @@ class toolConfiguration:
 
     return success
 
-  # TODO
-  # FIXME Perform checks.
   # Check 'from tool argument' construction instructions.
   def checkFromArgument(self, category, argument, instructions):
-    pass
+    allowedFields = []
+    allowedFields.append('method')
+    allowedFields.append('modify extension')
+    allowedFields.append('modify text')
+    allowedFields.append('no temp string')
+    allowedFields.append('use argument')
+
+    # Loop over the arguments and check if there are any invalid fields supplied.
+    for field in instructions:
+      if field not in allowedFields: self.errors.invalidConstructionField(self.name, category, argument, 'from tool argument', field, allowedFields)
 
   # Check 'define name' construction instructions.
   def checkDefineName(self, category, argument, instructions):

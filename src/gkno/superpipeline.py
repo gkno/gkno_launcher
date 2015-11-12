@@ -378,7 +378,7 @@ class superpipelineClass:
     for tier in self.pipelinesByTier:
       for pipeline in self.pipelinesByTier[tier]:
 
-        # Loop over all of the shared nodes.
+        # Loop over all of the nodes.
         for nodeId in self.pipelineConfigurationData[pipeline].getUniqueNodeIds():
           address     = self.pipelineConfigurationData[pipeline].address
           nodeAddress = str(address + '.' + nodeId) if address else str(nodeId)
@@ -388,15 +388,26 @@ class superpipelineClass:
             for graphNodeId in graph.configurationFileToGraphNodeId[nodeAddress]:
               graph.setGraphNodeAttribute(graphNodeId, 'isIntermediate', True)
 
+              # Check if the temp string should be omitted.
+              noRandomString = False
+              for predecessorID in graph.graph.predecessors(graphNodeId):
+                instructions = graph.getArgumentAttribute(predecessorID, graphNodeId, 'constructionInstructions')
+                if 'no temp string' in instructions:
+                  if instructions['no temp string']:
+                    noRandomString = True
+                    break
+              if noRandomString: randomString = ''
+              else: randomString = self.randomString + '.'
+
               # Prepend all intermediate files (and child nodes) with the superpipeline random string.
               updatedValues = []
-              for value in graph.getGraphNodeAttribute(graphNodeId, 'values'): updatedValues.append(self.randomString + '.' + value)
+              for value in graph.getGraphNodeAttribute(graphNodeId, 'values'): updatedValues.append(randomString + value)
               graph.setGraphNodeAttribute(graphNodeId, 'values', updatedValues)
 
               # Handle child nodes.
               for child in graph.getGraphNodeAttribute(graphNodeId, 'children'):
                 updatedValues = []
-                for value in graph.getGraphNodeAttribute(child, 'values'): updatedValues.append(self.randomString + '.' + value)
+                for value in graph.getGraphNodeAttribute(child, 'values'): updatedValues.append(randomString + value)
                 graph.setGraphNodeAttribute(child, 'values', updatedValues)
 
           # Check if the file is marked as having additional text to add when filenames are constructed.
