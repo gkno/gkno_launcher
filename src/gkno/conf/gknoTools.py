@@ -318,25 +318,6 @@ class Freebayes(GknoTool):
     if not self.makeClean(): return False 
     return self.make(cpus = 1)
 
-# glia
-class Glia(GknoTool):
-  def __init__(self):
-    super(Glia, self).__init__()
-    self.name       = "glia"
-    self.installDir = "glia"
-
-  # $ make -j N   
-  def doBuild(self):
-#    if not self.makeClean(): 
-#      return False 
-    return self.make()
-
-  # $ make -j N   
-  def doUpdate(self):
-    if not self.makeClean(): 
-      return False 
-    return self.make()
-
 # Htslib  
 class Htslib(GknoTool):
   def __init__(self):
@@ -447,23 +428,6 @@ class Mosaik(GknoTool):
         pl='macosx64'
     self.environ["BLD_PLATFORM"] = pl
 
-# Musket
-class Musket(GknoTool):
-  def __init__(self):
-    super(Musket, self).__init__()
-    self.name       = "musket"
-    self.installDir = "musket"
-
-  # $ make -j N  
-  def doBuild(self):
-#    if not self.makeClean():
-#      return False
-    return self.doUpdate()
-
-  # $ make -j N
-  def doUpdate(self):
-    return self.make()
-
 # Mutatrix
 class Mutatrix(GknoTool):
   def __init__(self):
@@ -517,29 +481,6 @@ class Pindel(GknoTool):
   # $ ant -lib lib/ant package-commands
   def doUpdate(self):
     return self.install(optionString = '../samtools')
-
-# premo
-class Premo(GknoTool):
-  def __init__(self):
-    super(Premo, self).__init__()
-    self.name       = "premo"
-    self.installDir = "premo"
-
-  # $ mkdir build
-  # $ cd build 
-  # $ cmake .. 
-  # $ make -j N
-  def doBuild(self):
-    buildDir = os.getcwd() + "/build/"
-    self.ensureMakeDir(buildDir)
-    os.chdir(buildDir)
-    if not self.cmake(".."):
-      return False
-    return self.make()
-
-  # Same as doBuild()
-  def doUpdate(self):
-    return self.doBuild()
 
 # Qplot
 class Qplot(GknoTool):
@@ -611,30 +552,6 @@ class Samtools(GknoTool):
   def doUpdate(self):
     if not self.makeClean(): return False
     if not self.checkoutGitVersion('48b4b70a480f9e79f623bea3ca4731ae7e511175'): return False
-    return self.make()
-
-# Scissors,
-class Scissors(GknoTool):
-  def __init__(self):
-    super(Scissors, self).__init__()
-    self.name       = "scissors"
-    self.installDir = "scissors"
-
-  # $ cd src
-  # $ make clean
-  # $ make -j N
-  def doBuild(self):
-    os.chdir("src")
-    #if not self.makeClean():
-    #  return False
-    return self.make()
-  
-  # $ cd src
-  # $ make -j N
-  def doUpdate(self):
-    os.chdir("src") 
-    if not self.makeClean():
-      return False
     return self.make()
 
 # Seqan (only building MASON for now)
@@ -803,18 +720,14 @@ List = [
         Blast(),
         Bwa(),
         Freebayes(),
-        Glia(),
         Htslib(), Samtools(), Pindel(), # <-- Keep this order
         Jellyfish(),
         LibStatGen(), BamUtil(), FastQValidator(), Qplot(), VerifyBamID(), # <-- Keep this order
         Mosaik(),
-        Musket(),
         Mutatrix(),
         Picard(),
-        Premo(),
         Rufus(),
         Samblaster(),
-        Scissors(),
         Seqan(),       
         SnpEff(),
         Tabix(),
