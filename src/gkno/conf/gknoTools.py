@@ -481,23 +481,6 @@ class Mutatrix(GknoTool):
   def doUpdate(self):
     return self.make()
 
-# ogap
-class Ogap(GknoTool):
-  def __init__(self):
-    super(Ogap, self).__init__()
-    self.name       = "ogap"
-    self.installDir = "ogap"
-
-  # $ make -j N  
-  def doBuild(self):    
-#    if not self.makeClean():
-#      return False
-    return self.doUpdate()
-
-  # $ make -j N
-  def doUpdate(self):
-    return self.make()
-
 # picard 
 class Picard(GknoTool):
   def __init__(self):
@@ -827,7 +810,6 @@ List = [
         Mosaik(),
         Musket(),
         Mutatrix(),
-        Ogap(),
         Picard(),
         Premo(),
         Rufus(),
