@@ -10,9 +10,6 @@
 [submodule "tools/picard"]
 	path = tools/picard
         url = https://github.com/gkno/picard.git
-[submodule "tools/premo"]
-	path = tools/premo
-        url = https://github.com/gkno/premo.git
 [submodule "tools/samtools"]
 	path = tools/samtools
         url = https://github.com/gkno/samtools.git
@@ -55,18 +52,9 @@
 [submodule "tools/Rufus"]
 	path = tools/Rufus
 	url = https://github.com/gkno/RUFUS.git
-[submodule "tools/glia"]
-	path = tools/glia
-	url = https://github.com/gkno/glia.git
-[submodule "tools/scissors"]
-	path = tools/scissors
-	url = https://github.com/gkno/scissors.git
 [submodule "tools/qplot"]
 	path = tools/qplot
 	url = https://github.com/gkno/qplot.git
-[submodule "tools/musket"]
-	path = tools/musket
-	url = https://github.com/gkno/musket.git
 [submodule "tools/parseSequenceIndex"]
 	path = tools/parseSequenceIndex
 	url = https://github.com/gkno/parseSequenceIndex.git
