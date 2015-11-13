@@ -22,9 +22,6 @@
 [submodule "resources/tutorial"]
 	path = resources/tutorial
         url = https://github.com/gkno/resources-tutorial.git
-[submodule "tools/ogap"]
-	path = tools/ogap
-        url = https://github.com/gkno/ogap.git
 [submodule "tools/vcflib"]
 	path = tools/vcflib
         url = https://github.com/gkno/vcflib.git
