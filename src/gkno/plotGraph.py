@@ -27,7 +27,12 @@ class plotGraph():
     self.fullPlotFilename    = None
 
     # Define the text font.
-    self.fontName   = 'montserrat'
+    self.fontName   = 'quicksand'
+
+    # Define the arrow style.
+    self.arrowColour = '#A6AAA9'
+    self.arrowSize   = 0.1
+    self.arrowWidth  = 0.5
 
     # Define styles and colours for option nodes.
     self.optionNodeFillColour = 'white'
@@ -36,20 +41,20 @@ class plotGraph():
     self.optionNodeStyle      = 'filled, rounded'
 
     # Define styles and colours for task nodes.
-    self.taskNodeColour     = '#0E77A6'
+    self.taskNodeColour     = '#526D89'
     self.taskNodeFillColour = 'white'
     self.taskNodeFontColour = '#5A5A5A'
-    self.taskNodeShape      = 'circle'
-    self.taskNodeStyle      = 'filled'
-    self.taskNodeWidth      = '4'
+    self.taskNodeShape      = 'box'
+    self.taskNodeStyle      = 'filled, rounded'
+    self.taskNodeWidth      = '0.5'
 
     # Define file node styles and colours.
-    self.fileNodeColour     = '#F97308'
+    self.fileNodeColour     = '#729A29'
     self.fileNodeFillColour = 'white'
     self.fileNodeFontColour = '#5A5A5A'
-    self.fileNodeShape      = 'oval'
-    self.fileNodeStyle      = 'filled'
-    self.fileNodeWidth      = '2.5'
+    self.fileNodeShape      = 'diamond'
+    self.fileNodeStyle      = 'filled, rounded'
+    self.fileNodeWidth      = '1.0'
 
   # Determine if a plot was requested and if so, the plot type. Ensure that the filename(s) are
   # set.
@@ -189,6 +194,13 @@ class plotGraph():
       graphToDraw.node[nodeId]["fontname"]  = self.fontName
       graphToDraw.node[nodeId]["fontcolor"] = self.fileNodeFontColour
       graphToDraw.node[nodeId]["penwidth"]  = self.fileNodeWidth
+
+    # Set the arrow style.
+    for startId, endId in graphToDraw.edges():
+      graphToDraw.edge[startId][endId]["arrowSize"] = self.arrowSize
+      graphToDraw.edge[startId][endId]["color"]     = self.arrowColour
+      graphToDraw.edge[startId][endId]["fillcolor"] = self.arrowColour
+      graphToDraw.edge[startId][endId]["penwidth"]  = self.arrowWidth
 
     # Draw the graph from left to right, rather than default top to bottom.
     graphToDraw.graph.setdefault('graph', {})['rankdir'] = 'LR'
