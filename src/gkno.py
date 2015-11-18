@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.44.1"
+__version__ = "2.44.2"
 __date__ = "November 2015"
 
 def main():
@@ -198,6 +198,15 @@ def main():
     if mode == 'web' and not superpipeline.getPipelineData(superpipeline.pipeline).isDevelopment:
       web.updateCategories(superpipeline.pipelineConfigurationData[superpipeline.pipeline])
       web.updatePipelineInformation(superpipeline.pipelineConfigurationData[superpipeline.pipeline], args.arguments)
+
+      # Generate the workflow for the pipeline.
+      workflow = graph.generateWorkflow()
+
+      # Check for required arguments. This check will create required nodes that are unset, but not terminate gkno,
+      # since we are just trying to create pipeline plots.
+      dc.checkRequiredArguments(graph, superpipeline, args, isTerminate = False)
+
+      # Generate the plot.
       plot.plot(superpipeline, graph, str(superpipeline.pipeline), isReduced = True)
 
   # Get information about individual tools, write out web content and terminate.
@@ -205,6 +214,8 @@ def main():
     web.updateTools(files, toolConfigurationFilesPath)
     web.getGknoArguments(gknoConfiguration.arguments)
     web.writeContent(os.getenv('GKNOCOMMITID'), __version__, __date__)
+
+    print('All web content successfully generated.')
     exit(0)
 
   # Generate the workflow.
@@ -270,7 +281,7 @@ def main():
   # for which construction instructions are provided can be omitted from this check. This will ensure that all required
   # input files are set, ensuring that filename construction can proceed. The check will be performed again after
   # filenames have been constructed, without the omission of constructed files.
-  if not graph.exportParameterSet: dc.checkRequiredArguments(graph, superpipeline, args)
+  if not graph.exportParameterSet: dc.checkRequiredArguments(graph, superpipeline, args, isTerminate = True)
 
   # Check for greedy tasks in the pipeline and mark the relevant nodes and edges.
   graph.setGreedyTasks(superpipeline)

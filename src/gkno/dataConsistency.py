@@ -146,10 +146,11 @@ def checkExtensions(value, extensions):
 
 # Loop over all tasks in the pipeline and check that all required values (excepting output files
 # which can be constructed) have been defined.
-def checkRequiredArguments(graph, superpipeline, args):
+def checkRequiredArguments(graph, superpipeline, args, isTerminate):
 
   # Define error handling,
-  errors = er.consistencyErrors()
+  errors    = er.consistencyErrors()
+  isSuccess = True
 
   # Keep track of nodes that can have their values constructed.
   constructableNodes = []
@@ -184,9 +185,10 @@ def checkRequiredArguments(graph, superpipeline, args):
         # If the values haven't been set, terminate. This is a pipeline argument listed as required
         # and so must be set by the user (and not constructed).
         if not graph.getGraphNodeAttribute(nodeId, 'values') and not hasInstructions:
+          isSuccess         = False
           shortFormArgument = args.arguments[argument].shortFormArgument
           description       = args.arguments[argument].description
-          errors.unsetRequiredArgument(argument, shortFormArgument, description)
+          if isTerminate: errors.unsetRequiredArgument(argument, shortFormArgument, description)
 
   # Loop over all tasks in the workflow
   for task in graph.workflow:
@@ -228,14 +230,10 @@ def checkRequiredArguments(graph, superpipeline, args):
               # If this node has already been marked as not required (i.e. the tools requirement has been superceded
               # by instructions in the pipeline configuration file).
               if graph.getGraphNodeAttribute(nodeId, 'isRequired'):
-  
-                # TODO
-                # If this is the first check, (e.g. isFullCheck = False), only terminate if the argument has no values or
-                # instructions and is not in the constructableNodes list (this list. If this is the final check (isFullCheck = True), the presence of values is the only thing
-                # that matters.
                 hasInstructions = False if graph.getArgumentAttribute(nodeId, task, 'constructionInstructions') == None else True
                 hasValues       = True if len(graph.getGraphNodeAttribute(nodeId, 'values')) != 0 else False
                 if not hasValues and not hasInstructions and nodeId not in constructableNodes:
+                  isSuccess = False
   
                   # Check to see if this node can have it's values set with a top level pipeline argument (e.g. can
                   # be set without defining the task on the command line).
@@ -246,7 +244,7 @@ def checkRequiredArguments(graph, superpipeline, args):
                     #shortFormArgument = args.arguments[longFormArgument].shortFormArgument
                     shortFormArgument = graph.getGraphNodeAttribute(nodeId, 'shortFormArgument')
                     description       = graph.getGraphNodeAttribute(nodeId, 'description')
-                    errors.unsetRequiredArgument(longFormArgument, shortFormArgument, description)
+                    if isTerminate: errors.unsetRequiredArgument(longFormArgument, shortFormArgument, description)
   
                   # If this is not a top level argument, provide a different error.
                   # TODO CHECK THIS
@@ -256,7 +254,7 @@ def checkRequiredArguments(graph, superpipeline, args):
                     # for the tool, so if this argument can be set using a pipeline argument, these values are incorrect.
                     shortFormArgument = graph.getArgumentAttribute(nodeId, task, 'shortFormArgument')
                     description       = graph.getArgumentAttribute(nodeId, task, 'description')
-                    errors.unsetRequiredNestedArgument(task, argument, shortFormArgument, description, superpipeline.pipeline)
+                    if isTerminate: errors.unsetRequiredNestedArgument(task, argument, shortFormArgument, description, superpipeline.pipeline)
 
           # If there is no node for this argument, this means that the pipeline configuration file does not contain
           # a unique or shared node for this argument. In addition, the value has not been provided on the command
@@ -264,12 +262,15 @@ def checkRequiredArguments(graph, superpipeline, args):
           if not foundNode:
             instructions = toolData.getArgumentAttribute(argument, 'constructionInstructions')
             if not instructions: 
+              isSuccess = False
 
               # Check if arguments were imported for this task. If so, check to see if this argument is therefore
               # available on the command line.
               if task == superpipeline.pipelineConfigurationData[superpipeline.pipeline].importArgumentsFromTool:
-                errors.unsetRequiredArgument(argument, args.arguments[argument].shortFormArgument, args.arguments[argument].description)
-              else: errors.noInputNode(task, tool, argument)
+                if isTerminate: 
+                  errors.unsetRequiredArgument(argument, args.arguments[argument].shortFormArgument, args.arguments[argument].description)
+              else:
+                if isTerminate: errors.noInputNode(task, tool, argument)
  
             # If there are instructions, but no node, construct the node.
             else:
@@ -327,7 +328,9 @@ def checkRequiredArguments(graph, superpipeline, args):
 
                   # If the node being used to construct the file does not exist, then it cannot be used to 
                   # construct the filename and so some data must be missing.
-                  if not foundNode: errors.noNodeForConstruction(task, tool, argument, longFormArgument)
+                  if not foundNode:
+                    isSuccess = False
+                    if isTerminate:  errors.noNodeForConstruction(task, tool, argument, longFormArgument)
 
                   # If the node used to construct this filename exists, but it has no values or predecessors,
                   # it also will not be able to be used to construct the argument.
@@ -340,7 +343,9 @@ def checkRequiredArguments(graph, superpipeline, args):
                 if nodeId not in constructableNodes: constructableNodes.append(nodeId)
 
               # If no instructions are provided check that there are values supplied.
-              if not instructions and not graph.getGraphNodeAttribute(nodeId, 'values'): errors.noConstructionMethod(task, tool, argument)
+              if not instructions and not graph.getGraphNodeAttribute(nodeId, 'values'):
+                isSuccess = False
+                if isTerminate: errors.noConstructionMethod(task, tool, argument)
 
           # If no node exists for this argument, determine the course of action.
           if not foundNode:
@@ -367,6 +372,9 @@ def checkRequiredArguments(graph, superpipeline, args):
             else:
               graph.addFileNode(nodeAddress, nodeAddress)
               graph.addEdge(task, nodeAddress, argumentAttributes)
+
+  # Return if the operation was a success.
+  return isSuccess
 
 # Purge the graph of nodes with no values.
 def purgeEmptyNodes(graph):
