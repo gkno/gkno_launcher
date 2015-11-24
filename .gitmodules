@@ -88,3 +88,6 @@
 [submodule "tools/bamaddrg"]
 	path = tools/bamaddrg
 	url = https://github.com/gkno/bamaddrg
+[submodule "tools/snpEff"]
+	path = tools/snpEff
+	url = https://github.com/gkno/snpEff.git

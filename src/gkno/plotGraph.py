@@ -31,7 +31,6 @@ class plotGraph():
 
     # Define the arrow style.
     self.arrowColour = '#A6AAA9'
-    self.arrowSize   = 0.1
     self.arrowWidth  = 0.5
 
     # Define styles and colours for option nodes.
@@ -197,7 +196,6 @@ class plotGraph():
 
     # Set the arrow style.
     for startId, endId in graphToDraw.edges():
-      graphToDraw.edge[startId][endId]["arrowSize"] = self.arrowSize
       graphToDraw.edge[startId][endId]["color"]     = self.arrowColour
       graphToDraw.edge[startId][endId]["fillcolor"] = self.arrowColour
       graphToDraw.edge[startId][endId]["penwidth"]  = self.arrowWidth
