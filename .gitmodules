@@ -61,9 +61,6 @@
 [submodule "tools/verifyBamID"]
 	path = tools/verifyBamID
 	url = https://github.com/gkno/verifyBamID.git
-[submodule "tools/snpEff"]
-	path = tools/snpEff
-	url = https://github.com/gkno/snpEff.git
 [submodule "tools/genomicRegions"]
 	path = tools/genomicRegions
 	url = https://github.com/gkno/genomicRegions.git
