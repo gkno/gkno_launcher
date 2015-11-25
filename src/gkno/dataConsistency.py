@@ -437,6 +437,9 @@ def setFilePaths(graph, gknoArguments, gkno):
     isStub = graph.getArgumentAttribute(source, target, 'isStub')
     if isStub: stubExtension = graph.getArgumentAttribute(source, target, 'stubExtension')
 
+    # Determine if a file location is set for the argument. If so, add this location to the node.
+    fileLocation = graph.getArgumentAttribute(source, target, 'fileLocation')
+ 
     # Get the values associated with the node.
     updatedValues = []
     for value in graph.getGraphNodeAttribute(nodeId, 'values'):
@@ -453,11 +456,22 @@ def setFilePaths(graph, gknoArguments, gkno):
       # in order for the pipeline to run.
       if isInput:
 
+        # If a file location is specified with the argument, the value should not have the path altered, but
+        # the file location should be stored. This will be used to define where the file should exist in the
+        # makefile, but will not appear in the value on the command line.
+        if fileLocation:
+          graph.setGraphNodeAttribute(nodeId, 'fileLocation', fileLocation)
+          updatedValue = str(value)
+
         # Override the path if necessary.
-        if definedInputPath: updatedValue = str(inputPath + modifiedValue.split('/')[-1])
+        elif definedInputPath: updatedValue = str(inputPath + modifiedValue.split('/')[-1])
         else: updatedValue = str(modifiedValue) if '/' in modifiedValue else str(inputPath + modifiedValue)
         updatedValues.append(updatedValue)
-        inputFiles.append(updatedValue)
+
+        # Add the input files to the list of input files required by the pipeline. These will be checked to ensure
+        # that they exist prior to pipeline execution.
+        if fileLocation: inputFiles.append(str(fileLocation + updatedValue))
+        else: inputFiles.append(updatedValue)
       else:
         if definedOutputPath: updatedValues.append(str(outputPath + modifiedValue.split('/')[-1]))
         else: updatedValues.append(str(modifiedValue) if '/' in modifiedValue else str(outputPath + modifiedValue))

@@ -242,6 +242,20 @@ class commandLine:
       # If the argument is invalid.
       else: self.errors.invalidArgument(argument)
 
+  # Add more new arguments.
+  def addGknoArguments(self, gknoArguments):
+
+    # Loop over the set of gkno arguments to add.
+    for argument in gknoArguments:
+
+      # If the gkno argument is already set, use the value already supplied, otherwise add the
+      # argument to the gkno arguments.
+      if argument not in self.gknoArguments:
+        self.gknoArguments[argument] = []
+        for value in gknoArguments[argument]:
+          if isinstance(value, unicode): self.gknoArguments[argument].append(str(value))
+          else: self.gknoArguments[argument].append(value)
+
   # Check if any of the arguments are linked and if so, check if multiple values have been provided to them.
   # If so, ensure that the order in which the values are sorted is such that the first value for each argument
   # is most similar to the first value for the other etc.

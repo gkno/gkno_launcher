@@ -1,0 +1,59 @@
+{
+  "id" : "snpeff-download",
+  "configuration type" : "pipeline",
+  "description" : "Download a SnpEff database.",
+  "categories" : ["Annotation"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "download",
+      "tool" : "snpeff-download"
+    }
+  ],
+
+  "import arguments" : "download",
+
+  "arguments" : {
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "database",
+      "task" : "download",
+      "task argument" : "--database"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "database",
+          "node" : "database",
+          "values" : ["testHg3767Chr21Mt"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for human.",
+      "data" : [
+        {
+          "id" : "database",
+          "node" : "database",
+          "values" : ["GRCh37.75"]
+        }
+      ]
+    }
+  ]
+}

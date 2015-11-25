@@ -27,6 +27,7 @@ class helpInformation:
     self.helpCategories                      = {}
     self.helpCategories['1000G-pipelines']   = 'Analyses performed similarly to 1000 Genomes project analyses.'
     self.helpCategories['Alignment']         = 'Read alignment tasks are performed as part of the pipeline.'
+    self.helpCategories['Annotation']        = 'Annotation pipelines.'
     self.helpCategories['BAM-processing']    = 'Pipelines primarily focused on manipulating BAM files.'
     self.helpCategories['FASTA-processing']  = 'Pipelines involving manipulation of reference FASTA files.'
     self.helpCategories['kmer-processing']   = 'Perform analyses involving the processing of kmers.'

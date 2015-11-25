@@ -984,7 +984,8 @@ class pipelineGraph:
             break
 
   # Loop over the workflow adding parameter set data for all of the tasks.
-  def addTaskParameterSets(self, superpipeline, setName):
+  def addTaskParameterSets(self, superpipeline, setName, gknoConf):
+    gknoArguments = {}
 
     # Loop over the workflow.
     for task in self.workflow:
@@ -998,8 +999,24 @@ class pipelineGraph:
         toolData         = superpipeline.getToolData(tool)
         longFormArgument = toolData.getLongFormArgument(argument)
 
-        # If the argument supplied in the parameter set is invalid for the specified tool, throw an error.
-        if not longFormArgument: pse.parameterSetErrors().invalidArgumentInTool(task, tool, setName, argument)
+        # Check if the argument is a gkno specific argument.
+        if not longFormArgument:
+          isGknoArgument   = False
+          if argument in gknoConf.arguments.keys():
+            longFormArgument = argument
+            isGknoArgument   = True
+          elif argument in gknoConf.shortForms.keys():
+            longFormArgument = gknoConf.shortForms[argument]
+            isGknoArgument   = True
+
+          # If the argument is a gkno specific arguments, add it to the list of gkno arguments to be
+          # returned.
+          if isGknoArgument:
+            gknoArguments[longFormArgument] = arguments[argument]
+            break
+
+          # If the argument supplied in the parameter set is invalid for the specified tool, throw an error.
+          pse.parameterSetErrors().invalidArgumentInTool(task, tool, setName, argument)
 
         # Determine if this argument is an input or output file.
         isInput  = toolData.getArgumentAttribute(longFormArgument, 'isInput')
@@ -1039,6 +1056,9 @@ class pipelineGraph:
         else:
           print(task, argument, edges)
           print('NOT HANDLED PARAMETER SET WITH MULTIPLE EDGES.'); exit(0)
+
+    # Return any gkno arguments.
+    return gknoArguments
 
   # Loop over the workflow adding parameter set data for all of the tasks.
   def addPipelineParameterSets(self, superpipeline, args, setName, resourcesPath):

@@ -434,24 +434,31 @@ class makefiles:
       # each division.
       if isGlobal: 
         for division in range(1, data.numberDivisions + 1):
-          self.addDivisionInputs(data, subphase, division, values, lines, lineValues, isIntermediate, isStream, isGreedy)
+          self.addDivisionInputs(graph, nodeId, data, subphase, division, values, lines, lineValues, isIntermediate, isStream, isGreedy)
 
       # If this node is a child, then the files are only to be used for this specific division. In this case
       # do not loop over the divisions, just add the files to the divisionId already determined.
-      else: self.addDivisionInputs(data, subphase, divisionId, values, lines, lineValues, isIntermediate, isStream, isGreedy)
+      else: self.addDivisionInputs(graph, nodeId, data, subphase, divisionId, values, lines, lineValues, isIntermediate, isStream, isGreedy)
 
   # Add input files to the relevant structures.
-  def addDivisionInputs(self, data, subphase, division, values, lines, lineValues, isIntermediate, isStream, isGreedy):
+  def addDivisionInputs(self, graph, nodeId, data, subphase, division, values, lines, lineValues, isIntermediate, isStream, isGreedy):
+    updatedValues = []
 
     # Add the inputs to the command lines for each subphase.
     data.commands[subphase][division].extend(lines)
 
+    # Check if a file location is defined. If so, prepend the file location to the values.
+    fileLocation = graph.getGraphNodeAttribute(nodeId, 'fileLocation')
+    if fileLocation:
+      for value in values: updatedValues.append(str(fileLocation + value))
+    else: updatedValues = values
+
     # Add the files to the dependencies or outputs for the command line (if not being streamed).
     if not isStream:
       if isGreedy and len(lineValues) > 1:
-        for value in values: data.dependencies[subphase][division].append(str(value))
-      elif len(values) > 1: data.dependencies[subphase][division].append(str(values[subphase - 1]))
-      else: data.dependencies[subphase][division].append(str(values[0]))
+        for value in updatedValues: data.dependencies[subphase][division].append(str(value))
+      elif len(values) > 1: data.dependencies[subphase][division].append(str(updatedValues[subphase - 1]))
+      else: data.dependencies[subphase][division].append(str(updatedValues[0]))
 
   # Add input files to the command line.
   def addOutput(self, graph, task, data, nodeId):

@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.47.0"
+__version__ = "2.47.1"
 __date__ = "November 2015"
 
 def main():
@@ -238,7 +238,7 @@ def main():
 
   # Step through the workflow and determine the default parameter sets for all of the tasks. Populate
   # the nodes with these task level default parameter sets, creating nodes where necessary.
-  graph.addTaskParameterSets(superpipeline, 'default')
+  command.addGknoArguments(graph.addTaskParameterSets(superpipeline, 'default', gknoConfiguration))
 
   # Now add the default parameter set for the pipelines.
   graph.addPipelineParameterSets(superpipeline, args, 'default', resourcesPath)

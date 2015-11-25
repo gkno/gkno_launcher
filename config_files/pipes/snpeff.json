@@ -1,0 +1,126 @@
+{
+  "id" : "snpeff",
+  "configuration type" : "pipeline",
+  "description" : "Annotate a VCF file using SnpEff.",
+  "categories" : ["Annotation", "VCF-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "annotate",
+      "tool" : "snpeff",
+      "output to stream" : true
+    },
+    {
+      "task" : "compress",
+      "tool" : "bgzip-stream",
+      "input is stream" : true
+    },
+    {
+      "task" : "index",
+      "tool" : "vcf-index"
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input VCF file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "input"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output filtered and compressed VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The snpEff annotation database. This must have been downloaded (using snpeff-download) and be present in <path>/gkno_launcher/tools/snpEff/data.",
+        "long form argument" : "--database",
+        "short form argument" : "-d",
+        "node id" : "database"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "input",
+      "task" : "annotate",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "annotated-vcf",
+      "task" : "annotate",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "database",
+      "task" : "annotate",
+      "task argument" : "--database"
+    },
+    {
+      "id" : "output",
+      "task" : "compress",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "annotated-vcf",
+      "target" : "compress",
+      "argument" : "--in"
+    },
+    {
+      "source" : "output",
+      "target" : "index",
+      "argument" : "--in"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Parameter set for use with the test-harness.",
+      "data" : [
+        {
+          "id" : "input",
+          "node" : "input",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+        },
+        {
+          "id" : "database",
+          "node" : "database",
+          "values" : ["testHg3767Chr21Mt"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for human.",
+      "data" : [
+        {
+          "id" : "database",
+          "node" : "database",
+          "values" : ["GRCh37.75"]
+        }
+      ]
+    }
+  ]
+}

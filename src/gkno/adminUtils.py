@@ -330,6 +330,10 @@ class adminUtils:
     # in the user_settings.
     self.getCompiledTools()
 
+    # Check for tools to add or skip.
+    self.skipTools()
+    self.compileTools()
+
     # Update all built-in tools 
     print("Checking tools: ", file=sys.stdout)
     for tool in conf.tools:

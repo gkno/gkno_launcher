@@ -44,6 +44,10 @@ class argumentAttributes:
     # Define the extensions allowed for the argument.
     self.extensions = []
 
+    # The 'location' field can be used to specifiy a location for the file specified. This
+    # location is stored in the fileLocation attribute.
+    self.fileLocation = None
+
     # An argument can be defined as being linked to another argument for the tool. Linked
     # arguments can be used to make sure that lists of values are ordered such that each
     # value for the argument is most similar to the value for the linked argument. For
@@ -325,6 +329,7 @@ class toolConfiguration:
     allowedAttributes['include value in quotations']   = (bool, False, True, 'includeInQuotations')
     allowedAttributes['is filename stub']              = (bool, False, True, 'isStub')
     allowedAttributes['linked argument']               = (str, False, True, 'linkedArgument')
+    allowedAttributes['location']                      = (str, False, True, 'fileLocation')
     allowedAttributes['long form argument']            = (str, True, True, 'longFormArgument')
     allowedAttributes['modify argument']               = (str, False, True, 'modifyArgument')
     allowedAttributes['modify value']                  = (str, False, True, 'modifyValue')
