@@ -17,7 +17,13 @@
         "required" : true,
         "modify argument" : "omit",
         "data type" : "string",
-        "extensions" : ["vcf", "vcf.gz"]
+        "extensions" : ["vcf", "vcf.gz"],
+        "if input is stream" : {
+          "default" : {
+            "argument" : "",
+            "value" : "-"
+          }
+        }
       },
       {
         "description" : "The snpEff annotation database. This must have been downloaded (using snpeff-download) and be present in <path>/gkno_launcher/tools/snpEff/data.",

@@ -1,0 +1,376 @@
+{
+  "id" : "freebayes-snpeff",
+  "configuration type" : "pipeline",
+  "description" : "Population call variants using Freebayes, filtering the results with standard filtering methods and annotate with SnpEff.",
+  "categories" : ["Annotation", "Variant-discovery"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "call",
+      "tool" : "freebayes",
+      "greedy argument" : "--in",
+      "greedy task" : true,
+      "output to stream" : true
+    },
+    {
+      "task" : "compress",
+      "tool" : "bgzip-stream",
+      "input is stream" : true
+    },
+    {
+      "task" : "index-calls",
+      "tool" : "vcf-index",
+      "omit from reduced plot" : true
+    },
+    {
+      "task" : "filter",
+      "tool" : "vt-filter",
+      "output to stream" : true,
+      "output stream instruction set" : "bcf"
+    },
+    {
+      "task" : "normalize",
+      "tool" : "vt-normalize",
+      "input is stream" : true,
+      "input stream instruction set" : "bcf",
+      "output to stream" : true
+    },
+    {
+      "task" : "annotate",
+      "tool" : "snpeff",
+      "input is stream" : true,
+      "output to stream" : true
+    },
+    {
+      "task" : "compress-annotated",
+      "tool" : "bgzip-stream",
+      "omit from reduced plot" : true,
+      "input is stream" : true
+    },
+    {
+      "task" : "index-annotated",
+      "tool" : "vcf-index",
+      "omit from reduced plot" : true
+    },
+    {
+      "task" : "combine-vcf",
+      "tool" : "vcf-combine",
+      "consolidate divisions" : true,
+      "output to stream" : true
+    },
+    {
+      "task" : "compress-final",
+      "tool" : "bgzip-stream",
+      "input is stream" : true
+    },
+    {
+      "task" : "index-vcf",
+      "tool" : "vcf-index",
+      "omit from reduced plot" : true
+    }
+  ],
+
+  "import arguments" : "call",
+
+  "terminate pipeline" : {
+    "condition" : "no consolidation",
+    "consolidating task" : "combine-vcf",
+    "delete tasks" : [
+      "combine-vcf",
+      "compress-final",
+      "index-vcf"
+    ],
+    "replace nodes" : [
+      {
+        "from" : "output",
+        "to" : "normalized-vcf"
+      },
+      {
+        "from" : "final-index",
+        "to" : "normalized-index"
+      }
+    ]
+  },
+
+  "arguments" : {
+    "Inputs" : [
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output filtered VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ],
+
+    "Annotation options" : [
+      {
+        "description" : "The snpEff annotation database. This must have been downloaded (using snpeff-download) and be present in <path>/gkno_launcher/tools/snpEff/data.",
+        "long form argument" : "--database",
+        "short form argument" : "-d",
+        "node id" : "snpeff-database"
+      }
+    ],
+
+    "Filtering options" : [
+      {
+        "description" : "Specifies a filter to apply to the info fields of records, removes alleles which do not pass the filter.",
+        "long form argument" : "--filter-expression",
+        "short form argument" : "-f",
+        "node id" : "filter-expression"
+      },
+      {
+        "description" : "The text to add to the filter field for each record in the VCF file that satisfies the filter expression.",
+        "long form argument" : "--filter-tag",
+        "short form argument" : "-ft",
+        "node id" : "filter-tag"
+      },
+      {
+        "description" : "The description of the filter to include in the VCF header.",
+        "long form argument" : "--filter-tag-description",
+        "short form argument" : "-fd",
+        "node id" : "filter-tag-description"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "bam",
+      "task" : "call",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "reference",
+      "task" : "call",
+      "task argument" : "--fasta-reference"
+    },
+    {
+      "id" : "haplotype-alleles",
+      "task" : "call",
+      "task argument" : "--haplotype-basis-alleles"
+    },
+    {
+      "id" : "variant-input",
+      "task" : "call",
+      "task argument" : "--variant-input"
+    },
+    {
+      "id" : "region",
+      "task" : "call",
+      "task argument" : "--region"
+    },
+    {
+      "id" : "freebayes-vcf",
+      "task" : "call",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "compressed-vcf",
+      "delete files" : true,
+      "task" : "compress",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "compressed-vcf-index",
+      "task" : "index-calls",
+      "delete files" : true,
+      "task argument" : "--out"
+    },
+    {
+      "id" : "filter-tag",
+      "task" : "filter",
+      "task argument" : "--tag"
+    },
+    {
+      "id" : "filter-tag-description",
+      "task" : "filter",
+      "task argument" : "--tag-description"
+    },
+    {
+      "id" : "filter-expression",
+      "task" : "filter",
+      "task argument" : "--filter-expression"
+    },
+    {
+      "id" : "filtered-vcf",
+      "task" : "filter",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "normalized-vcf",
+      "task" : "normalize",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "snpeff-database",
+      "task" : "annotate",
+      "task argument" : "--database"
+    },
+    {
+      "id" : "annotated-vcf",
+      "task" : "annotate",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "compressed-annotated-vcf",
+      "task" : "compress-annotated",
+      "task argument" : "--out",
+      "delete files" : true
+    },
+    {
+      "id" : "annotated-index",
+      "task" : "index-annotated",
+      "task argument" : "--out",
+      "delete files" : true
+    },
+    {
+      "id" : "combined-vcf",
+      "task" : "combine-vcf",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "output",
+      "task" : "compress-final",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "final-index",
+      "task" : "index-vcf",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "freebayes-vcf",
+      "target" : "compress",
+      "argument" : "--in"
+    },
+    {
+      "source" : "compressed-vcf",
+      "target" : "index-calls",
+      "argument" : "--in"
+    },
+    {
+      "source" : "compressed-vcf",
+      "target" : "filter",
+      "argument" : "--in"
+    },
+    {
+      "source" : "reference",
+      "target" : "normalize",
+      "argument" : "--fasta-reference"
+    },
+    {
+      "source" : "compressed-vcf-index",
+      "target" : "filter",
+      "argument" : "--index"
+    },
+    {
+      "source" : "filtered-vcf",
+      "target" : "normalize",
+      "argument" : "--in"
+    },
+    {
+      "source" : "normalized-vcf",
+      "target" : "annotate",
+      "argument" : "--in"
+    },
+    {
+      "source" : "annotated-vcf",
+      "target" : "compress-annotated",
+      "argument" : "--in"
+    },
+    {
+      "source" : "compressed-annotated-vcf",
+      "target" : "index-annotated",
+      "argument" : "--in"
+    },
+    {
+      "source" : "compressed-annotated-vcf",
+      "target" : "combine-vcf",
+      "argument" : "--in"
+    },
+    {
+      "source" : "annotated-index",
+      "target" : "combine-vcf",
+      "argument" : "--index"
+    },
+    {
+      "source" : "combined-vcf",
+      "target" : "compress-final",
+      "argument" : "--in"
+    },
+    {
+      "source" : "output",
+      "target" : "index-vcf",
+      "argument" : "--in"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+        {
+          "id" : "filter",
+          "node" : "filter-expression",
+          "values" : ["QUAL<1||QUAL/INFO.AO<1||INFO.SAF==0||INFO.SAR==0"]
+        },
+        {
+          "id" : "filter-tag",
+          "node" : "filter-tag",
+          "values" : ["FAIL"]
+        },
+        {
+          "id" : "filter-tag-description",
+          "node" : "filter-tag-description",
+          "values" : ["The records passing the defined filter expression."]
+        }
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "bam",
+          "node" : "bam",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.bam"]
+        },
+        {
+          "id" : "region",
+          "node" : "region",
+          "values" : ["20:1-50000", "20:50000-100000"]
+        },
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        },
+        {
+          "id" : "database",
+          "node" : "snpeff-database",
+          "values" : ["testHg3767Chr21Mt"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human",
+      "description" : "Parameter set for human.",
+      "data" : [
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+        }
+      ]
+    }
+  ]
+}
