@@ -21,12 +21,13 @@ class adminUtils:
 
     # Command line modes
     self.resourceModes = [ "add-resource", "remove-resource", "update-resource" ]
-    self.allModes      = [ "build", "update", "add-tool", "version" ] + self.resourceModes
+    self.allModes      = [ "build", "update", "update-light", "add-tool", "version" ] + self.resourceModes
 
     # Setup help/usage descriptions
     self.modeDescriptions = {}
     self.modeDescriptions["build"]           = "Initialize gkno. This step is required to run any other operations."
     self.modeDescriptions["update"]          = "Update gkno itself, its internal tools, and any tracked organism resources."
+    self.modeDescriptions["update-light"]    = "Update gkno, but none of its internal tools, or tracked organism resources."
     self.modeDescriptions["version"]         = "View gkno version in use, along with access to built-in tool versions."
     self.modeDescriptions["add-resource"]    = "Download resource data for an organism and track it for updated releases."
     self.modeDescriptions["add-tool"]        = "Add a previously omitted tool."
@@ -82,10 +83,11 @@ class adminUtils:
       
     # Run the requested operation
     success = False
-    if   self.mode == "build"    : success = self.build()
-    elif self.mode == "update"   : success = self.update()
-    elif self.mode == "add-tool" : success = self.addTool()
-    elif self.mode == "version"  : success = self.showVersion()
+    if   self.mode == "build"       : success = self.build()
+    elif self.mode == "update"      : success = self.update()
+    elif self.mode == "update-light": success = self.updateLight()
+    elif self.mode == "add-tool"    : success = self.addTool()
+    elif self.mode == "version"     : success = self.showVersion()
     else:
     
       # Check command line for organism and/or release name, then resolve any potential alias.
@@ -298,6 +300,21 @@ class adminUtils:
       url = "https://github.com/gkno/" + toolName + "/tree/" + submodules[toolName]
       print(toolName.ljust(maxNameLength) + "\t" + url, end="\n", file=sys.stdout)
     
+    # Return success.
+    return True
+
+  # Update-light updates the gkno code and configuration files, but does not update
+  # any of the tools or resources.
+  def updateLight(self):
+
+    # Update the main gkno repo.
+    print('Updating gkno...', end = '', file=sys.stdout)
+    sys.stdout.flush()
+    if self.gitUpdate(): print('done.', file=sys.stdout)
+    else:
+      self.error.gitUpdateFailed(dest=sys.stdout)
+      return False
+
     # Return success.
     return True
 
