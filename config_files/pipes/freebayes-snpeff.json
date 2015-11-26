@@ -83,7 +83,7 @@
     "replace nodes" : [
       {
         "from" : "output",
-        "to" : "annotated-vcf"
+        "to" : "compressed-annotated-vcf"
       },
       {
         "from" : "final-index",
