@@ -83,11 +83,11 @@
     "replace nodes" : [
       {
         "from" : "output",
-        "to" : "normalized-vcf"
+        "to" : "annotated-vcf"
       },
       {
         "from" : "final-index",
-        "to" : "normalized-index"
+        "to" : "annotated-index"
       }
     ]
   },
