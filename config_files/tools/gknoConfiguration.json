@@ -140,6 +140,13 @@
       "data type" : "string",
       "values" : []
     },
+    "GKNO-RERUN" : {
+      "description" : "Rerun a pipeline. This will look for a previously generated makefile and reuse the random string applied to temoprary files.",
+      "long form argument" : "--rerun-pipeline",
+      "short form argument" : "-re",
+      "data type" : "flag",
+      "values" : ["unset"]
+    },
     "GKNO-WEB" : {
       "description" : "Write out json files for use with the web page.",
       "long form argument" : "--web-content",

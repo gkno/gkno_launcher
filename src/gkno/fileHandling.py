@@ -63,6 +63,22 @@ class fileHandling:
     # If all required files are present, return True.
     else: return True
 
+  # Look for a file of the form PIPELINE.RANDOM_STRING.make. If there exists only one such
+  # file, return the RANDOM_STRING.
+  def getRandomString(self, pipeline):
+
+    # Find all files that fit the description.
+    files = []
+    for filename in os.listdir("./"):
+      if filename.startswith(pipeline) and filename.endswith('.make'): files.append(filename)
+
+    # If there are no files that fit the bill, or too many files, return False.
+    if len(files) != 1: return False
+
+    # If there is only a single file, return the random string.
+    randomString = files[0].replace(pipeline + '.', '')
+    return randomString.replace('.make', '')
+
   ######################
   ### Static methods ###
   ######################

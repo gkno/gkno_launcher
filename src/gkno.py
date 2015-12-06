@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.48.3"
+__version__ = "2.48.4"
 __date__ = "November 2015"
 
 def main():
@@ -223,6 +223,12 @@ def main():
 
   # Process the command line arguments.
   command.processArguments(superpipeline, args, gknoConfiguration)
+
+  # If the pipeline is being rerun, determine the random string to use, if possible.
+  if gknoConfiguration.getGknoArgument('GKNO-RERUN', command.gknoArguments):
+    randomString = files.getRandomString(pipeline)
+    if not randomString: command.errors.cannotRerunPipeline(pipeline)
+    else: superpipeline.randomString = randomString
 
   # Check if a parameter set is to be removed.
   removeParameterSet = gknoConfiguration.getGknoArgument('GKNO-REMOVE-PARAMETER-SET', command.gknoArguments)
