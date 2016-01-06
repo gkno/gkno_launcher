@@ -137,7 +137,8 @@
         "long form argument" : "--invert",
         "short form argument" : "-v",
         "command line argument" : "--invert",
-        "data type" : "flag"
+        "data type" : "flag",
+        "hide argument in help" : true
       },
       {
         "description" : "Compare records up to this many base pairs away (default 30).",
