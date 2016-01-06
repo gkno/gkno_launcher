@@ -11,8 +11,8 @@
       "output to stream" : true
     },
     {
-      "task" : "compress",
-      "tool" : "bgzip-stream",
+      "task" : "normalize",
+      "tool" : "vt-normalize",
       "input is stream" : true
     },
     {
@@ -52,8 +52,13 @@
       "task argument" : "--out"
     },
     {
+      "id" : "reference",
+      "task" : "union",
+      "task argument" : "--fasta-reference"
+    },
+    {
       "id" : "output",
-      "task" : "compress",
+      "task" : "normalize",
       "task argument" : "--out"
     }
   ],
@@ -61,8 +66,13 @@
   "connect nodes" : [
     {
       "source" : "union-output",
-      "target" : "compress",
+      "target" : "normalize",
       "argument" : "--in"
+    },
+    {
+      "source" : "reference",
+      "target" : "normalize",
+      "argument" : "--fasta-reference"
     },
     {
       "source" : "output",
@@ -95,7 +105,7 @@
         },
         {
           "id" : "reference",
-          "node" : "union.--fasta-reference",
+          "node" : "reference",
           "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
         }
       ]
@@ -107,7 +117,7 @@
       "data" : [
         {
           "id" : "reference",
-          "node" : "union.--fasta-reference",
+          "node" : "reference",
           "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
         }
       ]
