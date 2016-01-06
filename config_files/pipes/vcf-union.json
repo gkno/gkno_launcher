@@ -1,0 +1,104 @@
+{
+  "id" : "vcf-union",
+  "configuration type" : "pipeline",
+  "description" : "Determine the union of the two input VCF files.",
+  "categories" : ["VCF-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "union",
+      "tool" : "vcf-union",
+      "output to stream" : true
+    },
+    {
+      "task" : "compress",
+      "tool" : "bgzip-stream",
+      "input is stream" : true
+    },
+    {
+      "task" : "index-vcf",
+      "tool" : "vcf-index"
+    }
+  ],
+
+  "import arguments" : "union",
+
+  "arguments" : {
+    "Inputs" : [
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output union VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ],
+
+    "Options" : [
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "input",
+      "task" : "union",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "union-output",
+      "task" : "union",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "output",
+      "task" : "compress",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "union-output",
+      "target" : "compress",
+      "argument" : "--in"
+    },
+    {
+      "source" : "output",
+      "target" : "index-vcf",
+      "argument" : "--in"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "vcf",
+          "node" : "input",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+        },
+        {
+          "id" : "union-vcf",
+          "node" : "union.--union-vcf",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+        },
+        {
+          "id" : "reference",
+          "node" : "union.--fasta-reference",
+          "values" : ["$(RESOURCES)/tutorial/current/chr20_fragment.fa"]
+        }
+      ]
+    }
+  ]
+}

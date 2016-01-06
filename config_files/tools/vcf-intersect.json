@@ -1,0 +1,186 @@
+{
+  "id" : "vcf-intersect",
+  "configuration type" : "tool",
+  "description" : "Intersect vcf files.",
+  "categories" : ["VCF-processing", "vcflib", "Marthlab-software"],
+  "tools" : ["vcflib"],
+  "path" : "vcflib/bin",
+  "executable" : "vcfintersect",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input VCF file (the output VCF will contain records from this file).",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "modify argument" : "omit",
+        "required" : true,
+        "extensions" : ["vcf", "vcf.gz"],
+        "data type" : "string"
+      },
+      {
+        "description" : "The VCF index file.",
+        "long form argument" : "--index",
+        "short form argument" : "-x",
+        "command line argument" : "none",
+        "modify value" : "omit",
+        "extensions" : ["tbi"],
+        "data type" : "string",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "append"
+        },
+        "include in reduced plot" : false
+      },
+      {
+        "description" : "The VCF file with which to intersect.",
+        "long form argument" : "--intersect-vcf",
+        "short form argument" : "-t",
+        "command line argument" : "--intersect-vcf",
+        "required" : true,
+        "extensions" : ["vcf", "vcf.gz"],
+        "data type" : "string"
+      },
+      {
+        "description" : "The VCF index file for the intersect VCF.",
+        "long form argument" : "--index-intersect",
+        "short form argument" : "-ix",
+        "command line argument" : "none",
+        "modify value" : "omit",
+        "extensions" : ["tbi"],
+        "data type" : "string",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--intersect-vcf",
+          "modify extension" : "append"
+        },
+        "include in reduced plot" : false
+      },
+      {
+        "description" : "Use the intervals in the BED file when performing the intersection.",
+        "long form argument" : "--bed",
+        "short form argument" : "-b",
+        "command line argument" : "--bed",
+        "extensions" : ["bed"],
+        "data type" : "string"
+      },
+      {
+        "description" : "The FASTA reference.",
+        "long form argument" : "--fasta-reference",
+        "short form argument" : "-r",
+        "command line argument" : "--reference",
+        "required" : true,
+        "extensions" : ["fa", "fasta"],
+        "data type" : "string"
+      },
+      {
+        "description" : "The FASTA reference index file.",
+        "long form argument" : "--fasta-index",
+        "short form argument" : "-fx",
+        "command line argument" : "none",
+        "modify value" : "omit",
+        "required" : true,
+        "extensions" : ["fai"],
+        "data type" : "string",
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--fasta-reference",
+          "modify extension" : "append"
+        },
+        "include in reduced plot" : false
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output intersected VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "none",
+        "modify argument" : "stdout",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["vcf"],
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_intersected"]
+            }
+          ]
+        },
+        "if output to stream" : {
+          "default" : {
+            "argument" : "omit",
+            "value" : "omit"
+          }
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The region in which to perform the intersection.",
+        "long form argument" : "--region",
+        "short form argument" : "-rg",
+        "command line argument" : "-r",
+        "data type" : "string"
+      },
+      {
+        "description" : "Compare records up to this many base pairs away (default 30).",
+        "long form argument" : "--window",
+        "short form argument" : "-w",
+        "command line argument" : "--window-size",
+        "data type" : "integer"
+      },
+      {
+        "description" : "Output the whole loci when one alternate allele matches.",
+        "long form argument" : "--loci",
+        "short form argument" : "-l",
+        "command line argument" : "--loci",
+        "data type" : "flag"
+      },
+      {
+        "description" : "Intersect on the basis of record REF string.",
+        "long form argument" : "--reference-match",
+        "short form argument" : "-m",
+        "command line argument" : "--ref-match",
+        "data type" : "flag"
+      },
+      {
+        "description" : "Attach this string to each record's info field if it intersects.",
+        "long form argument" : "--tag",
+        "short form argument" : "-g",
+        "command line argument" : "--tag",
+        "data type" : "string"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--intersect-vcf",
+    "--index-intersect",
+    "--bed",
+    "--fasta-reference",
+    "--fasta-index",
+    "--out",
+    "--region",
+    "--window",
+    "--loci",
+    "--reference-match",
+    "--tag",
+    "--in",
+    "--index"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : []
+    }
+  ]
+}
