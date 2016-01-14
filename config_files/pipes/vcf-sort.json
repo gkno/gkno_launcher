@@ -1,0 +1,75 @@
+{
+  "id" : "vcf-sort",
+  "configuration type" : "pipeline",
+  "description" : "Sort variants in a VCF file.",
+  "categories" : ["VCF-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "sort",
+      "tool" : "vt-sort"
+    },
+    {
+      "task" : "index",
+      "tool" : "vcf-index"
+    }
+  ],
+
+  "import arguments" : "sort",
+
+  "arguments" : {
+    "Inputs" : [
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output VCF file with the requested records.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "input",
+      "task" : "sort",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "output",
+      "task" : "sort",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "output",
+      "target" : "index",
+      "argument" : "--in"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "vcf",
+          "node" : "input",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+        }
+      ]
+    }
+  ]
+}

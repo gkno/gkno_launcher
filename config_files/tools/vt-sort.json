@@ -1,0 +1,85 @@
+{
+  "id" : "vt-sort",
+  "configuration type" : "tool",
+  "web page" : {
+    "authors" : ["Adrian Tan"],
+    "tool" : "vt",
+    "web_pages" : ["http://genome.sph.umich.edu/wiki/Vt"],
+    "papers" : ["Unified representation of genetic variants, Adrian Tan, Goncalo R. Abecasis and Hyun Min Kang, Bioinformatics, 2015, 1-3, doi: 10.1093/bioinformatics/btv112"]
+  },
+  "description" : "Sort variants in a VCF file.",
+  "categories" : ["VCF-processing"],
+  "tools" : ["vt"],
+  "path" : "vt/",
+  "executable" : "vt",
+  "modifier" : "sort",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input VCF file to be normalized.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "none",
+        "required" : true,
+        "modify argument" : "omit",
+        "data type" : "string",
+        "if input is stream" : {
+          "default" : {
+            "argument" : "",
+            "value" : "-"
+          },
+          "bcf" : {
+            "argument" : "",
+            "value" : "+"
+          }
+        },
+        "extensions" : ["vcf", "vcf.gz"]
+      }
+    ],
+  
+    "Outputs" : [
+      {
+        "description" : "The sorted VCF file.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "-o",
+        "required" : true,
+        "data type" : "string",
+        "extensions" : ["vcf.gz"],
+        "if output to stream" : {
+          "default" : {
+            "argument" : "-o",
+            "value" : "-"
+          },
+          "bcf" : {
+            "argument" : "-o",
+            "value" : "+"
+          }
+        },
+        "construct filename" : {
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "replace",
+          "modify text" : [
+            {
+              "add text" : ["_normalized"]
+            }
+          ]
+        }
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--in",
+    "--out"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : []
+    }
+  ]
+}
