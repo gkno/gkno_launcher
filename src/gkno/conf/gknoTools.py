@@ -721,12 +721,12 @@ List = [
         Bwa(),
         Freebayes(),
         Htslib(), Samtools(), Pindel(), # <-- Keep this order
-        Jellyfish(),
+        #Jellyfish(),
         LibStatGen(), BamUtil(), FastQValidator(), Qplot(), VerifyBamID(), # <-- Keep this order
         Mosaik(),
         Mutatrix(),
         Picard(),
-        Rufus(),
+        #Rufus(),
         Samblaster(),
         Seqan(),       
         SnpEff(),

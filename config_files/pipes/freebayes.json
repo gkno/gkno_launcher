@@ -272,12 +272,12 @@
         {
           "id" : "filter",
           "node" : "filter-expression",
-          "values" : ["QUAL<1||QUAL/INFO.AO<1||INFO.SAF==0||INFO.SAR==0"]
+          "values" : ["QUAL>1&&QUAL/INFO.AO<10&&INFO.SAF>0&&INFO.SAR>0"]
         },
         {
           "id" : "filter-tag",
           "node" : "filter-tag",
-          "values" : ["FAIL"]
+          "values" : ["PASS"]
         },
         {
           "id" : "filter-tag-description",
