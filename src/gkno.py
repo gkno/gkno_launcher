@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.52.0"
+__version__ = "2.52.1"
 __date__ = "March 2016"
 
 def main():
@@ -411,7 +411,6 @@ def main():
 
   # Prior to execution of the makefile, ensure that all required executables exist. This first requires parsing the
   # user settings file.
-  admin.exportUserSettings()
   exe.executables().checkExecutables(toolsPath, superpipeline, admin.userSettings['compiled tools'])
 
   # Execute the generated script unless the user has explicitly asked for it not to be run, or if multiple makefiles
