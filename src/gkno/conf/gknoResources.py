@@ -100,8 +100,8 @@ List = [ Tutorial(),
          #CaenorhabditisElegans(),
          #EscherichiaColi(),
          HomoSapiens(),
-         HomoSapiens37(),
-         HomoSapiens38(),
+         HomoSapiensGRCh37(),
+         HomoSapiensGRCh38(),
          #MusMusculus(),
          #ToxoplasmaGondii()
        ] 
