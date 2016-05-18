@@ -91,9 +91,9 @@
 [submodule "tools/snpEff"]
 	path = tools/snpEff
 	url = https://github.com/gkno/snpEff.git
-[submodule "resources-homo_sapiens_grch37"]
-	path = resources-homo_sapiens_grch37
-	url = https://github.com/gkno/resources-homo_sapiens_grch37.git
-[submodule "resources-homo_sapiens_grch38"]
-	path = resources-homo_sapiens_grch38
+[submodule "resources/homo_sapiens_grch38"]
+	path = resources/homo_sapiens_grch38
 	url = https://github.com/gkno/resources-homo_sapiens_grch38.git
+[submodule "resources/homo_sapiens_grch37"]
+	path = resources/homo_sapiens_grch37
+	url = https://github.com/gkno/resources-homo_sapiens_grch37.git
