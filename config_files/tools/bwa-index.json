@@ -32,11 +32,11 @@
         "is filename stub" : true,
         "include dot in stub extension" : false,
         "stub extensions" : [
-          ".amb",
-          ".ann",
-          ".bwt",
-          ".pac",
-          ".sa"
+          "amb",
+          "ann",
+          "bwt",
+          "pac",
+          "sa"
         ],
         "construct filename" : {
           "method": "from tool argument",
