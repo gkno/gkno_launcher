@@ -62,6 +62,22 @@ class HomoSapiens(GknoResource):
     self.installDir = "homo_sapiens"
     self.aliases    = ["h.sapiens", "human"]
 
+# Human reference, GRCh37.
+class HomoSapiensGRCh37(GknoResource):  
+  def __init__(self):
+    super(HomoSapiensGRCh37, self).__init__()
+    self.name       = "homo_sapiens_grch37"
+    self.installDir = "homo_sapiens_grch37"
+    self.aliases    = ["h.sapiens37", "human37", "grch37", "grc37", "hg19"]
+
+# Human reference, GRCh38.
+class HomoSapiensGRCh38(GknoResource):  
+  def __init__(self):
+    super(HomoSapiensGRCh38, self).__init__()
+    self.name       = "homo_sapiens_grch38"
+    self.installDir = "homo_sapiens_grch38"
+    self.aliases    = ["h.sapiens38", "human38", "grch38", "grc38", "hg38"]
+
 class MusMusculus(GknoResource):
   def __init__(self):
     super(MusMusculus, self).__init__()
@@ -84,6 +100,8 @@ List = [ Tutorial(),
          #CaenorhabditisElegans(),
          #EscherichiaColi(),
          HomoSapiens(),
+         HomoSapiens37(),
+         HomoSapiens38(),
          #MusMusculus(),
          #ToxoplasmaGondii()
        ] 
