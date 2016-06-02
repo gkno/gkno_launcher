@@ -1,0 +1,73 @@
+{
+  "id" : "vcf-replace-header",
+  "configuration type" : "pipeline",
+  "description" : "Replace the header in a compressed vcf file.",
+  "categories" : ["VCF-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "replace",
+      "tool" : "vcf-replace-header"
+    },
+    {
+      "task" : "index",
+      "tool" : "vcf-index"
+    }
+  ],
+
+  "import arguments" : "replace",
+
+  "arguments" : {
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "vcf",
+      "task" : "replace",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "header",
+      "task" : "replace",
+      "task argument" : "--header-file"
+    },
+    {
+      "id" : "out",
+      "task" : "replace",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "out",
+      "target" : "index",
+      "argument" : "--in"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : []
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "vcf",
+          "node" : "vcf",
+          "values" : ["$(RESOURCES)/tutorial/current/hapmap_3.3.b37.chr20_fragment.vcf.gz"]
+        },
+        {
+          "id" : "alt_header",
+          "node" : "header",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_header.vcf"]
+        }
+      ]
+    }
+  ]
+}

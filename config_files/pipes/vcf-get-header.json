@@ -1,0 +1,51 @@
+{
+  "id" : "vcf-get-header",
+  "configuration type" : "pipeline",
+  "description" : "Extract the header from a VCF file.",
+  "categories" : ["VCF-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "extract",
+      "tool" : "vcf-header"
+    }
+  ],
+
+  "import arguments" : "extract",
+
+  "arguments" : {
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "vcf",
+      "task" : "extract",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "out",
+      "task" : "extract",
+      "task argument" : "--out"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : []
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "vcf",
+          "node" : "vcf",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf.gz"]
+        }
+      ]
+    }
+  ]
+}
