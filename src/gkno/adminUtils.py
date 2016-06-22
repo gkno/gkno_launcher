@@ -170,7 +170,7 @@ class adminUtils:
         sys.stdout.flush()
         if not self.addCurrentRelease(resource.name, '    '):
           self.error.resourceFetchFailed(resource.name, dest=sys.stdout)
-          return False
+          #return False
 
     # If we get here - clean up, mark built status, and return success
     os.chdir(originalWorkingDir)
