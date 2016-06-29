@@ -1,0 +1,40 @@
+{
+  "id" : "snpeff-databases",
+  "configuration type" : "pipeline",
+  "description" : "Generate a list of snpEff databases.",
+  "categories" : ["Annotation"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "databases",
+      "tool" : "snpeff-databases"
+    }
+  ],
+
+  "import arguments" : "databases",
+
+  "arguments" : {
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "output",
+      "task" : "databases",
+      "task argument" : "--out"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+        {
+          "id" : "output",
+          "node" : "output",
+          "values" : ["snpEff_databases.txt"]
+        }
+      ]
+    }
+  ]
+}

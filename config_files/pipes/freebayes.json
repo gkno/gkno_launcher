@@ -322,6 +322,18 @@
     },
 
     {
+      "id" : "hg38",
+      "description" : "Parameter set for human genome, reference build GRCh38.",
+      "data" : [
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/homo_sapiens_grch38/current/human_reference_v38.fa"]
+        }
+      ]
+    },
+
+    {
       "id" : "somatic-exome",
       "description" : "Parameter set for calling somatic variants in human exome data.",
       "data" : [

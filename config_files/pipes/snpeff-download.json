@@ -54,6 +54,30 @@
           "values" : ["GRCh37.75"]
         }
       ]
+    },
+
+    {
+      "id" : "grch37",
+      "description" : "Parameter set for human reference genome GRCh37 (hg19).",
+      "data" : [
+        {
+          "id" : "database",
+          "node" : "database",
+          "values" : ["GRCh37.75"]
+        }
+      ]
+    },
+
+    {
+      "id" : "grch38",
+      "description" : "Parameter set for human reference genome GRCh38.",
+      "data" : [
+        {
+          "id" : "database",
+          "node" : "database",
+          "values" : ["GRCh38.81"]
+        }
+      ]
     }
   ]
 }
