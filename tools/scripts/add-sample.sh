@@ -6,9 +6,9 @@ SAMPLE=$3
 
 cp $IN $OUT
 echo '##INFO=<ID=CVT,Number=1,Type=String,Description="Unknown">' >> $OUT
-echo '##INFO=<ID=VT,Number=A,Type=String,Description="Unknown">' >> $OUT
+echo '##INFO=<ID=VT,Number=1,Type=String,Description="Unknown">' >> $OUT
 echo '##INFO=<ID=AO,Number=A,Type=Integer,Description="Unknown">' >> $OUT
-echo '##INFO=<ID=HD,Number=A,Type=Integer,Description="Unknown">' >> $OUT
+echo '##INFO=<ID=HD,Number=1,Type=String,Description="Unknown">' >> $OUT
 echo '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">' >> $OUT
 echo '##contig=<ID=1>' >> $OUT
 echo '##contig=<ID=2>' >> $OUT

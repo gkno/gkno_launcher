@@ -1,5 +1,5 @@
 {
-  "id" : "merge-vcf",
+  "id" : "vcf-merge",
   "configuration type" : "pipeline",
   "description" : "Merge a set of VCF files.",
   "categories" : ["VCF-processing"],
@@ -13,8 +13,8 @@
       "output to stream" : true
     },
     {
-      "task" : "compress-vcf",
-      "tool" : "bgzip-stream",
+      "task" : "sort-vcf",
+      "tool" : "vt-sort",
       "input is stream" : true
     },
     {
@@ -56,7 +56,7 @@
     },
     {
       "id" : "output",
-      "task" : "compress-vcf",
+      "task" : "sort-vcf",
       "task argument" : "--out"
     }
   ],
@@ -64,7 +64,7 @@
   "connect nodes" : [
     {
       "source" : "merged-vcf",
-      "target" : "compress-vcf",
+      "target" : "sort-vcf",
       "argument" : "--in"
     },
     {
