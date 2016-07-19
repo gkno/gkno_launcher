@@ -384,7 +384,7 @@ def purgeEmptyNodes(graph):
 
     # Remove empty nodes.
     if not graph.getGraphNodeAttribute(nodeId, 'values'):
-      if graph.getGraphNodeAttribute(nodeId, 'isRequired'): print('ERROR - dataConsistency - purgeEmpythNodes'); exit(1)
+      if graph.getGraphNodeAttribute(nodeId, 'isRequired'): print('ERROR - dataConsistency - purgeEmptyNodes'); exit(1)
       graph.graph.remove_node(nodeId)
 
     # Remove isolated nodes.
@@ -393,7 +393,7 @@ def purgeEmptyNodes(graph):
   # Then loop over all file nodes, removing valueless nodes.
   for nodeId in graph.getNodes('file'):
     if not graph.getGraphNodeAttribute(nodeId, 'values'):
-      if graph.getGraphNodeAttribute(nodeId, 'isRequired'): print('ERROR - dataConsistency - purgeEmpythNodes'); exit(1)
+      if graph.getGraphNodeAttribute(nodeId, 'isRequired'): print('ERROR - dataConsistency - purgeEmptyNodes'); exit(1)
       graph.graph.remove_node(nodeId)
 
     # Remove isolated nodes.

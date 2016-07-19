@@ -1,0 +1,71 @@
+{
+  "id" : "add-sample",
+  "configuration type" : "tool",
+  "description" : "Add the last line to a VCF header with the specified sample name.",
+  "categories" : ["General-file-processing", "Scripts"],
+  "tools" : [],
+  "path" : "scripts",
+  "executable" : "add-sample.sh",
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "VCF header with last line removed, ready to accept the final line with added sample name.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "command line argument" : "--in",
+        "required" : true,
+        "data type" : "string",
+        "modify argument" : "omit"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "VCF header with sample added.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "command line argument" : "--out",
+        "required" : true,
+        "data type" : "string",
+        "modify argument" : "omit",
+        "construct filename" : { 
+          "method": "from tool argument",
+          "use argument" : "--in",
+          "modify extension" : "retain",
+          "modify text" : [ 
+            {   
+              "add text" : ["_sample"]
+            }   
+          ]   
+        }
+      }
+    ],
+
+    "Options" : [
+      {
+        "description" : "The sample name to add.",
+        "long form argument" : "--sample",
+        "short form argument" : "-s",
+        "command line argument" : "--sample",
+        "required" : true,
+        "data type" : "string",
+        "modify argument" : "omit"
+      }
+    ]
+  },
+
+  "argument order" : [
+    "--in",
+    "--out",
+    "--sample"
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires the users input for all files.",
+      "data" : [
+      ]
+    }
+  ]
+}
