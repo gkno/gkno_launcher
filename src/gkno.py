@@ -32,7 +32,7 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.60.0"
+__version__ = "2.60.1"
 __date__ = "July 2016"
 
 def main():

@@ -3,10 +3,10 @@
   "configuration type" : "tool",
   "description" : "Get a VCF header.",
   "categories" : ["VCF-processing"],
-  "tools" : ["tabix"],
-  "path" : "tabix",
-  "executable" : "tabix",
-  "modifier" : "-p vcf",
+  "tools" : ["vt"],
+  "path" : "vt",
+  "executable" : "vt",
+  "modifier" : "view",
   "arguments" : {
     "Inputs" : [
       {
@@ -23,7 +23,7 @@
         },
         "required" : true,
         "data type" : "string",
-        "extensions" : ["vcf.gz"]
+        "extensions" : ["vcf", "vcf.gz"]
       }
     ],
 
