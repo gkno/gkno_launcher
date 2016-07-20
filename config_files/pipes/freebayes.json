@@ -310,19 +310,19 @@
     },
 
     {
-      "id" : "human",
+      "id" : "grc37",
       "description" : "Parameter set for human.",
       "data" : [
         {
           "id" : "reference",
           "node" : "reference",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+          "values" : ["$(RESOURCES)/homo_sapiens_grch37/current/human_reference_v37_decoys.fa"]
         }
       ]
     },
 
     {
-      "id" : "hg38",
+      "id" : "grc38",
       "description" : "Parameter set for human genome, reference build GRCh38.",
       "data" : [
         {
