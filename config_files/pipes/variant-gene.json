@@ -1,0 +1,121 @@
+{
+  "id" : "variant-gene",
+  "configuration type" : "pipeline",
+  "description" : "Generate a list of all genes intersected by variants in the input vcf.",
+  "categories" : ["VCF-processing"],
+
+  "pipeline tasks" : [
+    {
+      "task" : "bedtools",
+      "tool" : "bedtools-intersect",
+      "output to stream" : true
+    },
+    {
+      "task" : "genes",
+      "tool" : "get-gene-names",
+      "input is stream" : true
+    }
+  ],
+
+  "arguments" : {
+    "Inputs" : [
+      {
+        "description" : "The input VCF file.",
+        "long form argument" : "--in",
+        "short form argument" : "-i",
+        "node id" : "input"
+      },
+      {
+        "description" : "The GTF file to intersect with the VCF file.",
+        "long form argument" : "--intersect",
+        "short form argument" : "-n",
+        "node id" : "gtf"
+      }
+    ],
+
+    "Outputs" : [
+      {
+        "description" : "The output gene list.",
+        "long form argument" : "--out",
+        "short form argument" : "-o",
+        "node id" : "output"
+      }
+    ]
+  },
+
+  "unique graph nodes" : [
+    {
+      "id" : "input",
+      "task" : "bedtools",
+      "task argument" : "--intersect"
+    },
+    {
+      "id" : "gtf",
+      "task" : "bedtools",
+      "task argument" : "--in"
+    },
+    {
+      "id" : "intersect-stream",
+      "task" : "bedtools",
+      "task argument" : "--out"
+    },
+    {
+      "id" : "output",
+      "task" : "genes",
+      "task argument" : "--out"
+    }
+  ],
+
+  "connect nodes" : [
+    {
+      "source" : "intersect-stream",
+      "target" : "genes",
+      "argument" : "--in"
+    }
+  ],
+
+  "parameter sets" : [
+    {
+      "id" : "default",
+      "description" : "Default parameter set requires user to input all input filenames.",
+      "data" : [
+      ]
+    },
+
+    {
+      "id" : "test",
+      "description" : "Test parameter set for the test harness.",
+      "data" : [
+        {
+          "id" : "vcf",
+          "node" : "input",
+          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome.vcf"]
+        }
+      ]
+    },
+
+    {
+      "id" : "hg37",
+      "description" : "Parameter set for human.",
+      "data" : [
+        {
+          "id" : "gtf",
+          "node" : "gtf",
+          "values" : ["$(RESOURCES)/homo_sapiens/current/gencode.v19.no_chr.gtf.gz"]
+        }
+      ]
+    },
+
+    {
+      "id" : "hg38",
+      "description" : "Parameter set for human genome, reference build GRCh38.",
+      "data" : [
+        {
+          "id" : "gtf",
+          "node" : "gtf",
+          "values" : ["$(RESOURCES)/homo_sapiens_grch38/current/gencode.v25.no_chr.gtf.gz"]
+        }
+      ]
+    }
+  ]
+}
