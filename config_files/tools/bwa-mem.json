@@ -17,7 +17,7 @@
         "modify argument" : "omit",
         "required" : true,
         "data type" : "string",
-        "extensions" : ["fq", "fq.gz", "fastq", "fastq.gz", "txt", "txt.gz"]
+        "extensions" : ["fa", "fq", "fq.gz", "fastq", "fastq.gz", "txt", "txt.gz"]
       },
       {
         "description" : "The second mate FASTQ file.",
