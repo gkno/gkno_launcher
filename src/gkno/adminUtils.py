@@ -126,10 +126,9 @@ class adminUtils:
     # Check requirements (attempt to access 3rd party dependencies/tools)
     print("Checking dependencies...", end="", file=sys.stdout)
     sys.stdout.flush()
-    if self.checkDependencies():
-      print("done.", file=sys.stdout)
-    else:
-      return False  # error message displayed in subroutine
+    if self.checkDependencies(): print("done.", file=sys.stdout)
+    #else:
+    #  return False  # error message displayed in subroutine
 
     # Make sure submodules are intialized & up-to-date
     print("Initializing component data...", end="", file=sys.stdout)
