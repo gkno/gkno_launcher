@@ -63,7 +63,7 @@
     "GKNO-PARAMETER-SET" : {
       "argument" : "--parameter-set",
       "data type" : "string",
-      "description" : "Generate a stdout and stderr for each task.",
+      "description" : "Select the parameter set to use with the pipeline.",
       "short form" : "-ps",
       "value" : ["default"]
     },
