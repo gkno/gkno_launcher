@@ -55,13 +55,25 @@
     },
 
     {
-      "id" : "human",
-      "description" : "Parameter set for the human genome.",
+      "id" : "human37",
+      "description" : "Parameter set for the human genome, GRCh37.",
       "data" : [
         {
           "id" : "reference",
           "node" : "reference",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys.fa"]
+          "values" : ["$(RESOURCES)/homo_sapiens_grch37/current/human_reference_v37_decoys.fa"]
+        }
+      ]
+    },
+
+    {
+      "id" : "human38",
+      "description" : "Parameter set for the human genome, GRCh38.",
+      "data" : [
+        {
+          "id" : "reference",
+          "node" : "reference",
+          "values" : ["$(RESOURCES)/homo_sapiens_grch38/current/GRCh38_full_analysis_set_plus_decoy_hla.fa"]
         }
       ]
     }
