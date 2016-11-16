@@ -247,18 +247,6 @@
     },
 
     {
-      "id" : "human",
-      "description" : "Parameter set for the human genome.",
-      "data" : [
-        {
-          "id" : "reference-prefix",
-          "node" : "reference",
-          "values" : ["$(RESOURCES)/homo_sapiens/current/human_reference_v37_decoys"]
-        }
-      ]
-    },
-
-    {
       "id" : "human37",
       "description" : "Parameter set for the human genome, reference genome GRCh37.",
       "data" : [
