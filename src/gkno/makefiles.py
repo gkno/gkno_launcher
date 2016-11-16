@@ -1197,7 +1197,7 @@ class makefiles:
     if isStub:
       if not graph.getArgumentAttribute(source, target, 'isPrimaryStubNode'): return None
       else: 
-        updatedValue = value.rstrip(stubExtension) if value.endswith(stubExtension) else value
+        updatedValue = value.rsplit(stubExtension)[0] if value.endswith(stubExtension) else value
         updatedValue = updatedValue.rstrip('.') if updatedValue.endswith('.') else updatedValue
         if inQuotations: return str('"' + updatedValue + '"')
         else: return updatedValue
