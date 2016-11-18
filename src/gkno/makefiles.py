@@ -1022,9 +1022,9 @@ class makefiles:
       # If the task is greedy, delete all files, otherwise just the files associated with this subphase.
       if graph.getGraphNodeAttribute(task, 'isGreedy'):
         for subphase in self.deleteAfterTask[task]:
-          for division in self.deleteAfterTask[task][subhpase]:
-            for value in self.deleteAfterTask[task][subhpase][division]: intermediates.append(value)
-      else: intermediates = self.deleteAfterTask[task][subphase][division]
+          for division in self.deleteAfterTask[task][subphase]:
+            for value in self.deleteAfterTask[task][subphase][division]: intermediates.append(value)
+      else: intermediates = self.deleteAfterTask[task][suphhase][division]
 
       # If there are files to delete, include instructions to delete them.
       if intermediates:
