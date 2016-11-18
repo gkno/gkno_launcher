@@ -280,12 +280,12 @@
         {
           "id" : "fastq",
           "node" : "fastq",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_1.fq"]
+          "values" : ["$(RESOURCES)/tutorial/current/l1_1.fq", "$(RESOURCES)/tutorial/current/mutated_genome_1.fq", "$(RESOURCES)/tutorial/current/mutated_genome_set2_1.fq"]
         },
         {
           "id" : "fastq2",
           "node" : "fastq2",
-          "values" : ["$(RESOURCES)/tutorial/current/mutated_genome_2.fq"]
+          "values" : ["$(RESOURCES)/tutorial/current/l1_2.fq", "$(RESOURCES)/tutorial/current/mutated_genome_2.fq", "$(RESOURCES)/tutorial/current/mutated_genome_set2_2.fq"]
         },
         {
           "id" : "reference-prefix",
@@ -295,17 +295,17 @@
         {
           "id" : "read-group-id",
           "node" : "read-group-id",
-          "values" : ["mutated_genome"]
+          "values" : ["1", "2", "3"]
         },
         {
           "id" : "sample-id",
           "node" : "sample-id",
-          "values" : ["mutated_genome"]
+          "values" : ["sample1", "sample2", "sample2"]
         },
         {
           "id" : "platform-id",
           "node" : "platform-id",
-          "values" : ["ILLUMINA"]
+          "values" : ["ILLUMINA", "ILLUMINA", "ILLUMINA"]
         }
       ]
     },
