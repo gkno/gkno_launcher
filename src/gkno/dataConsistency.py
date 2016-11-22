@@ -188,7 +188,7 @@ def checkRequiredArguments(graph, superpipeline, args, isTerminate):
           isSuccess         = False
           shortFormArgument = args.arguments[argument].shortFormArgument
           description       = args.arguments[argument].description
-          if isTerminate: errors.unsetRequiredArgument(argument, shortFormArgument, description)
+          if isTerminate: errors.unsetRequiredArgument(args.arguments[argument].longFormArgument, shortFormArgument, description)
 
   # Loop over all tasks in the workflow
   for task in graph.workflow:
@@ -237,12 +237,12 @@ def checkRequiredArguments(graph, superpipeline, args, isTerminate):
   
                   # Check to see if this node can have it's values set with a top level pipeline argument (e.g. can
                   # be set without defining the task on the command line).
-                  longFormArgument = graph.getGraphNodeAttribute(nodeId, 'longFormArgument')
+                  longFormArgument = args.arguments[graph.getGraphNodeAttribute(nodeId, 'longFormArgument')].longFormArgument
                   if longFormArgument and '.' not in longFormArgument:
   
                     # Get the short form of the pipeline argument and the argument description.
                     #shortFormArgument = args.arguments[longFormArgument].shortFormArgument
-                    shortFormArgument = graph.getGraphNodeAttribute(nodeId, 'shortFormArgument')
+                    shortFormArgument = args.arguments[graph.getGraphNodeAttribute(nodeId, 'longFormArgument')].shortFormArgument
                     description       = graph.getGraphNodeAttribute(nodeId, 'description')
                     if isTerminate: errors.unsetRequiredArgument(longFormArgument, shortFormArgument, description)
   

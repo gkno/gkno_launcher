@@ -174,7 +174,7 @@ class commandLine:
     pipeline = superpipeline.pipeline
 
     # Get the names of all the contained pipelines.
-    containedPipelines = superpipeline.tiersByPipeline.keys()[1:]
+    containedPipelines = superpipeline.tiersByPipeline.keys()
 
     # Get a list of all the allowable long and short form arguments. In this first pass, any arguments
     # being pulled from a contained pipeline are stored.
