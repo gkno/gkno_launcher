@@ -173,12 +173,35 @@ class commandLine:
     # Get the name of the top level pipeline.
     pipeline = superpipeline.pipeline
 
-    # Get a list of all the allowable long and short form arguments.
-    longFormArguments  = []
-    shortFormArguments = {}
+    # Get the names of all the contained pipelines.
+    containedPipelines = superpipeline.tiersByPipeline.keys()[1:]
+
+    # Get a list of all the allowable long and short form arguments. In this first pass, any arguments
+    # being pulled from a contained pipeline are stored.
+    containedPipelineArguments = []
+    longFormArguments          = {}
+    shortFormArguments         = {}
     for argument in args.arguments.keys():
-      longFormArguments.append(argument)
-      shortFormArguments[args.arguments[argument].shortFormArgument] = argument
+
+      # Check if the argument name is prefixed with the name of a task, following by a '.'. If so, this
+      # argument is pulled in from a contained pipeline.
+      if '.' in argument:
+        prefix = argument.split('.')[0]
+        if prefix in containedPipelines: containedPipelineArguments.append(argument)
+
+      # Handle defined arguments in the configuration file.
+      else:
+        longFormArguments[argument] = argument
+        shortFormArguments[args.arguments[argument].shortFormArgument] = argument
+
+    # Loop over the contained pipeline arguments.
+    for argument in containedPipelineArguments:
+      longFormArgument  = args.arguments[argument].longFormArgument
+      shortFormArgument = args.arguments[argument].shortFormArgument
+
+      if longFormArgument not in longFormArguments and shortFormArgument not in shortFormArguments:
+        longFormArguments[argument.split('.')[1]] = argument
+        shortFormArguments[args.arguments[argument].shortFormArgument] = argument
 
     # Loop over all of the supplied command line arguments, ensure that they are in their long form
     # versions and consolidate. Check that all of the arguments are valid for the pipeline being run
@@ -214,18 +237,19 @@ class commandLine:
 
       # Check if this argument is valid for the pipeline.
       elif argument in longFormArguments:
-        shortFormArgument = args.arguments[argument].shortFormArgument
-        dataType          = args.arguments[argument].dataType
-        if argument not in self.pipelineArguments: self.pipelineArguments[argument] = []
+        argumentName = longFormArguments[argument]
+        shortFormArgument = args.arguments[argumentName].shortFormArgument
+        dataType          = args.arguments[argumentName].dataType
+        if argumentName not in self.pipelineArguments: self.pipelineArguments[argumentName] = []
 
         # If the data type is flag, there are no values, so include 'set' as the value.
-        if dataType == 'flag': self.pipelineArguments[argument] = ['set']
+        if dataType == 'flag': self.pipelineArguments[argumentName] = ['set']
 
         # Handle non-flags.
         else:
           for value in values:
-            if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(argument, shortFormArgument, value, dataType, False)
-            self.pipelineArguments[argument].append(value)
+            if not dataConsistency.isCorrectDataType(value, dataType): self.errors.invalidValue(argumentName, shortFormArgument, value, dataType, False)
+            self.pipelineArguments[argumentName].append(value)
 
       # Check if this is a valid short form pipeline argument.
       elif argument in shortFormArguments:

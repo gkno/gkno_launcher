@@ -190,7 +190,7 @@
       "delete files" : true
     },
     {
-      "id" : "merged-headers",
+      "id" : "header-file",
       "task" : "merge-headers",
       "task argument" : "--out",
       "delete files" : true
@@ -239,7 +239,7 @@
       "argument" : "--in"
     },
     {
-      "source" : "merged-headers",
+      "source" : "header-file",
       "target" : "final-merge",
       "argument" : "--header"
     },

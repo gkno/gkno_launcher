@@ -1024,7 +1024,7 @@ class makefiles:
         for subphase in self.deleteAfterTask[task]:
           for division in self.deleteAfterTask[task][subphase]:
             for value in self.deleteAfterTask[task][subphase][division]: intermediates.append(value)
-      else: intermediates = self.deleteAfterTask[task][suphhase][division]
+      else: intermediates = self.deleteAfterTask[task][subphase][division]
 
       # If there are files to delete, include instructions to delete them.
       if intermediates:
