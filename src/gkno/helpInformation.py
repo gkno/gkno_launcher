@@ -356,7 +356,8 @@ class helpInformation:
       # Only process arguments for the top level pipeline (e.g. not for arguments that include
       # the address of the tool/pipeline that they point to). Also, do not include arguments that
       # have been marked in the configuration file as not to be included in the help message.
-      if '.' not in argument and not arguments[argument].hideInHelp and not hideInHelp:
+      longFormArgument = arguments[argument].longFormArgument
+      if '.' not in longFormArgument and not arguments[argument].hideInHelp and not hideInHelp:
         graphNodeIds      = arguments[argument].graphNodeIds
         category          = arguments[argument].category
         dataType          = arguments[argument].dataType
@@ -377,7 +378,7 @@ class helpInformation:
           else: description += ' [REQUIRED]'
 
         # Build the argument string to write to the screen.
-        argumentString = str(argument + ' (' + shortFormArgument + '):')
+        argumentString = str(longFormArgument + ' (' + shortFormArgument + '):')
 
         # Add the information to a list.
         if category not in argumentHelp: argumentHelp[category] = []
