@@ -447,11 +447,12 @@ class helpInformation:
         # Write out general header information.
         self.writeSimpleLine('Parameter set information for parameter set: ' + setName, isIndent = False, noLeadingTabs = 0)
         for argument in sorted(self.setArguments):
+          longFormArgument = arguments[argument].longFormArgument
   
           # Loop over all the values for the argument, unless the argument is hidden.
           if not arguments[argument].hideInHelp:
             for i, value in enumerate(self.setArguments[argument]):
-              if i == 0: strings = [argument + ':', str(value)]
+              if i == 0: strings = [longFormArgument + ':', str(value)]
               else: strings = ['', str(value)]
               self.writeComplexLine(strings, [length + 5, 1], noLeadingTabs = 1)
 
@@ -470,13 +471,15 @@ class helpInformation:
         useArgument = None
         for argument in arguments.keys():
           if arguments[argument].nodeId == nodeId:
-            useArgument = arguments[argument].longFormArgument
+            useArgument = argument#s[argument].longFormArgument
+            #useArgument = arguments[argument].longFormArgument
             break
 
           # If no nodeId was present, find the argument from the graph.
           if not useArgument and arguments[argument].graphNodeIds:
             if arguments[argument].graphNodeIds[0] == nodeId:
-              useArgument = arguments[argument].longFormArgument
+              #useArgument = arguments[argument].longFormArgument
+              useArgument = argument#s[argument].longFormArgument
 
       # For each node, determine if an argument exists for the node. Only show set arguments (rather than nodes
       # within the pipeline that are hidded).
