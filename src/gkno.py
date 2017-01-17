@@ -10,6 +10,7 @@ import sys
 import gkno.executables as exe
 import gkno.adminUtils as au
 import gkno.adminErrors as adminErrors
+import gkno.commandLineErrors as clErrors
 import gkno.arguments as ag
 import gkno.commandLine as cl
 import gkno.constructFilenames as construct
@@ -32,8 +33,8 @@ import gkno.web as w
 import gkno.writeToScreen as write
 
 __author__ = "Alistair Ward"
-__version__ = "2.63.7"
-__date__ = "November 2016"
+__version__ = "2.63.8"
+__date__ = "January 2017"
 
 def main():
 
@@ -298,6 +299,14 @@ def main():
 
   # If the user has requested that a parameter set is to be exported, export the parameter set and terminate.
   if graph.exportParameterSet: parSet.export(graph, superpipeline, args, command.pipelineArguments)
+
+  # Check if any outputs defined on the command line include a path. If so, require that the --output-path is
+  # used instead.
+  for task in graph.workflow:
+    for nodeId in graph.getOutputFileNodes(task):
+      values = graph.getGraphNodeAttribute(nodeId, 'values')
+      for value in values:
+        if '/' in value: clErrors.commandLineErrors().outputPathInArgument(value)
 
   # Loop over the tasks in the pipeline and construct filenames for arguments that require them, but weren't given
   # any on the command line. In addition, if multiple options are given to a task, this routine will generate new
